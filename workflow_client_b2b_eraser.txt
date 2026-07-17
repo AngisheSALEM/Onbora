@@ -1,0 +1,33 @@
+// Workflow Client B2B - Onbora Diagram Code
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+Client [icon: user, color: blue, label: "Client B2B"]
+Portal [icon: browser, color: blue, label: "Portail Client (Next.js)"]
+DiscoveryAPI [icon: api, color: green, label: "Discovery API (DRF)"]
+LLM_Service [icon: cpu, color: purple, label: "LLM (AI Discovery Engine)"]
+Database [icon: database, color: steel, label: "PostgreSQL Database"]
+KAM_Queue [icon: mail, color: orange, label: "KAM Workspace Queue"]
+
+// Connections
+Client -> Portal: "1. Ouvre le widget / Initie le chat"
+Portal -> DiscoveryAPI: "2. POST /api/discovery/conversations/"
+DiscoveryAPI -> Database: "3. Crée la session en BDD"
+
+loop "Dialogue de Qualification" {
+  Client -> Portal: "4. Envoie une réponse"
+  Portal -> DiscoveryAPI: "5. POST /api/discovery/conversations/:id/messages/"
+  DiscoveryAPI -> LLM_Service: "6. Analyse du besoin + Extrait profil"
+  LLM_Service -> DiscoveryAPI: "7. Retourne la question suivante + JSON Profil"
+  DiscoveryAPI -> Database: "8. Met à jour extracted_profile"
+  DiscoveryAPI -> Portal: "9. Retourne le message IA"
+}
+
+DiscoveryAPI -> Database: "10. Matchmaking avec le catalogue"
+DiscoveryAPI -> LLM_Service: "11. Génération du Business Twin (Avant/Après)"
+DiscoveryAPI -> Portal: "12. Renvoie recommandations + Twin"
+Portal -> Client: "13. Rendu visuel Premium (Roadmap interactif)"
+
+Client -> Portal: "14. Clic 'Demander un KAM'"
+Portal -> DiscoveryAPI: "15. POST /api/discovery/conversations/:id/transmit/"
+DiscoveryAPI -> Database: "16. Crée ProspectDossier (status: NEW)"
+DiscoveryAPI -> KAM_Queue: "17. Notifie le KAM"

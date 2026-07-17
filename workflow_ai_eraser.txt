@@ -1,0 +1,31 @@
+// AI Integration Workflows - Onbora Diagram Code
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+group Inbound_AI_Flow [color: blue] {
+  UserMsg [icon: message-square, color: blue, label: "Message Utilisateur"]
+  DiscoveryAgent [icon: cpu, color: blue, label: "Agent Discovery Chat"]
+  Extractor [icon: file-text, color: blue, label: "JSON Profile Extractor"]
+  TwinGenerator [icon: refresh-cw, color: blue, label: "Business Twin Generator"]
+}
+
+group Outbound_AI_Flow [color: emerald] {
+  CompanyWeb [icon: globe, color: emerald, label: "Scraped Web Data"]
+  BriefAgent [icon: cpu, color: emerald, label: "Brief Generator"]
+  MeetingAudio [icon: music, color: emerald, label: "Meeting Audio (.mp3)"]
+  WhisperAPI [icon: volume-2, color: emerald, label: "Whisper Transcription"]
+  ReportAgent [icon: cpu, color: emerald, label: "Visit Report Extractor"]
+}
+
+// Connections Inbound
+UserMsg -> DiscoveryAgent : "Fournit texte brut"
+DiscoveryAgent -> Extractor : "Extrait entités"
+Extractor -> TwinGenerator : "Transmet extracted_profile (JSON)"
+TwinGenerator -> TwinGenerator : "Match avec catalogue & génère roadmap"
+
+// Connections Outbound
+CompanyWeb -> BriefAgent : "Donne contexte public"
+BriefAgent -> BriefAgent : "Génère pitch & hypothèses"
+
+MeetingAudio -> WhisperAPI : "Envoie l'enregistrement"
+WhisperAPI -> ReportAgent : "Donne la transcription textuelle"
+ReportAgent -> ReportAgent : "Génère résumé, objections & brouillon email"

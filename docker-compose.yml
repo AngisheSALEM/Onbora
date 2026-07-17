@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: onbora_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-onbora_db}
+      POSTGRES_USER: ${DB_USER:-onbora_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-onbora_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: onbora_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: onbora_backend
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME:-onbora_db}
+      - DB_USER=${DB_USER:-onbora_user}
+      - DB_PASSWORD=${DB_PASSWORD:-onbora_pass}
+      - REDIS_HOST=redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: onbora_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+volumes:
+  pgdata:

@@ -1,0 +1,53 @@
+// Onbora System Architecture Diagram
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+// --- User Roles ---
+Client_B2B [icon: user, color: blue, label: "Client B2B (Maxit/Portal/Widget)"]
+Prospecteur [icon: user, color: emerald, label: "Prospecteur / Commercial"]
+KAM [icon: user, color: orange, label: "Key Account Manager (KAM)"]
+Admin_MSP [icon: user, color: red, label: "Admin MSP"]
+
+// --- Frontend App (Next.js) ---
+group Frontend [color: blue] {
+  NextJS [icon: nextjs, color: blue, label: "Next.js App (App Router)"]
+  TailwindCSS [icon: tailwindcss, color: light-blue, label: "Tailwind CSS & Geist Sans"]
+  FramerMotion [icon: play, color: pink, label: "Framer Motion (Tactile Physics)"]
+}
+
+// --- Backend App (Django REST Framework) ---
+group Backend_Services [color: green] {
+  DjangoDRF [icon: django, color: green, label: "Django REST Framework API"]
+  CeleryTasks [icon: cpu, color: purple, label: "Background Tasks (Celery/Async)"]
+}
+
+// --- Infrastructure & Storage ---
+group Infrastructure [color: grey] {
+  PostgreSQL [icon: postgresql, color: blue, label: "PostgreSQL Database"]
+  Redis [icon: redis, color: red, label: "Redis Cache & Queue"]
+  LocalStorage [icon: folder, color: grey, label: "Local Media Storage (S3 Mock)"]
+}
+
+// --- Simulated External Systems ---
+group External_Integrations [color: orange] {
+  OrangeCRM [icon: database, color: orange, label: "Mock Orange CRM/ERP"]
+  LLMService [icon: cpu, color: purple, label: "AI Core (OpenAI/Whisper Mock)"]
+}
+
+// --- Connections / Data Flows ---
+Client_B2B -> NextJS : "Conversations / Discovery / Training"
+Prospecteur -> NextJS : "Briefs / Visite / Rapport"
+KAM -> NextJS : "Prospects Workspace / Decisions"
+Admin_MSP -> NextJS : "System Configuration"
+
+NextJS -> DjangoDRF : "REST API Requests (JSON / Auth JWT)"
+TailwindCSS - NextJS
+FramerMotion - NextJS
+
+DjangoDRF -> PostgreSQL : "Django ORM Queries"
+DjangoDRF -> Redis : "Cache Session & Queue Tasks"
+DjangoDRF -> LocalStorage : "Save Audio & PDF Reports"
+CeleryTasks -> Redis : "Consume Background Jobs"
+CeleryTasks -> LLMService : "Whisper Audio / LLM Insights"
+
+DjangoDRF -> OrangeCRM : "Sync Leaps & Status (Mock API)"
+DjangoDRF -> LLMService : "Discovery Chat / Recommendations"
