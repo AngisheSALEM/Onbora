@@ -83,28 +83,25 @@ Situation Future (ex: Connexion fiable, outils collaboratifs, paiements digitaux
 
 ## 7. État Actuel du Projet et Roadmap
 
-### Statut Général : Initialisation (Architecture et Workflows définis)
-Les fichiers clés suivants ont été créés et validés dans l'espace de travail :
+### Statut Général : Initialisation terminée (Priorité 1 validée)
+L'environnement de développement complet d'Onbora (Next.js + Django DRF + Docker + Git branches `main` et `dev`) a été initialisé, configuré et validé avec un premier commit.
+
+Les fichiers clés disponibles dans le dépôt :
 *   Règles de travail : [vibe_rules.md](file:///C:/Users/Salem/Documents/projet/Onbora/vibe_rules.md)
 *   Contexte global : [onbora_context.md](file:///C:/Users/Salem/Documents/projet/Onbora/onbora_context.md)
 *   Architecture technique : [architecture.md](file:///C:/Users/Salem/Documents/projet/Onbora/architecture.md) & [architecture_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/architecture_eraser.txt)
-*   Workflows par rôle & IA (Descriptions & Diagrammes Mermaid) :
-    *   [workflow_client_b2b.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b.md) (Parcours client Inbound)
-    *   [workflow_prospecteur.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur.md) (Parcours commercial Outbound)
-    *   [workflow_kam.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_kam.md) (Workspace de traitement KAM)
-    *   [workflow_ai.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_ai.md) (Points d'intervention IA / "breaks" et formats de données)
-*   Codes de diagrammes Eraser.io dédiés :
-    *   [workflow_client_b2b_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b_eraser.txt)
-    *   [workflow_prospecteur_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur_eraser.txt)
-    *   [workflow_kam_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_kam_eraser.txt)
-    *   [workflow_ai_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_ai_eraser.txt)
+*   Workflows métier :
+    *   [workflow_client_b2b.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b.md) & [workflow_client_b2b_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b_eraser.txt) (Client B2B)
+    *   [workflow_prospecteur.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur.md) & [workflow_prospecteur_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur_eraser.txt) (Prospecteur)
+    *   [workflow_kam.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_kam.md) & [workflow_kam_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_kam_eraser.txt) (KAM)
+    *   [workflow_ai.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_ai.md) & [workflow_ai_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_ai_eraser.txt) (Intégrations IA)
 
 ### Tableau de bord de la Roadmap
 
 | Étape | Priorité | Description | Statut | Détables / Livrables |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | **Priorité 1** | Initialiser le projet | **En cours** | Dépôt Git, Branches, Frontend & Backend, Docker, Dev env (En préparation) |
-| 2 | **Priorité 2** | Créer les utilisateurs & rôles | *À faire* | Client B2B, Prospecteur, KAM, Admin MSP |
+| 1 | **Priorité 1** | Initialiser le projet | **Terminé** | Dépôt Git, Branches dev/main, Squelette Frontend Next.js & Backend Django, configuration Docker & env |
+| 2 | **Priorité 2** | Créer les utilisateurs & rôles | **En cours** | Client B2B, Prospecteur, KAM, Admin MSP (modèle d'authentification simple) |
 | 3 | **Priorité 3** | Interface conversationnelle B2B | *À faire* | Chat de qualification, cartes de services, démo |
 | 4 | **Priorité 4** | Espace KAM | *À faire* | Dashboard KAM, validation de prospects, notes, statuts |
 | 5 | **Priorité 5** | Espace Prospecteur | *À faire* | Recherche entreprise, brief pré-visite, enregistrement visite |
@@ -118,9 +115,8 @@ Les fichiers clés suivants ont été créés et validés dans l'espace de trava
 ---
 
 ## 8. Prochaine Action Planifiée
-*   **Initialiser la base du code (Priorité 1 - Étape 1)** :
-    *   Créer le repository local Git.
-    *   Générer les squelettes Next.js et Django REST Framework.
-    *   Créer les fichiers Dockerfile et docker-compose.yml.
-    *   Rédiger le README d'installation.
-
+*   **Créer les utilisateurs et les rôles (Priorité 2)** :
+    *   Configurer le modèle User personnalisé dans `backend/accounts/models.py`.
+    *   Créer les endpoints d'authentification simple (Login/Register/Me).
+    *   Écrire les fixtures ou scripts d'initialisation pour générer un utilisateur de démonstration pour chaque rôle (Client, Prospecteur, KAM, Administrateur).
+    *   Créer la structure des pages de connexion côté frontend Next.js.
