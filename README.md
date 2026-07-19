@@ -9,9 +9,6 @@ Onbora est un copilote commercial B2B conçu pour les fournisseurs de services m
 *   `backend/` : Projet Django REST Framework. Intègre les modules `accounts`, `catalog`, `discovery`, `sales`, `kam`, `twin`, `training` et `reporting`.
 *   `frontend/` : Application Next.js (App Router, TypeScript, Tailwind CSS).
 *   `docker-compose.yml` : Configuration Docker pour orchestrer les conteneurs PostgreSQL, Redis, Django et Next.js.
-*   `vibe_rules.md` : Guide de contribution et règles de Vibe Coding du projet.
-*   `onbora_context.md` : Le fichier de contexte et d'état d'avancement (Source of Truth).
-*   `architecture.md` : Les spécifications architecturales et relations de base de données.
 
 ---
 
@@ -67,3 +64,24 @@ Les services démarreront sur les ports configurés :
 *   **Backend API** : [http://localhost:8000/](http://localhost:8000/)
 *   **PostgreSQL** : Port `5432`
 *   **Redis** : Port `6379`
+
+---
+
+## 4. Initialisation des Comptes de Démo & Catalogues
+
+Pour initialiser les comptes utilisateurs prédéfinis pour chaque rôle (Client B2B, Commercial, KAM, Admin) et alimenter le catalogue de services de base, exécutez les commandes suivantes dans le dossier `backend/` (avec l'environnement virtuel activé) :
+
+```bash
+python manage.py seed_catalog
+python manage.py seed_demo_users
+```
+
+### Comptes de Démonstration Disponibles :
+
+| Rôle | Nom d'utilisateur | Mot de passe | Espace & Description |
+| :--- | :--- | :--- | :--- |
+| **Client B2B** | `client` | `clientpass` | `/client` : Espace de qualification autonome (Onbora Copilot) |
+| **Commercial** | `sales` | `salespass` | `/sales` : Dictaphone Whisper & transcription de visite terrain |
+| **KAM (Conseiller)** | `kam` | `kampass` | `/kam` : Workspace de traitement, notes & provisioning MSP |
+| **Admin (Superviseur)** | `admin` | `adminpass` | `/admin` : Console d'adoption et logs d'activité en temps réel |
+

@@ -20,3 +20,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# Exclude all markdown files except README.md
+**/*.md
+!README.md

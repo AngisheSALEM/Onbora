@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     
     # 3rd party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     
     # Local apps
@@ -57,6 +58,9 @@ INSTALLED_APPS = [
     'training',
     'reporting',
 ]
+
+AUTH_USER_MODEL = 'accounts.User'
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -162,6 +166,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
