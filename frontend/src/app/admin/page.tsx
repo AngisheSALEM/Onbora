@@ -41,10 +41,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function loadAdminData() {
       try {
-        const statsData = await fetchAPI('/api/reporting/stats/');
+        const statsData = await fetchAPI('/api/reporting/demo-stats/');
         setStats(statsData);
         
-        const logsData = await fetchAPI('/api/reporting/events/');
+        const logsData = await fetchAPI('/api/reporting/demo-logs/');
         setLogs(logsData);
       } catch (err) {
         console.error("Erreur de chargement des données d'administration:", err);
@@ -58,9 +58,9 @@ export default function AdminDashboard() {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      const statsData = await fetchAPI('/api/reporting/stats/');
+      const statsData = await fetchAPI('/api/reporting/demo-stats/');
       setStats(statsData);
-      const logsData = await fetchAPI('/api/reporting/events/');
+      const logsData = await fetchAPI('/api/reporting/demo-logs/');
       setLogs(logsData);
     } catch (err) {
       console.error(err);
