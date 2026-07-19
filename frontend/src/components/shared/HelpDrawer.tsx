@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { Icons } from './Icons';
 
 interface HelpDrawerProps {
   isOpen: boolean;
@@ -22,22 +23,31 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">🤖 Comment fonctionne le copilote Onbora ?</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.Sparkles className="text-orange-500 shrink-0" size={14} />
+                  Comment fonctionne le copilote Onbora ?
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   Le copilote Onbora est un assistant conversationnel conçu pour comprendre vos problématiques réseau, cloud et collaboration au fil de l'eau. Il extrait les détails de votre profil en temps réel.
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">📊 Qu'est-ce que le Business Twin (Jumeau Numérique) ?</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.LineChart className="text-orange-500 shrink-0" size={14} />
+                  Qu'est-ce que le Business Twin (Jumeau Numérique) ?
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   C'est un comparateur d'infrastructures. Il met en regard votre situation actuelle ("Avant") avec ses dysfonctionnements, et l'infrastructure recommandée ("Après") accompagnée d'une roadmap de transition par étapes.
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">✉️ Que se passe-t-il après la transmission de mon dossier ?</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.Mail className="text-orange-500 shrink-0" size={14} />
+                  Que se passe-t-il après la transmission de mon dossier ?
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   Une fois transmis, votre dossier est verrouillé et envoyé dans la file d'attente d'un Key Account Manager (KAM) d'Orange Business. Il analysera votre Business Twin et vous recontactera sous 24h.
                 </p>
@@ -105,22 +115,31 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">📋 Traiter la file d'attente</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.Activity className="text-orange-500 shrink-0" size={14} />
+                  Traiter la file d'attente
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   Filtrez les prospects par "Nouveau" pour repérer les opportunités inbound qualifiées en ligne et les visites transmises par les commerciaux terrain.
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">✍️ Annotations et assignation</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.Edit className="text-orange-500 shrink-0" size={14} />
+                  Annotations et assignation
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   Assignez-vous le dossier. Rédigez vos notes de suivi interne (appels téléphoniques, rendez-vous planifiés) et mettez à jour le statut en direct.
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1">
-                <span className="text-xs font-bold text-zinc-100">🖨️ Préparation du Pitch Client</span>
+              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-2">
+                  <Icons.Download className="text-orange-500 shrink-0" size={14} />
+                  Préparation du Pitch Client
+                </span>
                 <p className="text-xs text-zinc-400 leading-normal">
                   Consultez le Business Twin interactif et la chronologie de déploiement estimée. Utilisez le bouton "Exporter le Dossier" pour l'imprimer avant votre rendez-vous de négociation.
                 </p>

@@ -188,13 +188,13 @@ export default function KamDashboard() {
               onClick={() => setHelpOpen(true)}
               className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
             >
-              💡 FAQ & Guide
+              <Icons.HelpCircle size={14} /> FAQ & Guide
             </button>
             <button
               onClick={logout}
-              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-transparent text-xs font-semibold text-zinc-350 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-transparent text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
             >
-              Déconnexion
+              <Icons.LogOut size={14} /> Déconnexion
             </button>
           </div>
         </header>
@@ -348,7 +348,7 @@ export default function KamDashboard() {
                       onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/kam/dossiers/${selectedDossier.id}/export/`, '_blank')}
                       className="w-full py-2 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-[10px] font-bold text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                     >
-                      📄 Exporter le Dossier (PDF)
+                      <Icons.Download size={12} /> Exporter le Dossier (PDF)
                     </button>
                   </div>
                 </div>
@@ -404,7 +404,7 @@ export default function KamDashboard() {
                         : 'border-transparent text-zinc-500 hover:text-zinc-300'
                     }`}
                   >
-                    💻 Provisioning MSP (Démo)
+                    <span className="flex items-center gap-1.5 justify-center"><Icons.Settings size={14} /> Provisioning MSP (Démo)</span>
                   </button>
                 </div>
 
@@ -489,7 +489,9 @@ export default function KamDashboard() {
                   // Tab 3: Simulated MSP Integration Provisioning (Priority 10)
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
-                      <h3 className="text-sm font-bold text-zinc-50">💻 Simulation de Provisioning MSP</h3>
+                      <h3 className="text-sm font-bold text-zinc-50 flex items-center gap-1.5">
+                        <Icons.Settings className="text-orange-500" size={16} /> Simulation de Provisioning MSP
+                      </h3>
                       <p className="text-xs text-zinc-400 mt-0.5">
                         Activez et provisionnez les solutions d'infrastructure et de sécurité à la demande.
                       </p>
