@@ -147,7 +147,9 @@ export default function BusinessTwinSlides({
 
       case 2:
         return (
-          <div className="flex flex-col h-full justify-between animate-fade-in p-5">              <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE 3</span>
+          <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+            <div>
+              <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE 3</span>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                 <Icons.LineChart className="text-orange-500" size={14} />
                 Graphique d'Impact de Performance B2B
@@ -184,7 +186,6 @@ export default function BusinessTwinSlides({
                   </div>
                 </div>
               ))}
-            </div>}
             </div>
 
             <p className="text-[10px] text-zinc-500 font-medium text-center">
