@@ -69,56 +69,7 @@ export default function SalesDashboard() {
   const [helpOpen, setHelpOpen] = useState(false);
 
   // Slideshow Twin states
-  const [isSlideViewerOpen, setIsSlideViewerOpen] = useState(false);
   const [slidesTwinData, setSlidesTwinData] = useState<any>(null);
-
-  const openSlidesFromVisit = () => {
-    if (!visitPrep) return;
-    const mockTwin = {
-      current_state: [
-        "Infrastructures WAN sous-dimensionnées",
-        "Absence de supervision proactive",
-        visitPrep.hypothesis_to_verify || "Diagnostic en attente"
-      ],
-      proposed_state: [
-        "Liaison Fibre Orange Pro",
-        "Firewall de sécurité & WAN optimisé",
-        "Licences collaboratives centralisées"
-      ],
-      roadmap: [
-        "Phase 1: Raccordement physique de la Fibre (S1)",
-        "Phase 2: Configuration des switchs et pare-feux (S2)",
-        "Phase 3: Migration Cloud et accompagnement utilisateur (S3)"
-      ],
-      recommended_services: [
-        { name: "Fibre Pro Dédiée Orange", priority: "CRITICAL", reasoning: "Remplacement du lien ADSL saturé identifié." },
-        { name: "Firewall managé Fortinet", priority: "HIGH", reasoning: "Filtrage et protection UTM centralisée." }
-      ]
-    };
-    setSlidesTwinData(mockTwin);
-    setIsSlideViewerOpen(true);
-  };
-
-  const openSlidesFromReport = () => {
-    if (!visitReport) return;
-    const mockTwin = {
-      current_state: [
-        ...visitReport.objections_raised,
-        "Dysfonctionnements d'accès débits constatés"
-      ],
-      proposed_state: [
-        ...visitReport.confirmed_needs,
-        "Migration vers environnement managé"
-      ],
-      roadmap: visitReport.actions_todo.map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
-      recommended_services: [
-        { name: "Fibre Optique Pro", priority: "CRITICAL", reasoning: "Offre standard raccordement WAN." },
-        { name: "Licences Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Pour uniformiser les outils collaboratifs." }
-      ]
-    };
-    setSlidesTwinData(mockTwin);
-    setIsSlideViewerOpen(true);
-  };
 
   // Auto-suggest on query change
   useEffect(() => {
@@ -177,6 +128,30 @@ export default function SalesDashboard() {
   };
 
   const handleStartVisit = () => {
+    if (visitPrep) {
+      const mockTwin = {
+        current_state: [
+          "Infrastructures WAN sous-dimensionnées",
+          "Absence de supervision proactive",
+          visitPrep.hypothesis_to_verify || "Diagnostic en attente"
+        ],
+        proposed_state: [
+          "Liaison Fibre Orange Pro",
+          "Firewall de sécurité & WAN optimisé",
+          "Licences collaboratives centralisées"
+        ],
+        roadmap: [
+          "Phase 1: Raccordement physique de la Fibre (S1)",
+          "Phase 2: Configuration des switchs et pare-feux (S2)",
+          "Phase 3: Migration Cloud et accompagnement utilisateur (S3)"
+        ],
+        recommended_services: [
+          { name: "Fibre Pro Dédiée Orange", priority: "CRITICAL", reasoning: "Remplacement du lien ADSL saturé identifié." },
+          { name: "Firewall managé Fortinet", priority: "HIGH", reasoning: "Filtrage et protection UTM centralisée." }
+        ]
+      };
+      setSlidesTwinData(mockTwin);
+    }
     setStep('visit');
     setIsRecording(false);
     setRawNotes('');
@@ -208,6 +183,24 @@ export default function SalesDashboard() {
       });
       setVisitReport(report);
       setEmailDraft(report.follow_up_email_draft);
+
+      const mockTwin = {
+        current_state: [
+          ...report.objections_raised,
+          "Dysfonctionnements d'accès débits constatés"
+        ],
+        proposed_state: [
+          ...report.confirmed_needs,
+          "Migration vers environnement managé"
+        ],
+        roadmap: report.actions_todo.map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
+        recommended_services: [
+          { name: "Fibre Optique Pro", priority: "CRITICAL", reasoning: "Offre standard raccordement WAN." },
+          { name: "Licences Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Pour uniformiser les outils collaboratifs." }
+        ]
+      };
+      setSlidesTwinData(mockTwin);
+
       setStep('report');
     } catch (err) {
       console.error("Erreur de génération du rapport:", err);
@@ -443,194 +436,212 @@ export default function SalesDashboard() {
 
           {/* Step 3: Active Visit Mode */}
           {step === 'visit' && (
-            <div className="glass-card rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
-                  Rendez-vous en cours
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={openSlidesFromVisit}
-                    className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-amber-500/15"
-                  >
-                    📊 Consulter Slides Google
-                  </button>
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
+            <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl mx-auto items-stretch animate-fade-in">
+              {/* Left Panel: Voice Recorder & Notes */}
+              <div className="w-full lg:w-5/12 flex flex-col gap-5 glass-card rounded-2xl p-6 shadow-sm justify-between bg-white dark:bg-zinc-950/20">
+                <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
+                  <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
+                    Rendez-vous en cours
+                  </span>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate max-w-[160px]">
                     {selectedEnterprise?.name}
                   </span>
                 </div>
-              </div>
 
-              {/* Simulation of Audio Recorder */}
-              <div className="bg-zinc-100 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col items-center gap-4">
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
-                
-                <div className="flex items-center gap-4 mt-2">
-                  <button
-                    onClick={handleToggleRecording}
-                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md ${
-                      isRecording
-                        ? 'bg-red-500 hover:bg-red-650 text-white scale-105'
-                        : 'orange-gradient-bg hover:opacity-90 text-white'
-                    }`}
-                  >
-                    {isRecording ? (
-                      <span className="w-5 h-5 bg-white rounded-sm" />
-                    ) : (
-                      <span className="w-5 h-5 bg-white rounded-full" />
-                    )}
-                  </button>
+                {/* Simulation of Audio Recorder */}
+                <div className="bg-zinc-100 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col items-center gap-4">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
                   
+                  <div className="flex items-center gap-4 mt-2">
+                    <button
+                      onClick={handleToggleRecording}
+                      className={`w-16 h-16 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md ${
+                        isRecording
+                          ? 'bg-red-500 hover:bg-red-650 text-white scale-105'
+                          : 'orange-gradient-bg hover:opacity-90 text-white'
+                      }`}
+                    >
+                      {isRecording ? (
+                        <span className="w-5 h-5 bg-white rounded-sm" />
+                      ) : (
+                        <span className="w-5 h-5 bg-white rounded-full" />
+                      )}
+                    </button>
+                    
+                    {isRecording && (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-black text-red-500">{formatDuration(recordDuration)}</span>
+                        <span className="text-[9px] font-semibold text-zinc-400">Enregistrement audio en cours...</span>
+                      </div>
+                    )}
+                  </div>
+
                   {isRecording && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-black text-red-500">{formatDuration(recordDuration)}</span>
-                      <span className="text-[9px] font-semibold text-zinc-400">Enregistrement audio en cours...</span>
+                    <div className="flex items-center gap-1 h-10 justify-center w-full mt-3 px-6">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => {
+                        const heights = ['h-3', 'h-6', 'h-9', 'h-5', 'h-10', 'h-7', 'h-11', 'h-6', 'h-9', 'h-4', 'h-8', 'h-3', 'h-7', 'h-5', 'h-3'];
+                        const delays = ['0ms', '150ms', '300ms', '450ms', '200ms', '350ms', '100ms', '500ms', '250ms', '400ms', '150ms', '300ms', '450ms', '100ms', '200ms'];
+                        return (
+                          <span 
+                            key={i} 
+                            className={`w-1 ${heights[i % heights.length]} bg-gradient-to-t from-red-500 via-orange-500 to-amber-400 rounded-full animate-pulse`} 
+                            style={{ animationDelay: delays[i % delays.length], animationDuration: '0.8s' }}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </div>
 
-                {isRecording && (
-                  <div className="flex items-center gap-1 h-10 justify-center w-full mt-3 px-6">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => {
-                      const heights = ['h-3', 'h-6', 'h-9', 'h-5', 'h-10', 'h-7', 'h-11', 'h-6', 'h-9', 'h-4', 'h-8', 'h-3', 'h-7', 'h-5', 'h-3'];
-                      const delays = ['0ms', '150ms', '300ms', '450ms', '200ms', '350ms', '100ms', '500ms', '250ms', '400ms', '150ms', '300ms', '450ms', '100ms', '200ms'];
-                      return (
-                        <span 
-                          key={i} 
-                          className={`w-1 ${heights[i % heights.length]} bg-gradient-to-t from-red-500 via-orange-500 to-amber-400 rounded-full animate-pulse`} 
-                          style={{ animationDelay: delays[i % delays.length], animationDuration: '0.8s' }}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                {/* Raw notes input */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
+                    Notes de réunion & transcription (Éditable)
+                  </label>
+                  <textarea
+                    placeholder="Tapez vos notes ou arrêtez l'enregistrement audio ci-dessus pour transcrire automatiquement la discussion..."
+                    value={rawNotes}
+                    onChange={(e) => setRawNotes(e.target.value)}
+                    rows={5}
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+                  />
+                </div>
+
+                <div className="flex justify-between gap-4 mt-1">
+                  <button
+                    onClick={() => setStep('brief')}
+                    className="px-5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
+                  >
+                    Retour brief
+                  </button>
+                  <button
+                    onClick={handleGenerateReport}
+                    disabled={!rawNotes.trim() || generatingReport}
+                    className="flex-1 py-2.5 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md"
+                  >
+                    {generatingReport ? 'Analyse par l\'IA...' : 'Générer le Rapport →'}
+                  </button>
+                </div>
               </div>
 
-              {/* Raw notes input */}
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
-                  Notes de réunion & transcription (Éditable)
-                </label>
-                <textarea
-                  placeholder="Tapez vos notes ou arrêtez l'enregistrement audio ci-dessus pour transcrire automatiquement la discussion..."
-                  value={rawNotes}
-                  onChange={(e) => setRawNotes(e.target.value)}
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+              {/* Right Panel: Google Slides Twin (Always Visible inline!) */}
+              <div className="w-full lg:w-7/12 flex flex-col bg-zinc-50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-850 rounded-2xl p-4 shadow-sm">
+                <GoogleSlidesTwin
+                  twin={slidesTwinData || {
+                    current_state: ["Diagnostic en attente"],
+                    proposed_state: ["Liaison Fibre Pro"],
+                    roadmap: ["S1: Déploiement"],
+                    recommended_services: []
+                  }}
+                  companyName={selectedEnterprise?.name || "l'entreprise"}
                 />
-              </div>
-
-              <div className="flex justify-between gap-4">
-                <button
-                  onClick={() => setStep('brief')}
-                  className="px-5 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
-                >
-                  Retour au brief
-                </button>
-                <button
-                  onClick={handleGenerateReport}
-                  disabled={!rawNotes.trim() || generatingReport}
-                  className="flex-1 py-3 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md"
-                >
-                  {generatingReport ? 'Analyse de la visite par l\'IA...' : 'Générer le Rapport Post-Visite →'}
-                </button>
               </div>
             </div>
           )}
 
           {/* Step 4: Post-Visit Report Analysis & Validation */}
           {step === 'report' && visitReport && (
-            <div className="glass-card rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
-                  Rapport Commercial Généré
-                </span>
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
-                  {selectedEnterprise?.name}
-                </span>
-              </div>
+            <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl mx-auto items-stretch animate-fade-in">
+              {/* Left Panel: Analytical Report Summary */}
+              <div className="w-full lg:w-5/12 flex flex-col gap-5 glass-card rounded-2xl p-6 shadow-sm bg-white dark:bg-zinc-950/20 max-h-[580px] overflow-y-auto">
+                <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
+                  <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                    Rapport Commercial Généré
+                  </span>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate max-w-[160px]">
+                    {selectedEnterprise?.name}
+                  </span>
+                </div>
 
-              {/* Executive Summary */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
-                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed bg-zinc-50 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                  {visitReport.executive_summary}
-                </p>
-              </div>
+                {/* Executive Summary */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed bg-zinc-50 dark:bg-zinc-950/20 p-3.5 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    {visitReport.executive_summary}
+                  </p>
+                </div>
 
-              {/* Needs & Objections */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Besoins client validés</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {visitReport.confirmed_needs.map((need, idx) => (
-                      <span key={idx} className="px-2.5 py-1 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 text-[10px] font-bold">
-                        {need}
-                      </span>
-                    ))}
+                {/* Needs & Objections */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Besoins validés</span>
+                    <div className="flex flex-wrap gap-1">
+                      {visitReport.confirmed_needs.map((need, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-650 dark:text-orange-400 border border-orange-500/20 text-[9px] font-bold">
+                          {need}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Objections</span>
+                    <div className="flex flex-wrap gap-1">
+                      {visitReport.objections_raised.map((obj, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 text-[9px] font-bold">
+                          {obj}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Objections identifiées</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {visitReport.objections_raised.map((obj, idx) => (
-                      <span key={idx} className="px-2.5 py-1 rounded bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 text-[10px] font-bold">
-                        {obj}
-                      </span>
+
+                {/* Todo actions */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Actions recommandées</span>
+                  <ul className="text-xs text-zinc-650 dark:text-zinc-400 list-disc pl-4 space-y-0.5">
+                    {visitReport.actions_todo.map((act, idx) => (
+                      <li key={idx}>{act}</li>
                     ))}
-                  </div>
+                  </ul>
+                </div>
+
+                {/* Follow-up email draft */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
+                    Email de suivi (Modifiable)
+                  </label>
+                  <textarea
+                    value={emailDraft}
+                    onChange={(e) => setEmailDraft(e.target.value)}
+                    rows={5}
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+                  />
+                </div>
+
+                <div className="flex justify-between gap-3 mt-1 border-t border-zinc-100 dark:border-zinc-800/60 pt-3">
+                  <button
+                    onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/visit-reports/${visitReport.id}/export/`, '_blank')}
+                    className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-bold text-zinc-800 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Icons.Download size={12} /> PDF
+                  </button>
+                  <button
+                    onClick={() => setStep('visit')}
+                    className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-bold text-zinc-800 transition-all cursor-pointer"
+                  >
+                    Retour notes
+                  </button>
+                  <button
+                    onClick={handleTransmitToKam}
+                    disabled={transmitting}
+                    className="flex-1 py-2 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1"
+                  >
+                    {transmitting ? 'Transmission...' : 'Transmettre KAM'} <Icons.ChevronRight size={12} />
+                  </button>
                 </div>
               </div>
 
-              {/* Todo actions */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Plan d'actions recommandé</span>
-                <ul className="text-xs text-zinc-600 dark:text-zinc-400 list-disc pl-4 space-y-1">
-                  {visitReport.actions_todo.map((act, idx) => (
-                    <li key={idx}>{act}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Follow-up email draft */}
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
-                  Projet d'email de suivi (Modifiable)
-                </label>
-                <textarea
-                  value={emailDraft}
-                  onChange={(e) => setEmailDraft(e.target.value)}
-                  rows={7}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+              {/* Right Panel: Google Slides Twin (Always Visible inline!) */}
+              <div className="w-full lg:w-7/12 flex flex-col bg-zinc-50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-850 rounded-2xl p-4 shadow-sm">
+                <GoogleSlidesTwin
+                  twin={slidesTwinData || {
+                    current_state: ["Diagnostic en attente"],
+                    proposed_state: ["Liaison Fibre Pro"],
+                    roadmap: ["S1: Déploiement"],
+                    recommended_services: []
+                  }}
+                  companyName={selectedEnterprise?.name || "l'entreprise"}
                 />
-              </div>
-
-              <div className="flex justify-between gap-4 mt-2">
-                <button
-                  onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/visit-reports/${visitReport.id}/export/`, '_blank')}
-                  className="px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-xs font-bold text-zinc-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Icons.Download size={14} /> PDF
-                </button>
-                <button
-                  onClick={openSlidesFromReport}
-                  className="px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-amber-500 text-white hover:bg-amber-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/15"
-                >
-                  📊 Diapositives Débrief
-                </button>
-                <button
-                  onClick={() => setStep('visit')}
-                  className="px-5 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-xs font-bold text-zinc-800 transition-all cursor-pointer"
-                >
-                  Corriger notes
-                </button>
-                <button
-                  onClick={handleTransmitToKam}
-                  disabled={transmitting}
-                  className="flex-1 py-3 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
-                >
-                  {transmitting ? 'Transmission au KAM...' : 'Transmettre au KAM'} <Icons.ChevronRight size={14} />
-                </button>
               </div>
             </div>
           )}
@@ -660,29 +671,6 @@ export default function SalesDashboard() {
         </main>
       </div>
       <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="SALESPERSON" />
-      
-      {/* Modal overlay for Google Slides Twin Viewer */}
-      {isSlideViewerOpen && slidesTwinData && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 md:p-8">
-          <div className="w-full max-w-5xl bg-zinc-100 dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl relative border border-zinc-200 dark:border-zinc-800">
-            <button
-              onClick={() => setIsSlideViewerOpen(false)}
-              className="absolute top-4 right-4 z-60 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all cursor-pointer border-none flex items-center justify-center"
-              title="Fermer la visionneuse"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-            <div className="p-2 md:p-4">
-              <GoogleSlidesTwin
-                twin={slidesTwinData}
-                companyName={selectedEnterprise?.name || "l'entreprise"}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </ProtectedRoute>
   );
 }

@@ -7,7 +7,7 @@ import HelpDrawer from '@/components/shared/HelpDrawer';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import GoogleSlidesTwin from '@/components/shared/GoogleSlidesTwin';
+import BusinessTwinSlides from '@/components/shared/BusinessTwinSlides';
 
 interface Message {
   id: number;
@@ -712,7 +712,7 @@ export default function ClientDiscoveryPage() {
                   {/* Si c'est le dernier message de l'IA et que la conversation est qualifiée, on affiche l'aperçu du slide deck comme sur Gemini */}
                   {msg.sender === 'AI' && index === messages.length - 1 && isQualified && businessTwin && (
                     <div className="mt-3 w-full animate-fade-in">
-                      <GoogleSlidesTwin
+                      <BusinessTwinSlides
                         twin={{
                           current_state: businessTwin.current_state || [],
                           proposed_state: businessTwin.proposed_state || [],
@@ -941,7 +941,7 @@ export default function ClientDiscoveryPage() {
               <div className="flex flex-col h-full animate-fade-in overflow-hidden">
                 <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6" id="right-presentation-panel">
                   {businessTwin && (
-                    <GoogleSlidesTwin
+                    <BusinessTwinSlides
                       twin={{
                         current_state: businessTwin.current_state || [],
                         proposed_state: businessTwin.proposed_state || [],
