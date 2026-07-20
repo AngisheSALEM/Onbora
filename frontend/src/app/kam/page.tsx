@@ -203,14 +203,14 @@ export default function KamDashboard() {
         <div className="flex-1 flex overflow-hidden">
           
           {/* Left Panel: List of Prospects */}
-          <div className="w-[320px] md:w-[380px] border-r border-zinc-900 bg-zinc-950/20 backdrop-blur-sm flex flex-col overflow-hidden shrink-0">
+          <div className="w-[320px] md:w-[380px] border-r border-zinc-200 dark:border-zinc-900 bg-zinc-50/10 dark:bg-zinc-950/20 backdrop-blur-sm flex flex-col overflow-hidden shrink-0">
             {/* Filters */}
-            <div className="p-4 border-b border-zinc-900 flex items-center justify-between gap-2 shrink-0 bg-zinc-950/40">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between gap-2 shrink-0 bg-zinc-50/40 dark:bg-zinc-950/40">
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">Prospects Qualifiés</span>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-850 bg-zinc-950/40 text-zinc-300 focus:outline-none"
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all"
               >
                 <option value="">Tous les statuts</option>
                 <option value="NEW">Nouveaux</option>
@@ -235,9 +235,9 @@ export default function KamDashboard() {
                   <button
                     key={d.id}
                     onClick={() => handleSelectDossier(d)}
-                    className={`w-full p-4 flex flex-col gap-2 text-left hover:bg-zinc-950/40 transition-all cursor-pointer border-l-2 ${
+                    className={`w-full p-4 flex flex-col gap-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-950/40 transition-all cursor-pointer border-l-2 ${
                       selectedDossier?.id === d.id
-                        ? 'bg-zinc-955/30 border-orange-500 sidebar-active-tab'
+                        ? 'bg-zinc-100 dark:bg-zinc-950/30 border-orange-500 sidebar-active-tab'
                         : 'border-transparent'
                     }`}
                   >
@@ -314,7 +314,7 @@ export default function KamDashboard() {
                       <select
                         value={dossierStatus}
                         onChange={(e: any) => setDossierStatus(e.target.value)}
-                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950/40 text-zinc-300 focus:outline-none focus:border-orange-500 transition-all"
+                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all"
                       >
                         <option value="NEW">Nouveau</option>
                         <option value="IN_REVIEW">En revue</option>
@@ -375,13 +375,13 @@ export default function KamDashboard() {
                 </div>
 
                 {/* Details Tab Switcher */}
-                <div className="flex border-b border-zinc-900">
+                <div className="flex border-b border-zinc-200 dark:border-zinc-900">
                   <button
                     onClick={() => setActiveTab('qualification')}
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'qualification'
                         ? 'border-orange-500 text-orange-500'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
                     Dossier de Qualification
@@ -391,7 +391,7 @@ export default function KamDashboard() {
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'twin'
                         ? 'border-orange-500 text-orange-500'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
                     Business Twin Associé
@@ -401,7 +401,7 @@ export default function KamDashboard() {
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'provisioning'
                         ? 'border-orange-500 text-orange-500'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
                     <span className="flex items-center gap-1.5 justify-center"><Icons.Settings size={14} /> Provisioning MSP (Démo)</span>
@@ -411,13 +411,13 @@ export default function KamDashboard() {
                 {/* Tab Contents */}
                 {loadingDetail ? (
                   <div className="flex items-center justify-center p-8 glass-card rounded-2xl">
-                    <div className="w-6 h-6 border-2 border-zinc-805 border-t-orange-500 rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
                   </div>
                 ) : activeTab === 'qualification' ? (
-                  // Tab 1: Qualification dossier details
+                  {/* Tab 1: Qualification dossier details */}
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
-                      <h3 className="text-sm font-bold text-zinc-50">Besoins et contexte client</h3>
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Besoins et contexte client</h3>
                       <p className="text-xs text-zinc-400 mt-0.5">Synthèse des informations recueillies.</p>
                     </div>
 
@@ -489,7 +489,7 @@ export default function KamDashboard() {
                   // Tab 3: Simulated MSP Integration Provisioning (Priority 10)
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
-                      <h3 className="text-sm font-bold text-zinc-50 flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
                         <Icons.Settings className="text-orange-500" size={16} /> Simulation de Provisioning MSP
                       </h3>
                       <p className="text-xs text-zinc-400 mt-0.5">
@@ -497,7 +497,7 @@ export default function KamDashboard() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-4 divide-y divide-zinc-900">
+                    <div className="flex flex-col gap-4 divide-y divide-zinc-200 dark:divide-zinc-900">
                       {[
                         {
                           key: 'fibre',

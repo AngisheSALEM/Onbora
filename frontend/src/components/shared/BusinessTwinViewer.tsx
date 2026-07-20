@@ -136,20 +136,20 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
     <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 w-full animate-fade-in">
       
       {/* Sub-Header & Switcher */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-900 pb-4 shrink-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-900 pb-4 shrink-0">
         <div>
-          <h3 className="text-base font-bold text-zinc-50">Business Twin Interactif</h3>
+          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Business Twin Interactif</h3>
           <p className="text-xs text-zinc-400 mt-0.5">Étudiez la transformation numérique planifiée pour {companyName}.</p>
         </div>
         
         {/* Navigation Tabs */}
-        <div className="flex bg-zinc-955 p-1 rounded-xl border border-zinc-850 shrink-0">
+        <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-850 shrink-0">
           <button
             onClick={() => setActiveTab('impact')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'impact'
-                ? 'bg-zinc-900 text-orange-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-900 text-orange-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
             📊 Impacts & Comparatif
@@ -158,8 +158,8 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
             onClick={() => setActiveTab('roadmap')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'roadmap'
-                ? 'bg-zinc-900 text-orange-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-900 text-orange-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
             🗓️ Chronologie Déploiement
@@ -168,8 +168,8 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
             onClick={() => setActiveTab('services')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'services'
-                ? 'bg-zinc-900 text-orange-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-900 text-orange-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
             💼 Services Recommandés
@@ -243,7 +243,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
               </div>
               <ul className="flex flex-col gap-2.5">
                 {(twin.proposed_state || []).map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-300">
+                  <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-700 dark:text-zinc-300">
                     <span className="text-orange-500 shrink-0 font-black mt-0.5">✓</span>
                     <span className="leading-relaxed">{item}</span>
                   </li>
@@ -268,13 +268,13 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
                 className={`flex items-center gap-2.5 p-2 rounded-lg text-left transition-all cursor-pointer shrink-0 ${
                   selectedStep === idx
                     ? 'bg-orange-500/5 text-orange-500 font-bold border-l-2 border-orange-500'
-                    : 'text-zinc-500 hover:text-zinc-200 border-l-2 border-transparent'
+                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 border-l-2 border-transparent'
                 }`}
               >
                 <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center border shrink-0 ${
                   selectedStep === idx
                     ? 'orange-gradient-bg text-white border-orange-500'
-                    : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-750 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700'
                 }`}>
                   {idx + 1}
                 </span>
@@ -300,12 +300,12 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wide">Tâches opérationnelles</span>
               <div className="flex flex-col gap-2 mt-1">
                 {currentStepDetails.tasks.map((task, idx) => (
-                  <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-400">
+                  <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400">
                     <input
                       type="checkbox"
                       defaultChecked={idx === 0}
                       disabled
-                      className="rounded border-zinc-750 text-orange-500 focus:ring-orange-500 w-3.5 h-3.5 pointer-events-none"
+                      className="rounded border-zinc-300 dark:border-zinc-700 text-orange-500 focus:ring-orange-500 w-3.5 h-3.5 pointer-events-none"
                     />
                     <span>{task}</span>
                   </div>

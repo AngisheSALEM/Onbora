@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/shared/Logo';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function LoginPage() {
   const { user, login, loading } = useAuth();
@@ -76,14 +77,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md glass-card rounded-2xl p-8 flex flex-col gap-6 animate-fade-in">
         <div className="text-center">
           <Logo className="mx-auto mb-4 shadow-sm shadow-orange-500/20" size={40} />
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-50">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
             Connexion à <span className="text-orange-500">Onbora</span>
           </h1>
-          <p className="text-xs text-zinc-400 mt-1.5">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
             Accédez à votre espace Onbora commercial
           </p>
         </div>
@@ -96,7 +100,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
               Nom d'utilisateur
             </label>
             <input
@@ -104,12 +108,12 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Ex: client ou sales"
-              className="px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+              className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
               Mot de passe
             </label>
             <input
@@ -117,7 +121,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+              className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
             />
           </div>
 
@@ -130,38 +134,38 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="border-t border-zinc-800/80 pt-5">
-          <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
+        <div className="border-t border-zinc-200 dark:border-zinc-800/80 pt-5">
+          <h3 className="text-[10px] font-bold text-zinc-550 dark:text-zinc-500 uppercase tracking-widest mb-3">
             Comptes de démonstration
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => handleDemoClick('client', 'clientpass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-800/60 hover:border-zinc-700 bg-zinc-900/30 text-left transition-all group cursor-pointer"
+              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
             >
-              <span className="text-xs font-bold text-zinc-300 group-hover:text-orange-500 transition-colors">Client B2B</span>
-              <span className="text-[10px] text-zinc-500 mt-0.5">client / clientpass</span>
+              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Client B2B</span>
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">client / clientpass</span>
             </button>
             <button
               onClick={() => handleDemoClick('sales', 'salespass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-800/60 hover:border-zinc-700 bg-zinc-900/30 text-left transition-all group cursor-pointer"
+              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
             >
-              <span className="text-xs font-bold text-zinc-300 group-hover:text-orange-500 transition-colors">Prospecteur</span>
-              <span className="text-[10px] text-zinc-500 mt-0.5">sales / salespass</span>
+              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Prospecteur</span>
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">sales / salespass</span>
             </button>
             <button
               onClick={() => handleDemoClick('kam', 'kampass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-800/60 hover:border-zinc-700 bg-zinc-900/30 text-left transition-all group cursor-pointer"
+              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
             >
-              <span className="text-xs font-bold text-zinc-300 group-hover:text-orange-500 transition-colors">Key Account Mgr</span>
-              <span className="text-[10px] text-zinc-500 mt-0.5">kam / kampass</span>
+              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Key Account Mgr</span>
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">kam / kampass</span>
             </button>
             <button
               onClick={() => handleDemoClick('admin', 'adminpass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-800/60 hover:border-zinc-700 bg-zinc-900/30 text-left transition-all group cursor-pointer"
+              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
             >
-              <span className="text-xs font-bold text-zinc-300 group-hover:text-orange-500 transition-colors">Admin MSP</span>
-              <span className="text-[10px] text-zinc-500 mt-0.5">admin / adminpass</span>
+              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Admin MSP</span>
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">admin / adminpass</span>
             </button>
           </div>
         </div>

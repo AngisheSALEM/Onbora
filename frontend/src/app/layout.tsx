@@ -17,6 +17,22 @@ export default function RootLayout({
       lang="fr"
       className="h-full antialiased dark"
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else if (savedTheme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-white dark:bg-zinc-950 text-black dark:text-zinc-50 font-sans relative overflow-x-hidden transition-colors duration-300">
         <div className="matrix-grid" />
         <div className="noise-overlay" />

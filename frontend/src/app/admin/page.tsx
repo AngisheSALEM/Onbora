@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             <ThemeToggle />
             <button
               onClick={logout}
-              className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-xs font-semibold text-zinc-700 hover:text-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-705 dark:text-zinc-300 dark:hover:text-zinc-100 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-xs font-semibold text-zinc-700 hover:text-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.LogOut size={14} /> Déconnexion
             </button>
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">En revue</span>
                           <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">{stats.status_counts.IN_REVIEW}</p>
                         </div>
-                        <div className="p-4 bg-zinc-950/20 border border-zinc-850 rounded-xl">
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">Pris en charge</span>
                           <p className="text-lg font-black text-orange-500 mt-1">{stats.status_counts.ACCEPTED}</p>
                         </div>
