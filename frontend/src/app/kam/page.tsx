@@ -223,8 +223,17 @@ export default function KamDashboard() {
             {/* List */}
             <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60">
                {loadingList ? (
-                <div className="flex items-center justify-center p-8">
-                  <div className="w-5 h-5 border-2 border-zinc-700 border-t-orange-500 rounded-full animate-spin" />
+                <div className="flex flex-col p-4 gap-4 animate-pulse">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex flex-col gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/40">
+                      <div className="flex items-center justify-between">
+                        <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded-md w-2/3" />
+                        <div className="h-2.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-12" />
+                      </div>
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-full" />
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-5/6" />
+                    </div>
+                  ))}
                 </div>
               ) : dossiers.length === 0 ? (
                 <div className="p-8 text-center text-xs text-zinc-400 dark:text-zinc-500">
@@ -409,12 +418,40 @@ export default function KamDashboard() {
                 </div>
 
                 {/* Tab Contents */}
-                {loadingDetail ? (
-                  <div className="flex items-center justify-center p-8 glass-card rounded-2xl">
-                    <div className="w-6 h-6 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
+                 {loadingDetail ? (
+                  <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-pulse">
+                    <div className="flex flex-col gap-2">
+                      <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded-md w-1/3" />
+                      <div className="h-2.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-1/2" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 border-t border-zinc-100 dark:border-zinc-800/40 pt-4">
+                      <div className="flex flex-col gap-4">
+                        {[1, 2, 3].map((j) => (
+                          <div key={j} className="flex flex-col gap-1.5">
+                            <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-20" />
+                            <div className="h-3.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-40" />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
+                          <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-24" />
+                          <div className="flex gap-2">
+                            <div className="h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-14" />
+                            <div className="h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-16" />
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2 mt-2">
+                          <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-20" />
+                          <div className="flex gap-2">
+                            <div className="h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-16" />
+                            <div className="h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-14" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : activeTab === 'qualification' ? (
-                  {/* Tab 1: Qualification dossier details */}
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Besoins et contexte client</h3>

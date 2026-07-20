@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
+  --brand-h: 24; /* Orange Hue for OBS brand alignment */
+  --background: oklch(100% 0 var(--brand-h));
+  --foreground: oklch(12% 0.015 var(--brand-h));
 }
 
 .dark {
-  --background: #050508;
-  --foreground: #fafafa;
+  --background: oklch(10% 0.012 var(--brand-h));
+  --foreground: oklch(98% 0.006 var(--brand-h));
 }
 
 @theme inline {

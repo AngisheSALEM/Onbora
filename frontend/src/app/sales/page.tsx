@@ -305,9 +305,32 @@ export default function SalesDashboard() {
               </div>
 
               {generatingBrief ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                  <div className="w-6 h-6 border-2 border-zinc-200 border-t-orange-500 rounded-full animate-spin" />
-                  <p className="text-xs text-zinc-500">Scraping du site web & consultation CRM en cours...</p>
+                <div className="flex flex-col gap-6 animate-pulse mt-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-1/2" />
+                    <div className="flex gap-2">
+                      <div className="h-3.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-20" />
+                      <div className="h-3.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-16" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3 mt-2">
+                    <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-24" />
+                    <div className="h-16 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-full" />
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-5/6" />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-32" />
+                    <div className="h-20 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-11/12" />
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-full" />
+                      <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-3/4" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-zinc-500 italic mt-2">Scraping du site web & consultation CRM en cours...</p>
                 </div>
               ) : visitPrep ? (
                 <div className="flex flex-col gap-6">
@@ -406,12 +429,18 @@ export default function SalesDashboard() {
                 </div>
 
                 {isRecording && (
-                  <div className="flex items-center gap-1.5 h-6 justify-center w-full mt-2">
-                    <span className="w-1 h-3 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1 h-5 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '100ms' }}></span>
-                    <span className="w-1 h-2 bg-red-300 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></span>
-                    <span className="w-1 h-6 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                    <span className="w-1 h-4 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></span>
+                  <div className="flex items-center gap-1 h-10 justify-center w-full mt-3 px-6">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => {
+                      const heights = ['h-3', 'h-6', 'h-9', 'h-5', 'h-10', 'h-7', 'h-11', 'h-6', 'h-9', 'h-4', 'h-8', 'h-3', 'h-7', 'h-5', 'h-3'];
+                      const delays = ['0ms', '150ms', '300ms', '450ms', '200ms', '350ms', '100ms', '500ms', '250ms', '400ms', '150ms', '300ms', '450ms', '100ms', '200ms'];
+                      return (
+                        <span 
+                          key={i} 
+                          className={`w-1 ${heights[i % heights.length]} bg-gradient-to-t from-red-500 via-orange-500 to-amber-400 rounded-full animate-pulse`} 
+                          style={{ animationDelay: delays[i % delays.length], animationDuration: '0.8s' }}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -854,50 +854,79 @@ export default function ClientDiscoveryPage() {
                   </h3>
 
                   <div className="flex flex-col gap-3">
-                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2">
+                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2.5 transition-all duration-300 hover:translate-x-0.5">
                       <span className="text-zinc-500">Secteur</span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {profile.sector || <span className="text-zinc-400 dark:text-zinc-500 italic">En attente</span>}
-                      </span>
+                      {profile.sector ? (
+                        <span className="flex items-center text-zinc-900 dark:text-zinc-100 font-semibold animate-fade-in">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 shadow-sm shadow-emerald-500/50" />
+                          {profile.sector}
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-zinc-400 dark:text-zinc-500 italic">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse mr-2" />
+                          En attente
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2">
+                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2.5 transition-all duration-300 hover:translate-x-0.5">
                       <span className="text-zinc-500">Taille de l'entreprise</span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {profile.company_size_estimate || <span className="text-zinc-400 dark:text-zinc-500 italic">En attente</span>}
-                      </span>
+                      {profile.company_size_estimate ? (
+                        <span className="flex items-center text-zinc-900 dark:text-zinc-100 font-semibold animate-fade-in">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 shadow-sm shadow-emerald-500/50" />
+                          {profile.company_size_estimate}
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-zinc-400 dark:text-zinc-500 italic">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse mr-2" />
+                          En attente
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2">
+                    <div className="flex justify-between items-center text-xs border-b border-zinc-100 dark:border-zinc-800/60 pb-2.5 transition-all duration-300 hover:translate-x-0.5">
                       <span className="text-zinc-500">Sites géographiques</span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="flex items-center text-zinc-900 dark:text-zinc-100 font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 shadow-sm shadow-emerald-500/50" />
                         {profile.locations_count} site{profile.locations_count > 1 ? 's' : ''}
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 text-xs">
-                      <span className="text-zinc-500">Problèmes relevés</span>
+                    <div className="flex flex-col gap-1.5 text-xs transition-all duration-300 hover:translate-x-0.5">
+                      <span className="text-zinc-500 flex items-center">
+                        Problèmes relevés
+                      </span>
                       {(!profile.current_problems || profile.current_problems.length === 0) ? (
-                        <span className="text-zinc-400 dark:text-zinc-500 italic text-[11px]">Aucun problème mentionné pour l'instant</span>
+                        <span className="flex items-center text-zinc-400 dark:text-zinc-500 italic text-[11px]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 mr-2" />
+                          Aucun problème mentionné pour l'instant
+                        </span>
                       ) : (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5 mt-1 animate-fade-in">
                           {(profile.current_problems || []).map((prob, idx) => (
-                            <span key={idx} className="px-2 py-1 rounded bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 text-[10px] font-medium">
+                            <span key={idx} className="px-2 py-1 rounded bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 text-[10px] font-medium border border-zinc-200 dark:border-zinc-700/50 flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-orange-500" />
                               {prob}
                             </span>
                           ))}
                         </div>
                       )}
                     </div>
- 
-                    <div className="flex flex-col gap-1.5 text-xs pt-1.5">
-                      <span className="text-zinc-500">Outils actuels</span>
+
+                    <div className="flex flex-col gap-1.5 text-xs pt-1.5 transition-all duration-300 hover:translate-x-0.5">
+                      <span className="text-zinc-500 flex items-center">
+                        Outils actuels
+                      </span>
                       {(!profile.current_tools || profile.current_tools.length === 0) ? (
-                        <span className="text-zinc-400 dark:text-zinc-500 italic text-[11px]">Aucun outil mentionné</span>
+                        <span className="flex items-center text-zinc-400 dark:text-zinc-500 italic text-[11px]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 mr-2" />
+                          Aucun outil mentionné
+                        </span>
                       ) : (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5 mt-1 animate-fade-in">
                           {(profile.current_tools || []).map((tool, idx) => (
-                            <span key={idx} className="px-2 py-1 rounded bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 text-[10px] font-medium">
+                            <span key={idx} className="px-2 py-1 rounded bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 text-[10px] font-medium border border-zinc-200 dark:border-zinc-700/50 flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-orange-500" />
                               {tool}
                             </span>
                           ))}
