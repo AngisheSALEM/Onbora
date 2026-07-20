@@ -8,6 +8,7 @@ import HelpDrawer from '@/components/shared/HelpDrawer';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+import GoogleSlidesTwin from '@/components/shared/GoogleSlidesTwin';
 
 interface Enterprise {
   id: number;
@@ -66,6 +67,58 @@ export default function SalesDashboard() {
   const [transmitting, setTransmitting] = useState(false);
   const [createdDossierId, setCreatedDossierId] = useState<number | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // Slideshow Twin states
+  const [isSlideViewerOpen, setIsSlideViewerOpen] = useState(false);
+  const [slidesTwinData, setSlidesTwinData] = useState<any>(null);
+
+  const openSlidesFromVisit = () => {
+    if (!visitPrep) return;
+    const mockTwin = {
+      current_state: [
+        "Infrastructures WAN sous-dimensionnées",
+        "Absence de supervision proactive",
+        visitPrep.hypothesis_to_verify || "Diagnostic en attente"
+      ],
+      proposed_state: [
+        "Liaison Fibre Orange Pro",
+        "Firewall de sécurité & WAN optimisé",
+        "Licences collaboratives centralisées"
+      ],
+      roadmap: [
+        "Phase 1: Raccordement physique de la Fibre (S1)",
+        "Phase 2: Configuration des switchs et pare-feux (S2)",
+        "Phase 3: Migration Cloud et accompagnement utilisateur (S3)"
+      ],
+      recommended_services: [
+        { name: "Fibre Pro Dédiée Orange", priority: "CRITICAL", reasoning: "Remplacement du lien ADSL saturé identifié." },
+        { name: "Firewall managé Fortinet", priority: "HIGH", reasoning: "Filtrage et protection UTM centralisée." }
+      ]
+    };
+    setSlidesTwinData(mockTwin);
+    setIsSlideViewerOpen(true);
+  };
+
+  const openSlidesFromReport = () => {
+    if (!visitReport) return;
+    const mockTwin = {
+      current_state: [
+        ...visitReport.objections_raised,
+        "Dysfonctionnements d'accès débits constatés"
+      ],
+      proposed_state: [
+        ...visitReport.confirmed_needs,
+        "Migration vers environnement managé"
+      ],
+      roadmap: visitReport.actions_todo.map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
+      recommended_services: [
+        { name: "Fibre Optique Pro", priority: "CRITICAL", reasoning: "Offre standard raccordement WAN." },
+        { name: "Licences Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Pour uniformiser les outils collaboratifs." }
+      ]
+    };
+    setSlidesTwinData(mockTwin);
+    setIsSlideViewerOpen(true);
+  };
 
   // Auto-suggest on query change
   useEffect(() => {
@@ -395,9 +448,17 @@ export default function SalesDashboard() {
                 <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
                   Rendez-vous en cours
                 </span>
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
-                  {selectedEnterprise?.name}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={openSlidesFromVisit}
+                    className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-amber-500/15"
+                  >
+                    📊 Consulter Slides Google
+                  </button>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
+                    {selectedEnterprise?.name}
+                  </span>
+                </div>
               </div>
 
               {/* Simulation of Audio Recorder */}
@@ -552,6 +613,12 @@ export default function SalesDashboard() {
                   <Icons.Download size={14} /> PDF
                 </button>
                 <button
+                  onClick={openSlidesFromReport}
+                  className="px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-amber-500 text-white hover:bg-amber-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/15"
+                >
+                  📊 Diapositives Débrief
+                </button>
+                <button
                   onClick={() => setStep('visit')}
                   className="px-5 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-xs font-bold text-zinc-800 transition-all cursor-pointer"
                 >
@@ -593,6 +660,29 @@ export default function SalesDashboard() {
         </main>
       </div>
       <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="SALESPERSON" />
+      
+      {/* Modal overlay for Google Slides Twin Viewer */}
+      {isSlideViewerOpen && slidesTwinData && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 md:p-8">
+          <div className="w-full max-w-5xl bg-zinc-100 dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl relative border border-zinc-200 dark:border-zinc-800">
+            <button
+              onClick={() => setIsSlideViewerOpen(false)}
+              className="absolute top-4 right-4 z-60 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all cursor-pointer border-none flex items-center justify-center"
+              title="Fermer la visionneuse"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div className="p-2 md:p-4">
+              <GoogleSlidesTwin
+                twin={slidesTwinData}
+                companyName={selectedEnterprise?.name || "l'entreprise"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
