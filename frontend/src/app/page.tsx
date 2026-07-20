@@ -25,7 +25,7 @@ export default function Home() {
   }, [user, loading, router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex items-center justify-center min-h-screen bg-white dark:bg-zinc-950">
       <div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin dark:border-zinc-700 dark:border-t-zinc-100" />
     </div>
   );

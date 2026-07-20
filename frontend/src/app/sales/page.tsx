@@ -207,14 +207,14 @@ export default function SalesDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['SALESPERSON', 'ADMIN']}>
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col font-sans">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50">
         {/* Header */}
         <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3">
             <Logo size={32} showBg={true} />
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-50">Onbora</h1>
-              <p className="text-[10px] text-zinc-400 font-medium">Copilote Commercial de Terrain</p>
+              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote Commercial de Terrain</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -225,13 +225,13 @@ export default function SalesDashboard() {
             <ThemeToggle />
              <button
               onClick={() => setHelpOpen(true)}
-              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.HelpCircle size={14} /> Guide
             </button>
             <button
               onClick={logout}
-              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-transparent text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.LogOut size={14} /> Déconnexion
             </button>
@@ -248,8 +248,8 @@ export default function SalesDashboard() {
                 <span className="mr-auto px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
                   Ciblage
                 </span>
-                <h2 className="text-xl font-bold tracking-tight text-zinc-50">Sélectionner l'entreprise cible</h2>
-                <p className="text-xs text-zinc-400">Recherchez une entreprise. Notre outil simulera un scraping web et consultera le CRM pour pré-remplir la fiche.</p>
+                <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Sélectionner l'entreprise cible</h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Recherchez une entreprise. Notre outil simulera un scraping web et consultera le CRM pour pré-remplir la fiche.</p>
               </div>
 
               <div className="relative">
@@ -258,22 +258,22 @@ export default function SalesDashboard() {
                   placeholder="Tapez le nom d'une entreprise (ex: Cabinet Médical Santé, TechSoft...)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-zinc-850 bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
                 />
                 {searching && (
                   <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-zinc-700 border-t-orange-500 rounded-full animate-spin" />
                 )}
                 {/* Suggestions */}
                 {enterprises.length > 0 && (
-                  <div className="mt-4 border border-zinc-850 rounded-xl overflow-hidden divide-y divide-zinc-850">
+                  <div className="mt-4 border border-zinc-200 dark:border-zinc-850 rounded-xl overflow-hidden divide-y divide-zinc-200 dark:divide-zinc-850">
                     {enterprises.map((ent) => (
                       <button
                         key={ent.id}
                         onClick={() => handleSelectEnterprise(ent)}
-                        className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-950/40 transition-all cursor-pointer bg-zinc-950/10"
+                        className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-50 dark:hover:bg-zinc-950/40 transition-all cursor-pointer bg-white dark:bg-zinc-950/10"
                       >
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs font-bold text-zinc-200">{ent.name}</span>
+                          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{ent.name}</span>
                           <div className="flex items-center gap-2 text-[10px] text-zinc-500">
                             <span>{ent.sector}</span>
                             <span>•</span>
@@ -312,11 +312,11 @@ export default function SalesDashboard() {
               ) : visitPrep ? (
                 <div className="flex flex-col gap-6">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-zinc-50">
+                    <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
                       {visitPrep.enterprise_details.name}
                     </h2>
-                    <div className="flex flex-wrap gap-2 items-center mt-2 text-[10px] text-zinc-400">
-                      <span className="px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 font-semibold">{visitPrep.enterprise_details.sector}</span>
+                    <div className="flex flex-wrap gap-2 items-center mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 font-semibold">{visitPrep.enterprise_details.sector}</span>
                       <span>•</span>
                       <span>{visitPrep.enterprise_details.location}</span>
                       <span>•</span>
@@ -327,13 +327,13 @@ export default function SalesDashboard() {
                   {/* Objective */}
                   <div className="p-4 bg-orange-500/5 border border-orange-500/10 rounded-xl flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wide">Objectif de la visite</span>
-                    <p className="text-xs text-zinc-300 leading-normal">{visitPrep.meeting_objective}</p>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-normal">{visitPrep.meeting_objective}</p>
                   </div>
 
                   {/* Hypothesis to verify */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Hypothèses à vérifier</span>
-                    <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-950/20 p-4 border border-zinc-800 rounded-xl">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                       {visitPrep.hypothesis_to_verify}
                     </p>
                   </div>
@@ -341,7 +341,7 @@ export default function SalesDashboard() {
                   {/* Custom pitch */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Pitch personnalisé suggéré</span>
-                    <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-950/20 p-4 border border-zinc-800 rounded-xl">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                       {visitPrep.custom_pitch}
                     </p>
                   </div>
@@ -349,7 +349,7 @@ export default function SalesDashboard() {
                   {/* Key questions */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Questions d'accroche clés</span>
-                    <div className="text-xs text-zinc-400 leading-relaxed bg-zinc-950/20 p-4 border border-zinc-800 rounded-xl whitespace-pre-line">
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl whitespace-pre-line">
                       {visitPrep.key_questions}
                     </div>
                   </div>
@@ -372,13 +372,13 @@ export default function SalesDashboard() {
                 <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
                   Rendez-vous en cours
                 </span>
-                <span className="text-xs font-bold text-zinc-50">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
                   {selectedEnterprise?.name}
                 </span>
               </div>
 
               {/* Simulation of Audio Recorder */}
-              <div className="bg-zinc-950/20 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center gap-4">
+              <div className="bg-zinc-100 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col items-center gap-4">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
                 
                 <div className="flex items-center gap-4 mt-2">
@@ -426,14 +426,14 @@ export default function SalesDashboard() {
                   value={rawNotes}
                   onChange={(e) => setRawNotes(e.target.value)}
                   rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
                 />
               </div>
 
               <div className="flex justify-between gap-4">
                 <button
                   onClick={() => setStep('brief')}
-                  className="px-5 py-3 rounded-xl border border-zinc-800 hover:bg-zinc-900 text-xs font-bold text-zinc-300 transition-all cursor-pointer"
+                  className="px-5 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
                 >
                   Retour au brief
                 </button>
@@ -455,7 +455,7 @@ export default function SalesDashboard() {
                 <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
                   Rapport Commercial Généré
                 </span>
-                <span className="text-xs font-bold text-zinc-50">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
                   {selectedEnterprise?.name}
                 </span>
               </div>
@@ -463,7 +463,7 @@ export default function SalesDashboard() {
               {/* Executive Summary */}
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
-                <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950/20 p-4 border border-zinc-800 rounded-xl">
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed bg-zinc-50 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                   {visitReport.executive_summary}
                 </p>
               </div>
@@ -474,7 +474,7 @@ export default function SalesDashboard() {
                   <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Besoins client validés</span>
                   <div className="flex flex-wrap gap-1.5">
                     {visitReport.confirmed_needs.map((need, idx) => (
-                      <span key={idx} className="px-2.5 py-1 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[10px] font-bold">
+                      <span key={idx} className="px-2.5 py-1 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 text-[10px] font-bold">
                         {need}
                       </span>
                     ))}
@@ -484,7 +484,7 @@ export default function SalesDashboard() {
                   <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Objections identifiées</span>
                   <div className="flex flex-wrap gap-1.5">
                     {visitReport.objections_raised.map((obj, idx) => (
-                      <span key={idx} className="px-2.5 py-1 rounded bg-red-500/5 text-red-600 border border-red-500/10 text-[10px] font-bold">
+                      <span key={idx} className="px-2.5 py-1 rounded bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 text-[10px] font-bold">
                         {obj}
                       </span>
                     ))}
@@ -495,7 +495,7 @@ export default function SalesDashboard() {
               {/* Todo actions */}
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Plan d'actions recommandé</span>
-                <ul className="text-xs text-zinc-400 list-disc pl-4 space-y-1">
+                <ul className="text-xs text-zinc-600 dark:text-zinc-400 list-disc pl-4 space-y-1">
                   {visitReport.actions_todo.map((act, idx) => (
                     <li key={idx}>{act}</li>
                   ))}
@@ -511,20 +511,20 @@ export default function SalesDashboard() {
                   value={emailDraft}
                   onChange={(e) => setEmailDraft(e.target.value)}
                   rows={7}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
                 />
               </div>
 
               <div className="flex justify-between gap-4 mt-2">
                 <button
                   onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/visit-reports/${visitReport.id}/export/`, '_blank')}
-                  className="px-4 py-3 rounded-xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-bold text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-xs font-bold text-zinc-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Icons.Download size={14} /> PDF
                 </button>
                 <button
                   onClick={() => setStep('visit')}
-                  className="px-5 py-3 rounded-xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-bold text-zinc-300 transition-all cursor-pointer"
+                  className="px-5 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-xs font-bold text-zinc-800 transition-all cursor-pointer"
                 >
                   Corriger notes
                 </button>
@@ -546,7 +546,7 @@ export default function SalesDashboard() {
                 ✓
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-bold text-zinc-50">Dossier transmis avec succès</h2>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Dossier transmis avec succès</h2>
                 <p className="text-xs text-zinc-400 leading-normal max-w-md mx-auto">
                   Le rapport de visite a été structuré et envoyé au **Workspace KAM** sous le dossier **#{createdDossierId}**. Un e-mail de suivi a été préparé pour le prospect.
                 </p>

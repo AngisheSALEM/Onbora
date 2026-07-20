@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f4f5;
-  --foreground: #18181b;
+  --background: #ffffff;
+  --foreground: #000000;
 }
 
 .dark {
@@ -55,11 +55,15 @@ body {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.03) 0%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
   animation: floatOrb 25s infinite alternate ease-in-out;
+}
+
+.dark .glow-orb-orange-1 {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
 }
 
 .glow-orb-orange-2 {
@@ -69,11 +73,15 @@ body {
   width: 700px;
   height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
   filter: blur(100px);
   pointer-events: none;
   z-index: 0;
   animation: floatOrb 30s infinite alternate-reverse ease-in-out;
+}
+
+.dark .glow-orb-orange-2 {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
 }
 
 @keyframes floatOrb {
@@ -82,37 +90,74 @@ body {
   100% { transform: translate(-20px, -40px) scale(0.95); }
 }
 
-/* Glassmorphism Cards */
-.glass-card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+/* Glassmorphism Cards & Forms */
+.glass-card, .glass-form {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dark .glass-card {
+.dark .glass-card, .dark .glass-form {
   background: rgba(12, 12, 16, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
 }
 
 .glass-card:hover {
   border-color: rgba(249, 115, 22, 0.25) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
   box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.08);
 }
 
 .dark .glass-card:hover {
-  background: rgba(12, 12, 16, 0.75) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+  background: rgba(12, 12, 16, 0.7) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Glassmorphic inputs */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea,
+select {
+  background: rgba(0, 0, 0, 0.02) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: var(--foreground) !important;
+  transition: all 0.2s ease;
+}
+
+.dark input[type="text"],
+.dark input[type="password"],
+.dark input[type="email"],
+.dark textarea,
+.dark select {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #f97316 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important;
 }
 
 .orange-gradient-text {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  background-image: linear-gradient(135deg, #18181b 40%, #f97316 100%);
+}
+
+.dark .orange-gradient-text {
   background-image: linear-gradient(135deg, #ffffff 40%, #f97316 100%);
 }
 

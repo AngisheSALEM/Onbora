@@ -168,14 +168,14 @@ export default function KamDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['KAM', 'ADMIN']}>
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col font-sans h-screen overflow-hidden animate-fade-in">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans h-screen overflow-hidden animate-fade-in text-black dark:text-zinc-50">
         {/* Header */}
         <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm shrink-0 z-10">
           <div className="flex items-center gap-3">
             <Logo size={32} showBg={true} />
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-50">Onbora</h1>
-              <p className="text-[10px] text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
+              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -186,13 +186,13 @@ export default function KamDashboard() {
             <ThemeToggle />
              <button
               onClick={() => setHelpOpen(true)}
-              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.HelpCircle size={14} /> FAQ & Guide
             </button>
             <button
               onClick={logout}
-              className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-transparent text-xs font-semibold text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.LogOut size={14} /> Déconnexion
             </button>
@@ -346,7 +346,7 @@ export default function KamDashboard() {
 
                     <button
                       onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/kam/dossiers/${selectedDossier.id}/export/`, '_blank')}
-                      className="w-full py-2 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-[10px] font-bold text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                      className="w-full py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-[10px] font-bold text-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                     >
                       <Icons.Download size={12} /> Exporter le Dossier (PDF)
                     </button>
@@ -355,13 +355,13 @@ export default function KamDashboard() {
 
                 {/* Internal Notes card */}
                 <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                  <h3 className="text-sm font-bold text-zinc-50">Notes Internes du Conseiller</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Notes Internes du Conseiller</h3>
                   <textarea
                     value={internalNotes}
                     onChange={(e) => setInternalNotes(e.target.value)}
                     placeholder="Saisissez des notes sur les échanges téléphoniques, les relances ou les besoins techniques..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-955/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-50"
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
                   />
                   <div className="flex justify-end">
                     <button

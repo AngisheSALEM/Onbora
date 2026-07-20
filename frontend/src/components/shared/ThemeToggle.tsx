@@ -31,12 +31,17 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-300 transition-all cursor-pointer flex items-center justify-center"
+      className="p-1.5 rounded-lg border border-zinc-205 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all cursor-pointer flex items-center justify-center"
       aria-label="Changer de thème"
       title={theme === 'dark' ? "Passer au thème clair" : "Passer au thème sombre"}
     >
       {theme === 'dark' ? (
-        // Sun Icon
+        // Moon Icon representing current dark theme
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+      ) : (
+        // Sun Icon representing current light theme
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="4"/>
           <path d="M12 2v2"/>
@@ -47,11 +52,6 @@ export default function ThemeToggle() {
           <path d="M20 12h2"/>
           <path d="M6.34 17.66l-1.41 1.41"/>
           <path d="M19.07 4.93l-1.41 1.41"/>
-        </svg>
-      ) : (
-        // Moon Icon
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
         </svg>
       )}
     </button>

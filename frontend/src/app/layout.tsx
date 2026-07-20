@@ -17,7 +17,7 @@ export default function RootLayout({
       lang="fr"
       className="h-full antialiased dark"
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans relative overflow-x-hidden transition-colors duration-300">
+      <body className="min-h-full flex flex-col bg-white dark:bg-zinc-950 text-black dark:text-zinc-50 font-sans relative overflow-x-hidden transition-colors duration-300">
         <div className="matrix-grid" />
         <div className="noise-overlay" />
         <div className="glow-orb-orange-1" />

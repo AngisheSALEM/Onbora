@@ -84,15 +84,15 @@ export default function AdminDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['ADMIN']}>
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col font-sans">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50">
         
         {/* Header */}
         <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm shrink-0 z-10">
           <div className="flex items-center gap-3">
             <Logo size={32} showBg={true} />
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-50">Onbora</h1>
-              <p className="text-[10px] text-zinc-400 font-medium">Console Superviseur & Supervision Démo</p>
+              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Console Superviseur & Supervision Démo</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             <ThemeToggle />
             <button
               onClick={logout}
-              className="px-3.5 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-705 bg-transparent text-xs font-semibold text-zinc-350 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-xs font-semibold text-zinc-700 hover:text-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-705 dark:text-zinc-300 dark:hover:text-zinc-100 transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.LogOut size={14} /> Déconnexion
             </button>
@@ -126,8 +126,8 @@ export default function AdminDashboard() {
               <span className="px-2.5 py-0.5 w-fit bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wider uppercase shadow-sm shadow-orange-500/20">
                 Supervision Technique
               </span>
-              <h2 className="text-2xl font-black tracking-tight text-zinc-50 mt-2 uppercase">Console d'Adoption MSP</h2>
-              <p className="text-xs text-zinc-400 mt-1 max-w-2xl font-medium">
+              <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-2 uppercase">Console d'Adoption MSP</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl font-medium">
                 Suivez l'activité commerciale en temps réel, observez l'état du pipe de qualification et analysez l'adoption de la plateforme par les équipes commerciales terrain (Sales) et sédentaires (KAM).
               </p>
             </div>
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
-                      <span className="text-3xl font-black text-zinc-50">{stats.total_dossiers}</span>
+                      <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">{stats.total_dossiers}</span>
                       <p className="text-[9px] text-zinc-500 mt-2">Dossiers créés dans le pipe commercial</p>
                     </div>
 
@@ -162,8 +162,8 @@ export default function AdminDashboard() {
 
                     <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Taux de Conversion KAM</span>
-                      <span className="text-3xl font-black text-zinc-50">{stats.conversion_rate}%</span>
-                      <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden mt-2">
+                      <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">{stats.conversion_rate}%</span>
+                      <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1 rounded-full overflow-hidden mt-2">
                         <div className="orange-gradient-bg h-full" style={{ width: `${stats.conversion_rate}%` }} />
                       </div>
                     </div>
@@ -173,15 +173,15 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left: Counts */}
                     <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                      <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-wider">Répartition du Pipeline KAM</h3>
-                      <div className="grid grid-cols-3 gap-4 text-center my-auto text-zinc-100">
-                        <div className="p-4 bg-zinc-950/20 border border-zinc-850 rounded-xl">
+                      <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Répartition du Pipeline KAM</h3>
+                      <div className="grid grid-cols-3 gap-4 text-center my-auto text-zinc-900 dark:text-zinc-100">
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">Nouveau</span>
-                          <p className="text-lg font-black text-zinc-300 mt-1">{stats.status_counts.NEW}</p>
+                          <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">{stats.status_counts.NEW}</p>
                         </div>
-                        <div className="p-4 bg-zinc-950/20 border border-zinc-850 rounded-xl">
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">En revue</span>
-                          <p className="text-lg font-black text-zinc-300 mt-1">{stats.status_counts.IN_REVIEW}</p>
+                          <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">{stats.status_counts.IN_REVIEW}</p>
                         </div>
                         <div className="p-4 bg-zinc-950/20 border border-zinc-850 rounded-xl">
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">Pris en charge</span>
@@ -192,7 +192,7 @@ export default function AdminDashboard() {
 
                     {/* Right: SVG Trend Line Chart */}
                     <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                      <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-wider">Courbe d'Adoption Hebdomadaire</h3>
+                      <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Courbe d'Adoption Hebdomadaire</h3>
                       <div className="relative h-32 w-full flex items-end">
                         {/* SVG line chart */}
                         <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                   {/* Logs section */}
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                      <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-wider">Logs d'Activité Récents</h3>
+                      <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Logs d'Activité Récents</h3>
                       <div className="flex flex-wrap gap-1.5">
                         {['ALL', 'CONVERSATION_STARTED', 'QUALIFICATION_SUCCESS', 'DOSSIER_TRANSMITTED', 'REPORT_GENERATED', 'PDF_EXPORTED'].map(type => (
                           <button
