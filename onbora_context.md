@@ -129,8 +129,8 @@ Les fichiers clés disponibles dans le dépôt :
     1.  **Parcours Prospecteur (Audio réel)** : **Terminé** (Web Audio + upload backend configurés).
     2.  **Parcours Client B2B → KAM** : **Terminé** (12 statuts de cycle de vie + notifications par polling implémentés).
     3.  **Business Twin Dynamique** : **Terminé** (Rendu SVG & timeline Gantt réactifs branchés sur le KAM Dashboard).
-    4.  **Exports PDF** : Concevoir les templates ReportLab pour les 7 documents requis dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
+    4.  **Exports PDF** : **Terminé** (Les 7 documents requis avec ReportLab & canvas de numérotation).
     5.  **Administration** : Interface CRUD pour l'édition du catalogue MSP et des FAQ.
-*   **Prochaine étape (Choisie)** : **Étape 4 - Exports PDF**. Concevoir et implémenter les templates PDF ReportLab pour les 7 documents légaux et techniques de signature d'offres dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
+*   **Prochaine étape (Choisie)** : **Étape 5 - Administration**. Développer l'interface d'administration pour l'édition dynamique du catalogue de services MSP (Ajout, Modification, Suppression) et de la FAQ.
 
 
