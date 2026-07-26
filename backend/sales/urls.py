@@ -4,7 +4,8 @@ from .views import (
     VisitPreparationCreateView,
     VisitReportCreateView,
     VisitReportTransmitView,
-    VisitReportExportView
+    VisitReportExportView,
+    VoiceUploadView
 )
 
 urlpatterns = [
@@ -13,4 +14,6 @@ urlpatterns = [
     path('visit-reports/', VisitReportCreateView.as_view(), name='visit-report-create'),
     path('visit-reports/<int:pk>/transmit/', VisitReportTransmitView.as_view(), name='visit-report-transmit'),
     path('visit-reports/<int:pk>/export/', VisitReportExportView.as_view(), name='visit-report-export'),
+    path('voice-upload/', VoiceUploadView.as_view(), name='voice-upload'),
 ]
+

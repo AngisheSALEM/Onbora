@@ -69,3 +69,26 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(dossier.source, ProspectDossier.OUTBOUND_VISIT)
         self.assertEqual(dossier.status, ProspectDossier.NEW)
         self.assertTrue(BusinessTwin.objects.filter(prospect_dossier=dossier).exists())
+
+    def test_voice_upload(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        upload_url = reverse('voice-upload')
+        
+        # Test without file
+        response = self.client.post(upload_url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Test with file
+        audio_file = SimpleUploadedFile("test_recording.webm", b"mocked_audio_content", content_type="audio/webm")
+        ent = Enterprise.objects.create(name="Clinique Test", sector="Médical / Santé")
+        prep = VisitPreparation.objects.create(enterprise=ent, salesperson=self.sales_user)
+        
+        response = self.client.post(upload_url, {
+            'audio': audio_file,
+            'preparation_id': prep.id
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('audio_file_path', response.data)
+        self.assertIn('transcript', response.data)
+        self.assertIn('HDS', response.data['transcript'])
+

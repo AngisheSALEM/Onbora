@@ -1,7 +1,10 @@
+import os
+from django.core.files.storage import FileSystemStorage
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Enterprise, VisitPreparation, VisitReport
 from .serializers import EnterpriseSerializer, VisitPreparationSerializer, VisitReportSerializer
 from kam.models import ProspectDossier
@@ -94,6 +97,7 @@ class VisitReportCreateView(APIView):
     def post(self, request):
         prep_id = request.data.get('preparation')
         raw_transcript = request.data.get('raw_transcript', '').strip()
+        audio_file_path = request.data.get('audio_file_path', '').strip()
         
         if not prep_id:
             return Response({"detail": "La préparation de visite est requise."}, status=status.HTTP_400_BAD_REQUEST)
@@ -131,12 +135,15 @@ class VisitReportCreateView(APIView):
                 "confirmed_needs": confirmed_needs,
                 "objections_raised": objections,
                 "actions_todo": actions,
-                "follow_up_email_draft": email_draft
+                "follow_up_email_draft": email_draft,
+                "audio_file_path": audio_file_path or None
             }
         )
         
         if not created:
             report.raw_transcript = raw_transcript or report.raw_transcript
+            if audio_file_path:
+                report.audio_file_path = audio_file_path
             report.save()
             
         log_demo_event(
@@ -184,6 +191,10 @@ class VisitReportTransmitView(APIView):
                 }
             }
         )
+        
+        # Trigger automated dispatching
+        from kam.dispatch_engine import dispatch_dossier
+        dispatch_dossier(dossier)
         
         recommended_services_data = []
         current_state = [report.executive_summary]
@@ -304,4 +315,75 @@ class VisitReportExportView(APIView):
         """
         
         return get_export_response(f"rapport_visite_{pk}", title, content_html)
+
+
+class VoiceUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        prep_id = request.data.get('preparation_id')
+        audio_file = request.FILES.get('audio')
+
+        if not audio_file:
+            return Response({"detail": "Aucun fichier audio fourni."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Retrieve the enterprise information if prep_id is provided
+        enterprise_name = "le client"
+        sector = "générique"
+        if prep_id:
+            try:
+                prep = VisitPreparation.objects.get(pk=prep_id)
+                enterprise_name = prep.enterprise.name
+                sector = prep.enterprise.sector or "générique"
+            except VisitPreparation.DoesNotExist:
+                pass
+
+        # Save audio file
+        from django.conf import settings
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'voice_uploads'), exist_ok=True)
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'voice_uploads'), base_url='/media/voice_uploads/')
+        filename = fs.save(audio_file.name, audio_file)
+        uploaded_file_url = fs.url(filename)
+
+        # Generate intelligent mock transcript based on enterprise sector
+        sector_lower = sector.lower()
+        if "médical" in sector_lower or "santé" in sector_lower or "clinical" in sector_lower:
+            transcript = (
+                f"Discussion client chez {enterprise_name} : Le prospect confirme le besoin de raccorder ses postes médicaux "
+                f"de façon sécurisée (HDS). La liaison actuelle ADSL est trop lente pour la transmission des dossiers patients. "
+                f"Ils demandent également des détails sur le coût d'une offre Fibre Pro et d'un Firewall Managé."
+            )
+        elif "technologie" in sector_lower or "numérique" in sector_lower or "tech" in sector_lower:
+            transcript = (
+                f"Discussion client chez {enterprise_name} : Besoin de très haut débit symétrique (Fibre Pro 1 Gbps) "
+                f"pour héberger des serveurs VPS locaux et interconnecter des sites distants via SD-WAN. "
+                f"Ils s'inquiètent de la sécurité des télétravailleurs et souhaitent déployer un Firewall et un EDR."
+            )
+        elif "commerce" in sector_lower or "retail" in sector_lower or "boutique" in sector_lower:
+            transcript = (
+                f"Discussion client chez {enterprise_name} : Le commerce rencontre des pannes régulières de son terminal "
+                f"de paiement (TPE) à cause d'une connexion internet instable. Besoin d'un TPE connecté sécurisé en Wi-Fi/4G "
+                f"de secours et d'outils collaboratifs simples comme Microsoft 365."
+            )
+        else:
+            transcript = (
+                f"Discussion client chez {enterprise_name} : Le client exprime des lenteurs récurrentes sur son réseau actuel "
+                f"et souhaite passer sur une offre Fibre Optique Pro avec basculement automatique. "
+                f"Intérêt également pour la migration des emails vers Microsoft 365 Pro & Teams."
+            )
+
+        # Log demo event
+        log_demo_event(
+            'AUDIO_RECORDED',
+            f"Fichier audio de visite téléversé pour: {enterprise_name}",
+            user=request.user,
+            metadata={"filename": filename, "file_url": uploaded_file_url}
+        )
+
+        return Response({
+            "detail": "Fichier audio téléversé et transcrit avec succès.",
+            "audio_file_path": uploaded_file_url,
+            "transcript": transcript
+        }, status=status.HTTP_200_OK)
 
