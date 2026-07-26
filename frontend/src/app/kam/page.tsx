@@ -107,6 +107,10 @@ export default function KamDashboard() {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [helpOpen, setHelpOpen] = useState(false);
   const [kamList, setKamList] = useState<{ id: number; first_name: string; last_name: string; username: string }[]>([]);
+  
+  // Notification states
+  const [lastKnownDossierCount, setLastKnownDossierCount] = useState<number | null>(null);
+  const [newDossierNotification, setNewDossierNotification] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.role === 'ADMIN') {
@@ -123,8 +127,8 @@ export default function KamDashboard() {
   }, [user]);
 
   // Fetch dossiers list
-  const loadDossiers = async (statusFilter = '') => {
-    setLoadingList(true);
+  const loadDossiers = async (statusFilter = '', skipLoadingState = false) => {
+    if (!skipLoadingState) setLoadingList(true);
     try {
       const endpoint = `/api/kam/dossiers/${statusFilter ? `?status=${statusFilter}` : ''}`;
       const data = await fetchAPI(endpoint);
@@ -134,16 +138,32 @@ export default function KamDashboard() {
       if (data.length > 0 && !selectedDossier) {
         handleSelectDossier(data[0]);
       }
+
+      // Detect new dossiers
+      const newDossiers = (data || []).filter((d: any) => d.status === 'NEW');
+      if (lastKnownDossierCount !== null && newDossiers.length > lastKnownDossierCount) {
+        const addedCount = newDossiers.length - lastKnownDossierCount;
+        setNewDossierNotification(`${addedCount} nouveau(x) dossier(s) à qualifier disponible(s) !`);
+      }
+      setLastKnownDossierCount(newDossiers.length);
     } catch (err) {
       console.error("Erreur chargement dossiers:", err);
     } finally {
-      setLoadingList(false);
+      if (!skipLoadingState) setLoadingList(false);
     }
   };
 
   useEffect(() => {
     loadDossiers(filterStatus);
   }, [filterStatus]);
+
+  // Polling hook for simulation of real-time alerts (every 8 seconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      loadDossiers(filterStatus, true);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [filterStatus, lastKnownDossierCount]);
 
   const handleSelectDossier = async (dossier: ProspectDossier) => {
     setSelectedDossier(dossier);
@@ -268,6 +288,22 @@ export default function KamDashboard() {
             </button>
           </div>
         </header>
+
+        {/* Notification Alert Toast */}
+        {newDossierNotification && (
+          <div className="bg-orange-500 text-white px-6 py-2.5 flex items-center justify-between text-xs font-bold shadow-md animate-fade-in shrink-0 relative z-20">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <span>🔔 {newDossierNotification}</span>
+            </div>
+            <button
+              onClick={() => setNewDossierNotification(null)}
+              className="bg-transparent border-none text-white hover:text-orange-100 font-extrabold cursor-pointer text-xs ml-4"
+            >
+              Fermer
+            </button>
+          </div>
+        )}
 
         {/* Workspace Panels */}
         <div className="flex-1 flex overflow-hidden">
