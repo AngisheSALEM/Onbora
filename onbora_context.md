@@ -126,11 +126,11 @@ Les fichiers clés disponibles dans le dépôt :
 
 ## 9. Prochaine Action Planifiée
 *   **Chantiers en attente du livrable IA** :
-    1.  **Parcours Prospecteur (Audio réel)** : Activer l'enregistrement audio Web Audio (frontend) et créer l'endpoint d'upload `/api/sales/voice-upload/` (backend).
-    2.  **Parcours Client B2B → KAM** : Implémenter les 12 statuts de cycle de vie dans [models.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/kam/models.py) et brancher la notification KAM.
+    1.  **Parcours Prospecteur (Audio réel)** : **Terminé** (Web Audio + upload backend configurés).
+    2.  **Parcours Client B2B → KAM** : **Terminé** (12 statuts de cycle de vie + notifications par polling implémentés).
     3.  **Business Twin Dynamique** : Rendre les SVG de débits et la roadmap chronologique du [BusinessTwinViewer.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/BusinessTwinViewer.tsx) réactifs au JSON structuré de l'IA.
     4.  **Exports PDF** : Concevoir les templates ReportLab pour les 7 documents requis dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
     5.  **Administration** : Interface CRUD pour l'édition du catalogue MSP et des FAQ.
-*   **Prochaine étape (Choisie)** : **Étape 1 - Parcours Prospecteur (Audio réel)**. Implémenter l'enregistrement audio réel côté navigateur dans l'espace commercial et l'API de réception Django `/api/sales/voice-upload/`.
+*   **Prochaine étape (Choisie)** : **Étape 3 - Business Twin Dynamique**. Rendre le composant [BusinessTwinViewer.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/BusinessTwinViewer.tsx) réactif et dynamique selon le schéma JSON retourné par l'IA.
 
 
