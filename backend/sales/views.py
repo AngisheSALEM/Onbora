@@ -11,9 +11,10 @@ from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from catalog.models import ServiceCatalog
 from reporting.utils import log_demo_event
+from accounts.permissions import IsSalespersonOrAdmin
 
 class EnterpriseSearchView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSalespersonOrAdmin]
 
     def get(self, request):
         query = request.query_params.get('q', '').strip()
@@ -56,7 +57,7 @@ class EnterpriseSearchView(APIView):
 
 
 class VisitPreparationCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSalespersonOrAdmin]
 
     def post(self, request):
         enterprise_id = request.data.get('enterprise')
@@ -92,7 +93,7 @@ class VisitPreparationCreateView(APIView):
 
 
 class VisitReportCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSalespersonOrAdmin]
 
     def post(self, request):
         prep_id = request.data.get('preparation')
@@ -158,7 +159,7 @@ class VisitReportCreateView(APIView):
 
 
 class VisitReportTransmitView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSalespersonOrAdmin]
 
     def post(self, request, pk):
         try:
@@ -325,7 +326,7 @@ class VisitReportExportView(APIView):
 
 
 class VoiceUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSalespersonOrAdmin]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -334,6 +335,14 @@ class VoiceUploadView(APIView):
 
         if not audio_file:
             return Response({"detail": "Aucun fichier audio fourni."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # File size limit validation: 10 MB max
+        MAX_AUDIO_SIZE = 10 * 1024 * 1024
+        if audio_file.size > MAX_AUDIO_SIZE:
+            return Response(
+                {"detail": "Le fichier audio est trop volumineux. La taille maximale autorisée est de 10 Mo."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Retrieve the enterprise information if prep_id is provided
         enterprise_name = "le client"

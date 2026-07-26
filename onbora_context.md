@@ -132,6 +132,7 @@ Les fichiers clés disponibles dans le dépôt :
     4.  **Exports PDF** : **Terminé** (Les 7 documents requis avec ReportLab & canvas de numérotation).
     5.  **Administration** : **Terminé** (Interface CRUD complète Next.js + endpoints Django REST pour le catalogue MSP et FAQ).
     6.  **Tracking & Connecteurs Simulés** : **Terminé** (Tracking précis des 14 événements du cycle de vie + Bannières d'information MVP).
-*   **Prochaine étape (Choisie)** : **Étape 8 - Sécurité, Fiabilité & Tests E2E**. Configurer des restrictions RBAC strictes par rôle sur les endpoints Django restants, restreindre la taille d'upload de fichiers audio à 10 Mo, et poser les bases de QA e2e.
+    7.  **Sécurité, Fiabilité & Tests E2E** : **Terminé** (Classes de permission RBAC par rôle, validation des tailles limites d'upload, sauvegarde et bouton de réessai pour timeout IA, et tests Playwright E2E rédigés).
+*   **Prochaine étape (Choisie)** : **Intégration Finale de l'IA**. Raccorder les endpoints simulés d'extraction, de Business Twin et de chatbot de `ai_engine.py` à la véritable API de l'AI Engineer une fois celle-ci livrée.
 
 

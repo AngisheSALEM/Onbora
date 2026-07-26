@@ -72,6 +72,15 @@ class CatalogUploadView(APIView):
             return Response({"detail": "Aucun fichier n'a été téléversé."}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.FILES['file']
+        
+        # File size limit validation: 15 MB max
+        MAX_FILE_SIZE = 15 * 1024 * 1024
+        if uploaded_file.size > MAX_FILE_SIZE:
+            return Response(
+                {"detail": "Le fichier du catalogue est trop volumineux. La taille maximale autorisée est de 15 Mo."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
         filename = uploaded_file.name
         
         file_type = 'unknown'

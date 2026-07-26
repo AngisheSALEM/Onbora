@@ -14,6 +14,8 @@ interface Message {
   sender: 'USER' | 'AI';
   content: string;
   created_at: string;
+  is_error?: boolean;
+  retry_payload?: string;
 }
 
 interface Service {
@@ -777,35 +779,27 @@ export default function ClientDiscoveryPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || !conversationId || loading) return;
-
-    const userText = inputValue;
-    setInputValue('');
+  const sendMessageAPI = async (userText: string) => {
     setLoading(true);
-
-    // Optimistically add user message to list
-    const tempUserMsg: Message = {
-      id: Date.now(),
-      sender: 'USER',
-      content: userText,
-      created_at: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, tempUserMsg]);
-
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${API_URL}/api/discovery/conversations/${conversationId}/messages/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: userText }),
-      });
+      
+      // 15 seconds timeout safeguard
+      const response = await Promise.race([
+        fetch(`${API_URL}/api/discovery/conversations/${conversationId}/messages/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content: userText }),
+        }),
+        new Promise<Response>((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+        )
+      ]);
 
-      if (res.ok) {
-        const data = await res.json();
+      if (response.ok) {
+        const data = await response.json();
         
         // Add AI message to list
         const tempAiMsg: Message = {
@@ -822,12 +816,44 @@ export default function ClientDiscoveryPage() {
           setRecommendations(data.recommendations || []);
           setBusinessTwin(data.business_twin);
         }
+      } else {
+        throw new Error("API_ERROR");
       }
-    } catch (err) {
-      console.error("Erreur lors de l'envoi du message:", err);
+    } catch (err: any) {
+      console.error(err);
+      
+      // Add AI error fallback message to list
+      const tempAiMsg: Message = {
+        id: Date.now() + 1,
+        sender: 'AI',
+        content: "⚠️ **Le service de découverte d'Onbora est momentanément ralenti (Timeout).** Vos informations ont été sauvegardées localement. Veuillez cliquer sur le bouton ci-dessous pour renvoyer votre message.",
+        created_at: new Date().toISOString(),
+        is_error: true,
+        retry_payload: userText
+      };
+      setMessages(prev => [...prev, tempAiMsg]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || !conversationId || loading) return;
+
+    const userText = inputValue;
+    setInputValue('');
+
+    // Optimistically add user message to list
+    const tempUserMsg: Message = {
+      id: Date.now(),
+      sender: 'USER',
+      content: userText,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempUserMsg]);
+
+    await sendMessageAPI(userText);
   };
 
   const [profileSaving, setProfileSaving] = useState(false);
@@ -1350,24 +1376,42 @@ export default function ClientDiscoveryPage() {
                   </div>
                   {/* Speaker (TTS) Button for AI messages */}
                   {msg.sender === 'AI' && (
-                    <button
-                      type="button"
-                      onClick={() => speakText(msg.content, msg.id)}
-                      className={`mt-1.5 px-2.5 py-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold ${
-                        currentlyPlayingMsgId === msg.id ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-                      }`}
-                      title={currentlyPlayingMsgId === msg.id ? "Arrêter la lecture" : "Écouter le message (TTS)"}
-                    >
-                      {currentlyPlayingMsgId === msg.id ? (
-                        <>
-                          <Icons.VolumeX size={11} /> Arrêter
-                        </>
-                      ) : (
-                        <>
-                          <Icons.Volume2 size={11} /> Écouter
-                        </>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => speakText(msg.content, msg.id)}
+                        className={`px-2.5 py-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold ${
+                          currentlyPlayingMsgId === msg.id ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                        }`}
+                        title={currentlyPlayingMsgId === msg.id ? "Arrêter la lecture" : "Écouter le message (TTS)"}
+                      >
+                        {currentlyPlayingMsgId === msg.id ? (
+                          <>
+                            <Icons.VolumeX size={11} /> Arrêter
+                          </>
+                        ) : (
+                          <>
+                            <Icons.Volume2 size={11} /> Écouter
+                          </>
+                        )}
+                      </button>
+
+                      {msg.is_error && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMessages(prev => prev.filter(m => m.id !== msg.id));
+                            if (msg.retry_payload) {
+                              sendMessageAPI(msg.retry_payload);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-orange-500 text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold shadow-sm"
+                          title="Réessayer de renvoyer le message"
+                        >
+                          <Icons.Refresh size={11} /> Réessayer
+                        </button>
                       )}
-                    </button>
+                    </div>
                   )}
                   {/* Si c'est le dernier message de l'IA et que la conversation est qualifiée, on affiche l'aperçu du slide deck comme sur Gemini */}
                   {msg.sender === 'AI' && index === messages.length - 1 && isQualified && businessTwin && (
