@@ -11,16 +11,32 @@ class ProspectDossier(models.Model):
         (OUTBOUND_VISIT, 'Visite commerciale terrain'),
     ]
     
+    DRAFT = 'DRAFT'
+    QUALIFYING = 'QUALIFYING'
     NEW = 'NEW'
+    DISPATCHED = 'DISPATCHED'
     IN_REVIEW = 'IN_REVIEW'
+    ESTIMATE_PREPARED = 'ESTIMATE_PREPARED'
+    NEGOTIATION = 'NEGOTIATION'
     ACCEPTED = 'ACCEPTED'
+    PROVISIONING = 'PROVISIONING'
+    COMPLETED = 'COMPLETED'
+    TRAINING = 'TRAINING'
     REJECTED = 'REJECTED'
     
     STATUS_CHOICES = [
-        (NEW, 'Nouveau'),
+        (DRAFT, 'Brouillon'),
+        (QUALIFYING, 'Qualification en cours'),
+        (NEW, 'Nouveau / Qualifié'),
+        (DISPATCHED, 'Affecté au KAM'),
         (IN_REVIEW, 'En revue'),
-        (ACCEPTED, 'Accepté'),
-        (REJECTED, 'Rejeté'),
+        (ESTIMATE_PREPARED, 'Proposition commerciale rédigée'),
+        (NEGOTIATION, 'En négociation'),
+        (ACCEPTED, 'Signé / Accepté'),
+        (PROVISIONING, 'Provisioning technique'),
+        (COMPLETED, 'Installé / Opérationnel'),
+        (TRAINING, 'En cours d\'adoption / Formation'),
+        (REJECTED, 'Rejeté / Perdu'),
     ]
     
     source = models.CharField(
@@ -55,6 +71,11 @@ class ProspectDossier(models.Model):
         choices=STATUS_CHOICES,
         default=NEW
     )
+    contact_name = models.CharField(max_length=150, blank=True, default='')
+    phone = models.CharField(max_length=50, blank=True, default='')
+    rccm = models.CharField(max_length=100, blank=True, default='', help_text="Numéro d'immatriculation RCCM")
+    billing_address = models.TextField(blank=True, default='', help_text="Adresse complète de facturation")
+    is_complete = models.BooleanField(default=False, help_text="Indique si le dossier contractuel est complet")
     raw_qualification_data = models.JSONField(
         default=dict,
         blank=True,

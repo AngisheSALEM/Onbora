@@ -8,16 +8,19 @@ import HelpDrawer from '@/components/shared/HelpDrawer';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import GoogleSlidesTwin from '@/components/shared/GoogleSlidesTwin';
+import BusinessTwinSlides from '@/components/shared/BusinessTwinSlides';
 
 interface ProspectDossier {
   id: number;
   source: 'INBOUND_CONVERSATION' | 'OUTBOUND_VISIT';
-  status: 'NEW' | 'IN_REVIEW' | 'ACCEPTED' | 'REJECTED';
+  status: string;
   company_name: string;
   contact_name: string;
   email: string | null;
   phone: string | null;
+  rccm?: string;
+  billing_address?: string;
+  is_complete?: boolean;
   details_summary: string;
   internal_kam_notes: string;
   has_twin: boolean;
@@ -43,6 +46,42 @@ interface Twin {
   recommended_services: Service[];
 }
 
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    DRAFT: 'Brouillon',
+    QUALIFYING: 'Qualification',
+    NEW: 'Nouveau',
+    DISPATCHED: 'Affecté au KAM',
+    IN_REVIEW: 'En Revue',
+    ESTIMATE_PREPARED: 'Proposition rédigée',
+    NEGOTIATION: 'En négociation',
+    ACCEPTED: 'Signé / Accepté',
+    PROVISIONING: 'Provisioning',
+    COMPLETED: 'Opérationnel',
+    TRAINING: 'Adoption / Formation',
+    REJECTED: 'Rejeté / Perdu'
+  };
+  return labels[status] || status;
+};
+
+const getStatusClass = (status: string) => {
+  const classes: Record<string, string> = {
+    DRAFT: 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
+    QUALIFYING: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
+    NEW: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    DISPATCHED: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+    IN_REVIEW: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    ESTIMATE_PREPARED: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+    NEGOTIATION: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+    ACCEPTED: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    PROVISIONING: 'bg-orange-500/10 text-orange-500 border-orange-500/20 animate-pulse',
+    COMPLETED: 'bg-orange-600/15 text-orange-650 dark:text-orange-400 border-orange-500/30',
+    TRAINING: 'bg-teal-500/10 text-teal-650 border-teal-500/20',
+    REJECTED: 'bg-red-500/10 text-red-500 border-red-500/20'
+  };
+  return classes[status] || 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20';
+};
+
 export default function KamDashboard() {
   const { user, logout } = useAuth();
   
@@ -55,13 +94,33 @@ export default function KamDashboard() {
 
   // States for dossier updates
   const [internalNotes, setInternalNotes] = useState('');
-  const [dossierStatus, setDossierStatus] = useState<'NEW' | 'IN_REVIEW' | 'ACCEPTED' | 'REJECTED'>('NEW');
+  const [dossierStatus, setDossierStatus] = useState<string>('NEW');
   const [assignedKam, setAssignedKam] = useState<number | null>(null);
+  const [dossierContactName, setDossierContactName] = useState('');
+  const [dossierPhone, setDossierPhone] = useState('');
+  const [dossierRccm, setDossierRccm] = useState('');
+  const [dossierBillingAddress, setDossierBillingAddress] = useState('');
+  const [dossierIsComplete, setDossierIsComplete] = useState(false);
   
   const [activeTab, setActiveTab] = useState<'qualification' | 'twin' | 'provisioning'>('qualification');
   const [provisioningLoading, setProvisioningLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [helpOpen, setHelpOpen] = useState(false);
+  const [kamList, setKamList] = useState<{ id: number; first_name: string; last_name: string; username: string }[]>([]);
+
+  useEffect(() => {
+    if (user && user.role === 'ADMIN') {
+      const loadKams = async () => {
+        try {
+          const kams = await fetchAPI('/api/auth/kams/');
+          setKamList(kams || []);
+        } catch (err) {
+          console.error("Erreur chargement KAMs:", err);
+        }
+      };
+      loadKams();
+    }
+  }, [user]);
 
   // Fetch dossiers list
   const loadDossiers = async (statusFilter = '') => {
@@ -91,6 +150,11 @@ export default function KamDashboard() {
     setInternalNotes(dossier.internal_kam_notes || '');
     setDossierStatus(dossier.status);
     setAssignedKam(dossier.kam);
+    setDossierContactName(dossier.contact_name || '');
+    setDossierPhone(dossier.phone || '');
+    setDossierRccm(dossier.rccm || '');
+    setDossierBillingAddress(dossier.billing_address || '');
+    setDossierIsComplete(dossier.is_complete || false);
     setSelectedTwin(null);
     
     if (dossier.has_twin) {
@@ -111,12 +175,18 @@ export default function KamDashboard() {
     setUpdating(true);
     
     try {
+      const calculatedIsComplete = !!(dossierContactName.trim() && dossierPhone.trim() && dossierRccm.trim() && dossierBillingAddress.trim());
       const updated = await fetchAPI(`/api/kam/dossiers/${selectedDossier.id}/`, {
         method: 'PATCH',
         body: JSON.stringify({
           status: dossierStatus,
           internal_kam_notes: internalNotes,
-          kam: assignedKam
+          kam: assignedKam,
+          contact_name: dossierContactName,
+          phone: dossierPhone,
+          rccm: dossierRccm,
+          billing_address: dossierBillingAddress,
+          is_complete: calculatedIsComplete
         })
       });
       
@@ -210,13 +280,21 @@ export default function KamDashboard() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all"
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all font-semibold cursor-pointer"
               >
                 <option value="">Tous les statuts</option>
-                <option value="NEW">Nouveaux</option>
+                <option value="DRAFT">Brouillon</option>
+                <option value="QUALIFYING">Qualification en cours</option>
+                <option value="NEW">Nouveau / Qualifié</option>
+                <option value="DISPATCHED">Affecté au KAM</option>
                 <option value="IN_REVIEW">En revue</option>
-                <option value="ACCEPTED">Acceptés</option>
-                <option value="REJECTED">Rejetés</option>
+                <option value="ESTIMATE_PREPARED">Proposition rédigée</option>
+                <option value="NEGOTIATION">En négociation</option>
+                <option value="ACCEPTED">Signé / Accepté</option>
+                <option value="PROVISIONING">Provisioning technique</option>
+                <option value="COMPLETED">Installé / Opérationnel</option>
+                <option value="TRAINING">Formation / Adoption</option>
+                <option value="REJECTED">Rejeté / Perdu</option>
               </select>
             </div>
 
@@ -252,16 +330,8 @@ export default function KamDashboard() {
                   >
                     <div className="flex items-start justify-between gap-2 w-full">
                       <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{d.company_name}</span>
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase shrink-0 ${
-                        d.status === 'NEW'
-                          ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                          : d.status === 'IN_REVIEW'
-                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                          : d.status === 'ACCEPTED'
-                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                          : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
-                      }`}>
-                        {d.status === 'NEW' ? 'Nouveau' : d.status === 'IN_REVIEW' ? 'En Revue' : d.status === 'ACCEPTED' ? 'Accepté' : 'Rejeté'}
+                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase shrink-0 ${getStatusClass(d.status)}`}>
+                        {getStatusLabel(d.status)}
                       </span>
                     </div>
 
@@ -314,6 +384,27 @@ export default function KamDashboard() {
                         </div>
                       )}
                     </div>
+
+                    {/* Completeness Status Warning / Success Alert */}
+                    {selectedDossier.is_complete ? (
+                      <div className="mt-4 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 max-w-fit">
+                        <Icons.CheckCircle size={14} /> Dossier contractuel complet
+                      </div>
+                    ) : (
+                      <div className="mt-4 px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-450 text-xs font-semibold flex flex-col gap-1.5 animate-pulse">
+                        <span className="flex items-center gap-1.5 font-bold"><Icons.AlertTriangle size={14} /> ⚠️ Dossier contractuel incomplet</span>
+                        <span className="text-[10px] font-medium text-zinc-650 dark:text-zinc-400">
+                          Les pièces obligatoires de signature Orange Business sont manquantes (RCCM, facturation). 
+                          Veuillez appeler le contact au <strong>{selectedDossier.phone || "téléphone direct"}</strong> pour finaliser l'onboarding.
+                        </span>
+                        <a 
+                          href={`tel:${selectedDossier.phone}`}
+                          className="mt-1 max-w-fit px-2.5 py-1 rounded bg-rose-500 text-white font-bold text-[10px] hover:bg-rose-600 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          📞 Appeler le contact
+                        </a>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions & Assignments */}
@@ -323,11 +414,19 @@ export default function KamDashboard() {
                       <select
                         value={dossierStatus}
                         onChange={(e: any) => setDossierStatus(e.target.value)}
-                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all"
+                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all font-semibold cursor-pointer"
                       >
-                        <option value="NEW">Nouveau</option>
+                        <option value="DRAFT">Brouillon</option>
+                        <option value="QUALIFYING">Qualification en cours</option>
+                        <option value="NEW">Nouveau / Qualifié</option>
+                        <option value="DISPATCHED">Affecté au KAM</option>
                         <option value="IN_REVIEW">En revue</option>
-                        <option value="ACCEPTED">Prise en charge (Accepté)</option>
+                        <option value="ESTIMATE_PREPARED">Proposition rédigée</option>
+                        <option value="NEGOTIATION">En négociation</option>
+                        <option value="ACCEPTED">Signé / Accepté (Prise en charge)</option>
+                        <option value="PROVISIONING">Provisioning technique</option>
+                        <option value="COMPLETED">Installé / Opérationnel</option>
+                        <option value="TRAINING">Formation / Adoption</option>
                         <option value="REJECTED">Refusé (Rejeté)</option>
                       </select>
                     </div>
@@ -335,7 +434,7 @@ export default function KamDashboard() {
                     <div className="flex flex-col gap-1">
                       <div className="flex justify-between items-center">
                         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">KAM Affecté</label>
-                        {!assignedKam && (
+                        {!assignedKam && user?.role === 'KAM' && (
                           <button
                             onClick={handleAssignToMe}
                             className="text-[9px] font-bold text-orange-500 hover:text-orange-600 border-none bg-transparent cursor-pointer"
@@ -344,13 +443,28 @@ export default function KamDashboard() {
                           </button>
                         )}
                       </div>
-                      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                        {assignedKam
-                          ? (selectedDossier.kam === assignedKam && selectedDossier.kam_details
-                              ? `${selectedDossier.kam_details.first_name} ${selectedDossier.kam_details.last_name}`
-                              : user?.id === assignedKam ? `${user.first_name} ${user.last_name} (Moi)` : 'Assigné')
-                          : 'Non assigné'}
-                      </span>
+                      {user && user.role === 'ADMIN' ? (
+                        <select
+                          value={assignedKam || ''}
+                          onChange={(e) => setAssignedKam(e.target.value ? Number(e.target.value) : null)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-orange-500 transition-all cursor-pointer"
+                        >
+                          <option value="">-- Non assigné --</option>
+                          {kamList.map(k => (
+                            <option key={k.id} value={k.id}>
+                              {k.first_name || k.last_name ? `${k.first_name} ${k.last_name}` : k.username}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                          {assignedKam
+                            ? (selectedDossier.kam === assignedKam && selectedDossier.kam_details
+                                ? `${selectedDossier.kam_details.first_name} ${selectedDossier.kam_details.last_name}`
+                                : user?.id === assignedKam ? `${user.first_name} ${user.last_name} (Moi)` : 'Assigné')
+                            : 'Non assigné'}
+                        </span>
+                      )}
                     </div>
 
                     <button
@@ -512,11 +626,69 @@ export default function KamDashboard() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Contract Details Form */}
+                    <div className="border-t border-zinc-150 dark:border-zinc-800 pt-5 mt-3 flex flex-col gap-4">
+                      <div>
+                        <h4 className="text-xs font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">
+                          Engagement Contractuel Orange Business
+                        </h4>
+                        <p className="text-[10px] text-zinc-505 mt-0.5">
+                          Validez ou complétez les informations pour la signature du contrat.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-zinc-450 uppercase">Nom Complet Signataire</label>
+                          <input
+                            type="text"
+                            value={dossierContactName}
+                            onChange={(e) => setDossierContactName(e.target.value)}
+                            placeholder="Ex: Jean Dupont"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-zinc-450 uppercase">Téléphone Direct</label>
+                          <input
+                            type="text"
+                            value={dossierPhone}
+                            onChange={(e) => setDossierPhone(e.target.value)}
+                            placeholder="Ex: +33 6 12 34 56 78"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-zinc-450 uppercase">Numéro Immatriculation RCCM</label>
+                          <input
+                            type="text"
+                            value={dossierRccm}
+                            onChange={(e) => setDossierRccm(e.target.value)}
+                            placeholder="Ex: RCCM-BF-OUA-2023-B-1234"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-zinc-450 uppercase">Adresse de Facturation</label>
+                          <textarea
+                            value={dossierBillingAddress}
+                            onChange={(e) => setDossierBillingAddress(e.target.value)}
+                            placeholder="Adresse complète..."
+                            rows={1}
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 resize-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : activeTab === 'twin' ? (
                   // Tab 2: Business Twin details
                   selectedTwin ? (
-                     <GoogleSlidesTwin twin={selectedTwin} companyName={selectedDossier.company_name} />
+                     <BusinessTwinSlides twin={selectedTwin} companyName={selectedDossier.company_name} />
                   ) : (
                     <div className="p-8 text-center text-xs text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                       Aucun Business Twin n'a été généré pour ce prospect.
