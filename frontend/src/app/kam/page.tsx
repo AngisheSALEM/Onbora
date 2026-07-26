@@ -9,6 +9,7 @@ import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
 import BusinessTwinSlides from '@/components/shared/BusinessTwinSlides';
+import BusinessTwinViewer from '@/components/shared/BusinessTwinViewer';
 
 interface ProspectDossier {
   id: number;
@@ -724,7 +725,7 @@ export default function KamDashboard() {
                 ) : activeTab === 'twin' ? (
                   // Tab 2: Business Twin details
                   selectedTwin ? (
-                     <BusinessTwinSlides twin={selectedTwin} companyName={selectedDossier.company_name} />
+                     <BusinessTwinViewer twin={selectedTwin} companyName={selectedDossier.company_name} />
                   ) : (
                     <div className="p-8 text-center text-xs text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                       Aucun Business Twin n'a été généré pour ce prospect.

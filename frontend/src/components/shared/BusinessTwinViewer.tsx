@@ -27,9 +27,45 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
   const [selectedStep, setSelectedStep] = useState<number>(0);
 
   const services = twin.recommended_services || [];
-  const hasNetwork = services.some(s => s.name.toLowerCase().includes('fibre') || s.name.toLowerCase().includes('sd-wan') || s.name.toLowerCase().includes('connectivité'));
-  const hasSecurity = services.some(s => s.name.toLowerCase().includes('firewall') || s.name.toLowerCase().includes('edr') || s.name.toLowerCase().includes('sécurité'));
-  const hasCollab = services.some(s => s.name.toLowerCase().includes('365') || s.name.toLowerCase().includes('teams') || s.name.toLowerCase().includes('téléphonie'));
+  const hasNetwork = services.some(s => 
+    s.category === 'CONNECTIVITY' || 
+    s.category === 'CLOUD' ||
+    s.name.toLowerCase().includes('fibre') || 
+    s.name.toLowerCase().includes('sd-wan') || 
+    s.name.toLowerCase().includes('réseau') || 
+    s.name.toLowerCase().includes('connectivité')
+  );
+  const hasSecurity = services.some(s => 
+    s.category === 'SECURITY' || 
+    s.name.toLowerCase().includes('firewall') || 
+    s.name.toLowerCase().includes('edr') || 
+    s.name.toLowerCase().includes('antivirus') ||
+    s.name.toLowerCase().includes('sécurité')
+  );
+  const hasCollab = services.some(s => 
+    s.category === 'COLLABORATIVE' || 
+    s.name.toLowerCase().includes('365') || 
+    s.name.toLowerCase().includes('teams') || 
+    s.name.toLowerCase().includes('téléphonie') ||
+    s.name.toLowerCase().includes('collabor')
+  );
+
+  const getMetricDescription = (categoryKey: string, hasService: boolean) => {
+    const matched = services.filter(s => {
+      if (categoryKey === 'network') return s.category === 'CONNECTIVITY' || s.category === 'CLOUD' || s.name.toLowerCase().includes('fibre') || s.name.toLowerCase().includes('sd-wan');
+      if (categoryKey === 'security') return s.category === 'SECURITY' || s.name.toLowerCase().includes('firewall') || s.name.toLowerCase().includes('edr');
+      if (categoryKey === 'collab') return s.category === 'COLLABORATIVE' || s.name.toLowerCase().includes('365') || s.name.toLowerCase().includes('teams') || s.name.toLowerCase().includes('téléphon');
+      return false;
+    });
+
+    if (matched.length > 0) {
+      return matched.map(s => s.name).join(' & ');
+    }
+
+    if (categoryKey === 'network') return 'Réseau local inchangé';
+    if (categoryKey === 'security') return 'Protection antivirus standard';
+    return 'Outils collaboratifs traditionnels';
+  };
 
   const metrics = [
     {
@@ -40,7 +76,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
       color: 'text-orange-500',
       strokeColor: 'stroke-orange-500',
       bgColor: 'bg-orange-500/10',
-      description: hasNetwork ? 'Transition Fibre Optique Pro dédiée avec GTR' : 'Amélioration standard du réseau local'
+      description: getMetricDescription('network', hasNetwork)
     },
     {
       key: 'security',
@@ -50,7 +86,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
       color: 'text-red-500',
       strokeColor: 'stroke-red-500',
       bgColor: 'bg-red-500/10',
-      description: hasSecurity ? 'Pare-feu managé centralisé & protection EDR' : 'Mises à jour de sécurité basiques'
+      description: getMetricDescription('security', hasSecurity)
     },
     {
       key: 'collab',
@@ -60,7 +96,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
       color: 'text-orange-500',
       strokeColor: 'stroke-orange-500',
       bgColor: 'bg-orange-500/10',
-      description: hasCollab ? 'Suite Microsoft 365 cloud & Téléphonie IP intégrée' : 'Outils collaboratifs standards'
+      description: getMetricDescription('collab', hasCollab)
     }
   ];
 
@@ -70,67 +106,76 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
   const strokeDashoffset = (percent: number) => circumference - (percent / 100) * circumference;
 
   // Helper to generate realistic checklist for timeline step click
-  const getStepDetails = (stepText: string) => {
+  const getStepDetails = (stepText: string, idx: number) => {
     const text = stepText.toLowerCase();
-    if (text.includes('audit') || text.includes('préparation')) {
-      return {
-        title: "Audit & Études d'Éligibilité",
-        duration: "Semaine 1",
-        tasks: [
-          "Mesures des débits réels (ADSL vs Fibre)",
-          "Audit de la sécurité des postes de travail et serveurs",
-          "Cartographie des solutions collaboratives existantes",
-          "Validation finale de l'éligibilité technique de la Fibre Optique"
-        ]
-      };
-    } else if (text.includes('fibre') || text.includes('raccordement') || text.includes('réseau')) {
-      return {
-        title: "Raccordement Réseau Fibre Pro",
-        duration: "Semaine 2 - 3",
-        tasks: [
-          "Tirage de la fibre dédiée depuis le point de mutualisation",
-          "Pose et test du boîtier de terminaison optique (PTO) sur site",
-          "Livraison et configuration du routeur principal sécurisé",
-          "Vérification de la bande passante symétrique"
-        ]
-      };
-    } else if (text.includes('cloud') || text.includes('migration') || text.includes('hébergement')) {
-      return {
-        title: "Migration Cloud & Hébergement",
-        duration: "Semaine 4",
-        tasks: [
-          "Sauvegarde complète de sécurité des serveurs locaux",
-          "Création de la structure cloud sécurisée (HDS ou M365)",
-          "Transfert des données et fichiers métiers vers le nouveau cloud",
-          "Test d'accès aux fichiers partagés avec les nouveaux droits"
-        ]
-      };
-    } else if (text.includes('déploiement') || text.includes('logiciel') || text.includes('téléphonie') || text.includes('collaboration')) {
-      return {
-        title: "Configuration Logicielle & Collaboration",
-        duration: "Semaine 5",
-        tasks: [
-          "Déploiement des agents de sécurité EDR sur les ordinateurs",
-          "Création et affectation des comptes Microsoft 365",
-          "Migration des numéros de téléphone et configuration Teams VoIP",
-          "Formation des utilisateurs finaux aux bonnes pratiques"
-        ]
-      };
+    
+    // Default tasks fallback, but customized based on text
+    let title = `Phase ${idx + 1} : Action`;
+    let duration = `Semaine ${idx + 1}`;
+    let tasks: string[] = [];
+
+    if (text.includes('audit') || text.includes('préparation') || text.includes('éligibilité')) {
+      title = "Audit & Cadrage Technique";
+      duration = "Semaine 1";
+      tasks = [
+        "Audit sur site de l'infrastructure réseau et locale",
+        "Vérification d'éligibilité pour les liaisons Orange Fibre Pro",
+        "Définition du plan d'adressage IP et routage",
+        "Finalisation des prérequis d'installation avec vos équipes"
+      ];
+    } else if (text.includes('fibre') || text.includes('réseau') || text.includes('sd-wan') || text.includes('connectivité')) {
+      title = "Raccordement & Déploiement Réseau";
+      duration = "Semaine 2 - 3";
+      tasks = [
+        "Tirage de la fibre optique pro dédiée Orange",
+        "Configuration et raccordement du routeur d'accès sécurisé",
+        "Mise en place des politiques de secours (failover automatique)",
+        "Interconnexion SD-WAN des différents sites (si applicable)"
+      ];
+    } else if (text.includes('sécurité') || text.includes('firewall') || text.includes('pare-feu') || text.includes('edr')) {
+      title = "Sécurisation & Protection Active";
+      duration = "Semaine 4";
+      tasks = [
+        "Déploiement des licences Firewall centralisé",
+        "Installation des agents de détection comportementale EDR",
+        "Configuration des alertes et du reporting de sécurité",
+        "Test de pénétration initial et validation des accès"
+      ];
+    } else if (text.includes('collaboration') || text.includes('cloud') || text.includes('microsoft 355') || text.includes('microsoft 365') || text.includes('teams')) {
+      title = "Migration Collaborative Cloud";
+      duration = "Semaine 5";
+      tasks = [
+        "Création du tenant Microsoft 365 / cloud sécurisé",
+        "Migration des boîtes mails et des documents collaboratifs",
+        "Portabilité des numéros et mise en service de la téléphonie VoIP Teams",
+        "Paramétrage des outils de visio et de travail en équipe"
+      ];
+    } else if (text.includes('formation') || text.includes('adoption') || text.includes('clôture') || text.includes('livraison')) {
+      title = "Adoption & Clôture de Projet";
+      duration = "Semaine 6";
+      tasks = [
+        "Sessions de formation pour les collaborateurs (visio, cloud)",
+        "Remise du Dossier d'Ouvrage Exécuté (DOE) technique",
+        "Lancement officiel de la supervision active 24/7",
+        "Clôture du projet de transition et passage en production"
+      ];
+    } else {
+      // General fallback based on step content
+      title = stepText.split(':')[0] || `Étape ${idx + 1}`;
+      duration = `Semaine ${idx + 1}-${idx + 2}`;
+      tasks = [
+        `Mise en œuvre opérationnelle : ${stepText}`,
+        "Validation de la conformité avec le KAM référent",
+        "Test de charge et de performance",
+        "Recette technique avec livrables signés"
+      ];
     }
-    return {
-      title: "Mise en service & Transfert",
-      duration: "Semaine 6",
-      tasks: [
-        "Session de validation finale avec vos équipes",
-        "Remise du document technique d'architecture",
-        "Activation officielle du support client Onbora (GTR)",
-        "Clôture du projet de transition numérique"
-      ]
-    };
+
+    return { title, duration, tasks };
   };
 
   const steps = twin.roadmap || ["Étape 1: Audit initial", "Étape 2: Installation réseau", "Étape 3: Déploiement cloud"];
-  const currentStepDetails = getStepDetails(steps[selectedStep] || '');
+  const currentStepDetails = getStepDetails(steps[selectedStep] || '', selectedStep);
 
   return (
     <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 w-full animate-fade-in">
