@@ -45,6 +45,13 @@ export default function AdminDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<any | null>(null);
 
+  // Document Ingest States
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [uploadStage, setUploadStage] = useState<'idle' | 'uploading' | 'parsing' | 'ai_structuring' | 'done'>('idle');
+  const [proposedServices, setProposedServices] = useState<any[]>([]);
+  const [selectedProposedIndices, setSelectedProposedIndices] = useState<number[]>([]);
+  const [ingestError, setIngestError] = useState('');
+
   // Service Form States
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState('CONNECTIVITY');
@@ -267,6 +274,82 @@ export default function AdminDashboard() {
     }
     const filtered = faqs.filter(f => f.id !== id);
     saveFaqsToStorage(filtered);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingDoc(true);
+    setIngestError('');
+    setProposedServices([]);
+    setSelectedProposedIndices([]);
+
+    // Step 1: Uploading
+    setUploadStage('uploading');
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Step 2: Parsing (PDF/DOCX/OCR/Speech-to-Text)
+    setUploadStage('parsing');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Step 3: AI Structuring
+    setUploadStage('ai_structuring');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Backend Request
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/catalog/services/upload/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'analyse du fichier.");
+      }
+
+      const data = await response.json();
+      setProposedServices(data.services || []);
+      // Select all by default
+      setSelectedProposedIndices(data.services.map((_: any, i: number) => i));
+      setUploadStage('done');
+    } catch (err: any) {
+      console.error(err);
+      setIngestError(err.message || "Impossible de parser ce document. Vérifiez le format.");
+      setUploadStage('idle');
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleImportProposed = async () => {
+    const toImport = proposedServices.filter((_, idx) => selectedProposedIndices.includes(idx));
+    if (toImport.length === 0) return;
+
+    setLoadingServices(true);
+    try {
+      for (const service of toImport) {
+        await fetchAPI('/api/catalog/services/', {
+          method: 'POST',
+          body: JSON.stringify(service)
+        });
+      }
+      setProposedServices([]);
+      setSelectedProposedIndices([]);
+      setUploadingDoc(false);
+      setUploadStage('idle');
+      loadServices();
+    } catch (err) {
+      console.error("Erreur import services:", err);
+      alert("Erreur lors de l'importation.");
+    } finally {
+      setLoadingServices(false);
+    }
   };
 
   const filteredLogs = logs.filter(log => {
@@ -559,6 +642,115 @@ export default function AdminDashboard() {
                     >
                       <Icons.Sparkles size={12} /> Ajouter un service
                     </button>
+                  </div>
+
+                  {/* Intelligent Document Ingestion Zone */}
+                  <div className="glass-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-850 shadow-sm flex flex-col md:flex-row gap-6 items-stretch">
+                    {/* Left: upload drag zone */}
+                    <div className="flex-1 flex flex-col justify-center items-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-colors relative cursor-pointer group">
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,image/*,video/*"
+                        onChange={handleFileUpload}
+                        disabled={uploadingDoc && uploadStage !== 'done'}
+                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-20"
+                      />
+                      
+                      {uploadStage === 'idle' ? (
+                        <div className="flex flex-col items-center gap-2 text-zinc-500">
+                          <div className="p-3 bg-orange-500/10 text-orange-500 rounded-xl group-hover:scale-105 transition-transform duration-200">
+                            <Icons.Download size={24} className="rotate-180" />
+                          </div>
+                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-250">Import Mensuel Intelligent</span>
+                          <span className="text-[10px] text-zinc-400 max-w-xs leading-relaxed">Glissez-déposez ou sélectionnez un fichier <strong>PDF, DOCX, Image (OCR) ou Vidéo (Transcription)</strong></span>
+                        </div>
+                      ) : uploadStage === 'done' ? (
+                        <div className="flex flex-col items-center gap-2 text-emerald-500">
+                          <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
+                            <Icons.CheckCircle size={24} />
+                          </div>
+                          <span className="text-xs font-bold">Document analysé !</span>
+                          <span className="text-[10px] text-zinc-400">Importez les services extraits à droite ou importez un autre fichier.</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-4 text-orange-500 py-3">
+                          <div className="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                              {uploadStage === 'uploading' && "Téléversement du fichier..."}
+                              {uploadStage === 'parsing' && "Extraction & Restauration du texte (OCR / STT)..."}
+                              {uploadStage === 'ai_structuring' && "Structuration intelligente des offres par l'IA..."}
+                            </span>
+                            <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-black animate-pulse">
+                              Traitement en cours
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: proposed items or status info */}
+                    <div className="flex-1 flex flex-col justify-between min-h-[160px] bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 p-5 rounded-2xl">
+                      {proposedServices.length > 0 ? (
+                        <div className="flex flex-col gap-4 h-full justify-between">
+                          <div>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Offres détectées par l'IA ({proposedServices.length})</span>
+                              <button
+                                onClick={() => {
+                                  if (selectedProposedIndices.length === proposedServices.length) {
+                                    setSelectedProposedIndices([]);
+                                  } else {
+                                    setSelectedProposedIndices(proposedServices.map((_, i) => i));
+                                  }
+                                }}
+                                className="text-[9px] font-black text-orange-500 uppercase hover:underline cursor-pointer"
+                              >
+                                {selectedProposedIndices.length === proposedServices.length ? "Tout désélectionner" : "Tout sélectionner"}
+                              </button>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto pr-1">
+                              {proposedServices.map((s, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 p-2 rounded-lg text-[10px]">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedProposedIndices.includes(idx)}
+                                    onChange={() => {
+                                      setSelectedProposedIndices(prev =>
+                                        prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+                                      );
+                                    }}
+                                    className="accent-orange-500 cursor-pointer"
+                                  />
+                                  <div className="flex-1">
+                                    <span className="font-bold text-zinc-800 dark:text-zinc-200">{s.name}</span>
+                                    <span className="ml-1.5 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[8px] text-zinc-500 font-bold uppercase">{s.category}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleImportProposed}
+                            disabled={selectedProposedIndices.length === 0}
+                            className="w-full py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-400 text-white rounded-lg text-xs font-bold shadow-sm shadow-orange-500/10 cursor-pointer flex items-center justify-center gap-1.5 transition-all mt-3"
+                          >
+                            <Icons.Sparkles size={12} /> Importer les services sélectionnés ({selectedProposedIndices.length})
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col justify-center items-center text-center h-full gap-2 py-4">
+                          <Icons.Sparkles size={20} className="text-zinc-300 dark:text-zinc-700" />
+                          <span className="text-xs font-bold text-zinc-400">Aucun fichier en attente</span>
+                          <p className="text-[10px] text-zinc-500 max-w-xs leading-relaxed">Téléversez un fichier de spécifications pour extraire et modéliser automatiquement vos offres MSP mensuelles.</p>
+                          {ingestError && (
+                            <span className="text-[10px] text-red-500 font-semibold mt-2">⚠️ {ingestError}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {loadingServices ? (

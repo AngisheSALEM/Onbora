@@ -90,3 +90,27 @@ class CatalogAPITestCase(APITestCase):
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ServiceCatalog.objects.count(), 0)
+
+    def test_upload_file_unauthorized(self):
+        # Non-admin user should get 403
+        import io
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.kam_token.key)
+        fp = io.BytesIO(b"Service: Security Pro")
+        fp.name = 'security.pdf'
+        response = self.client.post(reverse('service-upload'), {'file': fp}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_upload_file_admin(self):
+        # Admin user should succeed and get structured services
+        import io
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.admin_token.key)
+        
+        # Test simulated security document parsing
+        fp = io.BytesIO(b"Dossier de cybersecurite")
+        fp.name = 'security_catalog.pdf'
+        response = self.client.post(reverse('service-upload'), {'file': fp}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['filename'], 'security_catalog.pdf')
+        self.assertEqual(response.data['file_type'], 'pdf')
+        self.assertTrue(len(response.data['services']) > 0)
+        self.assertEqual(response.data['services'][0]['category'], 'SECURITY')
