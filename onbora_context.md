@@ -130,7 +130,8 @@ Les fichiers clés disponibles dans le dépôt :
     2.  **Parcours Client B2B → KAM** : **Terminé** (12 statuts de cycle de vie + notifications par polling implémentés).
     3.  **Business Twin Dynamique** : **Terminé** (Rendu SVG & timeline Gantt réactifs branchés sur le KAM Dashboard).
     4.  **Exports PDF** : **Terminé** (Les 7 documents requis avec ReportLab & canvas de numérotation).
-    5.  **Administration** : Interface CRUD pour l'édition du catalogue MSP et des FAQ.
-*   **Prochaine étape (Choisie)** : **Étape 5 - Administration**. Développer l'interface d'administration pour l'édition dynamique du catalogue de services MSP (Ajout, Modification, Suppression) et de la FAQ.
+    5.  **Administration** : **Terminé** (Interface CRUD complète Next.js + endpoints Django REST pour le catalogue MSP et FAQ).
+    6.  **Tracking & Connecteurs Simulés** : **Terminé** (Tracking précis des 14 événements du cycle de vie + Bannières d'information MVP).
+*   **Prochaine étape (Choisie)** : **Étape 8 - Sécurité, Fiabilité & Tests E2E**. Configurer des restrictions RBAC strictes par rôle sur les endpoints Django restants, restreindre la taille d'upload de fichiers audio à 10 Mo, et poser les bases de QA e2e.
 
 
