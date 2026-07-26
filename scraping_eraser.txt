@@ -1,0 +1,59 @@
+// Onbora Prospect Profiling & Scraping Integration Diagram
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+// --- User Roles & Agents ---
+Prospecteur [icon: user, color: emerald, label: "Prospecteur / Commercial"]
+AI_Engineer [icon: cpu, color: purple, label: "AI Core & Profiling Model (LLM)"]
+
+// --- Frontend Workspace ---
+group Frontend [color: blue] {
+  NextJS [icon: nextjs, color: blue, label: "Next.js App (Sales Space)"]
+}
+
+// --- Backend Services ---
+group Backend_Services [color: green] {
+  DjangoDRF [icon: django, color: green, label: "Django REST API Handler"]
+  ScrapingModule [icon: terminal, color: light-green, label: "Django Scraping orchestrator"]
+}
+
+// --- Scraping Engine (Agent-Reach) ---
+group Scraping_Engine [color: orange] {
+  AgentReachCLI [icon: tool, color: orange, label: "Agent-Reach CLI (No-API)"]
+  LocalCookies [icon: folder, color: grey, label: "Local Sessions & Cookies"]
+}
+
+// --- Target Platforms (Social & Web) ---
+group Target_Platforms [color: grey] {
+  LinkedIn [icon: linkedin, color: blue, label: "LinkedIn (Professional Profile)"]
+  TwitterX [icon: twitter, color: dark-grey, label: "Twitter / X (Public Posts)"]
+  TikTok [icon: play, color: pink, label: "TikTok (Interests & Tone)"]
+  CorpWebsite [icon: globe, color: grey, label: "Corporate Site (Tech Stack & Team)"]
+}
+
+// --- Data Flows & Connections ---
+Prospecteur > NextJS : "Saisit Nom Entreprise / Décideur"
+NextJS > DjangoDRF : "POST /api/sales/scraping/run/ (JSON)"
+
+DjangoDRF > ScrapingModule : "Déclenche le job d'acquisition"
+ScrapingModule > AgentReachCLI : "Appelle les commandes CLI (ex: agent-reach search)"
+AgentReachCLI > LocalCookies : "Lit les cookies de session"
+
+// External scraping requests
+AgentReachCLI > LinkedIn : "Extraction profils & posts"
+AgentReachCLI > TwitterX : "Extraction tweets publics"
+AgentReachCLI > TikTok : "Vibe check & centres d'intérêt"
+ScrapingModule > CorpWebsite : "Parsing direct de la stack tech"
+
+// Data returns
+LinkedIn > AgentReachCLI : "HTML brut"
+TwitterX > AgentReachCLI : "JSON public"
+TikTok > AgentReachCLI : "JSON public"
+
+AgentReachCLI > ScrapingModule : "Données brutes extraites"
+ScrapingModule > DjangoDRF : "JSON consolidé (Profilage)"
+
+DjangoDRF > AI_Engineer : "Envoie le profilage JSON pour analyse"
+AI_Engineer > DjangoDRF : "Renvoie les accroches de vente & hypothèses réseau"
+
+DjangoDRF > NextJS : "Retourne les insights enrichis"
+NextJS > Prospecteur : "Affiche la fiche client avec Ice-breakers"
