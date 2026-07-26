@@ -30,13 +30,38 @@ class DossierDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsKAMOrAdmin]
 
     def perform_update(self, serializer):
+        old_status = self.get_object().status
         instance = serializer.save()
-        log_demo_event(
-            'INTERNAL_NOTES_UPDATED',
-            f"Notes internes ou statut mis à jour pour le dossier #{instance.id}",
-            user=self.request.user if self.request.user.is_authenticated else None,
-            metadata={"dossier_id": instance.id, "status": instance.status}
-        )
+        
+        status_events = {
+            'IN_REVIEW': ('DOSSIER_IN_REVIEW', "Dossier passé en revue par le KAM"),
+            'CONTACTED': ('CLIENT_CONTACTED', "Client contacté par le KAM"),
+            'MEETING_SCHEDULED': ('MEETING_SCHEDULED', "Rendez-vous planifié"),
+            'NEGOTIATION': ('NEGOTIATION_STARTED', "Phase de négociation commencée"),
+            'WAITING_APPROVAL': ('APPROVAL_REQUESTED', "Validation du dossier demandée"),
+            'APPROVED': ('DOSSIER_APPROVED', "Dossier validé et signé"),
+            'ORDER_PLACED': ('ORDER_PLACED', "Commande passée sur le SI d'Orange"),
+            'PROVISIONING': ('PROVISIONING_STARTED', "Raccordement réseau initié"),
+            'ACTIVATING': ('ACTIVATION_STARTED', "Activation des accès en cours"),
+            'ACTIVE': ('DOSSIER_ACTIVE', "Services opérationnels et actifs"),
+            'REJECTED': ('DOSSIER_REJECTED', "Dossier rejeté / Perdu"),
+        }
+        
+        if instance.status != old_status and instance.status in status_events:
+            event_type, desc = status_events[instance.status]
+            log_demo_event(
+                event_type,
+                f"{desc} (Dossier #{instance.id})",
+                user=self.request.user if self.request.user.is_authenticated else None,
+                metadata={"dossier_id": instance.id, "old_status": old_status, "new_status": instance.status}
+            )
+        else:
+            log_demo_event(
+                'INTERNAL_NOTES_UPDATED',
+                f"Notes internes ou statut mis à jour pour le dossier #{instance.id}",
+                user=self.request.user if self.request.user.is_authenticated else None,
+                metadata={"dossier_id": instance.id, "status": instance.status}
+            )
 
 class DossierBusinessTwinView(APIView):
     permission_classes = [IsKAMOrAdmin]

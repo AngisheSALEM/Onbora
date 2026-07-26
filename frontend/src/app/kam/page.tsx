@@ -270,6 +270,9 @@ export default function KamDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
+              Intégration simulée pour le MVP
+            </span>
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Conseiller KAM</p>
@@ -772,6 +775,11 @@ export default function KamDashboard() {
                       <p className="text-xs text-zinc-400 mt-0.5">
                         Activez et provisionnez les solutions d'infrastructure et de sécurité à la demande.
                       </p>
+                    </div>
+
+                    <div className="p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl text-[10px] font-bold flex items-center gap-2 shadow-sm">
+                      <Icons.Sparkles size={14} className="shrink-0 animate-pulse" />
+                      <span><strong>Intégration simulée pour le MVP :</strong> Les opérations de provisioning, raccordement physique et d'activation de licences logicielles sont orchestrées par des simulations de tâches asynchrones.</span>
                     </div>
 
                     <div className="flex flex-col gap-4 divide-y divide-zinc-200 dark:divide-zinc-900">

@@ -484,6 +484,9 @@ export default function SalesDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
+              Intégration simulée pour le MVP
+            </span>
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial Orange</p>

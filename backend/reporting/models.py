@@ -10,6 +10,20 @@ class DemoEvent(models.Model):
         ('REPORT_GENERATED', 'Rapport commercial généré'),
         ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'),
         ('PDF_EXPORTED', 'PDF exporté'),
+        ('DOSSIER_DISPATCHED', 'Dossier affecté au KAM'),
+        ('CRM_SYNCHRONIZED', 'Données synchronisées au CRM'),
+        ('DOSSIER_IN_REVIEW', 'Dossier en revue par le KAM'),
+        ('CLIENT_CONTACTED', 'Client contacté par le KAM'),
+        ('MEETING_SCHEDULED', 'Rendez-vous planifié'),
+        ('NEGOTIATION_STARTED', 'Négociation commencée'),
+        ('APPROVAL_REQUESTED', 'Validation demandée'),
+        ('DOSSIER_APPROVED', 'Dossier validé'),
+        ('ORDER_PLACED', 'Commande passée sur le SI'),
+        ('PROVISIONING_STARTED', 'Provisioning réseau démarré'),
+        ('PROVISIONING_COMPLETED', 'Provisioning réseau complété'),
+        ('ACTIVATION_STARTED', 'Activation démarrée'),
+        ('DOSSIER_ACTIVE', 'Ligne active / Livrée'),
+        ('DOSSIER_REJECTED', 'Dossier rejeté / Perdu'),
     )
     
     event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
