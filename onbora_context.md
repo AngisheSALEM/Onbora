@@ -125,6 +125,12 @@ Les fichiers clés disponibles dans le dépôt :
 *   **Remplacement du Logo par l'Image Officielle** : Copie du fichier `onbora logo.png` vers le dossier public du frontend (`frontend/public/onbora_logo.png`) et remplacement de l'ancien logo SVG dans le composant global [Logo.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/Logo.tsx), garantissant que le nouveau logo s'affiche partout sur le site (connexion, dashboards, sliders, jumeau numérique).
 
 ## 9. Prochaine Action Planifiée
-*   **Point d'arrêt** : Tous les correctifs d'UI, l'inversion du thème clair/sombre, la refonte du fond/texte clair et la charte graphique sont terminés, testés et prêts.
-*   **Prochaine étape** : Démonstration et validation finale de la plateforme Onbora en conditions de démo avec vous.
+*   **Chantiers en attente du livrable IA** :
+    1.  **Parcours Prospecteur (Audio réel)** : Activer l'enregistrement audio Web Audio (frontend) et créer l'endpoint d'upload `/api/sales/voice-upload/` (backend).
+    2.  **Parcours Client B2B → KAM** : Implémenter les 12 statuts de cycle de vie dans [models.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/kam/models.py) et brancher la notification KAM.
+    3.  **Business Twin Dynamique** : Rendre les SVG de débits et la roadmap chronologique du [BusinessTwinViewer.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/BusinessTwinViewer.tsx) réactifs au JSON structuré de l'IA.
+    4.  **Exports PDF** : Concevoir les templates ReportLab pour les 7 documents requis dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
+    5.  **Administration** : Interface CRUD pour l'édition du catalogue MSP et des FAQ.
+*   **Prochaine étape (Choisie)** : **Étape 1 - Parcours Prospecteur (Audio réel)**. Implémenter l'enregistrement audio réel côté navigateur dans l'espace commercial et l'API de réception Django `/api/sales/voice-upload/`.
+
 
