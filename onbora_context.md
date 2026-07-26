@@ -128,9 +128,9 @@ Les fichiers clés disponibles dans le dépôt :
 *   **Chantiers en attente du livrable IA** :
     1.  **Parcours Prospecteur (Audio réel)** : **Terminé** (Web Audio + upload backend configurés).
     2.  **Parcours Client B2B → KAM** : **Terminé** (12 statuts de cycle de vie + notifications par polling implémentés).
-    3.  **Business Twin Dynamique** : Rendre les SVG de débits et la roadmap chronologique du [BusinessTwinViewer.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/BusinessTwinViewer.tsx) réactifs au JSON structuré de l'IA.
+    3.  **Business Twin Dynamique** : **Terminé** (Rendu SVG & timeline Gantt réactifs branchés sur le KAM Dashboard).
     4.  **Exports PDF** : Concevoir les templates ReportLab pour les 7 documents requis dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
     5.  **Administration** : Interface CRUD pour l'édition du catalogue MSP et des FAQ.
-*   **Prochaine étape (Choisie)** : **Étape 3 - Business Twin Dynamique**. Rendre le composant [BusinessTwinViewer.tsx](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/BusinessTwinViewer.tsx) réactif et dynamique selon le schéma JSON retourné par l'IA.
+*   **Prochaine étape (Choisie)** : **Étape 4 - Exports PDF**. Concevoir et implémenter les templates PDF ReportLab pour les 7 documents légaux et techniques de signature d'offres dans [exports.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/onbora/exports.py).
 
 
