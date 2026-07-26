@@ -13,7 +13,12 @@ class DossierListView(generics.ListAPIView):
     permission_classes = [IsKAMOrAdmin]
     
     def get_queryset(self):
-        queryset = ProspectDossier.objects.all().order_by('-created_at')
+        user = self.request.user
+        if user.is_authenticated and user.role == 'KAM':
+            queryset = ProspectDossier.objects.filter(kam=user).order_by('-created_at')
+        else:
+            queryset = ProspectDossier.objects.all().order_by('-created_at')
+            
         status_param = self.request.query_params.get('status')
         if status_param:
             queryset = queryset.filter(status=status_param)
@@ -69,6 +74,13 @@ class DossierExportView(APIView):
             user=request.user if request.user.is_authenticated else None,
             metadata={"dossier_id": dossier.id}
         )
+
+        use_pdf = request.GET.get('format', 'pdf') == 'pdf'
+        doc_type = request.GET.get('type', 'dossier')
+        
+        if use_pdf:
+            from onbora.exports import generate_reportlab_pdf_response
+            return generate_reportlab_pdf_response(doc_type, dossier)
 
         company_name = "Entreprise Inconnue"
         contact_name = "Contact Inconnu"

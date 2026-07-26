@@ -255,6 +255,13 @@ class VisitReportExportView(APIView):
             metadata={"report_id": report.id}
         )
         
+        use_pdf = request.GET.get('format', 'pdf') == 'pdf'
+        doc_type = request.GET.get('type', 'visit')
+        
+        if use_pdf:
+            from onbora.exports import generate_reportlab_pdf_response
+            return generate_reportlab_pdf_response(doc_type, report)
+        
         enterprise = report.preparation.enterprise
         title = f"Rapport de Visite - {enterprise.name}"
         
