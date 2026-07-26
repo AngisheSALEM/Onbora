@@ -24,5 +24,6 @@ urlpatterns = [
     path('api/kam/', include('kam.urls')),
     path('api/sales/', include('sales.urls')),
     path('api/reporting/', include('reporting.urls')),
+    path('api/catalog/', include('catalog.urls')),
 ]
 
