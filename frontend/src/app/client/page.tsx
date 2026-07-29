@@ -93,10 +93,20 @@ export default function ClientDiscoveryPage() {
   // Voice call states
   const [isCallActive, setIsCallActive] = useState(false);
   const [callState, setCallState] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
-  const [micLevel, setMicLevel] = useState(0);
+  const micLevelRef = useRef(0);
   const [callTranscriptUser, setCallTranscriptUser] = useState('');
   const [callTranscriptAi, setCallTranscriptAi] = useState('');
   const [isMuted, setIsMuted] = useState(false);
+
+  // New layouts & mockups inspired by Gemini
+  const [temporaryChatActive, setTemporaryChatActive] = useState(false);
+  const [formationsExpanded, setFormationsExpanded] = useState(true);
+  const [selectedModel, setSelectedModel] = useState("Onbora Hybrid (Gemini 1.5 Flash)");
+  const [trainings, setTrainings] = useState([
+    { id: 1, title: "Prise en main de Microsoft 365" },
+    { id: 2, title: "Sécuriser ma connexion Fibre Pro" },
+    { id: 3, title: "Guide de configuration VPN Orange" }
+  ]);
 
   const recognitionRef = useRef<any>(null);
   const callRecognitionRef = useRef<any>(null);
@@ -249,7 +259,7 @@ export default function ClientDiscoveryPage() {
           sum += dataArray[i];
         }
         const avg = sum / dataArray.length;
-        setMicLevel(avg);
+        micLevelRef.current = avg;
         if (micStreamRef.current) {
           requestAnimationFrame(updateVolume);
         }
@@ -430,7 +440,7 @@ export default function ClientDiscoveryPage() {
       audioContextRef.current = null;
     }
     analyserRef.current = null;
-    setMicLevel(0);
+    micLevelRef.current = 0;
   };
 
   const toggleMute = () => {
@@ -497,7 +507,7 @@ export default function ClientDiscoveryPage() {
         // Fluid waves style
         let amplitude = 4;
         if (callState === 'listening') {
-          amplitude = Math.max(4, (micLevel / 255) * 60);
+          amplitude = Math.max(4, (micLevelRef.current / 255) * 60);
         } else if (callState === 'speaking') {
           amplitude = 15 + Math.sin(phase * 3.5) * 12;
         }
@@ -543,7 +553,7 @@ export default function ClientDiscoveryPage() {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isCallActive, callState, micLevel]);
+  }, [isCallActive, callState]);
 
   const updateProfile = (rawProfile: any) => {
     if (!rawProfile) return;
@@ -1039,48 +1049,99 @@ export default function ClientDiscoveryPage() {
   return (
     <ProtectedRoute allowedRoles={['CLIENT_B2B', 'ADMIN']}>
       <div className="h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50 overflow-hidden">
-        {/* Header */}
-        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm z-10 shrink-0">
-          <div
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex items-center gap-3 cursor-pointer hover:opacity-85 active:scale-[0.98] transition-all select-none group"
-            title="Afficher/masquer l'historique"
-          >
-            <Logo size={32} showBg={true} className="group-hover:scale-[1.03] transition-transform duration-200" />
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-1">
-                Onbora
-                <span className="text-zinc-400 group-hover:text-orange-500 transition-colors flex items-center shrink-0">
-                  {sidebarOpen ? <Icons.ChevronLeft size={12} /> : <Icons.ChevronRight size={12} />}
-                </span>
-              </h1>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote de Découverte B2B</p>
+        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
+          {/* Left Corner: Hamburger + Logo/Title + Model Dropdown */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 rounded-lg hover:bg-zinc-150/50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 cursor-pointer transition-colors"
+              title={sidebarOpen ? "Fermer le menu latéral" : "Ouvrir le menu latéral"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="18" x2="20" y2="18"></line>
+              </svg>
+            </button>
+            
+            {/* Logo/Title only when Sidebar is closed */}
+            {!sidebarOpen && (
+              <div className="hidden sm:flex items-center gap-2 select-none">
+                <Logo size={24} showBg={true} />
+                <span className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</span>
+              </div>
+            )}
+
+            {/* Model Selector Dropdown (Gemini style) */}
+            <div className="relative">
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="text-[10px] sm:text-xs px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 font-bold cursor-pointer hover:border-orange-500/50 focus:outline-none focus:border-orange-500 transition-all shadow-sm"
+              >
+                <option value="Onbora Hybrid (Gemini 1.5 Flash)">Onbora Hybrid (Gemini 1.5 Flash)</option>
+                <option value="Onbora Pro (Gemini 1.5 Pro)">Onbora Pro (Gemini 1.5 Pro)</option>
+                <option value="Onbora Sandbox (Local LLM)">Onbora Sandbox (Local LLM)</option>
+              </select>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
+
+          {/* Right Corner: Temporary button, avatar (mobile) and navigation controls */}
+          <div className="flex items-center gap-2 sm:gap-3.5">
+            {/* Discussions Temporaires Toggle button */}
+            <button
+              onClick={() => {
+                setTemporaryChatActive(!temporaryChatActive);
+                if (!temporaryChatActive) {
+                  alert("Discussions temporaires activées : l'historique de cette session ne sera pas sauvegardé.");
+                }
+              }}
+              className={`p-1.5 rounded-lg border cursor-pointer transition-all flex items-center justify-center gap-1.5 relative group ${
+                temporaryChatActive
+                  ? 'border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm animate-pulse'
+                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+              }`}
+              title="Activer les discussions temporaires (Discussions éphémères)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span className="absolute top-full right-0 mt-2 hidden group-hover:block bg-zinc-900 text-white text-[8px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
+                {temporaryChatActive ? "Discussions temporaires : Actif" : "Activer les discussions temporaires"}
+              </span>
+            </button>
+
+            {/* Mobile User Profile Avatar (visible only on mobile) */}
+            <div className="md:hidden">
+              <div 
+                onClick={() => setCurrentView(currentView === 'profile' ? 'chat' : 'profile')}
+                className="w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs border-2 border-white dark:border-zinc-950 cursor-pointer shadow-sm select-none"
+                title="Mon Espace Profil"
+              >
+                {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
+              </div>
+            </div>
+
+            {/* MVP banner (Desktop only) */}
+            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden lg:inline-block shadow-sm">
               Intégration simulée pour le MVP
             </span>
-            <div className="text-right hidden sm:block">
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
-                {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
-              </p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
-                {user?.company_name || 'Client B2B'}
-              </p>
-            </div>
+
+            {/* Voice call button (Desktop only) */}
             <button
               onClick={startVoiceCall}
-              className="px-2.5 py-1.5 sm:px-3 rounded-lg border border-orange-500/30 hover:border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer flex items-center gap-1.5 animate-pulse"
+              className="hidden sm:flex px-2.5 py-1.5 rounded-lg border border-orange-500/30 hover:border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer items-center gap-1.5 animate-pulse"
               title="Commencer un chat vocal direct avec Onbora"
             >
               <Icons.Phone size={14} />
-              <span className="hidden sm:inline">Appel Vocal</span>
+              <span className="hidden lg:inline">Appel Vocal</span>
             </button>
-            <ThemeToggle />
+
+            {/* Espace Profil toggle (Desktop only) */}
             <button
               onClick={() => setCurrentView(currentView === 'chat' ? 'profile' : 'chat')}
-              className={`px-2.5 py-1.5 sm:px-3 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 font-bold text-xs ${
+              className={`hidden md:flex px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer items-center gap-1.5 font-bold text-xs ${
                 currentView === 'profile'
                   ? 'border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/10'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
@@ -1090,38 +1151,40 @@ export default function ClientDiscoveryPage() {
               {currentView === 'profile' ? (
                 <>
                   <Icons.MessageSquare size={14} />
-                  <span className="hidden sm:inline">Chat</span>
+                  <span className="hidden lg:inline">Chat</span>
                 </>
               ) : (
                 <>
                   <Icons.Users size={14} />
-                  <span className="hidden sm:inline">Mon Espace Profil</span>
+                  <span className="hidden lg:inline">Mon Espace Profil</span>
                 </>
               )}
             </button>
+
+            {/* FAQ button (Desktop only) */}
             <button
               onClick={() => setHelpOpen(true)}
-              className="px-2.5 py-1.5 sm:px-3 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+              className="hidden md:flex px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer items-center gap-1.5"
               title="FAQ & Guide d'Utilisation"
             >
               <Icons.HelpCircle size={14} />
-              <span className="hidden sm:inline">FAQ & Guide</span>
+              <span className="hidden lg:inline">FAQ & Guide</span>
             </button>
+
+            {/* Logout button (Desktop only) */}
             <button
               onClick={logout}
-              className="px-2.5 py-1.5 sm:px-3 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+              className="hidden md:flex px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-955 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer items-center gap-1.5"
               title="Se déconnecter"
             >
               <Icons.LogOut size={14} />
-              <span className="hidden sm:inline">Déconnexion</span>
+              <span className="hidden lg:inline">Déconnexion</span>
             </button>
           </div>
         </header>
 
         {/* Main Work Area */}
         <div className="flex-1 flex flex-row overflow-hidden relative">
-          
-          {/* Mobile backdrop overlay to close sidebar */}
           {sidebarOpen && (
             <div 
               onClick={() => setSidebarOpen(false)}
@@ -1136,20 +1199,117 @@ export default function ClientDiscoveryPage() {
               isResizing ? '' : 'transition-all duration-300'
             } ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           >
-            {/* New Qualification Button */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 shrink-0">
+            {/* Partie Supérieure (Logo + Titre + Pill-Button + Nav) */}
+            <div className="p-4 flex flex-col gap-3.5 border-b border-zinc-200 dark:border-zinc-900 shrink-0">
+              {/* Logo / Title */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Logo size={28} showBg={true} />
+                  <div>
+                    <h2 className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</h2>
+                    <p className="text-[9px] text-zinc-500 font-medium leading-none">Copilote B2B</p>
+                  </div>
+                </div>
+                {/* Close Button for Mobile Drawer */}
+                <button 
+                  onClick={() => setSidebarOpen(false)}
+                  className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
+                  title="Fermer le tiroir"
+                >
+                  <Icons.Close size={14} />
+                </button>
+              </div>
+
+              {/* Nouvelle Qualification Pill-Button */}
               <button
                 onClick={handleStartNewChat}
-                className="w-full py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-850 dark:text-zinc-350 hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2 px-4 rounded-full bg-brand-orange hover:bg-orange-600 text-white text-xs font-extrabold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
               >
-                <span>+</span> Nouvelle qualification
+                <span className="text-sm font-light">+</span> Nouvelle qualification
               </button>
+
+              {/* Navigation Menu List */}
+              <div className="flex flex-col gap-0.5 mt-1">
+                <button 
+                  onClick={() => alert("Recherche d'activités en cours...")}
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
+                >
+                  <Icons.Search size={13} className="text-zinc-400 shrink-0" />
+                  <span>Rechercher</span>
+                </button>
+                <button 
+                  onClick={() => setHelpOpen(true)}
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 shrink-0">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                  <span>Vidéos</span>
+                </button>
+                <button 
+                  onClick={() => setHelpOpen(true)}
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
+                >
+                  <Icons.BookOpen size={13} className="text-zinc-400 shrink-0" />
+                  <span>Bibliothèque</span>
+                </button>
+                <button 
+                  onClick={() => alert("Gems Onbora - Personnalisez vos copilotes de vente.")}
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
+                >
+                  <Icons.Sparkles size={13} className="text-zinc-400 shrink-0" />
+                  <span>Gems</span>
+                </button>
+              </div>
             </div>
 
-            {/* Conversation History & Suivi des Commandes List */}
+            {/* Partie Centrale (Formations Accordion + Suivi Commandes + Historique Récent - Scrollable) */}
             <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-4">
               
-              {/* FAQ Accordion: Suivi des Commandes (Visible ONLY if qualified) */}
+              {/* Section Formations (Gemini Notebooks Style) */}
+              <div className="border border-zinc-200 dark:border-zinc-850 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+                <div className="w-full px-3 py-2 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-100/50 dark:bg-zinc-900/50">
+                  <button
+                    onClick={() => setFormationsExpanded(!formationsExpanded)}
+                    className="flex items-center gap-2 text-left font-bold text-[10px] uppercase tracking-wider text-zinc-800 dark:text-zinc-200 cursor-pointer"
+                  >
+                    <Icons.Briefcase size={14} className="text-orange-500 shrink-0" />
+                    <span>Formations</span>
+                    <span className="text-zinc-400 font-normal flex items-center shrink-0 ml-1">
+                      {formationsExpanded ? <Icons.ChevronLeft size={10} className="-rotate-90 transition-transform" /> : <Icons.ChevronLeft size={10} className="rotate-90 transition-transform" />}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const title = prompt("Titre de la nouvelle session de formation :");
+                      if (title) {
+                        setTrainings(prev => [...prev, { id: Date.now(), title }]);
+                      }
+                    }}
+                    className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-extrabold text-orange-500 cursor-pointer flex items-center justify-center transition-colors"
+                    title="Ajouter une nouvelle session de formation"
+                  >
+                    + Nouveau
+                  </button>
+                </div>
+
+                {formationsExpanded && (
+                  <div className="p-2 flex flex-col gap-1 bg-zinc-50/30 dark:bg-zinc-950/20 max-h-[180px] overflow-y-auto">
+                    {trainings.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => alert(`Lancement de la formation : "${t.title}" (Simulé)`)}
+                        className="w-full text-left py-1.5 px-2 rounded-lg text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150/40 dark:hover:bg-zinc-900/50 transition-all cursor-pointer truncate"
+                        title={t.title}
+                      >
+                        🎓 {t.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion: Suivi des Commandes (Visible ONLY if qualified) */}
               {isQualified && recommendations.length > 0 && (
                 <div className="border border-zinc-200 dark:border-zinc-850 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
                   <button
@@ -1272,9 +1432,9 @@ export default function ClientDiscoveryPage() {
                 </div>
               )}
 
-              {/* Conversations Récentes Accordion */}
+              {/* Conversations Récentes */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider px-2">Récents</span>
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider px-2">Historique Récent</span>
                 {history.length === 0 ? (
                   <span className="text-[11px] text-zinc-450 italic px-2">Aucune qualification récente</span>
                 ) : (
@@ -1309,9 +1469,34 @@ export default function ClientDiscoveryPage() {
 
             </div>
 
-            {/* Connected User Badge */}
-            <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 text-[10px] text-zinc-400 font-semibold truncate">
-              {user?.company_name || 'Client Orange Business'}
+            {/* Partie Inférieure (Footer Sidebar - Avatar + Nom + Engrenage Paramètres) */}
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {/* Photo d'avatar (Initials badge) */}
+                <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-sm shrink-0 border border-white/20 shadow-sm">
+                  {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
+                </div>
+                <div className="flex flex-col min-w-0 leading-tight">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">
+                    {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Salem Balagizi'}
+                  </span>
+                  <span className="text-[9px] text-zinc-500 truncate">
+                    {user?.company_name || 'Client Orange'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Bouton Paramètres (icône Engrenage) */}
+              <button
+                onClick={() => {
+                  setCurrentView(currentView === 'profile' ? 'chat' : 'profile');
+                  alert("Ouverture des paramètres du compte... Basculement vers l'Espace Profil.");
+                }}
+                className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-900 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer transition-colors shrink-0"
+                title="Paramètres de l'application"
+              >
+                <Icons.Settings size={15} />
+              </button>
             </div>
           </div>
 
