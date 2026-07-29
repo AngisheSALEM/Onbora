@@ -133,6 +133,7 @@ Les fichiers clés disponibles dans le dépôt :
     5.  **Administration** : **Terminé** (Interface CRUD complète Next.js + endpoints Django REST pour le catalogue MSP et FAQ).
     6.  **Tracking & Connecteurs Simulés** : **Terminé** (Tracking précis des 14 événements du cycle de vie + Bannières d'information MVP).
     7.  **Sécurité, Fiabilité & Tests E2E** : **Terminé** (Classes de permission RBAC par rôle, validation des tailles limites d'upload, sauvegarde et bouton de réessai pour timeout IA, et tests Playwright E2E rédigés).
-*   **Prochaine étape (Choisie)** : **Intégration Finale de l'IA**. Raccorder les endpoints simulés d'extraction, de Business Twin et de chatbot de `ai_engine.py` à la véritable API de l'AI Engineer une fois celle-ci livrée.
+*   **Prochaine étape (Choisie)** : **Recherche & Cadrage CRM & Provisioning (10 jours)**. Mettre de côté temporairement l'intégration finale de l'IA et se concentrer sur l'exploration de l'API d'Orange Kaabu (CRM interne) et d'ArrowSphere (outil de provisioning Orange pour SaaS/licences) afin d'anticiper leur intégration future.
+
 
 

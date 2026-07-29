@@ -1,14 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --brand-h: 24; /* Orange Hue for OBS brand alignment */
-  --background: oklch(100% 0 var(--brand-h));
-  --foreground: oklch(12% 0.015 var(--brand-h));
+  --background: #FFFFFF;
+  --foreground: #111827;
+
+  /* Brand Colors & Accents */
+  --color-brand-orange: #FF6600;
+  --color-accent-blue: #00A3E0;
+  --color-accent-purple: #7B3FE4;
+  --color-accent-yellow: #FFC72C;
+
+  /* Standard Tailwind Overrides for Light Mode (Max it colors) */
+  --color-zinc-50: #FFFFFF;
+  --color-zinc-100: #F3F4F6;
+  --color-zinc-200: #E5E7EB;
+  --color-zinc-300: #D1D5DB;
+  --color-zinc-400: #9CA3AF;
+  --color-zinc-500: #6B7280;
+  --color-zinc-600: #4B5563;
+  --color-zinc-700: #374151;
+  --color-zinc-800: #1F2937;
+  --color-zinc-900: #111827;
+  --color-zinc-950: #111827;
+
+  /* Custom intermediary shades */
+  --color-zinc-55: #F9FAFB;
+  --color-zinc-150: #EEF2F6;
+  --color-zinc-205: #D1D5DB;
+  --color-zinc-850: #F3F4F6;
 }
 
 .dark {
-  --background: oklch(10% 0.012 var(--brand-h));
-  --foreground: oklch(98% 0.006 var(--brand-h));
+  --background: #1A1A1E;
+  --foreground: #FFFFFF;
+
+  /* Standard Tailwind Overrides for Dark Mode (Max it colors) */
+  --color-zinc-50: #FFFFFF;
+  --color-zinc-100: #F4F4F5;
+  --color-zinc-200: #E4E4E7;
+  --color-zinc-300: #D4D4D8;
+  --color-zinc-400: #A0A0AA; /* Secondary text */
+  --color-zinc-500: #71717A;
+  --color-zinc-600: #52525B;
+  --color-zinc-700: #3F3F46;
+  --color-zinc-800: #2D2D32; /* Card Surface */
+  --color-zinc-900: #242428; /* Card Secondary / Modals */
+  --color-zinc-950: #1A1A1E; /* Background Canvas */
+
+  /* Custom intermediary shades mapped to dark surfaces */
+  --color-zinc-55: #242428;
+  --color-zinc-150: #2D2D32;
+  --color-zinc-205: #2D2D32;
+  --color-zinc-850: #242428;
 }
 
 @theme inline {
@@ -16,6 +59,28 @@
   --color-foreground: var(--foreground);
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Custom Colors */
+  --color-brand-orange: var(--color-brand-orange);
+  --color-accent-blue: var(--color-accent-blue);
+  --color-accent-purple: var(--color-accent-purple);
+  --color-accent-yellow: var(--color-accent-yellow);
+
+  /* Overriding Tailwind Orange with Brand Orange */
+  --color-orange-500: #FF6600;
+  --color-orange-600: #E55B00;
+  --color-orange-700: #CC5100;
+  --color-orange-400: #FF8533;
+
+  /* Custom Intermediary Shades */
+  --color-zinc-55: var(--color-zinc-55);
+  --color-zinc-150: var(--color-zinc-150);
+  --color-zinc-205: var(--color-zinc-205);
+  --color-zinc-850: var(--color-zinc-850);
+
+  /* Custom Radii */
+  --radius-card: 16px;
+  --radius-tile: 12px;
 }
 
 body {
@@ -31,8 +96,8 @@ body {
 .matrix-grid {
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(rgba(249, 115, 22, 0.015) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(249, 115, 22, 0.015) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 102, 0, 0.015) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 102, 0, 0.015) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
   z-index: 0;
@@ -56,7 +121,7 @@ body {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.03) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 102, 0, 0.03) 0%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
@@ -64,7 +129,7 @@ body {
 }
 
 .dark .glow-orb-orange-1 {
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 102, 0, 0.08) 0%, transparent 70%);
 }
 
 .glow-orb-orange-2 {
@@ -74,7 +139,7 @@ body {
   width: 700px;
   height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.01) 0%, transparent 70%);
   filter: blur(100px);
   pointer-events: none;
   z-index: 0;
@@ -82,7 +147,7 @@ body {
 }
 
 .dark .glow-orb-orange-2 {
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.01) 0%, transparent 70%);
 }
 
 @keyframes floatOrb {
@@ -93,29 +158,29 @@ body {
 
 /* Glassmorphism Cards & Forms */
 .glass-card, .glass-form {
-  background: rgba(255, 255, 255, 0.75) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .glass-card, .dark .glass-form {
-  background: rgba(12, 12, 16, 0.5) !important;
+  background: rgba(45, 45, 50, 0.65) !important; /* #2D2D32 card surface opacity */
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 .glass-card:hover {
-  border-color: rgba(249, 115, 22, 0.25) !important;
-  background: rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.08);
+  border-color: rgba(255, 102, 0, 0.3) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.06);
 }
 
 .dark .glass-card:hover {
-  background: rgba(12, 12, 16, 0.7) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.55);
+  background: rgba(45, 45, 50, 0.8) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* Glassmorphic inputs */
@@ -124,7 +189,7 @@ input[type="password"],
 input[type="email"],
 textarea,
 select {
-  background: rgba(0, 0, 0, 0.02) !important;
+  background: rgba(0, 0, 0, 0.01) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -137,7 +202,7 @@ select {
 .dark input[type="email"],
 .dark textarea,
 .dark select {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -146,24 +211,24 @@ input[type="password"]:focus,
 input[type="email"]:focus,
 textarea:focus,
 select:focus {
-  border-color: #f97316 !important;
+  border-color: #FF6600 !important;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2) !important;
 }
 
 .orange-gradient-text {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(135deg, #18181b 40%, #f97316 100%);
+  background-image: linear-gradient(135deg, #111827 40%, #FF6600 100%);
 }
 
 .dark .orange-gradient-text {
-  background-image: linear-gradient(135deg, #ffffff 40%, #f97316 100%);
+  background-image: linear-gradient(135deg, #ffffff 40%, #FF6600 100%);
 }
 
 .orange-gradient-bg {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #FF6600 0%, #E55B00 100%);
 }
 
 /* Custom Scrollbars */
@@ -172,14 +237,17 @@ select:focus {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.05);
+}
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.2);
+  background: rgba(255, 102, 0, 0.25);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.4);
+  background: rgba(255, 102, 0, 0.45);
 }
 
 @keyframes fadeIn {
@@ -202,21 +270,19 @@ select:focus {
   top: 15%;
   height: 70%;
   width: 3px;
-  background-color: #f97316;
+  background-color: #FF6600;
   border-radius: 0 2px 2px 0;
-  box-shadow: none;
 }
 
 /* Status bulbs */
 .bulb-active {
-  background-color: #34d399;
-  box-shadow: none;
+  background-color: #10B981;
 }
 .bulb-pending {
-  background-color: #fbbf24;
-  box-shadow: none;
+  background-color: #FFC72C; /* Gold accent */
 }
 .bulb-inactive {
-  background-color: #71717a;
+  background-color: #6B7280;
 }
+
 
