@@ -2,58 +2,68 @@
 // Paste this code schema directly into eraser.io (Diagram-as-Code mode)
 
 // --- User Roles & Agents ---
-Prospecteur [icon: user, color: emerald, label: "Prospecteur / Commercial"]
-AI_Engineer [icon: cpu, color: purple, label: "AI Core & Profiling Model (LLM)"]
+Prospecteur_Scrap [icon: user, color: emerald, label: "Prospecteur / Commercial"]
+AI_Engineer_Scrap [icon: cpu, color: purple, label: "AI Core & Profiling Model (LLM)"]
 
 // --- Frontend Workspace ---
-group Frontend [color: blue] {
-  NextJS [icon: nextjs, color: blue, label: "Next.js App (Sales Space)"]
+group Frontend_Scrap [color: blue] {
+  NextJS_Scrap [icon: nextjs, color: blue, label: "Next.js App (Sales Space)"]
 }
 
 // --- Backend Services ---
-group Backend_Services [color: green] {
-  DjangoDRF [icon: django, color: green, label: "Django REST API Handler"]
-  ScrapingModule [icon: terminal, color: light-green, label: "Django Scraping orchestrator"]
+group Backend_Services_Scrap [color: green] {
+  DjangoDRF_Scrap [icon: django, color: green, label: "Django REST API Handler"]
+  ScrapingModule_Scrap [icon: terminal, color: light-green, label: "Django Scraping orchestrator"]
 }
 
 // --- Scraping Engine (Agent-Reach) ---
-group Scraping_Engine [color: orange] {
-  AgentReachCLI [icon: tool, color: orange, label: "Agent-Reach CLI (No-API)"]
-  LocalCookies [icon: folder, color: grey, label: "Local Sessions & Cookies"]
+group Scraping_Engine_Scrap [color: orange] {
+  AgentReachCLI_Scrap [icon: tool, color: orange, label: "Agent-Reach CLI (No-API)"]
+  LocalCookies_Scrap [icon: folder, color: grey, label: "Local Sessions & Cookies"]
 }
 
 // --- Target Platforms (Social & Web) ---
-group Target_Platforms [color: grey] {
-  LinkedIn [icon: linkedin, color: blue, label: "LinkedIn (Professional Profile)"]
-  TwitterX [icon: twitter, color: dark-grey, label: "Twitter / X (Public Posts)"]
-  TikTok [icon: play, color: pink, label: "TikTok (Interests & Tone)"]
-  CorpWebsite [icon: globe, color: grey, label: "Corporate Site (Tech Stack & Team)"]
+group Target_Platforms_Scrap [color: grey] {
+  LinkedIn_Scrap [icon: linkedin, color: blue, label: "LinkedIn (Professional Profile)"]
+  TwitterX_Scrap [icon: twitter, color: dark-grey, label: "Twitter / X (Public Posts)"]
+  TikTok_Scrap [icon: play, color: pink, label: "TikTok (Interests & Tone)"]
+  CorpWebsite_Scrap [icon: globe, color: grey, label: "Corporate Site (Tech Stack & Team)"]
+}
+
+// --- Internal CRM Context ---
+group Kaabu_Platform_Scrap [color: orange] {
+  OrangeKaabu_Scrap [icon: database, color: orange, label: "Orange Kaabu CRM"]
 }
 
 // --- Data Flows & Connections ---
-Prospecteur > NextJS : "Saisit Nom Entreprise / Décideur"
-NextJS > DjangoDRF : "POST /api/sales/scraping/run/ (JSON)"
+Prospecteur_Scrap > NextJS_Scrap : "Saisit Nom Entreprise / Décideur"
+NextJS_Scrap > DjangoDRF_Scrap : "POST /api/sales/scraping/run/ (JSON & Kaabu_ID)"
 
-DjangoDRF > ScrapingModule : "Déclenche le job d'acquisition"
-ScrapingModule > AgentReachCLI : "Appelle les commandes CLI (ex: agent-reach search)"
-AgentReachCLI > LocalCookies : "Lit les cookies de session"
+DjangoDRF_Scrap > ScrapingModule_Scrap : "Déclenche le job d'acquisition"
+ScrapingModule_Scrap > AgentReachCLI_Scrap : "Appelle les commandes CLI (ex: agent-reach search)"
+AgentReachCLI_Scrap > LocalCookies_Scrap : "Lit les cookies de session"
 
 // External scraping requests
-AgentReachCLI > LinkedIn : "Extraction profils & posts"
-AgentReachCLI > TwitterX : "Extraction tweets publics"
-AgentReachCLI > TikTok : "Vibe check & centres d'intérêt"
-ScrapingModule > CorpWebsite : "Parsing direct de la stack tech"
+AgentReachCLI_Scrap > LinkedIn_Scrap : "Extraction profils & posts"
+AgentReachCLI_Scrap > TwitterX_Scrap : "Extraction tweets publics"
+AgentReachCLI_Scrap > TikTok_Scrap : "Vibe check & centres d'intérêt"
+ScrapingModule_Scrap > CorpWebsite_Scrap : "Parsing direct de la stack tech"
 
 // Data returns
-LinkedIn > AgentReachCLI : "HTML brut"
-TwitterX > AgentReachCLI : "JSON public"
-TikTok > AgentReachCLI : "JSON public"
+LinkedIn_Scrap > AgentReachCLI_Scrap : "HTML brut"
+TwitterX_Scrap > AgentReachCLI_Scrap : "JSON public"
+TikTok_Scrap > AgentReachCLI_Scrap : "JSON public"
 
-AgentReachCLI > ScrapingModule : "Données brutes extraites"
-ScrapingModule > DjangoDRF : "JSON consolidé (Profilage)"
+AgentReachCLI_Scrap > ScrapingModule_Scrap : "Données brutes extraites"
+ScrapingModule_Scrap > DjangoDRF_Scrap : "JSON consolidé (Profilage)"
 
-DjangoDRF > AI_Engineer : "Envoie le profilage JSON pour analyse"
-AI_Engineer > DjangoDRF : "Renvoie les accroches de vente & hypothèses réseau"
+// CRM context verification prior to AI prompt building
+DjangoDRF_Scrap > OrangeKaabu_Scrap : "Récupère le contexte du compte prospect existant"
+OrangeKaabu_Scrap > DjangoDRF_Scrap : "Retourne données de compte"
 
-DjangoDRF > NextJS : "Retourne les insights enrichis"
-NextJS > Prospecteur : "Affiche la fiche client avec Ice-breakers"
+// AI analysis and enrichment
+DjangoDRF_Scrap > AI_Engineer_Scrap : "Envoie le profilage JSON + Données Kaabu pour analyse"
+AI_Engineer_Scrap > DjangoDRF_Scrap : "Renvoie les accroches de vente & hypothèses réseau"
+
+DjangoDRF_Scrap > NextJS_Scrap : "Retourne les insights enrichis"
+NextJS_Scrap > Prospecteur_Scrap : "Affiche la fiche client avec Ice-breakers"

@@ -31,6 +31,8 @@ interface GoogleSlidesTwinProps {
   companyName: string;
   isMiniPreview?: boolean;
   onOpenFull?: () => void;
+  slides?: Slide[];
+  onChangeSlides?: (newSlides: Slide[]) => void;
 }
 
 // Inline Editable Text Sub-component
@@ -101,9 +103,25 @@ export default function GoogleSlidesTwin({
   twin,
   companyName,
   isMiniPreview = false,
-  onOpenFull
+  onOpenFull,
+  slides: propsSlides,
+  onChangeSlides: propsOnChangeSlides
 }: GoogleSlidesTwinProps) {
-  const [slides, setSlides] = useState<Slide[]>([]);
+  const [localSlides, setLocalSlides] = useState<Slide[]>([]);
+
+  const slides = propsSlides !== undefined ? propsSlides : localSlides;
+  const setSlides = (newSlides: any) => {
+    if (propsOnChangeSlides) {
+      if (typeof newSlides === 'function') {
+        propsOnChangeSlides(newSlides(slides));
+      } else {
+        propsOnChangeSlides(newSlides);
+      }
+    } else {
+      setLocalSlides(newSlides);
+    }
+  };
+
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [presentationTitle, setPresentationTitle] = useState(`Onbora — Jumeau Numérique ${companyName}`);
   const [isEditingTitle, setIsEditingTitle] = useState(false);

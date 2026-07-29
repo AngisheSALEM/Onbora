@@ -2,52 +2,54 @@
 // Paste this code schema directly into eraser.io (Diagram-as-Code mode)
 
 // --- User Roles ---
-Client_B2B [icon: user, color: blue, label: "Client B2B (Maxit/Portal/Widget)"]
-Prospecteur [icon: user, color: emerald, label: "Prospecteur / Commercial"]
-KAM [icon: user, color: orange, label: "Key Account Manager (KAM)"]
-Admin_MSP [icon: user, color: red, label: "Admin MSP"]
+Client_B2B_Arch [icon: user, color: blue, label: "Client B2B (Maxit/Portal/Widget)"]
+Prospecteur_Arch [icon: user, color: emerald, label: "Prospecteur / Commercial"]
+KAM_Arch [icon: user, color: orange, label: "Key Account Manager (KAM)"]
+Admin_MSP_Arch [icon: user, color: red, label: "Admin MSP"]
 
 // --- Frontend App (Next.js) ---
-group Frontend [color: blue] {
-  NextJS [icon: nextjs, color: blue, label: "Next.js App (App Router)"]
-  TailwindCSS [icon: tailwindcss, color: light-blue, label: "Tailwind CSS & Geist Sans"]
-  FramerMotion [icon: play, color: pink, label: "Framer Motion (Tactile Physics)"]
+group Frontend_Arch [color: blue] {
+  NextJS_Arch [icon: nextjs, color: blue, label: "Next.js App (App Router)"]
+  TailwindCSS_Arch [icon: tailwindcss, color: light-blue, label: "Tailwind CSS & Geist Sans"]
+  FramerMotion_Arch [icon: play, color: pink, label: "Framer Motion (Tactile Physics)"]
 }
 
 // --- Backend App (Django REST Framework) ---
-group Backend_Services [color: green] {
-  DjangoDRF [icon: django, color: green, label: "Django REST Framework API"]
-  CeleryTasks [icon: cpu, color: purple, label: "Background Tasks (Celery/Async)"]
+group Backend_Services_Arch [color: green] {
+  DjangoDRF_Arch [icon: django, color: green, label: "Django REST Framework API"]
+  CeleryTasks_Arch [icon: cpu, color: purple, label: "Background Tasks (Celery/Async)"]
 }
 
 // --- Infrastructure & Storage ---
-group Infrastructure [color: grey] {
-  PostgreSQL [icon: postgresql, color: blue, label: "PostgreSQL Database"]
-  Redis [icon: redis, color: red, label: "Redis Cache & Queue"]
-  LocalStorage [icon: folder, color: grey, label: "Local Media Storage (S3 Mock)"]
+group Infrastructure_Arch [color: grey] {
+  PostgreSQL_Arch [icon: postgresql, color: blue, label: "PostgreSQL Database"]
+  Redis_Arch [icon: redis, color: red, label: "Redis Cache & Queue"]
+  LocalStorage_Arch [icon: folder, color: grey, label: "Local Media Storage (S3 Mock)"]
 }
 
 // --- Simulated External Systems ---
-group External_Integrations [color: orange] {
-  OrangeCRM [icon: database, color: orange, label: "Mock Orange CRM/ERP"]
-  LLMService [icon: cpu, color: purple, label: "AI Core (OpenAI/Whisper Mock)"]
+group External_Integrations_Arch [color: orange] {
+  OrangeKaabu_Arch [icon: database, color: orange, label: "Orange Kaabu (CRM & Sales)"]
+  OrangeProvisioning_Arch [icon: settings, color: red, label: "Orange Provisioning System"]
+  LLMService_Arch [icon: cpu, color: purple, label: "AI Core (OpenAI/Whisper Mock)"]
 }
 
 // --- Connections / Data Flows ---
-Client_B2B -> NextJS : "Conversations / Discovery / Training"
-Prospecteur -> NextJS : "Briefs / Visite / Rapport"
-KAM -> NextJS : "Prospects Workspace / Decisions"
-Admin_MSP -> NextJS : "System Configuration"
+Client_B2B_Arch -> NextJS_Arch : "Conversations / Discovery / Training"
+Prospecteur_Arch -> NextJS_Arch : "Briefs / Visite / Rapport"
+KAM_Arch -> NextJS_Arch : "Prospects Workspace / Decisions"
+Admin_MSP_Arch -> NextJS_Arch : "System Configuration"
 
-NextJS -> DjangoDRF : "REST API Requests (JSON / Auth JWT)"
-TailwindCSS - NextJS
-FramerMotion - NextJS
+NextJS_Arch -> DjangoDRF_Arch : "REST API Requests (JSON / Auth JWT)"
+TailwindCSS_Arch - NextJS_Arch
+FramerMotion_Arch - NextJS_Arch
 
-DjangoDRF -> PostgreSQL : "Django ORM Queries"
-DjangoDRF -> Redis : "Cache Session & Queue Tasks"
-DjangoDRF -> LocalStorage : "Save Audio & PDF Reports"
-CeleryTasks -> Redis : "Consume Background Jobs"
-CeleryTasks -> LLMService : "Whisper Audio / LLM Insights"
+DjangoDRF_Arch -> PostgreSQL_Arch : "Django ORM Queries"
+DjangoDRF_Arch -> Redis_Arch : "Cache Session & Queue Tasks"
+DjangoDRF_Arch -> LocalStorage_Arch : "Save Audio & PDF Reports"
+CeleryTasks_Arch -> Redis_Arch : "Consume Background Jobs"
+CeleryTasks_Arch -> LLMService_Arch : "Whisper Audio / LLM Insights"
 
-DjangoDRF -> OrangeCRM : "Sync Leaps & Status (Mock API)"
-DjangoDRF -> LLMService : "Discovery Chat / Recommendations"
+DjangoDRF_Arch -> OrangeKaabu_Arch : "Sync Opportunities & Accounts"
+DjangoDRF_Arch -> OrangeProvisioning_Arch : "Trigger Technical Provisioning Orders"
+DjangoDRF_Arch -> LLMService_Arch : "Discovery Chat / Recommendations"

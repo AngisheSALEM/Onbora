@@ -26,6 +26,8 @@ class User(AbstractUser):
     )
     phone = models.CharField(max_length=20, blank=True, null=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True, help_text="Ville / Région d'affectation")
+    is_available = models.BooleanField(default=True, help_text="Disponibilité immédiate pour affectation")
 
     objects = CustomUserManager()
 

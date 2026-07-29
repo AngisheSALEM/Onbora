@@ -5,7 +5,9 @@ from .views import (
     VisitReportCreateView,
     VisitReportTransmitView,
     VisitReportExportView,
-    VoiceUploadView
+    VoiceUploadView,
+    ScraperCredentialListCreateView,
+    ScraperCredentialDetailView
 )
 
 urlpatterns = [
@@ -15,5 +17,7 @@ urlpatterns = [
     path('visit-reports/<int:pk>/transmit/', VisitReportTransmitView.as_view(), name='visit-report-transmit'),
     path('visit-reports/<int:pk>/export/', VisitReportExportView.as_view(), name='visit-report-export'),
     path('voice-upload/', VoiceUploadView.as_view(), name='voice-upload'),
+    path('credentials/', ScraperCredentialListCreateView.as_view(), name='scraper-credential-list-create'),
+    path('credentials/<str:platform>/', ScraperCredentialDetailView.as_view(), name='scraper-credential-detail'),
 ]
 

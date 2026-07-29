@@ -5,29 +5,33 @@ Client [icon: user, color: blue, label: "Client B2B"]
 Portal [icon: browser, color: blue, label: "Portail Client (Next.js)"]
 DiscoveryAPI [icon: api, color: green, label: "Discovery API (DRF)"]
 LLM_Service [icon: cpu, color: purple, label: "LLM (AI Discovery Engine)"]
+Orange_Kaabu_B2B [icon: database, color: orange, label: "Orange Kaabu CRM"]
 Database [icon: database, color: steel, label: "PostgreSQL Database"]
 KAM_Queue [icon: mail, color: orange, label: "KAM Workspace Queue"]
 
 // Connections
 Client -> Portal: "1. Ouvre le widget / Initie le chat"
 Portal -> DiscoveryAPI: "2. POST /api/discovery/conversations/"
-DiscoveryAPI -> Database: "3. Crée la session en BDD"
+DiscoveryAPI -> Orange_Kaabu_B2B: "3. Vérifie/Crée un profil prospect Kaabu"
+Orange_Kaabu_B2B -> DiscoveryAPI: "4. Retourne Kaabu_ID"
+DiscoveryAPI -> Database: "5. Crée la session en BDD avec Kaabu_ID"
 
 loop "Dialogue de Qualification" {
-  Client -> Portal: "4. Envoie une réponse"
-  Portal -> DiscoveryAPI: "5. POST /api/discovery/conversations/:id/messages/"
-  DiscoveryAPI -> LLM_Service: "6. Analyse du besoin + Extrait profil"
-  LLM_Service -> DiscoveryAPI: "7. Retourne la question suivante + JSON Profil"
-  DiscoveryAPI -> Database: "8. Met à jour extracted_profile"
-  DiscoveryAPI -> Portal: "9. Retourne le message IA"
+  Client -> Portal: "6. Envoie une réponse"
+  Portal -> DiscoveryAPI: "7. POST /api/discovery/conversations/:id/messages/"
+  DiscoveryAPI -> LLM_Service: "8. Analyse du besoin + Extrait profil"
+  LLM_Service -> DiscoveryAPI: "9. Retourne la question suivante + JSON Profil"
+  DiscoveryAPI -> Database: "10. Met à jour extracted_profile"
+  DiscoveryAPI -> Portal: "11. Retourne le message IA"
 }
 
-DiscoveryAPI -> Database: "10. Matchmaking avec le catalogue"
-DiscoveryAPI -> LLM_Service: "11. Génération du Business Twin (Avant/Après)"
-DiscoveryAPI -> Portal: "12. Renvoie recommandations + Twin"
-Portal -> Client: "13. Rendu visuel Premium (Roadmap interactif)"
+DiscoveryAPI -> Database: "12. Matchmaking avec le catalogue"
+DiscoveryAPI -> LLM_Service: "13. Génération du Business Twin (Avant/Après)"
+DiscoveryAPI -> Portal: "14. Renvoie recommandations + Twin"
+Portal -> Client: "15. Rendu visuel Premium (Roadmap interactif)"
 
-Client -> Portal: "14. Clic 'Demander un KAM'"
-Portal -> DiscoveryAPI: "15. POST /api/discovery/conversations/:id/transmit/"
-DiscoveryAPI -> Database: "16. Crée ProspectDossier (status: NEW)"
-DiscoveryAPI -> KAM_Queue: "17. Notifie le KAM"
+Client -> Portal: "16. Clic 'Demander un KAM'"
+Portal -> DiscoveryAPI: "17. POST /api/discovery/conversations/:id/transmit/"
+DiscoveryAPI -> Orange_Kaabu_B2B: "18. Met à jour le statut du lead dans Kaabu"
+DiscoveryAPI -> Database: "19. Crée ProspectDossier (status: NEW)"
+DiscoveryAPI -> KAM_Queue: "20. Notifie le KAM"

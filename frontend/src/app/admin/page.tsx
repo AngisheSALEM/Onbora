@@ -52,6 +52,12 @@ export default function AdminDashboard() {
   const [selectedProposedIndices, setSelectedProposedIndices] = useState<number[]>([]);
   const [ingestError, setIngestError] = useState('');
 
+  // Scraping Credentials States
+  const [scraperCredentials, setScraperCredentials] = useState<any[]>([]);
+  const [isCredsModalOpen, setIsCredsModalOpen] = useState(false);
+  const [selectedCredsPlatform, setSelectedCredsPlatform] = useState('');
+  const [credsCookiesValue, setCredsCookiesValue] = useState('');
+
   // Service Form States
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState('CONNECTIVITY');
@@ -133,9 +139,19 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadCredentials = async () => {
+    try {
+      const data = await fetchAPI('/api/sales/credentials/');
+      setScraperCredentials(data);
+    } catch (err) {
+      console.error("Erreur de chargement des identifiants de scraping:", err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'catalog') {
       loadServices();
+      loadCredentials();
     }
   }, [activeTab]);
 
@@ -148,6 +164,7 @@ export default function AdminDashboard() {
       setLogs(logsData);
       if (activeTab === 'catalog') {
         loadServices();
+        loadCredentials();
       }
     } catch (err) {
       console.error(err);

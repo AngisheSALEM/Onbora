@@ -4,31 +4,34 @@
 KAM_User [icon: user, color: orange, label: "Key Account Manager"]
 KAM_Dashboard [icon: monitor, color: orange, label: "KAM Workspace (Next.js)"]
 KAM_API [icon: api, color: green, label: "KAM API Endpoint (DRF)"]
-Database [icon: database, color: steel, label: "PostgreSQL Database"]
-Orange_CRM [icon: database, color: orange, label: "Orange CRM (Mock)"]
+Database_KAM [icon: database, color: steel, label: "PostgreSQL Database"]
+Orange_Kaabu_KAM [icon: database, color: orange, label: "Orange Kaabu CRM"]
+Orange_Provisioning_KAM [icon: settings, color: red, label: "Orange Provisioning Tool"]
 Client_Portal [icon: browser, color: blue, label: "Client Portal (Next.js)"]
 
 // Connections
 KAM_User -> KAM_Dashboard: "1. Ouvre le workspace"
 KAM_Dashboard -> KAM_API: "2. GET /api/kam/dossiers/"
-KAM_API -> Database: "3. Récupère les nouveaux prospects qualifiés"
-Database -> KAM_API: "4. Données brutes et Business Twin"
+KAM_API -> Database_KAM: "3. Récupère les nouveaux prospects qualifiés"
+Database_KAM -> KAM_API: "4. Données brutes et Business Twin"
 KAM_API -> KAM_Dashboard: "5. Affiche la liste des dossiers à traiter"
 
 KAM_User -> KAM_Dashboard: "6. Ouvre le dossier 'XYZ Corp' et lit le diagnostic IA"
 KAM_User -> KAM_Dashboard: "7. Saisit des notes de cadrage & ajuste l'offre"
 KAM_Dashboard -> KAM_API: "8. PATCH /api/kam/dossiers/:id/"
-KAM_API -> Database: "9. Met à jour les notes et le Business Twin"
+KAM_API -> Database_KAM: "9. Met à jour les notes et le Business Twin"
 
 KAM_User -> KAM_Dashboard: "10. Clique sur 'Accepter et valider'"
 KAM_Dashboard -> KAM_API: "11. POST /api/kam/dossiers/:id/accept/"
-KAM_API -> Database: "12. Enregistre le statut ACCEPTED"
+KAM_API -> Database_KAM: "12. Enregistre le statut ACCEPTED"
 
-group "Intégration Externe" {
-  KAM_API -> Orange_CRM: "13. POST /api/crm/leads/ (Synchro lead)"
-  Orange_CRM -> KAM_API: "14. Retourne Lead_ID CRM"
-  KAM_API -> Database: "15. Enregistre le lien CRM"
+group "Intégrations Externes Orange" {
+  KAM_API -> Orange_Kaabu_KAM: "13. POST /api/crm/opportunities/:id/won/ (Opportunité Gagnée)"
+  Orange_Kaabu_KAM -> KAM_API: "14. Confirmation synchro opportunité"
+  KAM_API -> Orange_Provisioning_KAM: "15. POST /api/provisioning/orders/ (Ordre d'activation technique)"
+  Orange_Provisioning_KAM -> KAM_API: "16. Retourne Order_ID (Statut: PENDING)"
+  KAM_API -> Database_KAM: "17. Enregistre Order_ID & statut technique"
 }
 
-KAM_API -> KAM_Dashboard: "16. Confirmation de succès"
-Database -> Client_Portal: "17. Débloque le module d'Adoption & Formation pour le Client"
+KAM_API -> KAM_Dashboard: "18. Confirmation de succès"
+Database_KAM -> Client_Portal: "19. Débloque le module d'Adoption & Formation pour le Client"

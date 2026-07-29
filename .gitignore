@@ -24,3 +24,12 @@ Thumbs.db
 # Exclude all markdown files except README.md
 **/*.md
 !README.md
+
+# Reports
+rapport/
+
+# Local diagrams and notes
+Uml.txt
+Taches.txt
+amelioration .txt
+

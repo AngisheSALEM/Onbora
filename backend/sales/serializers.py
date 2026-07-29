@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Enterprise, VisitPreparation, VisitReport
+from .models import Enterprise, VisitPreparation, VisitReport, ScraperCredential
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,10 @@ class VisitReportSerializer(serializers.ModelSerializer):
 
     def get_has_dossier(self, obj):
         return obj.dossiers.exists()
+
+
+class ScraperCredentialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScraperCredential
+        fields = ['id', 'platform', 'cookies_value', 'updated_at']
+        read_only_fields = ['id', 'updated_at']

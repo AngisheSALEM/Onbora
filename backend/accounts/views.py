@@ -33,9 +33,19 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from .models import User
+
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
         serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class KAMListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        kams = User.objects.filter(role=User.KAM)
+        serializer = UserSerializer(kams, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

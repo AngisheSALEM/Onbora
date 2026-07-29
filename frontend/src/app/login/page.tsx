@@ -135,38 +135,45 @@ export default function LoginPage() {
         </form>
 
         <div className="border-t border-zinc-200 dark:border-zinc-800/80 pt-5">
-          <h3 className="text-[10px] font-bold text-zinc-550 dark:text-zinc-500 uppercase tracking-widest mb-3">
-            Comptes de démonstration
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => handleDemoClick('client', 'clientpass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+              ⚡ Connexion Rapide (Comptes de Démo)
+            </label>
+            <select
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                const [demoUser, demoPass] = val.split(':');
+                setUsername(demoUser);
+                setPassword(demoPass);
+                setError('');
+              }}
+              defaultValue=""
+              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-orange-500 transition-all cursor-pointer shadow-sm"
             >
-              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Client B2B</span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">client / clientpass</span>
-            </button>
-            <button
-              onClick={() => handleDemoClick('sales', 'salespass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
-            >
-              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Prospecteur</span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">sales / salespass</span>
-            </button>
-            <button
-              onClick={() => handleDemoClick('kam', 'kampass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
-            >
-              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Key Account Mgr</span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">kam / kampass</span>
-            </button>
-            <button
-              onClick={() => handleDemoClick('admin', 'adminpass')}
-              className="flex flex-col items-start p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800/60 dark:hover:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/30 text-left transition-all group cursor-pointer"
-            >
-              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-orange-500 transition-colors">Admin MSP</span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">admin / adminpass</span>
-            </button>
+              <option value="" disabled className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-250">-- Choisir un compte de démonstration --</option>
+              <optgroup label="Prospecteurs / Commerciaux (Sales)" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
+                <option value="sales1:sales1pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">sales1 - Alice Martin (SNCF Connect)</option>
+                <option value="sales2:sales2pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">sales2 - Robert Durand</option>
+                <option value="sales3:sales3pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">sales3 - Clara Dubois</option>
+              </optgroup>
+              <optgroup label="Key Account Managers (KAM)" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
+                <option value="kam1:kam1pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">kam1 - Pierre Richard</option>
+                <option value="kam2:kam2pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">kam2 - Chloé Mercier</option>
+                <option value="kam3:kam3pass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">kam3 - Thomas Legrand</option>
+              </optgroup>
+
+              <optgroup label="Administrateur MSP" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
+                <option value="admin:adminpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">admin - Sophie Bernard</option>
+              </optgroup>
+              <optgroup label="Clients B2B (Startups & ETI)" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
+                <option value="client_sncf:client_sncfpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">client_sncf - SNCF Connect (Transport)</option>
+                <option value="client_doctolib:client_doctolibpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">client_doctolib - Doctolib Pro (Santé)</option>
+                <option value="client_decathlon:client_decathlonpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">client_decathlon - Decathlon Retail (Sport)</option>
+                <option value="client_backmarket:client_backmarketpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">client_backmarket - BackMarket HQ (Tech)</option>
+                <option value="client_alan:client_alanpass" className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">client_alan - Alan Assurance (Fintech)</option>
+              </optgroup>
+            </select>
           </div>
         </div>
       </div>

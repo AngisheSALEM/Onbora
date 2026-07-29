@@ -15,6 +15,11 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || errorData.non_field_errors?.[0] || 'Une erreur est survenue.');
   }

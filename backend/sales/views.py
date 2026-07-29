@@ -403,3 +403,57 @@ class VoiceUploadView(APIView):
             "transcript": transcript
         }, status=status.HTTP_200_OK)
 
+
+from .models import ScraperCredential
+from .serializers import ScraperCredentialSerializer
+from accounts.permissions import IsAdmin
+
+class ScraperCredentialListCreateView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        creds = ScraperCredential.objects.all()
+        serializer = ScraperCredentialSerializer(creds, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ScraperCredentialSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ScraperCredentialDetailView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get_object(self, platform):
+        try:
+            return ScraperCredential.objects.get(platform=platform.upper())
+        except ScraperCredential.DoesNotExist:
+            return None
+
+    def get(self, request, platform):
+        cred = self.get_object(platform)
+        if not cred:
+            return Response({"detail": "Identifiants introuvables pour cette plateforme."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ScraperCredentialSerializer(cred)
+        return Response(serializer.data)
+
+    def put(self, request, platform):
+        cred = self.get_object(platform)
+        if not cred:
+            return Response({"detail": "Identifiants introuvables pour cette plateforme."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ScraperCredentialSerializer(cred, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, platform):
+        cred = self.get_object(platform)
+        if not cred:
+            return Response({"detail": "Identifiants introuvables pour cette plateforme."}, status=status.HTTP_404_NOT_FOUND)
+        cred.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

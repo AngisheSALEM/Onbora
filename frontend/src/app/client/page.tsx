@@ -26,6 +26,13 @@ interface Service {
   reasoning: string;
 }
 
+interface Twin {
+  current_state: string[];
+  proposed_state: string[];
+  roadmap: string[];
+  recommended_services: Service[];
+}
+
 const mapServiceNameToKey = (name: string): string => {
   const n = name.toLowerCase();
   if (n.includes('fibre') || n.includes('sd-wan')) return 'fibre';

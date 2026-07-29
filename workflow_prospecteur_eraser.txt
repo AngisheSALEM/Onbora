@@ -4,28 +4,32 @@
 Salesperson [icon: user, color: emerald, label: "Prospecteur Terrain"]
 SalesApp [icon: tablet, color: emerald, label: "Interface Mobile/Tablette (Next.js)"]
 SalesAPI [icon: api, color: green, label: "Sales API (DRF)"]
+Orange_Kaabu_Sales [icon: database, color: orange, label: "Orange Kaabu CRM"]
 LLM_Whisper [icon: cpu, color: purple, label: "AI Core (Whisper & LLM)"]
-Database [icon: database, color: steel, label: "PostgreSQL Database"]
+Database_Sales [icon: database, color: steel, label: "PostgreSQL Database"]
 KAM_Workspace [icon: mail, color: orange, label: "KAM Workspace Queue"]
 
 // Connections
 Salesperson -> SalesApp: "1. Recherche entreprise 'XYZ'"
 SalesApp -> SalesAPI: "2. POST /api/sales/visit-preparations/"
-SalesAPI -> LLM_Whisper: "3. Demande génération de brief avant-visite"
-LLM_Whisper -> SalesAPI: "4. Retourne le brief (pitch, questions clés)"
-SalesAPI -> Database: "5. Enregistre la préparation"
-SalesAPI -> SalesApp: "6. Affiche la fiche de préparation"
+SalesAPI -> Orange_Kaabu_Sales: "3. Interroge Kaabu pour historique & contacts"
+Orange_Kaabu_Sales -> SalesAPI: "4. Retourne les infos existantes"
+SalesAPI -> LLM_Whisper: "5. Génère le brief avant-visite sur mesure"
+LLM_Whisper -> SalesAPI: "6. Retourne le brief (pitch, questions clés)"
+SalesAPI -> Database_Sales: "7. Enregistre la préparation"
+SalesAPI -> SalesApp: "8. Affiche la fiche de préparation"
 
-Salesperson -> SalesApp: "7. Démarre l'enregistrement audio pendant le RDV"
-Salesperson -> SalesApp: "8. Clôture le RDV et envoie l'audio"
-SalesApp -> SalesAPI: "9. POST /api/sales/visit-reports/ (Upload .mp3)"
+Salesperson -> SalesApp: "9. Démarre l'enregistrement audio pendant le RDV"
+Salesperson -> SalesApp: "10. Clôture le RDV et envoie l'audio"
+SalesApp -> SalesAPI: "11. POST /api/sales/visit-reports/ (Upload .mp3)"
 
-SalesAPI -> LLM_Whisper: "10. Transcrit l'audio (Whisper) + Extrait insights"
-LLM_Whisper -> SalesAPI: "11. Renvoie le rapport structuré + Brouillon mail"
-SalesAPI -> Database: "12. Enregistre le rapport de visite"
-SalesAPI -> SalesApp: "13. Propose le rapport généré pour révision"
+SalesAPI -> LLM_Whisper: "12. Transcrit l'audio (Whisper) + Extrait insights"
+LLM_Whisper -> SalesAPI: "13. Renvoie le rapport structuré + Brouillon mail"
+SalesAPI -> Database_Sales: "14. Enregistre le rapport de visite"
+SalesAPI -> SalesApp: "15. Propose le rapport généré pour révision"
 
-Salesperson -> SalesApp: "14. Modifie et clique sur 'Transmettre'"
-SalesApp -> SalesAPI: "15. POST /api/sales/visit-reports/:id/transmit/"
-SalesAPI -> Database: "16. Crée ProspectDossier (status: NEW)"
-SalesAPI -> KAM_Workspace: "17. Notifie le KAM"
+Salesperson -> SalesApp: "16. Modifie et clique sur 'Transmettre'"
+SalesApp -> SalesAPI: "17. POST /api/sales/visit-reports/:id/transmit/"
+SalesAPI -> Orange_Kaabu_Sales: "18. Synchro rapport de visite & mise à jour opportunité"
+SalesAPI -> Database_Sales: "19. Crée ProspectDossier (status: NEW)"
+SalesAPI -> KAM_Workspace: "20. Notifie le KAM"

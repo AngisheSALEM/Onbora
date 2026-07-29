@@ -92,3 +92,32 @@ class SalesAPITestCase(APITestCase):
         self.assertIn('transcript', response.data)
         self.assertIn('HDS', response.data['transcript'])
 
+    def test_scraper_credentials_permissions(self):
+        # 1. Non-admin salesperson should get 403
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        list_url = reverse('scraper-credential-list-create')
+        
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # 2. Admin should get 200
+        admin_user = User.objects.create_user(
+            username='admin_test', password='password123', role=User.ADMIN
+        )
+        admin_token = Token.objects.create(user=admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+        
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+        
+        # 3. Admin can create credentials
+        post_data = {
+            "platform": "LINKEDIN",
+            "cookies_value": "li_at=testcookie123"
+        }
+        response = self.client.post(list_url, post_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['platform'], 'LINKEDIN')
+        self.assertEqual(response.data['cookies_value'], 'li_at=testcookie123')
+

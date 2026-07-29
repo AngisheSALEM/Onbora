@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import ProspectDossier
 
-# Register your models here.
+@admin.register(ProspectDossier)
+class ProspectDossierAdmin(admin.ModelAdmin):
+    list_display = ['id', 'source', 'status', 'kam', 'created_at']
+    list_filter = ['status', 'source', 'kam']
+    list_editable = ['kam', 'status']
+    search_fields = ['raw_qualification_data']

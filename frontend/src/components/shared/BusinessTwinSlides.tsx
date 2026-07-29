@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
 import { Icons } from './Icons';
 
@@ -19,33 +19,63 @@ interface Twin {
   recommended_services: Service[];
 }
 
+interface Slide {
+  id: string;
+  title: string;
+  type: 'welcome' | 'diagnostic' | 'chart' | 'services' | 'roadmap' | 'custom';
+  content: {
+    subtitle?: string;
+    description?: string;
+    items?: string[];
+    targetItems?: string[];
+    metrics?: { label: string; before: number; after: number }[];
+    services?: { name: string; priority: string; reasoning: string }[];
+    roadmap?: string[];
+    customText?: string;
+  };
+  notes: string;
+}
+
 interface BusinessTwinSlidesProps {
   twin: Twin;
   companyName?: string;
   isMiniPreview?: boolean;
   onOpenFull?: () => void;
+  slides?: Slide[];
+  initialSlide?: number;
 }
 
 export default function BusinessTwinSlides({
   twin,
   companyName = "votre entreprise",
   isMiniPreview = false,
-  onOpenFull
+  onOpenFull,
+  slides,
+  initialSlide = 0
 }: BusinessTwinSlidesProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(initialSlide);
 
-  const services = twin.recommended_services || [];
+  useEffect(() => {
+    setCurrentSlide(initialSlide);
+  }, [initialSlide]);
+
+  const totalSlides = slides ? slides.length : 5;
+
+  const services = slides && slides[3] 
+    ? (slides[3].content.services || []) 
+    : (twin.recommended_services || []);
+
   const hasNetwork = services.some(s => s.name.toLowerCase().includes('fibre') || s.name.toLowerCase().includes('sd-wan'));
   const hasSecurity = services.some(s => s.name.toLowerCase().includes('firewall') || s.name.toLowerCase().includes('edr'));
   const hasCollab = services.some(s => s.name.toLowerCase().includes('365') || s.name.toLowerCase().includes('teams') || s.name.toLowerCase().includes('téléphonie'));
 
-  const metrics = [
-    { label: 'Débit / Réseau', before: 20, after: hasNetwork ? 95 : 45 },
-    { label: 'Cybersécurité', before: 15, after: hasSecurity ? 98 : 40 },
-    { label: 'Collaboration', before: 35, after: hasCollab ? 90 : 55 }
-  ];
-
-  const totalSlides = 5;
+  const metrics = slides && slides[2] && slides[2].content.metrics
+    ? slides[2].content.metrics
+    : [
+        { label: 'Débit / Réseau', before: 20, after: hasNetwork ? 95 : 45 },
+        { label: 'Cybersécurité', before: 15, after: hasSecurity ? 98 : 40 },
+        { label: 'Collaboration', before: 35, after: hasCollab ? 90 : 55 }
+      ];
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -93,6 +123,202 @@ export default function BusinessTwinSlides({
 
   // Slide Render Switcher
   const renderSlideContent = () => {
+    // If slides array is passed and we have it, we use its details
+    if (slides && slides[currentSlide]) {
+      const slide = slides[currentSlide];
+      
+      switch (slide.type) {
+        case 'welcome':
+          return (
+            <div className="flex flex-col items-center justify-center text-center h-full gap-4 animate-fade-in p-6">
+              <Logo size={60} showBg={true} className="mb-2 shadow-sm shadow-orange-500/20" />
+              <h2 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
+                {slide.title || "Transformation MSP"}
+              </h2>
+              <div className="h-0.5 w-12 orange-gradient-bg" />
+              <p className="text-sm text-zinc-650 dark:text-zinc-350 max-w-md font-medium leading-relaxed">
+                {slide.content.subtitle || "Jumeau Numérique & Plan de transition technologique modélisé pour"}
+              </p>
+              <span className="px-3.5 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 text-orange-500 text-xs font-bold shadow-sm shadow-orange-500/10 uppercase tracking-wider">
+                {companyName}
+              </span>
+            </div>
+          );
+
+        case 'diagnostic':
+          return (
+            <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+              <div>
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                  <Icons.AlertCircle className="text-orange-500" size={14} />
+                  {slide.title}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2.5 my-3 overflow-y-auto max-h-[220px] pr-1">
+                {(slide.content.items || []).map((state, idx) => (
+                  <div key={idx} className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-900">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase">Situation Actuelle</span>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-normal">{state}</p>
+                    </div>
+                    <div className="flex flex-col gap-1 border-l border-zinc-150 dark:border-zinc-900 pl-3">
+                      <span className="text-[9px] font-bold text-orange-500 uppercase">Cible MSP</span>
+                      <p className="text-xs text-zinc-800 dark:text-zinc-200 font-semibold leading-normal">
+                        {slide.content.targetItems?.[idx] || "Solution d'intégration optimisée"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-zinc-500 font-medium text-center">
+                Onbora analyse les anomalies réseau pour projeter le futur état de service.
+              </p>
+            </div>
+          );
+
+        case 'chart':
+          return (
+            <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+              <div>
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                  <Icons.LineChart className="text-orange-500" size={14} />
+                  {slide.title}
+                </h3>
+              </div>
+
+              {/* SVG Comparison Graph */}
+              <div className="my-2 p-3 bg-zinc-50/50 dark:bg-zinc-950/30 rounded-xl border border-zinc-150 dark:border-zinc-900 flex flex-col gap-4">
+                {(slide.content.metrics || []).map((m, idx) => (
+                  <div key={idx} className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">{m.label}</span>
+                      <div className="flex gap-2 text-[10px] font-bold">
+                        <span className="text-zinc-500">Avant: {m.before}%</span>
+                        <span className="text-orange-500">Après: {m.after}%</span>
+                      </div>
+                    </div>
+                    {/* Custom SVG Bar Graph */}
+                    <div className="relative h-6 bg-zinc-100 dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-900 flex items-center px-1">
+                      {/* Before Bar */}
+                      <div 
+                        className="absolute left-0 top-0 bottom-0 bg-zinc-300/50 dark:bg-zinc-800/60 border-r border-zinc-400 dark:border-zinc-700 transition-all duration-1000"
+                        style={{ width: `${m.before}%` }}
+                      />
+                      {/* After Bar */}
+                      <div 
+                        className="absolute left-0 top-1 bottom-1 orange-gradient-bg rounded-md opacity-90 transition-all duration-1000"
+                        style={{ width: `${m.after}%` }}
+                      />
+                      {/* Labels over bar */}
+                      <span className="relative z-10 text-[9px] font-black text-white pl-2">
+                        +{m.after - m.before}% de performance
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-zinc-500 font-medium text-center">
+                Le graphique d'impact montre le gain estimé après migration fibre et cloud.
+              </p>
+            </div>
+          );
+
+        case 'services':
+          return (
+            <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+              <div>
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                  <Icons.Sparkles className="text-orange-500" size={14} />
+                  {slide.title}
+                </h3>
+              </div>
+
+              <div className="my-2 overflow-y-auto max-h-[220px] flex flex-col gap-2 pr-1">
+                {(slide.content.services || []).map((s, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-900 flex flex-col gap-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{s.name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                        s.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                        s.priority === 'HIGH' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
+                        'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                      }`}>
+                        {s.priority}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-normal">{s.reasoning}</p>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-zinc-500 font-medium text-center">
+                Chaque recommandation répond à une problématique détectée pendant l'audit.
+              </p>
+            </div>
+          );
+
+        case 'roadmap':
+          return (
+            <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+              <div>
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                  <Icons.Activity className="text-orange-500" size={14} />
+                  {slide.title}
+                </h3>
+              </div>
+
+              <div className="my-2 overflow-y-auto max-h-[220px] flex flex-col gap-2 pr-1">
+                {(slide.content.roadmap || []).map((step, idx) => (
+                  <div key={idx} className="flex gap-3 items-start p-2.5 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-900">
+                    <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Étape {idx + 1}</span>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed mt-0.5">{step}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-zinc-500 font-medium text-center">
+                Planification séquentielle recommandée pour minimiser les interruptions de service.
+              </p>
+            </div>
+          );
+
+        case 'custom':
+        default:
+          return (
+            <div className="flex flex-col h-full justify-between animate-fade-in p-5">
+              <div>
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                  <Icons.Sparkles className="text-orange-500" size={14} />
+                  {slide.title}
+                </h3>
+              </div>
+              <div className="my-2 flex-1 flex flex-col justify-center overflow-y-auto max-h-[220px]">
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                  {slide.content.customText || slide.content.description || ''}
+                </p>
+              </div>
+              <p className="text-[10px] text-zinc-500 font-medium text-center">
+                Diapositive personnalisée modélisée dans l'éditeur.
+              </p>
+            </div>
+          );
+      }
+    }
+
+    // Fallback switch if no slides prop is passed (maintains old behavior)
     switch (currentSlide) {
       case 0:
         return (

@@ -4,11 +4,13 @@ from .views import (
     MessageCreateView,
     ConversationRecommendationsView,
     ConversationTransmitView,
-    ConversationExportView
+    ConversationExportView,
+    ConversationDetailView
 )
 
 urlpatterns = [
     path('conversations/', ConversationCreateView.as_view(), name='conversation-create'),
+    path('conversations/<int:pk>/', ConversationDetailView.as_view(), name='conversation-detail'),
     path('conversations/<int:pk>/messages/', MessageCreateView.as_view(), name='message-create'),
     path('conversations/<int:pk>/recommendations/', ConversationRecommendationsView.as_view(), name='conversation-recommendations'),
     path('conversations/<int:pk>/transmit/', ConversationTransmitView.as_view(), name='conversation-transmit'),

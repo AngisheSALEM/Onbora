@@ -38,6 +38,7 @@ class KamAPITestCase(APITestCase):
             conversation=self.conversation,
             source=ProspectDossier.INBOUND_CONVERSATION,
             status=ProspectDossier.NEW,
+            kam=self.kam_user,
             raw_qualification_data={"profile": self.conversation.extracted_profile}
         )
         self.twin = BusinessTwin.objects.create(

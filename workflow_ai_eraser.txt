@@ -1,31 +1,36 @@
 // AI Integration Workflows - Onbora Diagram Code
 // Paste this code schema directly into eraser.io (Diagram-as-Code mode)
 
-group Inbound_AI_Flow [color: blue] {
-  UserMsg [icon: message-square, color: blue, label: "Message Utilisateur"]
-  DiscoveryAgent [icon: cpu, color: blue, label: "Agent Discovery Chat"]
-  Extractor [icon: file-text, color: blue, label: "JSON Profile Extractor"]
-  TwinGenerator [icon: refresh-cw, color: blue, label: "Business Twin Generator"]
+group Inbound_AI_Flow_WF [color: blue] {
+  UserMsg_WF [icon: message-square, color: blue, label: "Message Utilisateur"]
+  DiscoveryAgent_WF [icon: cpu, color: blue, label: "Agent Discovery Chat"]
+  Extractor_WF [icon: file-text, color: blue, label: "JSON Profile Extractor"]
+  TwinGenerator_WF [icon: refresh-cw, color: blue, label: "Business Twin Generator"]
 }
 
-group Outbound_AI_Flow [color: emerald] {
-  CompanyWeb [icon: globe, color: emerald, label: "Scraped Web Data"]
-  BriefAgent [icon: cpu, color: emerald, label: "Brief Generator"]
-  MeetingAudio [icon: music, color: emerald, label: "Meeting Audio (.mp3)"]
-  WhisperAPI [icon: volume-2, color: emerald, label: "Whisper Transcription"]
-  ReportAgent [icon: cpu, color: emerald, label: "Visit Report Extractor"]
+group Outbound_AI_Flow_WF [color: emerald] {
+  CompanyWeb_WF [icon: globe, color: emerald, label: "Scraped Web Data"]
+  BriefAgent_WF [icon: cpu, color: emerald, label: "Brief Generator"]
+  MeetingAudio_WF [icon: music, color: emerald, label: "Meeting Audio (.mp3)"]
+  WhisperAPI_WF [icon: volume-2, color: emerald, label: "Whisper Transcription"]
+  ReportAgent_WF [icon: cpu, color: emerald, label: "Visit Report Extractor"]
+}
+
+group Kaabu_Out_Sync [color: orange] {
+  OrangeKaabu_WF [icon: database, color: orange, label: "Orange Kaabu CRM"]
 }
 
 // Connections Inbound
-UserMsg -> DiscoveryAgent : "Fournit texte brut"
-DiscoveryAgent -> Extractor : "Extrait entités"
-Extractor -> TwinGenerator : "Transmet extracted_profile (JSON)"
-TwinGenerator -> TwinGenerator : "Match avec catalogue & génère roadmap"
+UserMsg_WF -> DiscoveryAgent_WF : "Fournit texte brut"
+DiscoveryAgent_WF -> Extractor_WF : "Extrait entités"
+Extractor_WF -> TwinGenerator_WF : "Transmet extracted_profile (JSON)"
+TwinGenerator_WF -> TwinGenerator_WF : "Match avec catalogue & génère roadmap"
 
 // Connections Outbound
-CompanyWeb -> BriefAgent : "Donne contexte public"
-BriefAgent -> BriefAgent : "Génère pitch & hypothèses"
+CompanyWeb_WF -> BriefAgent_WF : "Donne contexte public"
+BriefAgent_WF -> BriefAgent_WF : "Génère pitch & hypothèses"
 
-MeetingAudio -> WhisperAPI : "Envoie l'enregistrement"
-WhisperAPI -> ReportAgent : "Donne la transcription textuelle"
-ReportAgent -> ReportAgent : "Génère résumé, objections & brouillon email"
+MeetingAudio_WF -> WhisperAPI_WF : "Envoie l'enregistrement"
+WhisperAPI_WF -> ReportAgent_WF : "Donne la transcription textuelle"
+ReportAgent_WF -> ReportAgent_WF : "Génère résumé, objections & brouillon email"
+ReportAgent_WF -> OrangeKaabu_WF : "Pousse le compte-rendu d'activités automatiquement dans le CRM"

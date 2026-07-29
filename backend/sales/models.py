@@ -46,3 +46,18 @@ class VisitReport(models.Model):
 
     def __str__(self):
         return f"Rapport: {self.preparation.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
+
+
+class ScraperCredential(models.Model):
+    PLATFORM_CHOICES = [
+        ('LINKEDIN', 'LinkedIn'),
+        ('TWITTER', 'Twitter / X'),
+        ('TIKTOK', 'TikTok'),
+        ('FACEBOOK', 'Facebook'),
+    ]
+    platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, unique=True)
+    cookies_value = models.TextField(help_text="Chaîne brute des cookies ou valeur au format JSON.")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Identifiants de Scraping : {self.get_platform_display()}"
