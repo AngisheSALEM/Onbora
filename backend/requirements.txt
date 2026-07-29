@@ -8,5 +8,5 @@ redis>=5.0.0
 python-dotenv>=1.0.0
 PyPDF2>=3.0.0
 reportlab>=4.0.0
-agent-reach
+git+https://github.com/Panniantong/agent-reach.git
 
