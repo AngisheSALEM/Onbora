@@ -1,0 +1,41 @@
+# Render Blueprint specification for Onbora
+# See https://render.com/docs/blueprints for details
+services:
+  - type: web
+    name: onbora-backend
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
+    startCommand: gunicorn onbora.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: onbora-db
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: onbora-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: onbora-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: onbora-db
+          property: password
+      - key: DB_PORT
+        fromDatabase:
+          name: onbora-db
+          property: port
+
+databases:
+  - name: onbora-db
+    databaseName: onbora_db
+    user: onbora_user
+    plan: free
