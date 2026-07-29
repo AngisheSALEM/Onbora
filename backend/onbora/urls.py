@@ -16,8 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+
+def api_root(request):
+    return JsonResponse({
+        "status": "running",
+        "project": "Onbora API",
+        "version": "1.0.0",
+        "endpoints": {
+            "admin": "/admin/",
+            "auth": "/api/auth/",
+            "discovery": "/api/discovery/",
+            "kam": "/api/kam/",
+            "sales": "/api/sales/",
+            "reporting": "/api/reporting/",
+            "catalog": "/api/catalog/"
+        }
+    })
 
 urlpatterns = [
+    path('', api_root),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/discovery/', include('discovery.urls')),
