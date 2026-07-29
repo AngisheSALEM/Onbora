@@ -6,7 +6,7 @@ services:
     env: python
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate && python manage.py seed_catalog && python manage.py seed_demo_users
     startCommand: gunicorn onbora.wsgi:application
     envVars:
       - key: DEBUG
