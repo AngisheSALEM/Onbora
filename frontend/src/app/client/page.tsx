@@ -8,6 +8,7 @@ import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
 import BusinessTwinSlides from '@/components/shared/BusinessTwinSlides';
+import Link from 'next/link';
 
 interface Message {
   id: number;
@@ -58,7 +59,6 @@ export default function ClientDiscoveryPage() {
   const [billingAddress, setBillingAddress] = useState('');
   const [rightTab, setRightTab] = useState<'twin' | 'orders'>('twin');
   const [dossierDetails, setDossierDetails] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'chat' | 'profile'>('chat');
   
   // Gemini history & Accordion layout states
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -750,46 +750,7 @@ export default function ClientDiscoveryPage() {
     initConversation();
   }, []);
 
-  // Poll for conversation updates (including dossier and provisioning status)
-  useEffect(() => {
-    if (!conversationId) return;
-    
-    // Only poll if there is a dossier and its status is transitional (IN_REVIEW or ACCEPTED)
-    const dossierStatus = dossierDetails?.status;
-    const shouldPoll = dossierDetails && (dossierStatus === 'IN_REVIEW' || dossierStatus === 'ACCEPTED');
-    
-    if (!shouldPoll) return;
-    
-    const interval = setInterval(async () => {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const token = localStorage.getItem('token');
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (token) {
-          headers['Authorization'] = `Token ${token}`;
-        }
-        const res = await fetch(`${API_URL}/api/discovery/conversations/${conversationId}/`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.dossier_details) {
-            setDossierDetails(data.dossier_details);
-            if (data.dossier_details.status === 'IN_REVIEW' || data.dossier_details.status === 'ACCEPTED') {
-              setTransmissionSuccess(true);
-            } else {
-              setTransmissionSuccess(false);
-            }
-            if (data.dossier_details.has_twin) {
-              setIsQualified(true);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Erreur de rafraîchissement automatique:", e);
-      }
-    }, 5000); // Poll every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, [conversationId, dossierDetails?.status]);
+
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -1049,137 +1010,38 @@ export default function ClientDiscoveryPage() {
   return (
     <ProtectedRoute allowedRoles={['CLIENT_B2B', 'ADMIN']}>
       <div className="h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50 overflow-hidden">
-        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
-          {/* Left Corner: Hamburger + Logo/Title + Model Dropdown */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg hover:bg-zinc-150/50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 cursor-pointer transition-colors"
-              title={sidebarOpen ? "Fermer le menu latéral" : "Ouvrir le menu latéral"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="12" x2="20" y2="12"></line>
-                <line x1="4" y1="6" x2="20" y2="6"></line>
-                <line x1="4" y1="18" x2="20" y2="18"></line>
-              </svg>
-            </button>
-            
-            {/* Logo/Title only when Sidebar is closed */}
-            {!sidebarOpen && (
-              <div className="hidden sm:flex items-center gap-2 select-none">
-                <Logo size={24} showBg={true} />
-                <span className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</span>
-              </div>
-            )}
-
-            {/* Model Selector Dropdown (Gemini style) */}
-            <div className="relative">
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="text-[10px] sm:text-xs px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 font-bold cursor-pointer hover:border-orange-500/50 focus:outline-none focus:border-orange-500 transition-all shadow-sm"
-              >
-                <option value="Onbora Hybrid (Gemini 1.5 Flash)">Onbora Hybrid (Gemini 1.5 Flash)</option>
-                <option value="Onbora Pro (Gemini 1.5 Pro)">Onbora Pro (Gemini 1.5 Pro)</option>
-                <option value="Onbora Sandbox (Local LLM)">Onbora Sandbox (Local LLM)</option>
-              </select>
+        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
+          {/* Left Corner: Static Logo and Title (No hamburger, no selector dropdown) */}
+          <div className="flex items-center gap-3 select-none">
+            <Logo size={28} showBg={true} />
+            <div>
+              <h1 className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-55 uppercase leading-none">Onbora</h1>
+              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote de Découverte B2B</p>
             </div>
           </div>
 
-          {/* Right Corner: Temporary button, avatar (mobile) and navigation controls */}
-          <div className="flex items-center gap-2 sm:gap-3.5">
-            {/* Discussions Temporaires Toggle button */}
-            <button
-              onClick={() => {
-                setTemporaryChatActive(!temporaryChatActive);
-                if (!temporaryChatActive) {
-                  alert("Discussions temporaires activées : l'historique de cette session ne sera pas sauvegardé.");
-                }
-              }}
-              className={`p-1.5 rounded-lg border cursor-pointer transition-all flex items-center justify-center gap-1.5 relative group ${
-                temporaryChatActive
-                  ? 'border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm animate-pulse'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-              }`}
-              title="Activer les discussions temporaires (Discussions éphémères)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <span className="absolute top-full right-0 mt-2 hidden group-hover:block bg-zinc-900 text-white text-[8px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
-                {temporaryChatActive ? "Discussions temporaires : Actif" : "Activer les discussions temporaires"}
-              </span>
-            </button>
+          {/* Right Corner: ThemeToggle, Voice Call button, and Espace Profil Link avatar */}
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
 
-            {/* Mobile User Profile Avatar (visible only on mobile) */}
-            <div className="md:hidden">
-              <div 
-                onClick={() => setCurrentView(currentView === 'profile' ? 'chat' : 'profile')}
-                className="w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs border-2 border-white dark:border-zinc-950 cursor-pointer shadow-sm select-none"
-                title="Mon Espace Profil"
-              >
-                {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
-              </div>
-            </div>
-
-            {/* MVP banner (Desktop only) */}
-            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden lg:inline-block shadow-sm">
-              Intégration simulée pour le MVP
-            </span>
-
-            {/* Voice call button (Desktop only) */}
+            {/* Voice call button (Always visible as it replaces stopwatch/discussions temporaires) */}
             <button
               onClick={startVoiceCall}
-              className="hidden sm:flex px-2.5 py-1.5 rounded-lg border border-orange-500/30 hover:border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer items-center gap-1.5 animate-pulse"
+              className="flex px-3 py-1.5 rounded-lg border border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-sm shadow-orange-500/10"
               title="Commencer un chat vocal direct avec Onbora"
             >
               <Icons.Phone size={14} />
-              <span className="hidden lg:inline">Appel Vocal</span>
+              <span>Appel Vocal</span>
             </button>
 
-            {/* Espace Profil toggle (Desktop only) */}
-            <button
-              onClick={() => setCurrentView(currentView === 'chat' ? 'profile' : 'chat')}
-              className={`hidden md:flex px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer items-center gap-1.5 font-bold text-xs ${
-                currentView === 'profile'
-                  ? 'border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/10'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
-              }`}
-              title="Basculer vers mon Espace Profil ou le Chat"
+            {/* User Profile Avatar Link to separate route /client/profile */}
+            <Link 
+              href="/client/profile"
+              className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-extrabold text-xs border-2 border-white dark:border-zinc-955 cursor-pointer shadow-sm hover:scale-105 active:scale-98 transition-all select-none"
+              title="Accéder à mon Espace Profil & Commandes"
             >
-              {currentView === 'profile' ? (
-                <>
-                  <Icons.MessageSquare size={14} />
-                  <span className="hidden lg:inline">Chat</span>
-                </>
-              ) : (
-                <>
-                  <Icons.Users size={14} />
-                  <span className="hidden lg:inline">Mon Espace Profil</span>
-                </>
-              )}
-            </button>
-
-            {/* FAQ button (Desktop only) */}
-            <button
-              onClick={() => setHelpOpen(true)}
-              className="hidden md:flex px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer items-center gap-1.5"
-              title="FAQ & Guide d'Utilisation"
-            >
-              <Icons.HelpCircle size={14} />
-              <span className="hidden lg:inline">FAQ & Guide</span>
-            </button>
-
-            {/* Logout button (Desktop only) */}
-            <button
-              onClick={logout}
-              className="hidden md:flex px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-955 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer items-center gap-1.5"
-              title="Se déconnecter"
-            >
-              <Icons.LogOut size={14} />
-              <span className="hidden lg:inline">Déconnexion</span>
-            </button>
+              {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
+            </Link>
           </div>
         </header>
 
@@ -1228,39 +1090,7 @@ export default function ClientDiscoveryPage() {
                 <span className="text-sm font-light">+</span> Nouvelle qualification
               </button>
 
-              {/* Navigation Menu List */}
-              <div className="flex flex-col gap-0.5 mt-1">
-                <button 
-                  onClick={() => alert("Recherche d'activités en cours...")}
-                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
-                >
-                  <Icons.Search size={13} className="text-zinc-400 shrink-0" />
-                  <span>Rechercher</span>
-                </button>
-                <button 
-                  onClick={() => setHelpOpen(true)}
-                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 shrink-0">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                  <span>Vidéos</span>
-                </button>
-                <button 
-                  onClick={() => setHelpOpen(true)}
-                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
-                >
-                  <Icons.BookOpen size={13} className="text-zinc-400 shrink-0" />
-                  <span>Bibliothèque</span>
-                </button>
-                <button 
-                  onClick={() => alert("Gems Onbora - Personnalisez vos copilotes de vente.")}
-                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/55 cursor-pointer text-left transition-all"
-                >
-                  <Icons.Sparkles size={13} className="text-zinc-400 shrink-0" />
-                  <span>Gems</span>
-                </button>
-              </div>
+
             </div>
 
             {/* Partie Centrale (Formations Accordion + Suivi Commandes + Historique Récent - Scrollable) */}
@@ -1487,16 +1317,13 @@ export default function ClientDiscoveryPage() {
               </div>
               
               {/* Bouton Paramètres (icône Engrenage) */}
-              <button
-                onClick={() => {
-                  setCurrentView(currentView === 'profile' ? 'chat' : 'profile');
-                  alert("Ouverture des paramètres du compte... Basculement vers l'Espace Profil.");
-                }}
+              <Link
+                href="/client/profile"
                 className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-900 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer transition-colors shrink-0"
-                title="Paramètres de l'application"
+                title="Mon Espace Profil & Paramètres"
               >
                 <Icons.Settings size={15} />
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -1511,9 +1338,8 @@ export default function ClientDiscoveryPage() {
             />
           )}
 
-          {/* Left panel: Chat discovery OR Profile Space View */}
-          {currentView === 'chat' ? (
-            <div className="flex-1 flex flex-col bg-transparent overflow-hidden border-r border-zinc-200 dark:border-zinc-900 relative">
+          {/* Left panel: Chat discovery */}
+          <div className="flex-1 flex flex-col bg-transparent overflow-hidden border-r border-zinc-200 dark:border-zinc-900 relative">
             
             {/* Business Twin Slide Overlay (Gemini-like) */}
             {activeSlideIndex !== null && businessTwin && (
@@ -1718,317 +1544,7 @@ export default function ClientDiscoveryPage() {
               </div>
             </form>
           </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-6 sm:p-10 animate-fade-in flex flex-col gap-6">
-              
-              {/* Profile Header */}
-              <div className="flex flex-col gap-1 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  <Icons.Users size={20} className="text-orange-500 shrink-0" /> Mon Espace Profil & Commandes
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Gérez vos informations de facturation, suivez l'avancement de vos commandes et visualisez les besoins transmis à votre KAM.
-                </p>
-              </div>
-
-              {/* Dashboard Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Column 1: Coordonnées de l'Entreprise & Facturation */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.FileText size={16} className="text-orange-500 shrink-0" /> Coordonnées Contractuelles
-                  </h3>
-                  
-                  {/* Status Badge inside Form */}
-                  <div className="text-[10.5px]">
-                    {transmissionSuccess ? (
-                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-xl font-semibold flex items-center gap-2 leading-relaxed">
-                        <Icons.CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                        <span>Dossier contractuel transmis avec succès au KAM. Votre contrat Orange Business est en cours d'édition.</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {contactName && contactPhone && rccm && billingAddress ? (
-                          <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl font-semibold flex flex-col gap-1.5">
-                            <span className="flex items-center gap-1.5">
-                              <Icons.FileText size={12} className="text-orange-500 shrink-0" /> Profil administratif complet !
-                            </span>
-                            <button
-                              onClick={handleTransmit}
-                              disabled={transmitting}
-                              className="w-full py-1.5 orange-gradient-bg text-white text-[10px] font-bold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer text-center"
-                            >
-                              {transmitting ? 'Envoi...' : 'Transmettre mon dossier maintenant'}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl font-medium flex flex-col gap-1 leading-normal">
-                            <span className="font-bold flex items-center gap-1.5">
-                              <Icons.AlertTriangle size={12} className="text-rose-500 shrink-0" /> Dossier Incomplet
-                            </span>
-                            <span>Veuillez renseigner tous les champs obligatoires ci-dessous pour pouvoir souscrire à nos services Orange Business.</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Inputs */}
-                  <div className="flex flex-col gap-4 mt-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Nom Complet du Contact</label>
-                      <input
-                        type="text"
-                        disabled={transmissionSuccess || profileSaving}
-                        value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        placeholder="Nom Prénom du responsable"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Numéro de Téléphone Direct</label>
-                      <input
-                        type="text"
-                        disabled={transmissionSuccess || profileSaving}
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                        placeholder="Ex: +33 6 12 34 56 78"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Numéro RCCM</label>
-                      <input
-                        type="text"
-                        disabled={transmissionSuccess || profileSaving}
-                        value={rccm}
-                        onChange={(e) => setRccm(e.target.value)}
-                        placeholder="Ex: RCCM-BF-OUA-2023-B-1234"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Adresse Complète de Facturation</label>
-                      <textarea
-                        disabled={transmissionSuccess || profileSaving}
-                        value={billingAddress}
-                        onChange={(e) => setBillingAddress(e.target.value)}
-                        placeholder="Adresse postale complète..."
-                        rows={3}
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60 resize-none"
-                      />
-                    </div>
-
-                    {!transmissionSuccess && (
-                      <div className="flex flex-col gap-2 mt-2">
-                        <button
-                          type="button"
-                          onClick={handleSaveProfileOnly}
-                          disabled={profileSaving}
-                          className="w-full py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          {profileSaving ? 'Enregistrement...' : 'Enregistrer mon Profil'}
-                        </button>
-                        
-                        {profileSaveSuccess && (
-                          <span className="text-[10px] text-emerald-500 font-bold text-center animate-pulse">
-                            ✓ Modifications enregistrées avec succès !
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Column 2: Suivi de l'Avancement des Commandes */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.Folder size={16} className="text-orange-500 shrink-0" /> Avancement de vos Commandes
-                  </h3>
-
-                  {(() => {
-                    const globalRecs = getAllGlobalRecommendations();
-                    if (globalRecs.length === 0) {
-                      return (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-zinc-450 italic text-xs">
-                          <Icons.Info size={24} className="mb-2 text-zinc-300 dark:text-zinc-700 animate-pulse" />
-                          <span>Aucune commande active. Veuillez terminer votre qualification de services dans le Chat.</span>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="flex flex-col gap-4 overflow-y-auto max-h-[500px] pr-1">
-                        {globalRecs.map((service, idx) => {
-                          const provStatus = service.provisioning?.[mapServiceNameToKey(service.name)] || 
-                                             (service.transmissionSuccess ? 'COMMANDÉ' : 'BROUILLON');
-                          
-                          const steps = [
-                            { label: 'Cadrage', done: true, active: false },
-                            { label: 'Devis', done: service.transmissionSuccess || provStatus !== 'BROUILLON', active: !service.transmissionSuccess && provStatus === 'BROUILLON' },
-                            { label: 'Acquisition', done: provStatus === 'PROVISIONING' || provStatus === 'COMPLETED' || provStatus === 'ACTIVE', active: provStatus === 'PROVISIONING' },
-                            { label: 'Livré', done: provStatus === 'COMPLETED' || provStatus === 'ACTIVE', active: provStatus === 'COMPLETED' || provStatus === 'ACTIVE' }
-                          ];
-
-                          return (
-                            <div
-                              key={idx}
-                              onClick={async () => {
-                                const query = `Donne-moi des détails techniques, le fonctionnement et l'utilité du service "${service.name}" que j'ai commandé chez Orange Business.`;
-                                setInputValue('');
-                                setLoading(true);
-                                setCurrentView('chat');
-                                
-                                setMessages(prev => [...prev, {
-                                  id: Date.now(),
-                                  sender: 'USER',
-                                  content: `[Information Produit] ${service.name}`,
-                                  created_at: new Date().toISOString()
-                                }]);
-
-                                try {
-                                  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-                                  const res = await fetch(`${API_URL}/api/discovery/conversations/${service.convId || conversationId}/messages/`, {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({ content: query }),
-                                  });
-                                  if (res.ok) {
-                                    const data = await res.json();
-                                    setMessages(prev => [...prev, {
-                                      id: Date.now() + 1,
-                                      sender: 'AI',
-                                      content: data.ai_message,
-                                      created_at: new Date().toISOString()
-                                    }]);
-                                  }
-                                } catch (e) {
-                                  console.error(e);
-                                } finally {
-                                  setLoading(false);
-                                }
-                              }}
-                              className="p-3 border border-zinc-150 dark:border-zinc-850 bg-white dark:bg-zinc-900/60 rounded-xl flex flex-col gap-3 hover:border-orange-500/30 transition-all cursor-pointer group hover:shadow-sm"
-                            >
-                              <div className="flex justify-between items-start gap-1.5">
-                                <div>
-                                  <span className="text-[8px] font-bold text-orange-500 uppercase">{service.category}</span>
-                                  <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-200 leading-tight group-hover:text-orange-500 transition-colors">{service.name}</h4>
-                                  {!service.isCurrent && (
-                                    <span className="text-[7.5px] text-zinc-400 dark:text-zinc-500 font-medium">({service.companyName})</span>
-                                  )}
-                                </div>
-                                <span className={`text-[8.5px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0 ${
-                                  provStatus === 'COMPLETED' || provStatus === 'ACTIVE' 
-                                    ? 'bg-emerald-500/10 text-emerald-500' 
-                                    : provStatus === 'PROVISIONING' 
-                                      ? 'bg-orange-500/10 text-orange-500 animate-pulse'
-                                      : 'bg-zinc-100 text-zinc-655 dark:bg-zinc-800 dark:text-zinc-400'
-                                }`}>
-                                  {provStatus === 'COMPLETED' || provStatus === 'ACTIVE' ? 'Livré' : provStatus === 'PROVISIONING' ? 'Acquisition' : 'Devis'}
-                                </span>
-                              </div>
-
-                              <div className="flex md:flex-row flex-col md:items-center items-start justify-between gap-3 text-[8.5px] font-medium text-zinc-550 mt-1 relative px-1 w-full">
-                                {steps.map((st, sidx) => (
-                                  <div key={sidx} className="flex md:flex-col flex-row items-center gap-2 md:gap-1 z-10 relative">
-                                    <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-extrabold border shrink-0 ${
-                                      st.done 
-                                        ? 'bg-orange-500 border-orange-600 text-white' 
-                                        : st.active 
-                                          ? 'bg-orange-100 border-orange-500 text-orange-500 animate-pulse'
-                                          : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-450'
-                                    }`}>
-                                      {st.done ? '✓' : sidx + 1}
-                                    </div>
-                                    <span className={st.done || st.active ? 'text-orange-500 font-bold' : 'text-zinc-400'}>{st.label}</span>
-                                  </div>
-                                ))}
-                                <div className="absolute top-[8px] left-[15%] right-[15%] h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-0 hidden md:block" />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Column 3: Outils & Besoins transmis au KAM */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.Settings size={16} className="text-orange-500 shrink-0" /> Synthèse des Besoins Transmis
-                  </h3>
-
-                  <div className="flex flex-col gap-4 overflow-y-auto max-h-[500px]">
-                    <div className="p-3 bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-100 dark:border-zinc-850 rounded-xl flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Identité & Sites</h4>
-                      <ul className="text-xs text-zinc-800 dark:text-zinc-300 space-y-1">
-                        <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Secteur :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.sector || 'Non renseigné'}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Employés :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.company_size_estimate || 'Non détecté'}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Sites d'exercice :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.locations_count} site(s)</span>
-                        </li>
-                        {profile.crm && (
-                          <li className="flex justify-between">
-                            <span className="font-semibold text-zinc-500">CRM de l'entreprise :</span>
-                            <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.crm}</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Dysfonctionnements Identifiés</h4>
-                      {profile.current_problems.length === 0 ? (
-                        <span className="text-xs text-zinc-400 italic">Aucun problème identifié</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {profile.current_problems.map((p, idx) => (
-                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-rose-500/10 text-rose-500 border border-rose-500/10 uppercase tracking-wide flex items-center gap-1">
-                              <Icons.AlertTriangle size={10} className="shrink-0" /> {p}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Outils & Connectivité Actuelle</h4>
-                      {profile.current_tools.length === 0 ? (
-                        <span className="text-xs text-zinc-400 italic">Aucun outil détecté</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {profile.current_tools.map((t, idx) => (
-                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-655 dark:text-zinc-350 border border-zinc-200 dark:border-zinc-700 uppercase tracking-wide flex items-center gap-1">
-                              <Icons.Terminal size={10} className="shrink-0" /> {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
         </div>
-
-      </div>
       <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="CLIENT_B2B" />
 
       {/* Voice Call Overlay */}
@@ -2204,6 +1720,7 @@ export default function ClientDiscoveryPage() {
           </div>
         </div>
       )}
+      </div>
     </ProtectedRoute>
   );
 }

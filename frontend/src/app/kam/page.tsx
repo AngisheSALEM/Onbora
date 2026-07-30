@@ -270,9 +270,6 @@ export default function KamDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
-              Intégration simulée pour le MVP
-            </span>
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Conseiller KAM</p>
@@ -313,9 +310,9 @@ export default function KamDashboard() {
         <div className="flex-1 flex overflow-hidden">
           
           {/* Left Panel: List of Prospects */}
-          <div className="w-[320px] md:w-[380px] border-r border-zinc-200 dark:border-zinc-900 bg-zinc-50/10 dark:bg-zinc-950/20 backdrop-blur-sm flex flex-col overflow-hidden shrink-0">
+          <div className="w-[320px] md:w-[380px] border-r border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 flex flex-col overflow-hidden shrink-0">
             {/* Filters */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between gap-2 shrink-0 bg-zinc-50/40 dark:bg-zinc-950/40">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between gap-2 shrink-0 bg-zinc-100/50 dark:bg-zinc-900/50">
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">Prospects Qualifiés</span>
               <select
                 value={filterStatus}
