@@ -22,11 +22,18 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const savedTheme = localStorage.getItem('theme');
+                const savedTheme = localStorage.getItem('theme') || 'system';
                 if (savedTheme === 'light') {
                   document.documentElement.classList.remove('dark');
                 } else if (savedTheme === 'dark') {
                   document.documentElement.classList.add('dark');
+                } else {
+                  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (systemDark) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
                 }
               } catch (_) {}
             `,

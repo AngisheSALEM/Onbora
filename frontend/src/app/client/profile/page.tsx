@@ -42,6 +42,34 @@ export default function ClientProfilePage() {
   const [dossierDetails, setDossierDetails] = useState<any | null>(null);
   const [transmissionSuccess, setTransmissionSuccess] = useState(false);
 
+  // Local state for theme
+  const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system');
+
+  // Load theme preference on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' || 'system';
+    setThemePreference(savedTheme);
+  }, []);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setThemePreference(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    if (newTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      // System
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (systemDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+
   // Load data on mount
   useEffect(() => {
     async function loadProfileDashboard() {
@@ -224,8 +252,6 @@ export default function ClientProfilePage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
-            
             <Link 
               href="/client"
               className="px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-orange-500/50 hover:text-orange-500 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
@@ -255,16 +281,6 @@ export default function ClientProfilePage() {
                     Gérez vos informations de facturation, suivez l'avancement de vos commandes et visualisez les besoins transmis à votre KAM.
                   </p>
                 </div>
-                
-                {/* Deconnexion Button prominently placed in the profile page */}
-                <button
-                  onClick={logout}
-                  className="py-2 px-4 self-start sm:self-auto bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-rose-500/10 active:scale-98"
-                  title="Se déconnecter de votre compte Onbora"
-                >
-                  <Icons.LogOut size={14} />
-                  <span>Déconnexion</span>
-                </button>
               </div>
 
               {/* Dashboard Grid */}
@@ -495,6 +511,66 @@ export default function ClientProfilePage() {
                   </div>
                 </div>
 
+              </div>
+
+              {/* Settings Section (Theme & Logout) */}
+              <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                    <Icons.Settings size={16} className="text-orange-500 shrink-0" /> Préférences & Paramètres
+                  </h3>
+                  <div className="flex flex-col gap-3 mt-3">
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Thème de l'Application</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleThemeChange('light')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                          themePreference === 'light'
+                            ? 'bg-orange-500 text-white border-transparent'
+                            : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
+                        }`}
+                      >
+                        Clair
+                      </button>
+                      <button
+                        onClick={() => handleThemeChange('dark')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                          themePreference === 'dark'
+                            ? 'bg-orange-500 text-white border-transparent'
+                            : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
+                        }`}
+                      >
+                        Sombre
+                      </button>
+                      <button
+                        onClick={() => handleThemeChange('system')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                          themePreference === 'system'
+                            ? 'bg-orange-500 text-white border-transparent'
+                            : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
+                        }`}
+                      >
+                        Système
+                      </button>
+                    </div>
+                    <span className="text-[9px] text-zinc-450 italic mt-0.5">
+                      {themePreference === 'system' 
+                        ? "S'adapte automatiquement aux préférences système de votre appareil." 
+                        : `Thème manuel : ${themePreference === 'light' ? 'Clair' : 'Sombre'}.`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-end self-end sm:self-center">
+                  <button
+                    onClick={logout}
+                    className="py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-rose-500/10 active:scale-98"
+                    title="Se déconnecter de votre compte Onbora"
+                  >
+                    <Icons.LogOut size={14} />
+                    <span>Déconnexion</span>
+                  </button>
+                </div>
               </div>
             </>
           )}

@@ -275,46 +275,7 @@ export default function KamDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['KAM', 'ADMIN']}>
-      <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans h-screen overflow-hidden animate-fade-in text-black dark:text-zinc-50">
-        {/* Header */}
-        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm shrink-0 z-10">
-          <div className="flex items-center gap-2 select-none">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
-              title={sidebarOpen ? "Masquer la liste des prospects" : "Afficher la liste des prospects"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2" />
-                <path d="M9 3v18" />
-              </svg>
-            </button>
-            <Logo size={28} showBg={true} />
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Conseiller KAM</p>
-            </div>
-            <ThemeToggle />
-             <button
-              onClick={() => setHelpOpen(true)}
-              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Icons.HelpCircle size={14} /> FAQ & Guide
-            </button>
-            <button
-              onClick={logout}
-              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Icons.LogOut size={14} /> Déconnexion
-            </button>
-          </div>
-        </header>
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-row font-sans h-screen overflow-hidden animate-fade-in text-black dark:text-zinc-50">
 
         {/* Notification Alert Toast */}
         {newDossierNotification && (
@@ -434,10 +395,67 @@ export default function KamDashboard() {
                 ))
               )}
             </div>
+
+            {/* Partie Inférieure (Footer Sidebar - Nom Conseiller + Déconnexion) */}
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {/* Photo d'avatar (Initials badge) */}
+                <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
+                  {user?.first_name ? user.first_name[0].toUpperCase() : 'K'}
+                </div>
+                <div className="flex flex-col min-w-0 leading-tight">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-55 truncate">
+                    {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Conseiller KAM'}
+                  </span>
+                  <span className="text-[9px] text-zinc-500 truncate">
+                    Conseiller KAM
+                  </span>
+                </div>
+              </div>
+              
+              {/* Bouton Déconnexion */}
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-900 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer transition-colors shrink-0"
+                title="Se déconnecter"
+              >
+                <Icons.LogOut size={15} />
+              </button>
+            </div>
           </div>
 
           {/* Right Panel: Selected Prospect Details */}
           <div className="flex-1 bg-transparent overflow-y-auto flex flex-col">
+            <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
+              {/* Left Corner: Static Logo and Title (With toggle sidebar button) */}
+              <div className="flex items-center gap-2 select-none">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-1.5 rounded-lg text-zinc-550 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
+                  title={sidebarOpen ? "Masquer la liste" : "Afficher la liste"}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                    <path d="M9 3v18" />
+                  </svg>
+                </button>
+                <Logo size={28} showBg={true} />
+                <div>
+                  <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
+                </div>
+              </div>
+
+              {/* Right Corner: FAQ & Guide */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => setHelpOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Icons.HelpCircle size={14} /> FAQ & Guide
+                </button>
+              </div>
+            </header>
             {selectedDossier ? (
               <div className="p-6 md:p-8 flex flex-col gap-6 max-w-4xl w-full mx-auto animate-fade-in pb-16">
                 
