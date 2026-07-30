@@ -1303,20 +1303,19 @@ export default function ClientDiscoveryPage() {
 
           {/* Left panel: Chat discovery */}
           <div className="flex-1 flex flex-col bg-transparent overflow-hidden border-r border-zinc-200 dark:border-zinc-900 relative">
-            <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-955/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
-              {/* Left Corner: Static Logo and Title (With toggle sidebar button) */}
+            <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white dark:bg-[#1A1A1E] px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
+              {/* Left Corner: Static Title (With toggle sidebar button) */}
               <div className="flex items-center gap-2 select-none">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   className="p-1.5 rounded-lg text-zinc-550 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
                   title={sidebarOpen ? "Masquer l'historique" : "Afficher l'historique"}
                 >
-                  <svg xmlns="http://www.w3.org/2550/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <rect width="18" height="18" x="3" y="3" rx="2" />
                     <path d="M9 3v18" />
                   </svg>
                 </button>
-                <Logo size={28} showBg={true} />
                 <div>
                   <h1 className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-55 uppercase leading-none">Onbora</h1>
                   <p className="text-[9px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote de Découverte B2B</p>

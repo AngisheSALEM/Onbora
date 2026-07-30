@@ -426,12 +426,12 @@ export default function KamDashboard() {
 
           {/* Right Panel: Selected Prospect Details */}
           <div className="flex-1 bg-transparent overflow-y-auto flex flex-col">
-            <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
-              {/* Left Corner: Static Logo and Title (With toggle sidebar button) */}
+             <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white dark:bg-[#1A1A1E] px-6 py-3 flex items-center justify-between shadow-sm z-10 shrink-0">
+              {/* Left Corner: Static Title (With toggle sidebar button) */}
               <div className="flex items-center gap-2 select-none">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-1.5 rounded-lg text-zinc-550 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
+                  className="p-1.5 rounded-lg text-zinc-555 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
                   title={sidebarOpen ? "Masquer la liste" : "Afficher la liste"}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -439,7 +439,6 @@ export default function KamDashboard() {
                     <path d="M9 3v18" />
                   </svg>
                 </button>
-                <Logo size={28} showBg={true} />
                 <div>
                   <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
                   <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
