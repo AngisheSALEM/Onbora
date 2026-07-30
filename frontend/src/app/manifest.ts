@@ -7,14 +7,39 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Copilote IA de découverte B2B',
     start_url: '/client',
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#1A1A1E',
     theme_color: '#FF6600',
     icons: [
       {
         src: '/icon.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/icon.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/icon.png',
         sizes: 'any',
         type: 'image/png',
-      },
+      }
     ],
   }
 }

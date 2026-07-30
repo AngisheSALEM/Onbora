@@ -109,6 +109,22 @@ export default function KamDashboard() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [kamList, setKamList] = useState<{ id: number; first_name: string; last_name: string; username: string }[]>([]);
   
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Close sidebar on mobile by default on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
   // Notification states
   const [lastKnownDossierCount, setLastKnownDossierCount] = useState<number | null>(null);
   const [newDossierNotification, setNewDossierNotification] = useState<string | null>(null);
@@ -261,9 +277,19 @@ export default function KamDashboard() {
     <ProtectedRoute allowedRoles={['KAM', 'ADMIN']}>
       <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans h-screen overflow-hidden animate-fade-in text-black dark:text-zinc-50">
         {/* Header */}
-        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm shrink-0 z-10">
-          <div className="flex items-center gap-3">
-            <Logo size={32} showBg={true} />
+        <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-3 flex items-center justify-between shadow-sm shrink-0 z-10">
+          <div className="flex items-center gap-2 select-none">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
+              title={sidebarOpen ? "Masquer la liste des prospects" : "Afficher la liste des prospects"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M9 3v18" />
+              </svg>
+            </button>
+            <Logo size={28} showBg={true} />
             <div>
               <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Workspace Key Account Manager (KAM)</p>
@@ -307,13 +333,35 @@ export default function KamDashboard() {
         )}
 
         {/* Workspace Panels */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           
+          {/* Mobile Overlay backdrop */}
+          {sidebarOpen && (
+            <div 
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-20 transition-opacity animate-fade-in"
+            />
+          )}
+
           {/* Left Panel: List of Prospects */}
-          <div className="w-[320px] md:w-[380px] border-r border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 flex flex-col overflow-hidden shrink-0">
+          <div
+            style={{ width: sidebarOpen ? '360px' : '0px' }}
+            className={`border-r border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 flex flex-col overflow-hidden shrink-0 h-full z-30 max-w-[85vw] md:max-w-none absolute md:relative transition-all duration-300 ${
+              sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
             {/* Filters */}
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between gap-2 shrink-0 bg-zinc-100/50 dark:bg-zinc-900/50">
-              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">Prospects Qualifiés</span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setSidebarOpen(false)}
+                  className="md:hidden p-1 rounded-lg text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-900 cursor-pointer"
+                  title="Fermer le tiroir"
+                >
+                  <Icons.Close size={14} />
+                </button>
+                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">Prospects Qualifiés</span>
+              </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
