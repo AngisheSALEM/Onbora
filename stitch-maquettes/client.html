@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onbora Client Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Geist:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e2",
+                        "outline-variant": "#e0c0af",
+                        "on-background": "#1a1c1c",
+                        "inverse-primary": "#ffb68c",
+                        "secondary": "#5e5e5e",
+                        "surface-container-low": "#f3f3f3",
+                        "surface": "#f9f9f9",
+                        "tertiary-fixed-dim": "#93ccff",
+                        "primary-container": "#ff7900",
+                        "primary": "#9a4600",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffdbc9",
+                        "tertiary-fixed": "#cce5ff",
+                        "on-secondary-container": "#646464",
+                        "on-secondary-fixed-variant": "#474747",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "secondary-fixed-dim": "#c6c6c6",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-primary-container": "#5c2700",
+                        "tertiary-container": "#00a8fc",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#001d31",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#003a5b",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006398",
+                        "on-primary-fixed": "#321200",
+                        "outline": "#8c7263",
+                        "background": "#f9f9f9",
+                        "on-surface-variant": "#584235",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#004b73",
+                        "secondary-fixed": "#e2e2e2",
+                        "on-primary-fixed-variant": "#753400",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container": "#eeeeee",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed-dim": "#ffb68c",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#e2e2e2",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#9a4600",
+                        "inverse-on-surface": "#f1f1f1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "panel-width": "400px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "280px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "mono-label": ["Geist"],
+                        "label-caps": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "mono-label": ["13px", { "lineHeight": "1", "letterSpacing": "0", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #1a1c1c; }
+        .grid-layout { display: grid; grid-template-columns: 280px 1fr 400px; height: 100vh; }
+        /* Mechanical Switch Toggle Styles */
+        .toggle-switch { position: relative; width: 44px; height: 24px; appearance: none; background: #1a1c1c; border-radius: 2px; outline: none; cursor: pointer; transition: background 0.2s; }
+        .toggle-switch:checked { background: #1a1c1c; }
+        .toggle-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #5e5e5e; border-radius: 2px; transition: 0.2s; }
+        .toggle-switch:checked::before { left: 22px; background: #ff7900; }
+        
+        /* Custom Scrollbar for Chat */
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #e2e2e2; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-surface-container-lowest h-full overflow-hidden">
+<div class="grid-layout w-full h-full">
+<!-- Left Sidebar (SideNavBar) -->
+<nav class="bg-surface-container text-on-surface flex flex-col h-full w-[280px] border-r border-on-background flat no shadows">
+<div class="p-6 pb-8 border-b border-on-background">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Onbora</h1>
+<p class="font-body-md text-body-md text-secondary mt-1">B2B Inbound Qualification</p>
+</div>
+<div class="flex-1 py-6 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-on-background transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-primary-container text-on-background font-bold bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="forum" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-body-md text-body-md">Conversations</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-on-background transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="model_training">model_training</span>
+<span class="font-body-md text-body-md">Business Twin</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-on-background transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</div>
+<div class="p-6 border-t border-on-background flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 py-2 text-secondary hover:text-on-background transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 py-2 text-secondary hover:text-on-background transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-body-md text-body-md">Account</span>
+</a>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-variant">
+<span class="font-body-md text-body-md text-secondary">Premium Theme</span>
+<input aria-label="Theme Toggle" checked="" class="toggle-switch" type="checkbox"/>
+</div>
+</div>
+</nav>
+<!-- Center Column (Discovery Chat) -->
+<main class="flex flex-col h-full bg-surface-container-lowest relative">
+<!-- Header -->
+<header class="h-[72px] border-b border-on-background flex items-center px-8 bg-surface flex-shrink-0 z-10">
+<h2 class="font-headline-md text-headline-md text-on-background font-bold tracking-tight">Conversation with Onbora Copilot</h2>
+</header>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto chat-scroll p-8 bg-surface-container-lowest flex flex-col gap-8 pb-32">
+<!-- AI Message -->
+<div class="flex items-start gap-4 max-w-[85%]">
+<div class="w-10 h-10 rounded-DEFAULT bg-on-background flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-surface-container-lowest" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="bg-surface-container-lowest border border-on-background p-5 rounded-lg rounded-tl-none shadow-[2px_2px_0px_0px_rgba(26,28,28,1)]">
+<p class="font-body-md text-body-md text-on-background">Hello! I'm your Onbora Copilot. Let's explore your current business processes to build an accurate 'Business Twin'. First, could you describe your primary customer acquisition channel?</p>
+</div>
+</div>
+<!-- Client Message -->
+<div class="flex items-start gap-4 max-w-[85%] self-end flex-row-reverse">
+<div class="w-10 h-10 rounded-DEFAULT bg-surface-container-highest border border-on-background flex items-center justify-center flex-shrink-0 overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a business executive in a modern office environment, high contrast lighting, neutral background, sharp focus, corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6NqTc8WuQ76HWz-adi9fceV2mR6TRuig3_EoUXqba3VcV491IlKOp7ln0JjN0Z26fGzl_VqiV5yVeHBcCns5XzgNY7zDHfNOnmeLqBmvdHOZPG1UVw-qdTECPVGHlFsi-aMj-bxEjNXgSdNoEkv9_OyTAQphsk45HXsrAo8HpbWIozv9r7MT3eQGcsRCmM6axQgscoVEeQZ-LubXp2g8oYmYMZ7qko9LMNfzo8ULhrP_ebHJPTLiKb95QIx1MlmesPux47AvRr3A"/>
+</div>
+<div class="bg-on-background p-5 rounded-lg rounded-tr-none">
+<p class="font-body-md text-body-md text-surface-container-lowest">Currently, we rely heavily on outbound email sequences, but our conversion rate has dropped to around 1.2% over the last quarter. We're looking to transition to more inbound strategies.</p>
+</div>
+</div>
+<!-- AI Message -->
+<div class="flex items-start gap-4 max-w-[85%]">
+<div class="w-10 h-10 rounded-DEFAULT bg-on-background flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-surface-container-lowest" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="bg-surface-container-lowest border border-on-background p-5 rounded-lg rounded-tl-none shadow-[2px_2px_0px_0px_rgba(26,28,28,1)]">
+<p class="font-body-md text-body-md text-on-background">I understand. A 1.2% outbound conversion indicates potential fatigue in your current lists. Based on our preliminary data, integrating an AI-qualified inbound flow could optimize this.</p>
+<div class="mt-4 p-4 bg-surface border border-surface-variant flex items-center gap-3">
+<div class="w-2 h-full bg-primary-container absolute left-0 top-0"></div>
+<span class="material-symbols-outlined text-primary-container" data-icon="monitoring">monitoring</span>
+<span class="font-mono-label text-mono-label text-secondary">Insight Logged: Outbound Fatigue Detected</span>
+</div>
+</div>
+</div>
+<!-- Client Typing Indicator (Simulated) -->
+<div class="flex items-start gap-4 max-w-[85%] self-end flex-row-reverse opacity-70">
+<div class="w-10 h-10 rounded-DEFAULT bg-surface-container-highest border border-on-background flex items-center justify-center flex-shrink-0 overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a business executive in a modern office environment, high contrast lighting, neutral background, sharp focus, corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW3BlfrlUbHwldb7-XKQorphzpwY7T1P_-QzuCmTsHNMeuKShdk4GQ2kDVD-56pVxDbCsWdJZQruTiG_xzLFU1GPMluLi15fabUpeuFt5DTFg0eZNm7YxeD-A5W3AyuJliTq_GhJ5lhaTCIqAdTFUKyWg8v-C5uBAFhBWgWVDqMFDwJ_58FT2mtlZTlHeZLoNlXMsQEwfb4DxTmgXEt4vQ4VWXTlaQzlt52EZQo3wd_mFPOsjMYdSyxsVTCTE3Nky0p6z8WR9Sj7s"/>
+</div>
+<div class="bg-surface-container p-4 rounded-lg rounded-tr-none flex items-center gap-2">
+<div class="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
+<div class="w-2 h-2 bg-secondary rounded-full animate-pulse delay-75"></div>
+<div class="w-2 h-2 bg-secondary rounded-full animate-pulse delay-150"></div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="absolute bottom-0 left-0 w-full p-6 bg-surface-container-lowest border-t border-on-background">
+<div class="flex items-center gap-3 bg-surface border border-on-background p-2 rounded-DEFAULT focus-within:border-2 focus-within:border-on-background focus-within:shadow-[inset_2px_0px_0px_0px_#ff7900] transition-all">
+<button aria-label="Add Attachment" class="p-2 text-secondary hover:text-on-background transition-colors">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 font-body-md text-body-md text-on-background placeholder:text-secondary outline-none" placeholder="Type your response or describe your process..." type="text"/>
+<button aria-label="Voice Input" class="p-2 text-secondary hover:text-on-background transition-colors">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+</button>
+<button class="px-6 py-2 bg-on-background text-surface-container-lowest font-body-md text-body-md rounded-DEFAULT hover:bg-secondary-fixed-variant transition-colors flex items-center gap-2">
+                    Send
+                    <span class="material-symbols-outlined text-[18px]" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Right Column (Business Twin Preview) -->
+<aside class="bg-surface border-l border-on-background h-full overflow-y-auto flex flex-col relative">
+<header class="p-6 border-b border-on-background sticky top-0 bg-surface z-10 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" data-icon="view_in_ar">view_in_ar</span>
+<h2 class="font-headline-md text-headline-md text-on-background font-bold tracking-tight">Business Twin</h2>
+</header>
+<div class="p-6 flex-1 flex flex-col gap-8">
+<!-- Section 1: Current State -->
+<section class="flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<h3 class="font-body-lg text-body-lg font-bold text-on-background uppercase tracking-wider text-sm">Situation Actuelle</h3>
+<span class="px-2 py-1 bg-error-container text-error font-mono-label text-mono-label border border-error rounded-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="warning">warning</span>
+                        Needs Optimization
+                    </span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Progress Item -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md text-on-background">Inbound Funnel Efficiency</span>
+<span class="font-label-caps text-label-caps text-secondary">45%</span>
+</div>
+<div class="h-[4px] w-full bg-on-background relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[45%] bg-secondary"></div>
+</div>
+</div>
+<!-- Progress Item -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md text-on-background">Lead Qualification Rate</span>
+<span class="font-label-caps text-label-caps text-secondary">32%</span>
+</div>
+<div class="h-[4px] w-full bg-on-background relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[32%] bg-secondary"></div>
+</div>
+</div>
+<!-- Progress Item -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md text-on-background">Time to Engagement</span>
+<span class="font-label-caps text-label-caps text-secondary">70% CAPACITY</span>
+</div>
+<div class="h-[4px] w-full bg-on-background relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[70%] bg-error"></div>
+</div>
+</div>
+</div>
+</section>
+<hr class="border-t border-on-background opacity-20"/>
+<!-- Section 2: Future State -->
+<section class="flex flex-col gap-5">
+<h3 class="font-body-lg text-body-lg font-bold text-on-background uppercase tracking-wider text-sm">Situation Future Recommended</h3>
+<!-- Timeline Graphic Placeholder (Simulated SVG Style) -->
+<div class="w-full h-32 border border-on-background bg-surface-container relative flex items-center justify-between p-4 mb-2">
+<div class="absolute top-1/2 left-4 right-4 h-[2px] bg-on-background -translate-y-1/2 z-0 border-dashed border-b border-on-background bg-transparent"></div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-4 h-4 bg-on-background border-2 border-surface rounded-full"></div>
+<span class="font-mono-label text-[10px] text-secondary">Deploy</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-4 h-4 bg-primary-container border-2 border-surface rounded-full"></div>
+<span class="font-mono-label text-[10px] text-secondary">Train</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-6 h-6 bg-primary-container border-2 border-on-background rounded-full flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(26,28,28,1)]">
+<span class="material-symbols-outlined text-[14px] text-on-background" data-icon="check">check</span>
+</div>
+<span class="font-mono-label text-[10px] font-bold text-on-background">Automate</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Target Progress Item -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md text-on-background">Target Inbound Efficiency</span>
+<span class="font-label-caps text-label-caps text-primary-container">100%</span>
+</div>
+<div class="h-[4px] w-full bg-on-background relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-full bg-primary-container"></div>
+</div>
+</div>
+<!-- Target Progress Item -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md text-on-background">Target Qualification Rate</span>
+<span class="font-label-caps text-label-caps text-primary-container">95%</span>
+</div>
+<div class="h-[4px] w-full bg-on-background relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[95%] bg-primary-container"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="p-6 mt-auto border-t border-on-background bg-surface-container-lowest">
+<button class="w-full bg-primary-container text-surface-container-lowest font-body-md text-body-md font-bold py-4 px-6 rounded-DEFAULT border-2 border-on-background shadow-[4px_4px_0px_0px_rgba(26,28,28,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_0px_rgba(26,28,28,1)] transition-all active:shadow-none active:translate-y-[4px] active:translate-x-[4px] flex items-center justify-center gap-2">
+                Generate Full Analysis
+                <span class="material-symbols-outlined text-[20px]" data-icon="bolt">bolt</span>
+</button>
+</div>
+</aside>
+</div>
+<script>
+    // Simple script to handle input focus state for the message bar
+    const inputField = document.querySelector('input[type="text"]');
+    const inputContainer = inputField.parentElement;
+    
+    inputField.addEventListener('focus', () => {
+        // Handled by CSS focus-within, but can add JS logic if complex states are needed
+    });
+</script>
+
+<!-- Floating Demo Navigation Panel -->
+<div id="demo-nav-panel" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; background: #ffffff; border: 2px solid #000000; padding: 12px; font-family: 'Inter', sans-serif; box-shadow: 4px 4px 0px 0px #000000; border-radius: 4px;">
+  <div style="font-size: 10px; font-weight: 900; text-transform: uppercase; color: #ff7900; margin-bottom: 8px; letter-spacing: 0.05em; font-family: 'Inter', sans-serif;">Onbora Demo Persona Workflow</div>
+  <div style="display: flex; gap: 8px;">
+    <a href="client.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ff7900; color: #ffffff; border: 1px solid #000000;">1. Client B2B Chat</a>
+    <a href="commercial.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ffffff; color: #000000; border: 1px solid #e2e2e2;">2. Commercial (Outbound)</a>
+    <a href="kam.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ffffff; color: #000000; border: 1px solid #e2e2e2;">3. Key Account Manager (KAM)</a>
+  </div>
+</div>
+
+</body></html>

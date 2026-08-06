@@ -4,7 +4,11 @@ from .models import Enterprise, VisitPreparation, VisitReport, ScraperCredential
 class EnterpriseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enterprise
-        fields = ['id', 'name', 'website', 'sector', 'approximate_size', 'location', 'existing_crm_data', 'created_at']
+        fields = [
+            'id', 'name', 'website', 'sector', 'approximate_size', 'location', 'existing_crm_data', 
+            'created_at', 'siren', 'siret', 'kaabu_organization_id', 'arrowsphere_tenant_id', 
+            'sync_status', 'last_sync_date'
+        ]
 
 class VisitPreparationSerializer(serializers.ModelSerializer):
     enterprise_details = EnterpriseSerializer(source='enterprise', read_only=True)

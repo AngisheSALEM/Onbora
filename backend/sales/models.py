@@ -10,6 +10,22 @@ class Enterprise(models.Model):
     existing_crm_data = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Identifiants uniques pour la France
+    siren = models.CharField(max_length=9, blank=True, null=True, unique=True, verbose_name="Numéro SIREN")
+    siret = models.CharField(max_length=14, blank=True, null=True, unique=True, verbose_name="Numéro SIRET")
+    
+    # Identifiants dans les systèmes externes (CRM et Cloud Provisioning)
+    kaabu_organization_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    arrowsphere_tenant_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    
+    # Statuts de synchronisation
+    sync_status = models.CharField(
+        max_length=20, 
+        choices=[('PENDING', 'En attente'), ('SYNCED', 'Synchronisé'), ('ERROR', 'Erreur de synchro')],
+        default='PENDING'
+    )
+    last_sync_date = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.name
 

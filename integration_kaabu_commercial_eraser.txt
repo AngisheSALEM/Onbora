@@ -1,0 +1,58 @@
+// Workflow d'Intégration Onbora x Orange Kaabu CRM (Commercial / Outbound)
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+Salesperson [icon: user, color: emerald, label: "Commercial Terrain"]
+SalesApp [icon: tablet, color: emerald, label: "Interface Mobile/Tablette (Next.js)"]
+Onbora_Backend [icon: api, color: green, label: "Onbora Backend (Django)"]
+Redis_Cache [icon: database, color: red, label: "Redis Cache (JWT Token)"]
+PostgreSQL_DB [icon: database, color: steel, label: "PostgreSQL DB"]
+Kaabu_CRM [icon: database, color: orange, label: "Orange Kaabu CRM"]
+LLM_Whisper [icon: cpu, color: purple, label: "AI Core (Whisper & LLM)"]
+KAM_Queue [icon: mail, color: orange, label: "File d'attente KAM"]
+
+// 1. Préparation de la visite terrain
+Salesperson -> SalesApp: "1. Recherche l'entreprise 'XYZ' à visiter"
+SalesApp -> Onbora_Backend: "2. POST /api/sales/visit-preparations/"
+
+// 2. Authentification sécurisée Kaabu API
+group "Authentification Kaabu API" {
+  Onbora_Backend -> Redis_Cache: "3. Vérifie le jeton JWT en cache"
+  Onbora_Backend -> Kaabu_CRM: "4. OAuth2 Client Credentials (si absent/expiré)"
+  Kaabu_CRM -> Onbora_Backend: "5. Retourne le jeton JWT"
+  Onbora_Backend -> Redis_Cache: "6. Stocke le jeton JWT (avec TTL)"
+}
+
+// 3. Récupération de l'historique client
+group "Consultation de l'Historique Client" {
+  Onbora_Backend -> Kaabu_CRM: "7. GET /api/v1/organizations/search/ (Historique & contacts)"
+  Kaabu_CRM -> Onbora_Backend: "8. Retourne l'historique commercial et technique"
+}
+
+// 4. Génération de Brief de Visite IA
+Onbora_Backend -> LLM_Whisper: "9. Demande brief personnalisé (pitch & objections sur mesure)"
+LLM_Whisper -> Onbora_Backend: "10. Retourne le brief généré"
+Onbora_Backend -> PostgreSQL_DB: "11. Enregistre les détails de préparation de visite"
+Onbora_Backend -> SalesApp: "12. Affiche le brief de préparation sur le terrain"
+
+// 5. Visite Client et Enregistrement Audio
+Salesperson -> SalesApp: "13. Enregistre la réunion et envoie le fichier audio (.mp3)"
+SalesApp -> Onbora_Backend: "14. POST /api/sales/visit-reports/ (Upload .mp3)"
+
+// 6. Transcription & Analyse IA (Whisper)
+group "Analyse de Visite" {
+  Onbora_Backend -> LLM_Whisper: "15. Transcription audio (Whisper) & Extraction d'insights"
+  LLM_Whisper -> Onbora_Backend: "16. Retourne le rapport structuré et le brouillon du mail de suivi"
+  Onbora_Backend -> PostgreSQL_DB: "17. Enregistre le rapport de visite"
+  Onbora_Backend -> SalesApp: "18. Propose le rapport pour validation"
+}
+
+// 7. Transmission & Mise à jour CRM
+Salesperson -> SalesApp: "19. Valide le rapport et clique sur 'Transmettre'"
+SalesApp -> Onbora_Backend: "20. POST /api/sales/visit-reports/:id/transmit/"
+
+group "Synchronisation CRM & KAM" {
+  Onbora_Backend -> Kaabu_CRM: "21. POST /api/v1/opportunities (Opportunité 'Qualifiée') & synchro historique"
+  Kaabu_CRM -> Onbora_Backend: "22. Retourne l'ID Opportunité Kaabu"
+  Onbora_Backend -> PostgreSQL_DB: "23. Associe l'ID et crée le ProspectDossier (status: NEW)"
+  Onbora_Backend -> KAM_Queue: "24. Notifie la file d'attente du KAM"
+}

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onbora — Parcours Client & Présentation UX Figma-Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            },
+            zinc: {
+              950: '#050508',
+              900: '#121217',
+              800: '#1f1f28',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050508;
+      color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    .glass-panel {
+      background: rgba(18, 18, 23, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(31, 31, 40, 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glow-orb {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(120px);
+      pointer-events: none;
+      opacity: 0.15;
+    }
+    .hotspot-pulse {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(249, 115, 22, 0.4);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+      70% { transform: scale(1.3); box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+    }
+    .device-screen-shadow {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px 0 rgba(249, 115, 22, 0.1);
+    }
+    .step-active {
+      border-color: #f97316 !important;
+      background: rgba(249, 115, 22, 0.12) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Glow Background Orbs -->
+  <div class="glow-orb w-[600px] h-[600px] bg-brand-500 -top-40 -left-40"></div>
+  <div class="glow-orb w-[500px] h-[500px] bg-amber-600 bottom-0 right-0"></div>
+
+  <!-- Header / Navigation bar -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-white/10 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center font-bold text-white shadow-lg shadow-brand-500/30">O</div>
+        <span class="font-extrabold text-xl tracking-tight text-white">ONBORA <span class="text-brand-500 font-medium text-xs px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20">UX Studio</span></span>
+      </div>
+      <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
+      <p class="text-xs text-zinc-400 hidden md:block">Parcours Client B2B & Présentation UX Figma-Style</p>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-3">
+      <!-- Mode View Toggle -->
+      <div class="bg-zinc-900 p-1 rounded-xl border border-white/10 flex items-center gap-1 text-xs">
+        <button id="btn-mode-presentation" onclick="switchViewMode('presentation')" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-brand-500 text-white shadow-sm">
+          📺 Présentation Slide
+        </button>
+        <button id="btn-mode-figma" onclick="switchViewMode('figma')" class="px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white">
+          🗺️ Carte & Diagramme Figma
+        </button>
+      </div>
+
+      <!-- Device Viewport Toggle -->
+      <div class="bg-zinc-900 p-1 rounded-xl border border-white/10 flex items-center gap-1 text-xs">
+        <button id="btn-viewport-desktop" onclick="setViewport('desktop')" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-zinc-800 text-white">
+          💻 Ordinateur (1440×900)
+        </button>
+        <button id="btn-viewport-mobile" onclick="setViewport('mobile')" class="px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white">
+          📱 Mobile (390×844)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+
+    <!-- CONTEXT BANNER -->
+    <div class="glass-panel rounded-2xl p-6 relative overflow-hidden border border-brand-500/20">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-500 text-xs font-semibold uppercase tracking-wider mb-2">
+            Persona & Cadre d'expérimentation
+          </div>
+          <h1 class="text-2xl font-extrabold text-white">Parcours de Marie — Diagnostic & Recommandation B2B</h1>
+          <p class="text-sm text-zinc-400 mt-1 max-w-3xl">
+            « Marie, gérante de 2 restaurants (15 salariés), veut qualifier ses besoins Télécom/Cyber et recevoir une proposition adaptée d'Orange Business en moins de 2 minutes. »
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="glass-card px-4 py-3 rounded-xl border border-white/10 text-center">
+            <span class="block text-xl font-bold text-brand-500">&lt; 2 min</span>
+            <span class="text-[10px] text-zinc-400 uppercase tracking-wider">Objectif Temps</span>
+          </div>
+          <div class="glass-card px-4 py-3 rounded-xl border border-white/10 text-center">
+            <span class="block text-xl font-bold text-emerald-400">100% IA</span>
+            <span class="text-[10px] text-zinc-400 uppercase tracking-wider">Saisie LN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESENTATION SLIDE MODE -->
+    <div id="view-presentation" class="flex flex-col gap-6">
+
+      <!-- STEP STEPPER NAVIGATOR -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <button onclick="goToStep(0)" id="step-nav-0" class="glass-card p-3.5 rounded-xl border border-white/10 text-left transition-all hover:border-brand-500/50 step-active">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-brand-500">ÉTAPE 01</div>
+          <div class="text-sm font-semibold text-white truncate">Découverte</div>
+          <div class="text-[11px] text-zinc-400 truncate">Initialisation du chat</div>
+        </button>
+
+        <button onclick="goToStep(1)" id="step-nav-1" class="glass-card p-3.5 rounded-xl border border-white/10 text-left transition-all hover:border-brand-500/50">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">ÉTAPE 02</div>
+          <div class="text-sm font-semibold text-white truncate">Diagnostic</div>
+          <div class="text-[11px] text-zinc-400 truncate">Saisie du besoin LN</div>
+        </button>
+
+        <button onclick="goToStep(2)" id="step-nav-2" class="glass-card p-3.5 rounded-xl border border-white/10 text-left transition-all hover:border-brand-500/50">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">ÉTAPE 03</div>
+          <div class="text-sm font-semibold text-white truncate">Business Twin</div>
+          <div class="text-[11px] text-zinc-400 truncate">Avant / Après</div>
+        </button>
+
+        <button onclick="goToStep(3)" id="step-nav-3" class="glass-card p-3.5 rounded-xl border border-white/10 text-left transition-all hover:border-brand-500/50">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">ÉTAPE 04</div>
+          <div class="text-sm font-semibold text-white truncate">Aiguillage IA</div>
+          <div class="text-[11px] text-zinc-400 truncate">Branchement KAM</div>
+        </button>
+
+        <button onclick="goToStep(4)" id="step-nav-4" class="glass-card p-3.5 rounded-xl border border-white/10 text-left transition-all hover:border-brand-500/50">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">ÉTAPE 05</div>
+          <div class="text-sm font-semibold text-white truncate">Transmission</div>
+          <div class="text-[11px] text-zinc-400 truncate">Dossier Qualifié CRM</div>
+        </button>
+      </div>
+
+      <!-- MAIN SLIDE DISPLAY AREA -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT: DEVICE MOCKUP FRAME & CAPTURE (8 COLS) -->
+        <div class="lg:col-span-8 flex flex-col items-center justify-center glass-panel rounded-2xl p-6 min-h-[580px]">
+          
+          <!-- Slide Header Title -->
+          <div class="w-full flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+            <div>
+              <span id="slide-step-badge" class="text-xs font-bold text-brand-500 uppercase tracking-widest">ÉTAPE 01 — DÉCOUVERTE</span>
+              <h2 id="slide-title" class="text-lg font-bold text-white">Marie accède au copilote Onbora et initialise le diagnostic</h2>
+            </div>
+            <span class="text-xs font-mono text-zinc-500" id="viewport-indicator">Viewport: 1440 × 900</span>
+          </div>
+
+          <!-- Browser Mockup Window -->
+          <div id="device-container" class="w-full max-w-full transition-all duration-300 flex justify-center">
+            <div id="browser-window" class="w-full rounded-xl border border-zinc-700 bg-zinc-950 overflow-hidden device-screen-shadow relative">
+              <!-- Window Bar -->
+              <div class="bg-zinc-900 px-4 py-2.5 flex items-center justify-between border-b border-zinc-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                  <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                </div>
+                <div id="browser-url" class="bg-zinc-950 px-6 py-1 rounded-md text-[11px] font-mono text-zinc-400 border border-zinc-800 flex items-center gap-2">
+                  <span class="text-emerald-500">🔒</span> https://onbora.orange-business.fr/client
+                </div>
+                <div class="text-xs text-zinc-500">Onbora Studio</div>
+              </div>
+
+              <!-- Screen Image Content with Overlay Hotspot -->
+              <div class="relative bg-zinc-950 min-h-[420px] flex items-center justify-center p-6 text-center">
+                <div class="p-8 rounded-2xl glass-panel border border-brand-500/30 max-w-lg">
+                  <div class="w-12 h-12 rounded-2xl bg-brand-500 text-white font-bold text-xl flex items-center justify-center mx-auto mb-4">O</div>
+                  <h3 class="text-xl font-bold text-white mb-2">Copilote Commercial Onbora</h3>
+                  <p class="text-sm text-zinc-400">Diagnostic intelligent des besoins Télécom & Cloud pour les PME.</p>
+                </div>
+                
+                <!-- Hotspot Marker ① -->
+                <div id="hotspot-container" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
+                  <div class="relative">
+                    <div class="hotspot-pulse"></div>
+                    <div class="w-8 h-8 rounded-full bg-brand-500 text-white font-black text-sm flex items-center justify-center shadow-lg border-2 border-white relative z-10">
+                      ①
+                    </div>
+                  </div>
+                  <div class="glass-card px-3 py-1.5 rounded-lg border border-brand-500/40 text-xs font-semibold text-white shadow-xl bg-zinc-950/90 whitespace-nowrap">
+                    <span id="hotspot-label">Point d'Action Clé</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: UX OBSERVATIONS & DETAILS CARD (4 COLS) -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+
+          <!-- Action Key Box -->
+          <div class="glass-panel p-5 rounded-2xl border border-brand-500/30">
+            <div class="flex items-center gap-2 text-brand-500 font-bold text-xs uppercase tracking-wider mb-2">
+              <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+              Repère d'Action Clé
+            </div>
+            <p id="slide-hotspot-desc" class="text-sm font-semibold text-white leading-snug">
+              ① Clic initial sur l'assistant Onbora pour initier la qualification de Marie.
+            </p>
+          </div>
+
+          <!-- UX Observation Box -->
+          <div class="glass-panel p-5 rounded-2xl border border-white/10">
+            <div class="text-amber-400 font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+              💡 Remarque UX & Bénéfice
+            </div>
+            <p id="slide-ux-obs" class="text-sm text-zinc-300 leading-relaxed">
+              L'accueil est dépouillé de tout formulaire superflu. Marie est prise en main de manière fluide et intuitive dès son entrée.
+            </p>
+          </div>
+
+          <!-- Technical Specs -->
+          <div class="glass-card p-5 rounded-2xl border border-white/5 flex flex-col gap-3">
+            <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Spécifications de Capture</h3>
+            <div class="space-y-1.5 text-xs text-zinc-400 font-mono">
+              <div class="flex justify-between"><span>Format:</span> <span class="text-zinc-200">1440 × 900 (Desktop)</span></div>
+              <div class="flex justify-between"><span>Thème:</span> <span class="text-zinc-200">Dark Zinc (#050508)</span></div>
+              <div class="flex justify-between"><span>Accent:</span> <span class="text-brand-500">Orange (#F97316)</span></div>
+              <div class="flex justify-between"><span>Engine:</span> <span class="text-zinc-200">Onbora UX Engine</span></div>
+            </div>
+          </div>
+
+          <!-- Next Step Button -->
+          <button onclick="nextStep()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-500/25">
+            Étape Suivante ➔
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FIGMA MAP & DIAGRAM MODE (HIDDEN BY DEFAULT) -->
+    <div id="view-figma" class="hidden flex-col gap-6">
+
+      <div class="glass-panel p-6 rounded-2xl border border-white/10">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-white">Carte du Parcours & Logique de Branchement Conditionnel</h2>
+            <p class="text-xs text-zinc-400 mt-1">Représentation interactive de l'arbre de décision IA d'Onbora.</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-medium">● Route Devis Auto</span>
+            <span class="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 font-medium">● Route Expert KAM</span>
+          </div>
+        </div>
+
+        <!-- Node Diagram Tree -->
+        <div class="relative overflow-x-auto py-8">
+          <div class="min-w-[900px] flex items-center justify-between gap-6 relative">
+
+            <!-- SVG Connecting Lines -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 stroke-zinc-700 stroke-2" style="stroke-dasharray: 6 4;">
+              <line x1="120" y1="90" x2="280" y2="90" />
+              <line x1="380" y1="90" x2="520" y2="90" />
+              <!-- Fork lines -->
+              <path d="M 620 90 L 680 40 L 760 40" stroke="#10b981" stroke-width="2" />
+              <path d="M 620 90 L 680 140 L 760 140" stroke="#a855f7" stroke-width="2" />
+            </svg>
+
+            <!-- Node 1 -->
+            <div class="relative z-10 w-44 glass-card p-4 rounded-xl border border-brand-500/40 text-center hover:scale-105 transition-all">
+              <span class="text-[10px] font-bold text-brand-500 uppercase">Étape 01</span>
+              <h4 class="text-sm font-bold text-white mt-1">Découverte</h4>
+              <p class="text-[11px] text-zinc-400 mt-1">Accès client B2B / Chat Onbora</p>
+            </div>
+
+            <!-- Node 2 -->
+            <div class="relative z-10 w-44 glass-card p-4 rounded-xl border border-brand-500/40 text-center hover:scale-105 transition-all">
+              <span class="text-[10px] font-bold text-brand-500 uppercase">Étape 02</span>
+              <h4 class="text-sm font-bold text-white mt-1">Diagnostic LN</h4>
+              <p class="text-[11px] text-zinc-400 mt-1">Extraction du besoin réel par l'IA</p>
+            </div>
+
+            <!-- Node 3: Decision Engine -->
+            <div class="relative z-10 w-48 glass-panel p-4 rounded-xl border border-amber-500/50 text-center bg-amber-950/20 hover:scale-105 transition-all">
+              <span class="text-[10px] font-bold text-amber-400 uppercase">Aiguillage IA</span>
+              <h4 class="text-sm font-bold text-white mt-1">Évaluation Complexité</h4>
+              <p class="text-[11px] text-zinc-400 mt-1">Analyse Taille & Besoins</p>
+            </div>
+
+            <!-- Fork Container -->
+            <div class="relative z-10 flex flex-col gap-8">
+              
+              <!-- Branch A: Standard -->
+              <div class="w-52 glass-card p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20 hover:scale-105 transition-all">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-emerald-400 uppercase">Si Besoins Standards</span>
+                  <span class="text-xs">⚡</span>
+                </div>
+                <h4 class="text-sm font-bold text-white mt-1">Devis Instantané</h4>
+                <p class="text-[11px] text-zinc-400 mt-1">Génération auto du contrat & notification commerciale.</p>
+              </div>
+
+              <!-- Branch B: Complex / Large Account -->
+              <div class="w-52 glass-card p-4 rounded-xl border border-purple-500/40 bg-purple-950/20 hover:scale-105 transition-all">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-purple-400 uppercase">Si Sur-Mesure / &gt; 50p</span>
+                  <span class="text-xs">👥</span>
+                </div>
+                <h4 class="text-sm font-bold text-white mt-1">Transfert KAM Direct</h4>
+                <p class="text-[11px] text-zinc-400 mt-1">Transmission du Business Twin et RDV expert prioritaire.</p>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ROI RESULTS & CONCLUSION -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- ROI Metric Card -->
+      <div class="glass-panel p-6 rounded-2xl border border-emerald-500/20">
+        <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4">Bénéfices Métier du Parcours</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <span class="text-2xl font-black text-white">-95%</span>
+            <p class="text-xs text-zinc-400 mt-1">Temps de qualification (de 48h à 2 min)</p>
+          </div>
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <span class="text-2xl font-black text-emerald-400">+35%</span>
+            <p class="text-xs text-zinc-400 mt-1">Taux de conversion des opportunités B2B</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations Card -->
+      <div class="glass-panel p-6 rounded-2xl border border-brand-500/20">
+        <h3 class="text-sm font-bold text-brand-500 uppercase tracking-wider mb-4">Recommandations & Prochaines Étapes</h3>
+        <ul class="space-y-2 text-xs text-zinc-300">
+          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Connexion native API Kaabu CRM & Provisioning Arrowsphere.</li>
+          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Extension du canal de découverte au widget web & WhatsApp.</li>
+          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Validation du PowerPoint officiel généré pour passage en comité.</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/10 mt-8 py-6 text-center text-xs text-zinc-500">
+    Onbora UX Studio © 2026 — Identité Officielle Orange Business / MSP Copilot
+  </footer>
+
+  <!-- INTERACTIVE JAVASCRIPT DATA & CONTROLLER -->
+  <script>
+    const stepsData = [
+      {
+        stepTag: "ÉTAPE 01 — DÉCOUVERTE",
+        title: "Marie accède au copilote Onbora et initialise le diagnostic",
+        hotspotLabel: "① Clic d'activation",
+        hotspotDesc: "① Clic initial sur l'assistant Onbora pour exprimer le besoin de l'entreprise.",
+        uxObs: "L'accueil est dépouilled de tout formulaire superflu. Marie est prise en main de manière fluide et intuitive dès son entrée.",
+        url: "https://onbora.orange-business.fr/client",
+        hotspotPosDesktop: "top: 50%; left: 50%;",
+        hotspotPosMobile: "top: 50%; left: 50%;"
+      },
+      {
+        stepTag: "ÉTAPE 02 — DIAGNOSTIC & SAISIE",
+        title: "Marie exprime son besoin en langage naturel, l'IA extrait la structure",
+        hotspotLabel: "① Zone de Saisie IA",
+        hotspotDesc: "① Champ de dialogue en langage naturel permettant d'expliquer les coupures de caisse et la lenteur ADSL.",
+        uxObs: "L'IA transforme les griefs opérationnels en spécifications d'infrastructure sans imposer de jargon technique à la gérante.",
+        url: "https://onbora.orange-business.fr/client",
+        hotspotPosDesktop: "top: 60%; left: 50%;",
+        hotspotPosMobile: "top: 60%; left: 50%;"
+      },
+      {
+        stepTag: "ÉTAPE 03 — RECOMMANDATION",
+        title: "Onbora génère le Business Twin Avant / Après et préconise les solutions",
+        hotspotLabel: "① Carte Business Twin",
+        hotspotDesc: "① Visualisation directe de l'impact : passage de l'ADSL instable à la Fibre Pro + Terminal Sécurisé.",
+        uxObs: "La proposition de valeur est immédiatement compréhensible pour le décideur non-technique, mettant fin aux hésitations.",
+        url: "https://onbora.orange-business.fr/sales",
+        hotspotPosDesktop: "top: 45%; left: 50%;",
+        hotspotPosMobile: "top: 50%; left: 50%;"
+      },
+      {
+        stepTag: "ÉTAPE 04 — EMBRANCHEMENT CONDITIONNEL",
+        title: "Selon la complexité, Onbora aiguille vers un Devis Auto ou un Expert KAM",
+        hotspotLabel: "① Matrice de Décision",
+        hotspotDesc: "① Aiguillage automatique : si dossier complexe ou grands comptes ➔ Transmission prioritaire au KAM.",
+        uxObs: "Le système offre l'autonomie pour les cas simples et l'expertise humaine pour les comptes à enjeux.",
+        url: "https://onbora.orange-business.fr/kam",
+        hotspotPosDesktop: "top: 40%; left: 50%;",
+        hotspotPosMobile: "top: 40%; left: 50%;"
+      },
+      {
+        stepTag: "ÉTAPE 05 — TRANSMISSION & ACCORD",
+        title: "Le dossier est transmis au CRM Kaabu avec zéro perte d'information",
+        hotspotLabel: "① Confirmation Sync CRM",
+        hotspotDesc: "① Enregistrement du rapport structuré et notification instantanée au commercial d'Orange Business.",
+        uxObs: "Absence totale de ressaisie pour les équipes internes. Le commercial aborde la première réunion avec une parfaite connaissance.",
+        url: "https://onbora.orange-business.fr/admin",
+        hotspotPosDesktop: "top: 55%; left: 50%;",
+        hotspotPosMobile: "top: 55%; left: 50%;"
+      }
+    ];
+
+    let currentStep = 0;
+    let currentViewport = 'desktop';
+    let currentMode = 'presentation';
+
+    function goToStep(index) {
+      currentStep = index;
+      const data = stepsData[index];
+
+      // Update Nav Buttons State
+      for (let i = 0; i < 5; i++) {
+        const btn = document.getElementById(`step-nav-${i}`);
+        if (i === index) {
+          btn.classList.add('step-active');
+          btn.querySelector('div:first-child').classList.replace('text-zinc-400', 'text-brand-500');
+        } else {
+          btn.classList.remove('step-active');
+          btn.querySelector('div:first-child').classList.replace('text-brand-500', 'text-zinc-400');
+        }
+      }
+
+      // Update Slide Content
+      document.getElementById('slide-step-badge').innerText = data.stepTag;
+      document.getElementById('slide-title').innerText = data.title;
+      document.getElementById('slide-hotspot-desc').innerText = data.hotspotDesc;
+      document.getElementById('slide-ux-obs').innerText = data.uxObs;
+      document.getElementById('browser-url').innerHTML = `<span class="text-emerald-500">🔒</span> ${data.url}`;
+      document.getElementById('hotspot-label').innerText = data.hotspotLabel;
+
+      const hotspotElem = document.getElementById('hotspot-container');
+      if (currentViewport === 'desktop') {
+        hotspotElem.style.cssText = data.hotspotPosDesktop;
+      } else {
+        hotspotElem.style.cssText = data.hotspotPosMobile;
+      }
+    }
+
+    function nextStep() {
+      goToStep((currentStep + 1) % stepsData.length);
+    }
+
+    function setViewport(vp) {
+      currentViewport = vp;
+      const container = document.getElementById('browser-window');
+      const btnDesk = document.getElementById('btn-viewport-desktop');
+      const btnMob = document.getElementById('btn-viewport-mobile');
+      const indicator = document.getElementById('viewport-indicator');
+
+      if (vp === 'desktop') {
+        container.style.maxWidth = '100%';
+        btnDesk.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-zinc-800 text-white";
+        btnMob.className = "px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white";
+        indicator.innerText = "Viewport: 1440 × 900";
+      } else {
+        container.style.maxWidth = '390px';
+        btnMob.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-zinc-800 text-white";
+        btnDesk.className = "px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white";
+        indicator.innerText = "Viewport: 390 × 844";
+      }
+
+      goToStep(currentStep);
+    }
+
+    function switchViewMode(mode) {
+      currentMode = mode;
+      const pView = document.getElementById('view-presentation');
+      const fView = document.getElementById('view-figma');
+      const btnP = document.getElementById('btn-mode-presentation');
+      const btnF = document.getElementById('btn-mode-figma');
+
+      if (mode === 'presentation') {
+        pView.classList.remove('hidden');
+        fView.classList.add('hidden');
+        btnP.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-brand-500 text-white shadow-sm";
+        btnF.className = "px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white";
+      } else {
+        fView.classList.remove('hidden');
+        pView.classList.add('hidden');
+        btnF.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-brand-500 text-white shadow-sm";
+        btnP.className = "px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white";
+      }
+    }
+  </script>
+</body>
+</html>

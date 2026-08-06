@@ -1,0 +1,55 @@
+// Workflow d'Intégration Onbora x Orange Kaabu CRM (Prospect / Inbound)
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+Prospect [icon: user, color: blue, label: "Prospect (Client B2B)"]
+Onbora_UI [icon: monitor, color: blue, label: "Portail Onbora (Next.js)"]
+Onbora_Backend [icon: api, color: green, label: "Onbora Backend (Django)"]
+Redis_Cache [icon: database, color: red, label: "Redis Cache (JWT Token)"]
+PostgreSQL_DB [icon: database, color: steel, label: "PostgreSQL DB"]
+Kaabu_CRM [icon: database, color: orange, label: "Orange Kaabu CRM"]
+LLM_Service [icon: cpu, color: purple, label: "LLM (AI Core)"]
+KAM_Queue [icon: mail, color: orange, label: "File d'attente KAM"]
+
+// 1. Initialisation de la Session
+Prospect -> Onbora_UI: "1. Ouvre le widget / Initie le chat de qualification"
+Onbora_UI -> Onbora_Backend: "2. POST /api/discovery/conversations/"
+
+// 2. Récupération sécurisée du Token CRM
+group "Authentification Kaabu API" {
+  Onbora_Backend -> Redis_Cache: "3. Vérifie le jeton JWT en cache"
+  Onbora_Backend -> Kaabu_CRM: "4. OAuth2 Client Credentials (si absent/expiré)"
+  Kaabu_CRM -> Onbora_Backend: "5. Retourne le jeton JWT"
+  Onbora_Backend -> Redis_Cache: "6. Stocke le jeton JWT (avec TTL)"
+}
+
+// 3. Recherche & Déduplication Temps Réel
+group "Détection des Doublons" {
+  Onbora_Backend -> Kaabu_CRM: "7. GET /api/v1/organizations/search/ (SIREN/Domaine)"
+  Kaabu_CRM -> Onbora_Backend: "8. Retourne l'état d'existence du prospect"
+  Onbora_Backend -> Onbora_Backend: "9. Algorithme de déduplication (Match SIREN / Fuzzy)"
+  Onbora_Backend -> PostgreSQL_DB: "10. Enregistre la session avec Kaabu_ID associé"
+}
+
+// 4. Diagnostic IA autonome
+loop "Dialogue de Qualification" {
+  Prospect -> Onbora_UI: "11. Envoie une réponse / précision de son besoin"
+  Onbora_UI -> Onbora_Backend: "12. POST /api/discovery/conversations/:id/messages/"
+  Onbora_Backend -> LLM_Service: "13. Analyse les réponses et extrait les critères"
+  LLM_Service -> Onbora_Backend: "14. Retourne la suite et le profil structuré"
+  Onbora_Backend -> PostgreSQL_DB: "15. Met à jour extracted_profile"
+}
+
+// 5. Présentation du Diagnostic & de l'Offre
+Onbora_Backend -> LLM_Service: "16. Génération du Business Twin (Avant/Après)"
+Onbora_Backend -> Onbora_UI: "17. Affiche le diagnostic & la roadmap interactifs"
+
+// 6. Demande de mise en relation (Transmission au KAM)
+Prospect -> Onbora_UI: "18. Clique sur 'Contacter un conseiller / Valider'"
+Onbora_UI -> Onbora_Backend: "19. POST /api/discovery/conversations/:id/transmit/"
+
+group "Transmission Commerciale & CRM" {
+  Onbora_Backend -> Kaabu_CRM: "20. POST /api/v1/opportunities (Opportunité 'Qualifiée' + PDF Business Twin)"
+  Kaabu_CRM -> Onbora_Backend: "21. Retourne l'ID d'Opportunité Kaabu"
+  Onbora_Backend -> PostgreSQL_DB: "22. Enregistre l'ID et crée le ProspectDossier (status: NEW)"
+  Onbora_Backend -> KAM_Queue: "23. Notifie la file d'attente du KAM"
+}

@@ -92,6 +92,7 @@ Les fichiers clés disponibles dans le dépôt :
 *   Règles de travail : [vibe_rules.md](file:///C:/Users/Salem/Documents/projet/Onbora/vibe_rules.md)
 *   Contexte global : [onbora_context.md](file:///C:/Users/Salem/Documents/projet/Onbora/onbora_context.md)
 *   Architecture technique : [architecture.md](file:///C:/Users/Salem/Documents/projet/Onbora/architecture.md) & [architecture_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/architecture_eraser.txt)
+*   Cadrage CRM / Provisioning : [integration_kaabu_arrowsphere.md](file:///C:/Users/Salem/Documents/projet/Onbora/integration_kaabu_arrowsphere.md)
 *   Workflows métier :
     *   [workflow_client_b2b.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b.md) & [workflow_client_b2b_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_client_b2b_eraser.txt) (Client B2B)
     *   [workflow_prospecteur.md](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur.md) & [workflow_prospecteur_eraser.txt](file:///C:/Users/Salem/Documents/projet/Onbora/workflow_prospecteur_eraser.txt) (Prospecteur)
@@ -134,6 +135,75 @@ Les fichiers clés disponibles dans le dépôt :
     6.  **Tracking & Connecteurs Simulés** : **Terminé** (Tracking précis des 14 événements du cycle de vie + Bannières d'information MVP).
     7.  **Sécurité, Fiabilité & Tests E2E** : **Terminé** (Classes de permission RBAC par rôle, validation des tailles limites d'upload, sauvegarde et bouton de réessai pour timeout IA, et tests Playwright E2E rédigés).
 *   **Prochaine étape (Choisie)** : **Recherche & Cadrage CRM & Provisioning (10 jours)**. Mettre de côté temporairement l'intégration finale de l'IA et se concentrer sur l'exploration de l'API d'Orange Kaabu (CRM interne) et d'ArrowSphere (outil de provisioning Orange pour SaaS/licences) afin d'anticiper leur intégration future.
+
+---
+
+## 10. Module de Formation & Moteur de Simulation d'IA (Tool-Calling JSON)
+
+### A. Onboarding par Produit Orange
+Le module de formation interactive pas-à-pas est conçu comme un outil d'onboarding déclenché par l'acquisition des produits d'Orange (MFA, VPN Cisco, SharePoint, Teams Phone).
+*   **Lancement ciblé** : Dès qu'un service passe au statut `COMMANDÉ` ou `PROVISIONNÉ` dans le suivi de commandes, l'utilisateur reçoit une alerte contextuelle lui recommandant de suivre le parcours d'adoption correspondant.
+*   **Médiathèque interactive (CSS/SVG)** : Les étapes présentent visuellement la solution d'Orange à l'aide de mockups interactifs animés en CSS/SVG simulant les applications réelles (ex: l'écran d'approbation Microsoft Authenticator d'Orange, la fenêtre du client Cisco VPN, et l'explorateur SharePoint synchronisé localement).
+
+### B. Passerelle Conversationnelle en Pleine Formation
+À tout moment en cours de tutoriel, si l'utilisateur est bloqué ou s'il a une interrogation, il dispose du bouton **"Demander à l'IA"**. Ce bouton :
+1.  Ferme le tiroir de formation.
+2.  Pré-remplit l'input du chat principal d'Onbora avec une question contextuelle descriptive (ex: *"Je suis bloqué à l'étape X du module Y..."*).
+3.  Positionne automatiquement le curseur de saisie pour que l'utilisateur puisse immédiatement dialoguer avec le copilote.
+
+### C. Moteur d'IA Factice (Mock AI Agent & Tool Calling)
+Pour simuler l'intégration d'un LLM capable d'interagir en temps réel avec les briques de l'interface en tant qu'outils (Tool Calling), un projet Node.js autonome a été créé dans le dossier `mock-ai-server/`.
+*   **Port & Route** : Écoute sur le port `3001` à l'adresse `POST /api/chat`.
+*   **Payload JSON Structuré** : Si l'utilisateur demande une action par chat textuel ou vocal (ex: *"Lance la formation du VPN"* ou *"Génère les slides"*), l'API intercepte la requête et retourne :
+    ```json
+    {
+      "reply": "D'accord, je lance le guide d'adoption SharePoint OneDrive pour vous...",
+      "tool_calls": [
+        {
+          "name": "launch_training",
+          "arguments": { "moduleId": "sharepoint-collab" }
+        }
+      ]
+    }
+    ```
+*   **Orchestration Frontend réactive** :
+    *   `launch_training` : Ouvre le drawer sur le module demandé.
+    *   `generate_slides` : Bascule l'onglet de droite sur le Business Twin PowerPoint et déploie les diapositives.
+    *   `execute_setup` : Déclenche l'automatisation en arrière-plan d'une configuration ("Do It For Me").
+    *   *Résilience* : Si le serveur d'IA (port 3001) est déconnecté, le frontend bascule de manière transparente sur l'API Django standard (port 8000).
+
+---
+
+## 11. Plan de Simulation et Test Cloud (Zero-Local, Free Tier)
+
+Pour valider les flux réels dans un environnement de production déployé (Next.js sur Vercel et Django sur Render) sans dépendance à des machines locales inaccessibles, Onbora privilégie une architecture de simulation 100% cloud basée sur des tiers gratuits (Free Tiers).
+
+```
+ [ Vercel (Frontend Onbora) ]  ⇄  [ Render (Backend Onbora) ]
+                                          ↕
+ [ WireMock Cloud (Mock CRM Kaabu) ]   [ Pipedream (Mock Provisioning & Webhooks) ]
+                                          ↑ (Génère Dummy Data)
+                                    [ Mockaroo (API Cloud) ]
+```
+
+### A. Composants de l'Architecture de Simulation Cloud
+
+1.  **Mock CRM Kaabu (Inbound/Outbound)** : Hébergé sur **WireMock Cloud (ou Postman Mock Servers)**.
+    *   *Rôle* : Fournit une URL HTTPS publique (ex: `https://kaabu.wiremockapi.cloud`) accessible par l'instance de production Render d'Onbora.
+    *   *Simulation* : Renvoie de fausses listes de comptes clients, de contacts d'Orange, et gère l'état d'existence pour l'algorithme de déduplication (ex. simule une correspondance SIREN).
+2.  **Mock Provisioning ArrowSphere (Webhook POST)** : Hébergé sur **Pipedream / Beeceptor**.
+    *   *Rôle* : Fait office de simulateur de livraison réseau/cloud.
+    *   *Fonctionnement* : Reçoit l'identifiant technique de tenant client, simule un délai de livraison asynchrone (ex: 10 secondes), puis envoie un événement **POST** (Webhook d'activation) vers l'endpoint public d'Onbora sur Render (`https://onbora-backend.onrender.com/api/v1/integrations/arrowsphere/webhook/`).
+3.  **Générateur de Données Factices (MSP / Clients)** : Alimenté par **Mockaroo API** et la bibliothèque **Faker** (en python).
+    *   *Rôle* : Fournit des bases réalistes de faux SIREN/SIRET français, des catalogues d'équipements de connectivité et de licences logicielles Orange Business.
+
+### B. Cinématique de Validation Cloud (Bout-en-Bout)
+
+1.  **Phase Déduplication (Kaabu)** : Le prospect / commercial fait une saisie. Le backend Render appelle le service **WireMock Cloud** pour valider la similarité et renvoie les alertes de doublons à l'UI Next.js sur **Vercel**.
+2.  **Phase Validation Client (Business Twin)** : Le dossier commercial est qualifié et synchronisé dans le mock Kaabu.
+3.  **Phase Webhook de Provisioning (ArrowSphere)** : Le provisioning est initié à l'extérieur. Après validation contractuelle externe fictive, **Pipedream** déclenche l'appel webhook `POST` vers le backend Render d'Onbora avec le statut `ACTIVE`.
+4.  **Phase Adoption Instantanée** : Onbora Backend enregistre la mise à disposition technique et notifie l'application sur Vercel. Le tiroir d'onboarding **HelpDrawer** se déverrouille en temps réel pour le client B2B.
+
 
 
 

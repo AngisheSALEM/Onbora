@@ -21,7 +21,43 @@ class EnterpriseSearchView(APIView):
         if not query:
             return Response([])
             
-        queryset = Enterprise.objects.filter(name__icontains=query)
+        # 1. Search in CRM Kaabu (Inbound/Outbound real-time check)
+        from sales.integrations.kaabu import KaabuClient
+        from django.db.models import Q
+        
+        kaabu_results = []
+        try:
+            client = KaabuClient()
+            kaabu_results = client.search_organizations(name=query)
+        except Exception:
+            # Resilient fallback if the API is offline
+            pass
+            
+        # 2. Synchronize Kaabu results into the local database
+        for item in kaabu_results:
+            kaabu_id = item.get("id")
+            if kaabu_id:
+                Enterprise.objects.update_or_create(
+                    kaabu_organization_id=kaabu_id,
+                    defaults={
+                        "name": item.get("name"),
+                        "website": item.get("website", ""),
+                        "sector": item.get("sector", ""),
+                        "approximate_size": item.get("size", ""),
+                        "location": item.get("location", ""),
+                        "siren": item.get("siren", ""),
+                        "siret": item.get("siret", ""),
+                        "sync_status": "SYNCED"
+                    }
+                )
+            
+        # 3. Search locally for matching names or Kaabu IDs
+        matched_ids = [item.get("id") for item in kaabu_results if item.get("id")]
+        queryset = Enterprise.objects.filter(
+            Q(name__icontains=query) | Q(kaabu_organization_id__in=matched_ids)
+        )
+        
+        # 4. Fallback mock generation if not found in CRM or local database
         if not queryset.exists():
             self.create_mock_enterprise(query)
             queryset = Enterprise.objects.filter(name__icontains=query)

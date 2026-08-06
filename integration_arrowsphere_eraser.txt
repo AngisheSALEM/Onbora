@@ -1,0 +1,36 @@
+// Workflow de Détection de Provisioning via Webhook - Onbora x ArrowSphere
+// Paste this code schema directly into eraser.io (Diagram-as-Code mode)
+
+Client [icon: user, color: orange, label: "Client B2B"]
+Onbora_UI [icon: monitor, color: orange, label: "Portail Onbora (Next.js)"]
+Onbora_Backend [icon: api, color: green, label: "Onbora Backend (Django)"]
+PostgreSQL_DB [icon: database, color: steel, label: "PostgreSQL DB"]
+ArrowSphere [icon: settings, color: red, label: "ArrowSphere Provisioning Engine"]
+External_Provisioning [icon: tool, color: gray, label: "Provisioning / CRM Externe (Orange)"]
+
+// 1. Enregistrement des Recommandations
+Onbora_Backend -> PostgreSQL_DB: "1. Enregistre les services recommandés (Business Twin)"
+
+// 2. Provisioning externe (hors Onbora)
+External_Provisioning -> ArrowSphere: "2. Commande et active les licences suite à la signature du contrat"
+
+// 3. Notification de Provisioning par ArrowSphere (Webhook POST)
+group "Notification Événementielle (Webhook)" {
+  ArrowSphere -> Onbora_Backend: "3. POST /api/v1/integrations/arrowsphere/webhook/ (Payload: tenant_id, SKU, status: ACTIVE)"
+  Onbora_Backend -> ArrowSphere: "4. Retourne 200 OK (Acquittement de la notification)"
+}
+
+// 4. Comparaison et Alignement
+group "Comparatif Recommandation vs Actif" {
+  Onbora_Backend -> Onbora_Backend: "5. Compare le SKU reçu avec les recommandations du Twin en BDD"
+}
+
+// 5. Activation de l'Onboarding
+group "Déclenchement Onboarding & Formations" {
+  Onbora_Backend -> PostgreSQL_DB: "6. Si match -> Marque le service comme PROVISIONED (ex: 'vpn-access')"
+  PostgreSQL_DB -> Onbora_UI: "7. Met à jour l'état de l'UI en temps réel (WebSocket/API)"
+  Onbora_Backend -> Client: "8. Envoie l'e-mail d'accueil et d'onboarding lié à la solution"
+}
+
+// 6. Interaction Utilisateur
+Client -> Onbora_UI: "9. Accède à son espace et ouvre le HelpDrawer de formation débloqué"

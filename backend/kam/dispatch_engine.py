@@ -39,15 +39,42 @@ def dispatch_dossier(dossier: ProspectDossier):
             
         enterprise_location = profile.get('location') or ""
         
-        # Ensure an Enterprise model exists for reference
-        enterprise, created = Enterprise.objects.get_or_create(
-            name=enterprise_name,
-            defaults={
-                "sector": profile.get('sector', ''),
-                "approximate_size": profile.get('company_size_estimate', ''),
-                "location": enterprise_location
-            }
-        )
+        # Ensure an Enterprise model exists, attempting CRM Kaabu search to prevent duplicates first
+        from sales.integrations.kaabu import KaabuClient
+        
+        kaabu_results = []
+        try:
+            client = KaabuClient()
+            kaabu_results = client.search_organizations(name=enterprise_name)
+        except Exception:
+            pass
+
+        if kaabu_results:
+            # Match exact or first result from Kaabu CRM
+            match = kaabu_results[0]
+            enterprise, created = Enterprise.objects.get_or_create(
+                kaabu_organization_id=match.get("id"),
+                defaults={
+                    "name": match.get("name", enterprise_name),
+                    "website": match.get("website", ""),
+                    "sector": match.get("sector", ""),
+                    "approximate_size": match.get("size", ""),
+                    "location": match.get("location", ""),
+                    "siren": match.get("siren", ""),
+                    "siret": match.get("siret", ""),
+                    "sync_status": "SYNCED"
+                }
+            )
+        else:
+            enterprise, created = Enterprise.objects.get_or_create(
+                name=enterprise_name,
+                defaults={
+                    "sector": profile.get('sector', ''),
+                    "approximate_size": profile.get('company_size_estimate', ''),
+                    "location": enterprise_location,
+                    "sync_status": "PENDING"
+                }
+            )
 
     # 2. Get available KAMs
     kams = User.objects.filter(role=User.KAM, is_available=True)

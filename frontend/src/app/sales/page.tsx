@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
-import HelpDrawer from '@/components/shared/HelpDrawer';
+import TrainingDrawer from '@/components/training/TrainingDrawer';
+import TrainingLauncher from '@/components/training/TrainingLauncher';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
@@ -90,7 +91,7 @@ export default function SalesDashboard() {
   const [emailDraft, setEmailDraft] = useState('');
   const [transmitting, setTransmitting] = useState(false);
   const [createdDossierId, setCreatedDossierId] = useState<number | null>(null);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
 
   // Slideshow Twin states
   const [slidesTwinData, setSlidesTwinData] = useState<any>(null);
@@ -492,12 +493,10 @@ export default function SalesDashboard() {
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial Orange</p>
             </div>
             <ThemeToggle />
-             <button
-              onClick={() => setHelpOpen(true)}
-              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Icons.HelpCircle size={14} /> Guide
-            </button>
+            <TrainingLauncher 
+              onClick={() => setTrainingOpen(true)}
+              hasNewNotification={false}
+            />
             <button
               onClick={logout}
               className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
@@ -994,7 +993,7 @@ export default function SalesDashboard() {
 
         </main>
       </div>
-      <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="SALESPERSON" />
+      <TrainingDrawer isOpen={trainingOpen} onClose={() => setTrainingOpen(false)} />
     </ProtectedRoute>
   );
 }

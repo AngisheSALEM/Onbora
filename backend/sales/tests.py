@@ -121,3 +121,53 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(response.data['platform'], 'LINKEDIN')
         self.assertEqual(response.data['cookies_value'], 'li_at=testcookie123')
 
+
+from unittest.mock import patch, MagicMock
+from sales.integrations.kaabu import KaabuClient
+
+class KaabuClientTestCase(APITestCase):
+    @patch('sales.integrations.kaabu.requests.post')
+    def test_get_access_token_success(self, mock_post):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "access_token": "mocked-jwt-token-123",
+            "expires_in": 3600
+        }
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        client = KaabuClient()
+        from django.core.cache import cache
+        cache.delete(client.cache_key)
+
+        token = client.get_access_token()
+        self.assertEqual(token, "mocked-jwt-token-123")
+        mock_post.assert_called_once()
+
+    @patch('sales.integrations.kaabu.requests.get')
+    @patch('sales.integrations.kaabu.requests.post')
+    def test_search_organizations_success(self, mock_post, mock_get):
+        mock_token_resp = MagicMock()
+        mock_token_resp.json.return_value = {"access_token": "token", "expires_in": 60}
+        mock_token_resp.status_code = 200
+        mock_post.return_value = mock_token_resp
+
+        mock_search_resp = MagicMock()
+        mock_search_resp.json.return_value = [
+            {
+                "id": "org-obs-123",
+                "name": "Orange Business",
+                "siren": "123456789",
+                "website": "https://www.orange-business.com"
+            }
+        ]
+        mock_search_resp.status_code = 200
+        mock_get.return_value = mock_search_resp
+
+        client = KaabuClient()
+        results = client.search_organizations(name="Orange")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], "org-obs-123")
+        self.assertEqual(results[0]["siren"], "123456789")
+
+

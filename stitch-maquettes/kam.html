@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onbora KAM Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#9a4600",
+                      "primary": "#9a4600",
+                      "surface-container-low": "#f3f3f3",
+                      "tertiary-container": "#00a8fc",
+                      "surface": "#f9f9f9",
+                      "secondary-fixed-dim": "#c6c6c6",
+                      "surface-bright": "#f9f9f9",
+                      "surface-dim": "#dadada",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#eeeeee",
+                      "on-secondary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f1f1f1",
+                      "on-primary-container": "#5c2700",
+                      "on-tertiary": "#ffffff",
+                      "primary-container": "#ff7900",
+                      "tertiary": "#006398",
+                      "primary-fixed": "#ffdbc9",
+                      "secondary-container": "#e2e2e2",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-background": "#1a1c1c",
+                      "secondary-fixed": "#e2e2e2",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#004b73",
+                      "outline-variant": "#e0c0af",
+                      "on-primary-fixed-variant": "#753400",
+                      "on-surface-variant": "#584235",
+                      "on-primary-fixed": "#321200",
+                      "secondary": "#5e5e5e",
+                      "primary-fixed-dim": "#ffb68c",
+                      "surface-container-high": "#e8e8e8",
+                      "inverse-surface": "#2f3131",
+                      "background": "#f9f9f9",
+                      "on-secondary-container": "#646464",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "inverse-primary": "#ffb68c",
+                      "tertiary-fixed-dim": "#93ccff",
+                      "on-surface": "#1a1c1c",
+                      "outline": "#8c7263",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed": "#001d31",
+                      "on-tertiary-container": "#003a5b",
+                      "on-secondary-fixed": "#1b1b1b",
+                      "tertiary-fixed": "#cce5ff",
+                      "on-secondary-fixed-variant": "#474747"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "280px",
+                      "panel-width": "400px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "unit": "4px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "mono-label": [
+                              "Geist"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-label": [
+                              "13px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.filled {
+          font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Brutalist / Minimalist Base Styles */
+        body {
+            background-color: #ffffff; /* Pure White override for this specific brutalist feel */
+        }
+        
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dadada;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1a1c1c;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-background min-h-screen flex font-body-md text-body-md overflow-hidden antialiased">
+<!-- SideNavBar (from JSON) -->
+<aside class="bg-surface-container-low dark:bg-surface-container-low fixed left-0 top-0 h-full w-sidebar-width border-r border-[#000000] flex flex-col z-20">
+<!-- Header -->
+<div class="px-6 py-8 border-b border-[#000000]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-DEFAULT flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary font-bold">business_center</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-[#000000]">Onbora</h1>
+<p class="font-mono-label text-mono-label text-secondary mt-1 uppercase tracking-wider">KAM Workspace</p>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 py-6 flex flex-col gap-2">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center gap-4 px-6 py-4 border-l-4 border-primary-container text-[#000000] font-bold bg-surface-container-highest hover:bg-surface-container-high transition-colors duration-200" href="#" style="transform: scale(0.99); transition: transform 0.2s;">
+<span class="material-symbols-outlined filled">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-4 px-6 py-4 text-secondary hover:text-[#000000] border-l-4 border-transparent hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-body-md text-body-md">Conversations</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 text-secondary hover:text-[#000000] border-l-4 border-transparent hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-body-md text-body-md">Business Twin</span>
+</a>
+</nav>
+<!-- Footer Tabs -->
+<div class="border-t border-[#000000] py-4 flex flex-col gap-2 mt-auto">
+<a class="flex items-center gap-4 px-6 py-4 text-secondary hover:text-[#000000] hover:bg-surface-container-high transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 text-secondary hover:text-[#000000] hover:bg-surface-container-high transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="ml-[280px] w-[calc(100%-280px)] flex flex-col h-screen">
+<!-- TopNavBar (from JSON) -->
+<header class="bg-surface-container-lowest h-16 border-b border-[#000000] flex justify-between items-center px-gutter w-full shrink-0 z-10 sticky top-0">
+<!-- Search Bar (Left aligned as per JSON) -->
+<div class="flex items-center">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-surface border border-[#000000] text-sm focus:outline-none focus:border-[#000000] focus:ring-0 focus:border-l-2 focus:border-l-primary-container transition-all" placeholder="Search KAM Workspace..." type="text"/>
+</div>
+</div>
+<!-- Title (Center - optional based on JSON but adding for context) -->
+<div class="absolute left-1/2 -translate-x-1/2">
+<h2 class="font-headline-md text-headline-md font-bold text-[#000000]">Onbora KAM Workspace</h2>
+</div>
+<!-- Trailing Actions & Profile -->
+<div class="flex items-center gap-6">
+<button class="text-secondary hover:text-primary-container transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary-container rounded-full border border-surface-container-lowest"></span>
+</button>
+<button class="text-secondary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-[#000000] overflow-hidden ml-2 cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Manager Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a Key Account Manager in a well-lit modern office setting. High contrast, sharp focus, wearing a dark blazer over a crisp white shirt. The background is a slightly blurred corporate workspace with cool, neutral tones. The mood is confident and reliable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy88pYPDJJttsM5aFUoUsJiRb7_0I-wCsNk0qQm3eSroknI57w5oEFrDFJzUpafdFWy66VrkyfMqhoh3RFHDHywC0NM62G-OrTROshUb5p8kRQVSvghFVcwcGQpJldc3XI0OBbh9aZfiDjCVLR0M0Et0FuwFT7beZSzAfbjRo9Zko2bd17mUXY70piEMJabLwdY5zqS52FP5MvQ1oDpCIJ9qRiYTVPQZ34tSDdi-45i9X8d63yF3v32i0wx4Df2hIFE3njkFMfboQ"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Layout: 3 Columns -->
+<main class="flex-1 flex overflow-hidden bg-surface-container-low">
+<!-- Column 1: Prospect Dossiers Queue -->
+<section class="w-[320px] shrink-0 border-r border-[#000000] bg-surface-container-lowest flex flex-col h-full z-0">
+<div class="p-4 border-b border-[#000000] bg-surface-container-lowest flex justify-between items-center sticky top-0 z-10">
+<h3 class="font-label-caps text-label-caps text-[#000000] uppercase tracking-wider">Prospect Queue</h3>
+<span class="bg-surface-container-high px-2 py-1 rounded-sm text-xs font-mono-label">12 ACTIVE</span>
+</div>
+<div class="overflow-y-auto flex-1 p-4 space-y-4">
+<!-- Card: Active / Selected -->
+<div class="border-2 border-[#000000] p-4 relative bg-surface-container-lowest cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-lg text-body-lg font-bold text-[#000000]">SARL Innovate</h4>
+<span class="font-mono-label text-[10px] text-secondary">10:42 AM</span>
+</div>
+<div class="flex items-center gap-2 mt-3">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-caps text-[10px] text-primary-container tracking-wider">IN_REVIEW</span>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2">Reviewing initial infrastructure audit. Pending technical validation for SD-WAN deployment.</p>
+</div>
+<!-- Card: Normal -->
+<div class="border border-[#000000] p-4 bg-surface-container-lowest cursor-pointer hover:border-2 hover:p-[15px] transition-all">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-md text-body-md font-semibold text-[#000000]">TechCorp Industries</h4>
+<span class="font-mono-label text-[10px] text-secondary">09:15 AM</span>
+</div>
+<div class="flex items-center gap-2 mt-3">
+<span class="w-2 h-2 rounded-full bg-surface-dim"></span>
+<span class="font-label-caps text-[10px] text-secondary tracking-wider">ESTIMATE_PREPARED</span>
+</div>
+</div>
+<!-- Card: Normal -->
+<div class="border border-[#000000] p-4 bg-surface-container-lowest cursor-pointer hover:border-2 hover:p-[15px] transition-all">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-md text-body-md font-semibold text-[#000000]">Global Logistics Ltd</h4>
+<span class="font-mono-label text-[10px] text-secondary">YESTERDAY</span>
+</div>
+<div class="flex items-center gap-2 mt-3">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="font-label-caps text-[10px] text-[#000000] tracking-wider">CONTRACT_SENT</span>
+</div>
+</div>
+<!-- Card: Normal -->
+<div class="border border-[#000000] p-4 bg-surface-container-lowest cursor-pointer hover:border-2 hover:p-[15px] transition-all opacity-60">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-md text-body-md font-semibold text-secondary line-through decoration-[#000000]">Nexus Retail</h4>
+<span class="font-mono-label text-[10px] text-secondary">MON</span>
+</div>
+<div class="flex items-center gap-2 mt-3">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-caps text-[10px] text-error tracking-wider">CLOSED_LOST</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Column 2: Dossier Detail (Center Canvas) -->
+<section class="flex-1 flex flex-col h-full bg-surface overflow-y-auto">
+<!-- Dossier Header -->
+<div class="p-8 border-b border-[#000000] bg-surface-container-lowest">
+<div class="flex items-center gap-4 mb-2">
+<span class="px-3 py-1 bg-primary-fixed-dim text-on-primary-fixed border border-[#000000] font-mono-label text-xs">ID: DOS-8492</span>
+<span class="font-label-caps text-label-caps text-primary-container border border-primary-container px-2 py-1">IN_REVIEW</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-[#000000] mt-4 mb-2">SARL Innovate</h2>
+<div class="flex gap-6 text-sm text-secondary font-mono-label">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">domain</span> Enterprise Tech</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> Paris, FR</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">person</span> Contact: J. Dupont</span>
+</div>
+</div>
+<div class="p-8 space-y-8 max-w-4xl mx-auto w-full">
+<!-- AI Business Twin Section -->
+<div class="border border-[#000000] bg-surface-container-lowest relative">
+<!-- Brutalist header bar -->
+<div class="border-b border-[#000000] bg-surface-container-high p-4 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#000000]">hub</span>
+<h3 class="font-label-caps text-label-caps text-[#000000] tracking-widest">AI Business Twin Analysis</h3>
+</div>
+<span class="font-mono-label text-xs text-primary-container animate-pulse">LIVE SYNC</span>
+</div>
+<div class="p-6 grid grid-cols-2 gap-8 relative">
+<!-- Divider line in the middle -->
+<div class="absolute left-1/2 top-6 bottom-6 w-[1px] bg-[#000000] -translate-x-1/2"></div>
+<!-- Situation Actuelle -->
+<div class="pr-4">
+<h4 class="font-body-md text-body-md font-bold text-[#000000] mb-4 uppercase tracking-wide border-b-2 border-surface-dim pb-2 inline-block">Situation Actuelle</h4>
+<ul class="space-y-4 mt-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-0.5 text-lg">warning</span>
+<div>
+<p class="font-mono-label text-sm text-[#000000]">Legacy MPLS Network</p>
+<p class="text-xs text-secondary mt-1">High latency across 4 regional branches. Operational bottleneck.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5 text-lg">call</span>
+<div>
+<p class="font-mono-label text-sm text-[#000000]">On-Premise PBX</p>
+<p class="text-xs text-secondary mt-1">Nearing end-of-life support. Maintenance costs rising 15% YoY.</p>
+</div>
+</li>
+</ul>
+</div>
+<!-- Situation Future -->
+<div class="pl-4">
+<h4 class="font-body-md text-body-md font-bold text-primary-container mb-4 uppercase tracking-wide border-b-2 border-primary-container pb-2 inline-block">Situation Future</h4>
+<ul class="space-y-4 mt-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container mt-0.5 text-lg">check_circle</span>
+<div>
+<p class="font-mono-label text-sm text-[#000000]">Orange Business SD-WAN</p>
+<p class="text-xs text-secondary mt-1">Centralized routing, projected 40% latency reduction. Cloud-ready.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container mt-0.5 text-lg">check_circle</span>
+<div>
+<p class="font-mono-label text-sm text-[#000000]">Teams Phone Integration</p>
+<p class="text-xs text-secondary mt-1">Unified communications. Zero maintenance hardware overhead.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Internal Notes Editor -->
+<div class="border border-[#000000] bg-surface-container-lowest">
+<div class="border-b border-[#000000] bg-surface-container-high p-3 flex justify-between items-center">
+<h3 class="font-label-caps text-label-caps text-[#000000] tracking-widest pl-2">KAM Strategy Notes</h3>
+<div class="flex border border-[#000000] bg-surface-container-lowest rounded-sm overflow-hidden">
+<button class="p-1.5 hover:bg-surface-container-high border-r border-[#000000] transition-colors"><span class="material-symbols-outlined text-[18px]">format_bold</span></button>
+<button class="p-1.5 hover:bg-surface-container-high border-r border-[#000000] transition-colors"><span class="material-symbols-outlined text-[18px]">format_italic</span></button>
+<button class="p-1.5 hover:bg-surface-container-high border-r border-[#000000] transition-colors"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+<button class="p-1.5 hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[18px]">link</span></button>
+</div>
+</div>
+<textarea class="w-full h-48 p-4 bg-transparent border-none resize-none focus:ring-0 font-body-md text-[#000000] focus:outline-none focus:bg-surface-bright transition-colors" placeholder="Enter strategic notes, objections, or negotiation points here..."></textarea>
+<div class="border-t border-[#000000] p-2 bg-surface-container-lowest flex justify-end">
+<button class="px-4 py-2 bg-surface-container-lowest border border-[#000000] text-[#000000] font-label-caps text-xs hover:bg-[#000000] hover:text-[#ffffff] transition-colors">SAVE DRAFT</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Column 3: Provisioning Verification (Right Panel) -->
+<section class="w-[400px] shrink-0 border-l border-[#000000] bg-surface-container-lowest flex flex-col h-full z-10 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+<div class="p-6 border-b border-[#000000] bg-surface-container-highest">
+<h3 class="font-headline-md text-headline-md font-bold text-[#000000] leading-tight">ArrowSphere<br/>Provisioning</h3>
+<p class="text-sm text-secondary mt-2">Verify recommended solution readiness before triggering adoption sequence.</p>
+</div>
+<div class="flex-1 p-6 overflow-y-auto space-y-6">
+<!-- Provisioning Item: Fiber Pro -->
+<div class="border border-[#000000] p-4 bg-surface relative overflow-hidden group">
+<!-- Status indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#10b981]"></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-body-md text-body-md font-bold text-[#000000]">Fiber Pro 1Gbps</h4>
+<p class="text-xs font-mono-label text-secondary mt-1">SKU: ORG-FIB-1G</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-[#10b981] filled">check_circle</span>
+<span class="font-label-caps text-[10px] text-[#10b981] mt-1">ACTIVE</span>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-[#000000]/10 flex justify-between items-center text-xs">
+<span class="text-secondary">Eligibility Confirmed</span>
+<span class="font-mono-label text-[#000000]">Site A, B, C</span>
+</div>
+</div>
+<!-- Provisioning Item: Cisco VPN -->
+<div class="border border-[#000000] p-4 bg-surface relative overflow-hidden group">
+<!-- Status indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-tint"></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-body-md text-body-md font-bold text-[#000000]">Cisco Meraki VPN</h4>
+<p class="text-xs font-mono-label text-secondary mt-1">SKU: MER-MX68</p>
+</div>
+<div class="flex flex-col items-end">
+<!-- Loading Spinner replacing icon -->
+<svg class="animate-spin h-5 w-5 text-primary-container" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+<span class="font-label-caps text-[10px] text-primary-container mt-1">PENDING</span>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-[#000000]/10">
+<div class="w-full bg-surface-container-high h-1 mb-2">
+<div class="bg-primary-container h-1 w-[60%]"></div>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-secondary">API Validation</span>
+<span class="font-mono-label text-primary-container">60%</span>
+</div>
+</div>
+</div>
+<!-- Provisioning Item: Teams Phone -->
+<div class="border border-[#000000] p-4 bg-surface relative overflow-hidden group">
+<!-- Status indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#10b981]"></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-body-md text-body-md font-bold text-[#000000]">Teams Phone Add-on</h4>
+<p class="text-xs font-mono-label text-secondary mt-1">SKU: MS-TMS-PHN</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-[#10b981] filled">check_circle</span>
+<span class="font-label-caps text-[10px] text-[#10b981] mt-1">ACTIVE</span>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-[#000000]/10 flex justify-between items-center text-xs">
+<span class="text-secondary">Licenses Allocated</span>
+<span class="font-mono-label text-[#000000]">150 Seats</span>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-6 border-t border-[#000000] bg-surface-container-lowest">
+<!-- Tooltip Container for Disabled State -->
+<div class="relative group cursor-not-allowed">
+<button class="w-full bg-surface-container-high border border-[#000000] text-secondary font-label-caps text-sm py-4 tracking-widest uppercase flex items-center justify-center gap-2 opacity-70" disabled="">
+<span class="material-symbols-outlined">rocket_launch</span>
+                            Déclencher l'Adoption
+                        </button>
+<!-- Tooltip -->
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[80%] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+<div class="bg-[#000000] text-[#ffffff] text-xs font-mono-label p-2 text-center border border-[#000000]">
+                                Awaiting pending provisions to complete before execution.
+                            </div>
+<div class="w-2 h-2 bg-[#000000] rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<!-- Floating Demo Navigation Panel -->
+<div id="demo-nav-panel" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; background: #ffffff; border: 2px solid #000000; padding: 12px; font-family: 'Inter', sans-serif; box-shadow: 4px 4px 0px 0px #000000; border-radius: 4px;">
+  <div style="font-size: 10px; font-weight: 900; text-transform: uppercase; color: #ff7900; margin-bottom: 8px; letter-spacing: 0.05em; font-family: 'Inter', sans-serif;">Onbora Demo Persona Workflow</div>
+  <div style="display: flex; gap: 8px;">
+    <a href="client.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ffffff; color: #000000; border: 1px solid #e2e2e2;">1. Client B2B Chat</a>
+    <a href="commercial.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ffffff; color: #000000; border: 1px solid #e2e2e2;">2. Commercial (Outbound)</a>
+    <a href="kam.html" style="font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 12px; transition: all 0.2s; font-family: 'Inter', sans-serif; background: #ff7900; color: #ffffff; border: 1px solid #000000;">3. Key Account Manager (KAM)</a>
+  </div>
+</div>
+
+</body></html>

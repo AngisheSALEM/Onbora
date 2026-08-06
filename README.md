@@ -12,7 +12,17 @@ Onbora est un copilote commercial B2B conçu pour les fournisseurs de services m
 
 ---
 
-## 2. Installation et Lancement Local (Sans Docker)
+## 2. Documentation et Cadrage Technique
+
+Pour comprendre le fonctionnement métier et technique du projet Onbora :
+*   **Contexte global** : [onbora_context.md](file:///C:/Users/Salem/Documents/projet/Onbora/onbora_context.md) (Roadmap, rôles, cas d'usage)
+*   **Architecture technique** : [architecture.md](file:///C:/Users/Salem/Documents/projet/Onbora/architecture.md) (Modèles de données, flux, stack technique)
+*   **Intégration CRM & Provisioning** : [integration_kaabu_arrowsphere.md](file:///C:/Users/Salem/Documents/projet/Onbora/integration_kaabu_arrowsphere.md) (Algorithmes de déduplication Kaabu et flux technique avec ArrowSphere)
+*   **Chartes graphiques et règles** : [vibe_rules.md](file:///C:/Users/Salem/Documents/projet/Onbora/vibe_rules.md) & [charte_graphique.md](file:///C:/Users/Salem/Documents/projet/Onbora/charte_graphique.md)
+
+---
+
+## 3. Installation et Lancement Local (Sans Docker)
 
 ### A. Prérequis
 *   **Python 3.11 ou plus**
@@ -51,7 +61,7 @@ Onbora est un copilote commercial B2B conçu pour les fournisseurs de services m
 
 ---
 
-## 3. Lancement avec Docker (Recommandé pour la Production/Simulations)
+## 4. Lancement avec Docker (Recommandé pour la Production/Simulations)
 
 Pour construire et démarrer l'ensemble des services (PostgreSQL, Redis, Django, Next.js) en une seule commande :
 
@@ -67,7 +77,7 @@ Les services démarreront sur les ports configurés :
 
 ---
 
-## 4. Initialisation des Comptes de Démo & Catalogues
+## 5. Initialisation des Comptes de Démo & Catalogues
 
 Pour initialiser les comptes utilisateurs prédéfinis pour chaque rôle (Client B2B, Commercial, KAM, Admin) et alimenter le catalogue de services de base, exécutez les commandes suivantes dans le dossier `backend/` (avec l'environnement virtuel activé) :
 

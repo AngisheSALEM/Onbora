@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
-import HelpDrawer from '@/components/shared/HelpDrawer';
+import TrainingDrawer from '@/components/training/TrainingDrawer';
+import TrainingLauncher from '@/components/training/TrainingLauncher';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
@@ -106,7 +107,7 @@ export default function KamDashboard() {
   const [activeTab, setActiveTab] = useState<'qualification' | 'twin' | 'provisioning'>('qualification');
   const [provisioningLoading, setProvisioningLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
   const [kamList, setKamList] = useState<{ id: number; first_name: string; last_name: string; username: string }[]>([]);
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -447,12 +448,10 @@ export default function KamDashboard() {
 
               {/* Right Corner: FAQ & Guide */}
               <div className="flex items-center">
-                <button
-                  onClick={() => setHelpOpen(true)}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-250 dark:border-zinc-850 dark:hover:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <Icons.HelpCircle size={14} /> FAQ & Guide
-                </button>
+                <TrainingLauncher 
+                  onClick={() => setTrainingOpen(true)}
+                  hasNewNotification={false}
+                />
               </div>
             </header>
             {selectedDossier ? (
@@ -925,7 +924,7 @@ export default function KamDashboard() {
 
         </div>
       </div>
-      <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="KAM" />
+      <TrainingDrawer isOpen={trainingOpen} onClose={() => setTrainingOpen(false)} />
     </ProtectedRoute>
   );
 }

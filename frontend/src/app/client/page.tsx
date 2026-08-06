@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
-import HelpDrawer from '@/components/shared/HelpDrawer';
+import TrainingDrawer from '@/components/training/TrainingDrawer';
+import TrainingLauncher from '@/components/training/TrainingLauncher';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
@@ -84,7 +85,8 @@ export default function ClientDiscoveryPage() {
   const [activeTab, setActiveTab] = useState<'services' | 'roadmap'>('services');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
+  const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
 
   // Audio and Speech variables
   const [isListening, setIsListening] = useState(false);
@@ -103,9 +105,9 @@ export default function ClientDiscoveryPage() {
   const [formationsExpanded, setFormationsExpanded] = useState(true);
   const [selectedModel, setSelectedModel] = useState("Onbora Hybrid (Gemini 1.5 Flash)");
   const [trainings, setTrainings] = useState([
-    { id: 1, title: "Prise en main de Microsoft 365" },
-    { id: 2, title: "Sécuriser ma connexion Fibre Pro" },
-    { id: 3, title: "Guide de configuration VPN Orange" }
+    { id: "sharepoint-collab", title: "Prise en main de Microsoft 365" },
+    { id: "vpn-access", title: "Sécuriser ma connexion VPN Pro" },
+    { id: "mfa-setup", title: "Activer la double authentification (MFA)" }
   ]);
 
   const recognitionRef = useRef<any>(null);
@@ -337,6 +339,59 @@ export default function ClientDiscoveryPage() {
     setMessages(prev => [...prev, tempUserMsg]);
     
     try {
+      // Try Mock AI Agent on port 3001 first for tool-use simulation
+      try {
+        const aiRes = await fetch('http://localhost:3001/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          
+          const tempAiMsg: Message = {
+            id: Date.now() + 1,
+            sender: 'AI',
+            content: aiData.reply,
+            created_at: new Date().toISOString()
+          };
+          setMessages(prev => [...prev, tempAiMsg]);
+          
+          setCallTranscriptAi(aiData.reply);
+          speakCallResponse(aiData.reply);
+          
+          // Update Business Twin dynamically from mock AI
+          if (aiData.business_twin) {
+            setBusinessTwin(aiData.business_twin);
+            setRecommendations(aiData.business_twin.recommended_services || []);
+            setIsQualified(true);
+          }
+          
+          // Execute AI tools
+          if (aiData.tool_calls && aiData.tool_calls.length > 0) {
+            aiData.tool_calls.forEach((tool: any) => {
+              if (tool.name === 'launch_training') {
+                const { moduleId } = tool.arguments;
+                setSelectedTrainingId(moduleId);
+                setTrainingOpen(true);
+              } 
+              else if (tool.name === 'generate_slides') {
+                setRightTab('twin');
+                setExpandedSections(prev => [...prev, 'twin']);
+              }
+              else if (tool.name === 'execute_setup') {
+                const { action } = tool.arguments;
+                alert(`[Vocal IA Action] Automatisation "${action}" déclenchée avec succès.`);
+              }
+            });
+          }
+          return; // Stop processing, bypass normal API
+        }
+      } catch (mockErr) {
+        console.log("Mock AI server offline, falling back to standard API:", mockErr);
+      }
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const res = await fetch(`${API_URL}/api/discovery/conversations/${conversationId}/messages/`, {
         method: 'POST',
@@ -760,6 +815,57 @@ export default function ClientDiscoveryPage() {
   const sendMessageAPI = async (userText: string) => {
     setLoading(true);
     try {
+      // Try Mock AI Agent on port 3001 first for tool-use simulation
+      try {
+        const aiRes = await fetch('http://localhost:3001/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userText })
+        });
+        
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          
+          const tempAiMsg: Message = {
+            id: Date.now() + 1,
+            sender: 'AI',
+            content: aiData.reply,
+            created_at: new Date().toISOString()
+          };
+          setMessages(prev => [...prev, tempAiMsg]);
+          
+          // Update Business Twin dynamically from mock AI
+          if (aiData.business_twin) {
+            setBusinessTwin(aiData.business_twin);
+            setRecommendations(aiData.business_twin.recommended_services || []);
+            setIsQualified(true);
+          }
+          
+          // Execute AI tools
+          if (aiData.tool_calls && aiData.tool_calls.length > 0) {
+            aiData.tool_calls.forEach((tool: any) => {
+              if (tool.name === 'launch_training') {
+                const { moduleId } = tool.arguments;
+                setSelectedTrainingId(moduleId);
+                setTrainingOpen(true);
+              } 
+              else if (tool.name === 'generate_slides') {
+                setRightTab('twin');
+                setExpandedSections(prev => [...prev, 'twin']);
+              }
+              else if (tool.name === 'execute_setup') {
+                const { action } = tool.arguments;
+                alert(`[IA Action] Configuration automatique "${action}" exécutée avec succès en tâche de fond.`);
+              }
+            });
+          }
+          setLoading(false);
+          return; // Stop here, bypass standard backend
+        }
+      } catch (mockErr) {
+        console.log("Mock AI server offline, falling back to standard API:", mockErr);
+      }
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
       // 15 seconds timeout safeguard
@@ -1076,7 +1182,7 @@ export default function ClientDiscoveryPage() {
                     onClick={() => {
                       const title = prompt("Titre de la nouvelle session de formation :");
                       if (title) {
-                        setTrainings(prev => [...prev, { id: Date.now(), title }]);
+                        setTrainings(prev => [...prev, { id: String(Date.now()), title }]);
                       }
                     }}
                     className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-extrabold text-orange-500 cursor-pointer flex items-center justify-center transition-colors"
@@ -1091,7 +1197,10 @@ export default function ClientDiscoveryPage() {
                     {trainings.map((t) => (
                       <button
                         key={t.id}
-                        onClick={() => alert(`Lancement de la formation : "${t.title}" (Simulé)`)}
+                        onClick={() => {
+                          setSelectedTrainingId(t.id);
+                          setTrainingOpen(true);
+                        }}
                         className="w-full text-left py-1.5 px-2 rounded-lg text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150/40 dark:hover:bg-zinc-900/50 transition-all cursor-pointer truncate"
                         title={t.title}
                       >
@@ -1322,8 +1431,15 @@ export default function ClientDiscoveryPage() {
                 </div>
               </div>
 
-              {/* Right Corner: Only Voice Call button */}
-              <div className="flex items-center">
+              {/* Right Corner: Training Launcher + Voice Call button */}
+              <div className="flex items-center gap-3">
+                <TrainingLauncher 
+                  onClick={() => {
+                    setSelectedTrainingId(null);
+                    setTrainingOpen(true);
+                  }}
+                  hasNewNotification={true}
+                />
                 <button
                   onClick={startVoiceCall}
                   className="flex px-3 py-1.5 rounded-lg border border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-sm shadow-orange-500/10"
@@ -1500,6 +1616,7 @@ export default function ClientDiscoveryPage() {
             <form onSubmit={handleSendMessage} className="p-4 bg-white/80 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-900 shrink-0 glass-form">
               <div className="relative flex items-center">
                 <input
+                  id="chat-input-field"
                   type="text"
                   disabled={loading}
                   value={inputValue}
@@ -1539,7 +1656,25 @@ export default function ClientDiscoveryPage() {
             </form>
           </div>
         </div>
-      <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} role="CLIENT_B2B" />
+      <TrainingDrawer 
+        isOpen={trainingOpen} 
+        onClose={() => {
+          setTrainingOpen(false);
+          setSelectedTrainingId(null);
+        }}
+        initialModuleId={selectedTrainingId}
+        onAskCopilot={(stepTitle, moduleTitle) => {
+          setTrainingOpen(false);
+          const query = `Je suis bloqué sur l'étape "${stepTitle}" du module de formation "${moduleTitle}". Peux-tu m'expliquer en détail ce que je dois faire et comment fonctionne cette solution Orange ?`;
+          setInputValue(query);
+          setTimeout(() => {
+            const input = document.getElementById('chat-input-field') as HTMLInputElement;
+            if (input) {
+              input.focus();
+            }
+          }, 100);
+        }}
+      />
 
       {/* Voice Call Overlay */}
       {isCallActive && (
