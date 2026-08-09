@@ -58,4 +58,10 @@ Pour toute tâche liée à l'implémentation, la modification ou l'intégration 
 Après chaque modification de code ou de documentation validée, l'assistant ou le sous-agent de développement doit obligatoirement pousser les modifications vers le dépôt distant via :
 `git push origin dev`
 
+## Règle 11 : Passerelle d'Échange de Données (Aucune Orchestration Externe)
+Onbora **n'orchestre pas** les systèmes externes (CRM, ERP, Provisioning) et **ne passe aucune commande**. Il agit uniquement comme une passerelle d'échange de données :
+*   **Kaabu CRM** : Lecture (GET) des fiches d'entreprises pour la déduplication et Envoi (POST/PATCH) des opportunités qualifiées / rapports de visite.
+*   **ArrowSphere** : Réception passive via Webhook HTTP POST des notifications d'activation pour déverrouiller l'adoption/formation ([HelpDrawer](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/HelpDrawer.tsx)).
+
+
 

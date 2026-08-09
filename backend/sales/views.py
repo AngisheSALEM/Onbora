@@ -167,7 +167,7 @@ class VisitReportCreateView(APIView):
         report, created = VisitReport.objects.get_or_create(
             preparation=prep,
             defaults={
-                "raw_transcript": raw_transcript or "Discussion de qualification commerciale.",
+                "raw_transcript": raw_transcript or "Discussion de conversation commerciale.",
                 "executive_summary": exec_summary,
                 "confirmed_needs": confirmed_needs,
                 "objections_raised": objections,
@@ -222,7 +222,7 @@ class VisitReportTransmitView(APIView):
             defaults={
                 "source": ProspectDossier.OUTBOUND_VISIT,
                 "status": ProspectDossier.NEW,
-                "raw_qualification_data": {
+                "raw_conversation_data": {
                     "profile": profile,
                     "executive_summary": report.executive_summary
                 }
@@ -330,7 +330,7 @@ class VisitReportExportView(APIView):
         </div>
 
         <div class="section">
-            <h3 class="section-title">Insights de Qualification</h3>
+            <h3 class="section-title">Insights de conversation</h3>
             <div class="grid">
                 <div class="card">
                     <p class="card-title">Besoins Confirmés</p>
@@ -492,4 +492,63 @@ class ScraperCredentialDetailView(APIView):
             return Response({"detail": "Identifiants introuvables pour cette plateforme."}, status=status.HTTP_404_NOT_FOUND)
         cred.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class KaabuDeduplicateView(APIView):
+    """
+    RÉCUPÉRATION (GET/POST) : Interroge Kaabu CRM pour récupérer les données entreprise
+    et effectuer une déduplication (SIREN 100%, Domaine 95%, Fuzzy Jaro-Winkler > 70%).
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        name = request.data.get("name", "").strip()
+        siren = request.data.get("siren", "").strip()
+        domain = request.data.get("domain", "").strip()
+
+        from sales.integrations.kaabu import KaabuClient
+        client = KaabuClient()
+        matches = client.fetch_organization_data(name=name, siren=siren, domain=domain)
+        
+        return Response({
+            "query": {"name": name, "siren": siren, "domain": domain},
+            "total_matches": len(matches),
+            "matches": matches
+        }, status=status.HTTP_200_OK)
+
+
+class ArrowSphereWebhookView(APIView):
+    """
+    RÉCEPTION PASSIVE (POST Webhook) : Reçoit les notifications d'activation d'ArrowSphere.
+    Met à jour le statut du service local pour déverrouiller l'adoption client (HelpDrawer).
+    """
+    permission_classes = []  # Webhook public récepteur
+
+    def post(self, request):
+        from sales.integrations.arrowsphere import ArrowSphereClient
+        client = ArrowSphereClient()
+        parsed = client.parse_activation_webhook(request.data)
+
+        if not parsed["valid"]:
+            return Response({
+                "error": "Payload invalide ou statut non-ACTIF",
+                "raw": request.data
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        tenant_id = parsed["tenant_id"]
+        activated_services = parsed["activated_services"]
+
+        # Mise à jour locale du statut d'entreprise si trouvée
+        enterprise = Enterprise.objects.filter(arrowsphere_tenant_id=tenant_id).first()
+        if enterprise:
+            enterprise.sync_status = "SYNCED"
+            enterprise.save()
+
+        return Response({
+            "status": "SUCCESS",
+            "message": f"Données d'activation reçues pour le tenant {tenant_id}",
+            "tenant_id": tenant_id,
+            "unlocked_services": activated_services
+        }, status=status.HTTP_200_OK)
+
 

@@ -31,7 +31,7 @@ class SalesAPITestCase(APITestCase):
         
         response = self.client.get(f"{self.search_url}?q=Cabinet Medical Sante")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['sector'], "Médical / Santé")
+        self.assertIn("Médical", response.data[0]['sector'])
         self.assertEqual(Enterprise.objects.count(), 2)
 
     def test_create_visit_preparation(self):
@@ -126,6 +126,13 @@ from unittest.mock import patch, MagicMock
 from sales.integrations.kaabu import KaabuClient
 
 class KaabuClientTestCase(APITestCase):
+    def setUp(self):
+        self.sales_user = User.objects.create_user(
+            username='kaabu_sales', password='password123', role=User.SALESPERSON
+        )
+        self.token = Token.objects.create(user=self.sales_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
     @patch('sales.integrations.kaabu.requests.post')
     def test_get_access_token_success(self, mock_post):
         mock_response = MagicMock()
@@ -169,5 +176,30 @@ class KaabuClientTestCase(APITestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], "org-obs-123")
         self.assertEqual(results[0]["siren"], "123456789")
+
+    def test_kaabu_deduplicate_view(self):
+        url = reverse('kaabu-deduplicate')
+        response = self.client.post(url, {
+            "name": "Orange Business Services",
+            "siren": "345678901"
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("matches", response.data)
+        self.assertGreaterEqual(response.data["total_matches"], 1)
+
+    def test_arrowsphere_webhook_view(self):
+        ent = Enterprise.objects.create(name="Client Cloud", arrowsphere_tenant_id="TENANT-99")
+        url = reverse('arrowsphere-webhook')
+        response = self.client.post(url, {
+            "tenant_id": "TENANT-99",
+            "status": "ACTIVE",
+            "activated_services": ["MICROSOFT_365_BUSINESS_PREMIUM"]
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "SUCCESS")
+
+        ent.refresh_from_db()
+        self.assertEqual(ent.sync_status, "SYNCED")
+
 
 

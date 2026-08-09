@@ -7,7 +7,9 @@ from .views import (
     VisitReportExportView,
     VoiceUploadView,
     ScraperCredentialListCreateView,
-    ScraperCredentialDetailView
+    ScraperCredentialDetailView,
+    KaabuDeduplicateView,
+    ArrowSphereWebhookView
 )
 
 urlpatterns = [
@@ -19,5 +21,8 @@ urlpatterns = [
     path('voice-upload/', VoiceUploadView.as_view(), name='voice-upload'),
     path('credentials/', ScraperCredentialListCreateView.as_view(), name='scraper-credential-list-create'),
     path('credentials/<str:platform>/', ScraperCredentialDetailView.as_view(), name='scraper-credential-detail'),
+    path('integrations/kaabu/deduplicate/', KaabuDeduplicateView.as_view(), name='kaabu-deduplicate'),
+    path('integrations/arrowsphere/webhook/', ArrowSphereWebhookView.as_view(), name='arrowsphere-webhook'),
 ]
+
 

@@ -174,35 +174,30 @@ Pour simuler l'intégration d'un LLM capable d'interagir en temps réel avec les
 
 ---
 
-## 11. Plan de Simulation et Test Cloud (Zero-Local, Free Tier)
+## 11. Passerelle d'Échange de Données & Architecture de Mock (Kaabu CRM & ArrowSphere)
 
-Pour valider les flux réels dans un environnement de production déployé (Next.js sur Vercel et Django sur Render) sans dépendance à des machines locales inaccessibles, Onbora privilégie une architecture de simulation 100% cloud basée sur des tiers gratuits (Free Tiers).
+Onbora **n'orchestre aucun système et ne passe aucune commande**. C'est une **passerelle d'échange de données (Data Exchange Connector)** :
+*   **Récupération (GET)** : Onbora lit les données d'entreprises, les SIREN et l'historique commercial depuis le CRM Orange Kaabu pour effectuer la déduplication et préparer les briefs.
+*   **Envoi (POST/PATCH)** : Onbora transmet l'opportunité qualifiée, le Business Twin PDF et le rapport de visite vers Orange Kaabu.
+*   **Réception Passive (POST Webhook)** : Onbora reçoit les notifications d'activation d'ArrowSphere (`POST /api/v1/sales/integrations/arrowsphere/webhook/`) pour mettre à jour le statut du service et déverrouiller l'adoption/formation ([HelpDrawer](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/HelpDrawer.tsx)).
 
 ```
- [ Vercel (Frontend Onbora) ]  ⇄  [ Render (Backend Onbora) ]
-                                          ↕
- [ WireMock Cloud (Mock CRM Kaabu) ]   [ Pipedream (Mock Provisioning & Webhooks) ]
-                                          ↑ (Génère Dummy Data)
-                                    [ Mockaroo (API Cloud) ]
+ [ Orange Kaabu CRM ] (GET Données Entreprise / POST Opportunités)
+         ↕
+ [ Onbora Backend ] (Passerelle de Données - Django)
+         ↑ (Réception Webhook d'Activation)
+ [ ArrowSphere Provisioning ] (Notification POST externe)
 ```
 
-### A. Composants de l'Architecture de Simulation Cloud
+### A. Composants de l'Architecture de Simulation
+1.  **`KaabuClient`** ([backend/sales/integrations/kaabu.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/sales/integrations/kaabu.py)) : 
+    *   Authentification OAuth2 (jeton JWT avec fallback local résilient).
+    *   `fetch_organization_data()` : Recherche par SIREN (100%), Domaine (95%), ou Jaro-Winkler (>70%).
+    *   `send_opportunity_data()` : Envoi des dossiers qualifiés vers le CRM.
+2.  **`ArrowSphereClient` & Webhook** ([backend/sales/integrations/arrowsphere.py](file:///C:/Users/Salem/Documents/projet/Onbora/backend/sales/integrations/arrowsphere.py)) :
+    *   `ArrowSphereWebhookView` (`POST /api/v1/sales/integrations/arrowsphere/webhook/`) : Récepteur passif de la donnée d'activation.
+    *   Simulateur local pour les démos sans dépendance externe.
 
-1.  **Mock CRM Kaabu (Inbound/Outbound)** : Hébergé sur **WireMock Cloud (ou Postman Mock Servers)**.
-    *   *Rôle* : Fournit une URL HTTPS publique (ex: `https://kaabu.wiremockapi.cloud`) accessible par l'instance de production Render d'Onbora.
-    *   *Simulation* : Renvoie de fausses listes de comptes clients, de contacts d'Orange, et gère l'état d'existence pour l'algorithme de déduplication (ex. simule une correspondance SIREN).
-2.  **Mock Provisioning ArrowSphere (Webhook POST)** : Hébergé sur **Pipedream / Beeceptor**.
-    *   *Rôle* : Fait office de simulateur de livraison réseau/cloud.
-    *   *Fonctionnement* : Reçoit l'identifiant technique de tenant client, simule un délai de livraison asynchrone (ex: 10 secondes), puis envoie un événement **POST** (Webhook d'activation) vers l'endpoint public d'Onbora sur Render (`https://onbora-backend.onrender.com/api/v1/integrations/arrowsphere/webhook/`).
-3.  **Générateur de Données Factices (MSP / Clients)** : Alimenté par **Mockaroo API** et la bibliothèque **Faker** (en python).
-    *   *Rôle* : Fournit des bases réalistes de faux SIREN/SIRET français, des catalogues d'équipements de connectivité et de licences logicielles Orange Business.
-
-### B. Cinématique de Validation Cloud (Bout-en-Bout)
-
-1.  **Phase Déduplication (Kaabu)** : Le prospect / commercial fait une saisie. Le backend Render appelle le service **WireMock Cloud** pour valider la similarité et renvoie les alertes de doublons à l'UI Next.js sur **Vercel**.
-2.  **Phase Validation Client (Business Twin)** : Le dossier commercial est qualifié et synchronisé dans le mock Kaabu.
-3.  **Phase Webhook de Provisioning (ArrowSphere)** : Le provisioning est initié à l'extérieur. Après validation contractuelle externe fictive, **Pipedream** déclenche l'appel webhook `POST` vers le backend Render d'Onbora avec le statut `ACTIVE`.
-4.  **Phase Adoption Instantanée** : Onbora Backend enregistre la mise à disposition technique et notifie l'application sur Vercel. Le tiroir d'onboarding **HelpDrawer** se déverrouille en temps réel pour le client B2B.
 
 
 
