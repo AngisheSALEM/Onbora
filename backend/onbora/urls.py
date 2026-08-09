@@ -43,5 +43,14 @@ urlpatterns = [
     path('api/sales/', include('sales.urls')),
     path('api/reporting/', include('reporting.urls')),
     path('api/catalog/', include('catalog.urls')),
+    
+    # Aliases v1
+    path('api/v1/auth/', include('accounts.urls')),
+    path('api/v1/discovery/', include('discovery.urls')),
+    path('api/v1/kam/', include('kam.urls')),
+    path('api/v1/sales/', include('sales.urls')),
+    path('api/v1/reporting/', include('reporting.urls')),
+    path('api/v1/catalog/', include('catalog.urls')),
 ]
+
 
