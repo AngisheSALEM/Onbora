@@ -36,10 +36,10 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.LineChart className="text-orange-500 shrink-0" size={14} />
-                  Qu'est-ce que le Business Twin (Jumeau Numérique) ?
+                  Qu'est-ce que le Diagnostic d'Architecture Cible ?
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
-                  C'est un comparateur d'infrastructures. Il met en regard votre situation actuelle ("Avant") avec ses dysfonctionnements, et l'infrastructure recommandée ("Après") accompagnée d'une roadmap de transition par étapes.
+                  C'est un outil d'architecture réseau et sécurité. Il met en regard votre situation technique actuelle ("Avant") avec ses dysfonctionnements, et l'infrastructure recommandée ("Après") accompagnée d'une roadmap de transition par étapes.
                 </p>
               </div>
 

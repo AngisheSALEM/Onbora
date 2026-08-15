@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='prospectdossier',
             name='status',
-            field=models.CharField(choices=[('DRAFT', 'Brouillon'), ('QUALIFYING', 'Qualification en cours'), ('NEW', 'Nouveau / Qualifié'), ('DISPATCHED', 'Affecté au KAM'), ('IN_REVIEW', 'En revue'), ('ESTIMATE_PREPARED', 'Proposition commerciale rédigée'), ('NEGOTIATION', 'En négociation'), ('ACCEPTED', 'Signé / Accepté'), ('PROVISIONING', 'Provisioning technique'), ('COMPLETED', 'Installé / Opérationnel'), ('TRAINING', "En cours d'adoption / Formation"), ('REJECTED', 'Rejeté / Perdu')], default='NEW', max_length=20),
+            field=models.CharField(choices=[('DRAFT', 'Brouillon'), ('QUALIFYING', 'conversation en cours'), ('NEW', 'Nouveau / Qualifié'), ('DISPATCHED', 'Affecté au KAM'), ('IN_REVIEW', 'En revue'), ('ESTIMATE_PREPARED', 'Proposition commerciale rédigée'), ('NEGOTIATION', 'En négociation'), ('ACCEPTED', 'Signé / Accepté'), ('PROVISIONING', 'Provisioning technique'), ('COMPLETED', 'Installé / Opérationnel'), ('TRAINING', "En cours d'adoption / Formation"), ('REJECTED', 'Rejeté / Perdu')], default='NEW', max_length=20),
         ),
     ]

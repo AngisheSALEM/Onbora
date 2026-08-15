@@ -203,7 +203,7 @@ export default function ClientProfilePage() {
           companyName: dossierDetails?.company_name || user?.company_name || 'Mon Entreprise',
           dossierStatus: dossierDetails?.status || 'NEW',
           isCurrent: true,
-          provisioning: dossierDetails?.raw_qualification_data?.provisioning || {},
+          provisioning: dossierDetails?.raw_conversation_data?.provisioning || {},
           transmissionSuccess: transmissionSuccess
         });
         seenNames.add(r.name.toLowerCase());
@@ -213,7 +213,7 @@ export default function ClientProfilePage() {
     // Recommendations from past conversations
     history.forEach(conv => {
       if (conv.id !== conversationId && conv.dossier_details?.has_twin && conv.dossier_details?.recommendations) {
-        const prov = conv.dossier_details?.raw_qualification_data?.provisioning || {};
+        const prov = conv.dossier_details?.raw_conversation_data?.provisioning || {};
         const isTransmitted = conv.dossier_details?.status === 'IN_REVIEW' || conv.dossier_details?.status === 'ACCEPTED';
         
         conv.dossier_details.recommendations.forEach((r: any) => {
@@ -382,7 +382,7 @@ export default function ClientProfilePage() {
                       return (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-zinc-400 italic text-xs">
                           <Icons.Info size={24} className="mb-2 text-zinc-300 dark:text-zinc-700 animate-pulse" />
-                          <span>Aucune commande active. Veuillez terminer votre qualification de services dans le Chat.</span>
+                          <span>Aucune commande active. Veuillez terminer votre conversation de services dans le Chat.</span>
                         </div>
                       );
                     }

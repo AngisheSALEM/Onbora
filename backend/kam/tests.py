@@ -39,7 +39,7 @@ class KamAPITestCase(APITestCase):
             source=ProspectDossier.INBOUND_CONVERSATION,
             status=ProspectDossier.NEW,
             kam=self.kam_user,
-            raw_qualification_data={"profile": self.conversation.extracted_profile}
+            raw_conversation_data={"profile": self.conversation.extracted_profile}
         )
         self.twin = BusinessTwin.objects.create(
             prospect_dossier=self.dossier,
@@ -107,11 +107,11 @@ class KamAPITestCase(APITestCase):
         provision_url = reverse('dossier-provision', kwargs={'pk': self.dossier.id})
         response = self.client.post(provision_url, {'service': 'fibre', 'action': 'start'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['raw_qualification_data']['provisioning']['fibre'], 'PROVISIONING')
+        self.assertEqual(response.data['raw_conversation_data']['provisioning']['fibre'], 'PROVISIONING')
 
     def test_dossier_provision_completed(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.kam_token.key)
         provision_url = reverse('dossier-provision', kwargs={'pk': self.dossier.id})
         response = self.client.post(provision_url, {'service': 'fibre', 'action': 'complete'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['raw_qualification_data']['provisioning']['fibre'], 'COMPLETED')
+        self.assertEqual(response.data['raw_conversation_data']['provisioning']['fibre'], 'COMPLETED')

@@ -28,7 +28,7 @@ interface ProspectDossier {
   has_twin: boolean;
   kam: number | null;
   kam_details: { username: string; first_name: string; last_name: string } | null;
-  raw_qualification_data: any;
+  raw_conversation_data: any;
   created_at: string;
   updated_at: string;
 }
@@ -51,7 +51,7 @@ interface Twin {
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     DRAFT: 'Brouillon',
-    QUALIFYING: 'Qualification',
+    QUALIFYING: 'conversation',
     NEW: 'Nouveau',
     DISPATCHED: 'Affecté au KAM',
     IN_REVIEW: 'En Revue',
@@ -104,7 +104,7 @@ export default function KamDashboard() {
   const [dossierBillingAddress, setDossierBillingAddress] = useState('');
   const [dossierIsComplete, setDossierIsComplete] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<'qualification' | 'twin' | 'provisioning'>('qualification');
+  const [activeTab, setActiveTab] = useState<'conversation' | 'twin' | 'provisioning'>('conversation');
   const [provisioningLoading, setProvisioningLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [trainingOpen, setTrainingOpen] = useState(false);
@@ -331,7 +331,7 @@ export default function KamDashboard() {
               >
                 <option value="">Tous les statuts</option>
                 <option value="DRAFT">Brouillon</option>
-                <option value="QUALIFYING">Qualification en cours</option>
+                <option value="QUALIFYING">conversation en cours</option>
                 <option value="NEW">Nouveau / Qualifié</option>
                 <option value="DISPATCHED">Affecté au KAM</option>
                 <option value="IN_REVIEW">En revue</option>
@@ -518,7 +518,7 @@ export default function KamDashboard() {
                         className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all font-semibold cursor-pointer"
                       >
                         <option value="DRAFT">Brouillon</option>
-                        <option value="QUALIFYING">Qualification en cours</option>
+                        <option value="QUALIFYING">conversation en cours</option>
                         <option value="NEW">Nouveau / Qualifié</option>
                         <option value="DISPATCHED">Affecté au KAM</option>
                         <option value="IN_REVIEW">En revue</option>
@@ -572,7 +572,7 @@ export default function KamDashboard() {
                       onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/kam/dossiers/${selectedDossier.id}/export/`, '_blank')}
                       className="w-full py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-[10px] font-bold text-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                     >
-                      <Icons.Download size={12} /> Fiche de Qualification (PDF)
+                      <Icons.Download size={12} /> Fiche de conversation (PDF)
                     </button>
 
                     <div className="mt-2 border-t border-zinc-200 dark:border-zinc-850 pt-2.5 flex flex-col gap-1.5">
@@ -632,14 +632,14 @@ export default function KamDashboard() {
                 {/* Details Tab Switcher */}
                 <div className="flex border-b border-zinc-200 dark:border-zinc-900">
                   <button
-                    onClick={() => setActiveTab('qualification')}
+                    onClick={() => setActiveTab('conversation')}
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-                      activeTab === 'qualification'
+                      activeTab === 'conversation'
                         ? 'border-orange-500 text-orange-500'
                         : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
-                    Dossier de Qualification
+                    Dossier de conversation
                   </button>
                   <button
                     onClick={() => setActiveTab('twin')}
@@ -697,7 +697,7 @@ export default function KamDashboard() {
                       </div>
                     </div>
                   </div>
-                ) : activeTab === 'qualification' ? (
+                ) : activeTab === 'conversation' ? (
                   <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Besoins et contexte client</h3>
@@ -709,19 +709,19 @@ export default function KamDashboard() {
                         <div className="flex flex-col gap-1">
                           <span className="text-[10px] font-bold text-zinc-400 uppercase">Secteur d'activité</span>
                           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                            {selectedDossier.raw_qualification_data?.profile?.sector || "Non qualifié"}
+                            {selectedDossier.raw_conversation_data?.profile?.sector || "Non qualifié"}
                           </span>
                         </div>
                         <div className="flex flex-col gap-1">
                           <span className="text-[10px] font-bold text-zinc-400 uppercase">Taille estimée</span>
                           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                            {selectedDossier.raw_qualification_data?.profile?.company_size_estimate || "Non qualifié"}
+                            {selectedDossier.raw_conversation_data?.profile?.company_size_estimate || "Non qualifié"}
                           </span>
                         </div>
                         <div className="flex flex-col gap-1">
                           <span className="text-[10px] font-bold text-zinc-400 uppercase">Sites géographiques</span>
                           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                            {selectedDossier.raw_qualification_data?.profile?.locations_count || 1} site(s)
+                            {selectedDossier.raw_conversation_data?.profile?.locations_count || 1} site(s)
                           </span>
                         </div>
                       </div>
@@ -729,9 +729,9 @@ export default function KamDashboard() {
                       <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[10px] font-bold text-zinc-400 uppercase">Problèmes et dysfonctionnements relevés</span>
-                          {selectedDossier.raw_qualification_data?.profile?.current_problems?.length > 0 ? (
+                          {selectedDossier.raw_conversation_data?.profile?.current_problems?.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 mt-1">
-                              {selectedDossier.raw_qualification_data.profile.current_problems.map((prob: string, idx: number) => (
+                              {selectedDossier.raw_conversation_data.profile.current_problems.map((prob: string, idx: number) => (
                                 <span key={idx} className="px-2.5 py-1 rounded bg-red-500/5 text-red-600 border border-red-500/10 text-[10px] font-bold">
                                   {prob}
                                 </span>
@@ -744,9 +744,9 @@ export default function KamDashboard() {
 
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[10px] font-bold text-zinc-400 uppercase">Outils actuels</span>
-                          {selectedDossier.raw_qualification_data?.profile?.current_tools?.length > 0 ? (
+                          {selectedDossier.raw_conversation_data?.profile?.current_tools?.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 mt-1">
-                              {selectedDossier.raw_qualification_data.profile.current_tools.map((tool: string, idx: number) => (
+                              {selectedDossier.raw_conversation_data.profile.current_tools.map((tool: string, idx: number) => (
                                 <span key={idx} className="px-2.5 py-1 rounded bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 text-[10px] font-medium">
                                   {tool}
                                 </span>
@@ -861,7 +861,7 @@ export default function KamDashboard() {
                           desc: 'Déploiement des agents de sécurité cyber-défense sur l\'ensemble des postes du parc.',
                         }
                       ].map((item) => {
-                        const provStatus = (selectedDossier.raw_qualification_data?.provisioning?.[item.key]) || 'PENDING';
+                        const provStatus = (selectedDossier.raw_conversation_data?.provisioning?.[item.key]) || 'PENDING';
                         
                         return (
                           <div key={item.key} className="pt-4 first:pt-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

@@ -11,7 +11,7 @@ LLM_Service [icon: cpu, color: purple, label: "LLM (AI Core)"]
 KAM_Queue [icon: mail, color: orange, label: "File d'attente KAM"]
 
 // 1. Initialisation de la Session
-Prospect -> Onbora_UI: "1. Ouvre le widget / Initie le chat de qualification"
+Prospect -> Onbora_UI: "1. Ouvre le widget / Initie le chat de conversation"
 Onbora_UI -> Onbora_Backend: "2. POST /api/discovery/conversations/"
 
 // 2. Récupération sécurisée du Token CRM
@@ -31,7 +31,7 @@ group "Détection des Doublons" {
 }
 
 // 4. Diagnostic IA autonome
-loop "Dialogue de Qualification" {
+loop "Dialogue de conversation" {
   Prospect -> Onbora_UI: "11. Envoie une réponse / précision de son besoin"
   Onbora_UI -> Onbora_Backend: "12. POST /api/discovery/conversations/:id/messages/"
   Onbora_Backend -> LLM_Service: "13. Analyse les réponses et extrait les critères"

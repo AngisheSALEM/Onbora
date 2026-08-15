@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='demoevent',
             name='event_type',
-            field=models.CharField(choices=[('CONVERSATION_STARTED', 'Début de qualification inbound'), ('MESSAGE_SENT', 'Message envoyé'), ('QUALIFICATION_SUCCESS', 'Qualification réussie'), ('DOSSIER_TRANSMITTED', 'Dossier transmis au KAM'), ('REPORT_GENERATED', 'Rapport commercial généré'), ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'), ('PDF_EXPORTED', 'PDF exporté'), ('DOSSIER_DISPATCHED', 'Dossier affecté au KAM'), ('CRM_SYNCHRONIZED', 'Données synchronisées au CRM')], max_length=50),
+            field=models.CharField(choices=[('CONVERSATION_STARTED', 'Début de conversation inbound'), ('MESSAGE_SENT', 'Message envoyé'), ('conversation_SUCCESS', 'conversation réussie'), ('DOSSIER_TRANSMITTED', 'Dossier transmis au KAM'), ('REPORT_GENERATED', 'Rapport commercial généré'), ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'), ('PDF_EXPORTED', 'PDF exporté'), ('DOSSIER_DISPATCHED', 'Dossier affecté au KAM'), ('CRM_SYNCHRONIZED', 'Données synchronisées au CRM')], max_length=50),
         ),
     ]

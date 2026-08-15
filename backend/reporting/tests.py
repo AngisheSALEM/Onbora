@@ -30,7 +30,7 @@ class DemoTrackingTestCase(APITestCase):
         self.assertEqual(event.metadata, {"test": True})
 
     def test_get_demo_stats_and_logs(self):
-        log_demo_event('QUALIFICATION_SUCCESS', "Client qualified", self.user)
+        log_demo_event('CONVERSATION_SUCCESS', "Client qualified", self.user)
         log_demo_event('PDF_EXPORTED', "PDF downloaded")
         
         stats_url = reverse('demo-stats')

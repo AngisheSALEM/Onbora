@@ -95,8 +95,8 @@ export default function AdminDashboard() {
     },
     {
       id: 3,
-      question: "Qu'est-ce que le Business Twin ?",
-      answer: "Le Business Twin (ou Jumeau Numérique) est une réplique virtuelle de l'infrastructure réseau et cybersécurité proposée à un client, simulant ses débits et ses gains opérationnels en temps réel.",
+      question: "Qu'est-ce que le Diagnostic d'Architecture Cible ?",
+      answer: "Le Diagnostic d'Architecture Cible est une cartographie virtuelle de l'infrastructure réseau et cybersécurité proposée à un client, simulant ses débits et ses gains opérationnels en temps réel.",
       category: "GENERAL"
     }
   ];
@@ -429,7 +429,7 @@ export default function AdminDashboard() {
                 </span>
                 <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-2 uppercase">Console d'Adoption MSP</h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl font-medium">
-                  Suivez l'activité commerciale en temps réel, observez l'état du pipe de qualification et gérez le catalogue de services MSP.
+                  Suivez l'activité commerciale en temps réel, observez l'état du pipe de conversation et gérez le catalogue de services MSP.
                 </p>
               </div>
 
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
                       <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Qualifiés en Ligne (Inbound)</span>
                         <span className="text-3xl font-black text-orange-500">{stats.inbound_count}</span>
-                        <p className="text-[9px] text-zinc-500 mt-2">Qualification conversationnelle autonome</p>
+                        <p className="text-[9px] text-zinc-500 mt-2">Conversation autonome</p>
                       </div>
 
                       <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
@@ -585,7 +585,7 @@ export default function AdminDashboard() {
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Logs d'Activité Récents</h3>
                         <div className="flex flex-wrap gap-1.5">
-                          {['ALL', 'CONVERSATION_STARTED', 'QUALIFICATION_SUCCESS', 'DOSSIER_TRANSMITTED', 'REPORT_GENERATED', 'PDF_EXPORTED'].map(type => (
+                          {['ALL', 'CONVERSATION_STARTED', 'CONVERSATION_SUCCESS', 'DOSSIER_TRANSMITTED', 'REPORT_GENERATED', 'PDF_EXPORTED'].map(type => (
                             <button
                               key={type}
                               onClick={() => setFilterType(type)}
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
                                   <td className="py-3 text-zinc-500 whitespace-nowrap">{log.created_at}</td>
                                   <td className="py-3 font-bold whitespace-nowrap">
                                     <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase ${
-                                      log.event_type === 'QUALIFICATION_SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
+                                      log.event_type === 'CONVERSATION_SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
                                       log.event_type === 'DOSSIER_TRANSMITTED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' :
                                       log.event_type === 'PDF_EXPORTED' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400' :
                                       'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'

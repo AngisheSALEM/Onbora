@@ -44,6 +44,7 @@ const mapServiceNameToKey = (name: string): string => {
 };
 
 export default function ClientDiscoveryPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const { user, logout } = useAuth();
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -222,15 +223,74 @@ export default function ClientDiscoveryPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const toggleSpeechToText = () => {
-    if (!recognitionRef.current) {
-      alert("La reconnaissance vocale n'est pas supportée ou activée sur votre navigateur.");
-      return;
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size > 0 && conversationId) {
+          const formData = new FormData();
+          formData.append('audio', audioBlob, `voice_${Date.now()}.webm`);
+          setLoading(true);
+          try {
+            const res = await fetch(`${API_URL}/api/discovery/conversations/${conversationId}/voice-message/`, {
+              method: 'POST',
+              body: formData
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setMessages(prev => [
+                ...prev,
+                { id: Date.now(), sender: 'USER', content: `🎤 [Whisper STT] ${data.transcription}`, created_at: new Date().toISOString() },
+                { id: Date.now() + 1, sender: 'AI', content: data.ai_message, created_at: new Date().toISOString() }
+              ]);
+              if (data.extracted_profile) {
+                setProfile(data.extracted_profile);
+              }
+              speakText(data.ai_message, Date.now() + 1);
+            }
+          } catch (err) {
+            console.error("Erreur lors de l'envoi vocal Whisper:", err);
+          } finally {
+            setLoading(false);
+          }
+        }
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (err) {
+      console.error("Erreur micro:", err);
+      alert("Impossible d'accéder au microphone.");
     }
+  };
+
+  const stopVoiceRecording = () => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const toggleSpeechToText = () => {
     if (isListening) {
-      recognitionRef.current.stop();
+      stopVoiceRecording();
     } else {
-      recognitionRef.current.start();
+      startVoiceRecording();
     }
   };
 
@@ -339,59 +399,6 @@ export default function ClientDiscoveryPage() {
     setMessages(prev => [...prev, tempUserMsg]);
     
     try {
-      // Try Mock AI Agent on port 3001 first for tool-use simulation
-      try {
-        const aiRes = await fetch('http://localhost:3001/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-        
-        if (aiRes.ok) {
-          const aiData = await aiRes.json();
-          
-          const tempAiMsg: Message = {
-            id: Date.now() + 1,
-            sender: 'AI',
-            content: aiData.reply,
-            created_at: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, tempAiMsg]);
-          
-          setCallTranscriptAi(aiData.reply);
-          speakCallResponse(aiData.reply);
-          
-          // Update Business Twin dynamically from mock AI
-          if (aiData.business_twin) {
-            setBusinessTwin(aiData.business_twin);
-            setRecommendations(aiData.business_twin.recommended_services || []);
-            setIsQualified(true);
-          }
-          
-          // Execute AI tools
-          if (aiData.tool_calls && aiData.tool_calls.length > 0) {
-            aiData.tool_calls.forEach((tool: any) => {
-              if (tool.name === 'launch_training') {
-                const { moduleId } = tool.arguments;
-                setSelectedTrainingId(moduleId);
-                setTrainingOpen(true);
-              } 
-              else if (tool.name === 'generate_slides') {
-                setRightTab('twin');
-                setExpandedSections(prev => [...prev, 'twin']);
-              }
-              else if (tool.name === 'execute_setup') {
-                const { action } = tool.arguments;
-                alert(`[Vocal IA Action] Automatisation "${action}" déclenchée avec succès.`);
-              }
-            });
-          }
-          return; // Stop processing, bypass normal API
-        }
-      } catch (mockErr) {
-        console.log("Mock AI server offline, falling back to standard API:", mockErr);
-      }
-
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const res = await fetch(`${API_URL}/api/discovery/conversations/${conversationId}/messages/`, {
         method: 'POST',
@@ -767,7 +774,7 @@ export default function ClientDiscoveryPage() {
           // Resume the most recent conversation instead of creating a new one!
           await handleSelectHistoryConversation(hist[0].id);
         } else {
-          // No history, start a brand new qualification conversation session
+          // No history, start a brand new conversation conversation session
           const res = await fetch(`${API_URL}/api/discovery/conversations/`, {
             method: 'POST',
             headers
@@ -815,57 +822,6 @@ export default function ClientDiscoveryPage() {
   const sendMessageAPI = async (userText: string) => {
     setLoading(true);
     try {
-      // Try Mock AI Agent on port 3001 first for tool-use simulation
-      try {
-        const aiRes = await fetch('http://localhost:3001/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: userText })
-        });
-        
-        if (aiRes.ok) {
-          const aiData = await aiRes.json();
-          
-          const tempAiMsg: Message = {
-            id: Date.now() + 1,
-            sender: 'AI',
-            content: aiData.reply,
-            created_at: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, tempAiMsg]);
-          
-          // Update Business Twin dynamically from mock AI
-          if (aiData.business_twin) {
-            setBusinessTwin(aiData.business_twin);
-            setRecommendations(aiData.business_twin.recommended_services || []);
-            setIsQualified(true);
-          }
-          
-          // Execute AI tools
-          if (aiData.tool_calls && aiData.tool_calls.length > 0) {
-            aiData.tool_calls.forEach((tool: any) => {
-              if (tool.name === 'launch_training') {
-                const { moduleId } = tool.arguments;
-                setSelectedTrainingId(moduleId);
-                setTrainingOpen(true);
-              } 
-              else if (tool.name === 'generate_slides') {
-                setRightTab('twin');
-                setExpandedSections(prev => [...prev, 'twin']);
-              }
-              else if (tool.name === 'execute_setup') {
-                const { action } = tool.arguments;
-                alert(`[IA Action] Configuration automatique "${action}" exécutée avec succès en tâche de fond.`);
-              }
-            });
-          }
-          setLoading(false);
-          return; // Stop here, bypass standard backend
-        }
-      } catch (mockErr) {
-        console.log("Mock AI server offline, falling back to standard API:", mockErr);
-      }
-
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
       // 15 seconds timeout safeguard
@@ -1060,7 +1016,7 @@ export default function ClientDiscoveryPage() {
           companyName: dossierDetails?.company_name || user?.company_name || 'Mon Entreprise',
           dossierStatus: dossierDetails?.status || 'NEW',
           isCurrent: true,
-          provisioning: dossierDetails?.raw_qualification_data?.provisioning || {},
+          provisioning: dossierDetails?.raw_conversation_data?.provisioning || {},
           transmissionSuccess: transmissionSuccess
         });
         seenNames.add(r.name.toLowerCase());
@@ -1070,7 +1026,7 @@ export default function ClientDiscoveryPage() {
     // Add recommendations from other sessions in history
     history.forEach(conv => {
       if (conv.id !== conversationId && conv.dossier_details?.has_twin && conv.dossier_details?.recommendations) {
-        const prov = conv.dossier_details?.raw_qualification_data?.provisioning || {};
+        const prov = conv.dossier_details?.raw_conversation_data?.provisioning || {};
         const isTransmitted = conv.dossier_details?.status === 'IN_REVIEW' || conv.dossier_details?.status === 'ACCEPTED';
         
         conv.dossier_details.recommendations.forEach((r: any) => {
@@ -1151,12 +1107,12 @@ export default function ClientDiscoveryPage() {
                 </button>
               </div>
 
-              {/* Nouvelle Qualification Pill-Button */}
+              {/* Nouvelle conversation Pill-Button */}
               <button
                 onClick={handleStartNewChat}
                 className="w-full py-2 px-4 rounded-full bg-brand-orange hover:bg-orange-600 text-white text-xs font-extrabold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
               >
-                <span className="text-sm font-light">+</span> Nouvelle qualification
+                <span className="text-sm font-light">+</span> Nouvelle conversation
               </button>
 
 
@@ -1229,7 +1185,7 @@ export default function ClientDiscoveryPage() {
                   {expandedSections.includes('orders') && (
                     <div className="p-3 flex flex-col gap-2.5 bg-zinc-50/30 dark:bg-zinc-950/20 max-h-[280px] overflow-y-auto">
                       {recommendations.map((service, idx) => {
-                        const provStatus = dossierDetails?.raw_qualification_data?.provisioning?.[mapServiceNameToKey(service.name)] || 
+                        const provStatus = dossierDetails?.raw_conversation_data?.provisioning?.[mapServiceNameToKey(service.name)] || 
                                            (transmissionSuccess ? 'COMMANDÉ' : 'BROUILLON');
                         
                         let statusColor = 'bg-zinc-100 text-zinc-650 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800';
@@ -1338,11 +1294,11 @@ export default function ClientDiscoveryPage() {
               <div className="flex flex-col gap-1.5">
                 <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider px-2">Historique Récent</span>
                 {history.length === 0 ? (
-                  <span className="text-[11px] text-zinc-450 italic px-2">Aucune qualification récente</span>
+                  <span className="text-[11px] text-zinc-450 italic px-2">Aucune conversation récente</span>
                 ) : (
                   history.map((conv) => {
                     const isActive = conv.id === conversationId;
-                    const label = conv.dossier_details?.company_name || conv.extracted_profile?.sector || `Qualification #${conv.id}`;
+                    const label = conv.dossier_details?.company_name || conv.extracted_profile?.sector || `conversation #${conv.id}`;
                     const isTransmitted = conv.dossier_details?.status === 'IN_REVIEW' || conv.dossier_details?.status === 'ACCEPTED';
                     
                     return (
@@ -1457,7 +1413,7 @@ export default function ClientDiscoveryPage() {
                 <div className="w-full max-w-2xl relative p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xl flex flex-col gap-4">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-150 dark:border-zinc-850">
                     <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
-                      <Icons.Sparkles size={14} className="text-orange-500 shrink-0 animate-pulse" /> Présentation du Jumeau Numérique B2B
+                      <Icons.Sparkles size={14} className="text-orange-500 shrink-0 animate-pulse" /> Présentation du Diagnostic d'Architecture Cible
                     </h3>
                     <button
                       onClick={() => setActiveSlideIndex(null)}
@@ -1573,44 +1529,6 @@ export default function ClientDiscoveryPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Suggestions de démo guidée */}
-            {!isQualified && (
-              <div className="px-6 py-2.5 bg-zinc-100/30 dark:bg-zinc-950/20 border-t border-zinc-200 dark:border-zinc-900/60 flex flex-col gap-1.5 shrink-0">
-                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
-                  Parcours de démo guidée (3 questions) :
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {userMessageCount === 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setInputValue("Nous sommes une clinique médicale de 50 collaborateurs.")}
-                      className="px-3 py-1.5 rounded-lg border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-500 text-xs font-semibold cursor-pointer transition-all animate-pulse"
-                    >
-                      Étape 1 : Décrire mon Activité (Clinique Médicale) ➜
-                    </button>
-                  )}
-                  {userMessageCount === 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setInputValue("Notre connexion ADSL coupe souvent et le Wi-Fi ne couvre pas nos salles.")}
-                      className="px-3 py-1.5 rounded-lg border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-500 text-xs font-semibold cursor-pointer transition-all animate-pulse"
-                    >
-                      Étape 2 : Signaler les Problèmes (ADSL lent & Wi-Fi instable) ➜
-                    </button>
-                  )}
-                  {userMessageCount === 2 && (
-                    <button
-                      type="button"
-                      onClick={() => setInputValue("Nous utilisons Outlook, Excel et un serveur de fichiers local physique sans protection.")}
-                      className="px-3 py-1.5 rounded-lg border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-500 text-xs font-semibold cursor-pointer transition-all animate-pulse"
-                    >
-                      Étape 3 : Spécifier nos Outils (Outlook, Excel, Serveur Local) ➜
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Input Form */}
             <form onSubmit={handleSendMessage} className="p-4 bg-white/80 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-900 shrink-0 glass-form">

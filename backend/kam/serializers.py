@@ -20,7 +20,7 @@ class ProspectDossierSerializer(serializers.ModelSerializer):
         model = ProspectDossier
         fields = [
             'id', 'source', 'conversation', 'visit_report', 'kam', 'kam_details',
-            'status', 'raw_qualification_data', 'internal_kam_notes',
+            'status', 'raw_conversation_data', 'internal_kam_notes',
             'company_name', 'contact_name', 'email', 'phone', 'rccm', 
             'billing_address', 'is_complete', 'details_summary',
             'has_twin', 'recommendations', 'created_at', 'updated_at'

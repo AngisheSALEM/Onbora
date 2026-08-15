@@ -100,7 +100,7 @@ def parse_message_for_profile(text, current_profile):
 
 def generate_next_step(profile, message_count):
     """
-    Formulates the next question or determines if qualification is complete.
+    Formulates the next question or determines if conversation is complete.
     """
     if message_count == 1:
         # Step 1 answered. We ask about problems.
@@ -124,7 +124,7 @@ def generate_next_step(profile, message_count):
             "is_qualified": False
         }
     else:
-        # Step 3 (or more) answered. Qualification is complete!
+        # Step 3 (or more) answered. conversation is complete!
         if not profile["current_tools"]:
             profile["current_tools"] = [
                 "Box internet grand public",
@@ -137,7 +137,7 @@ def generate_next_step(profile, message_count):
                 "Mauvaise couverture Wi-Fi dans les locaux"
             ]
         return {
-            "next_question": "Parfait ! J'ai réuni toutes les informations nécessaires pour qualifier vos besoins et modéliser votre transformation numérique. Votre Business Twin interactif et la roadmap de transition sont désormais générés ci-dessous.",
+            "next_question": "Parfait ! J'ai réuni toutes les informations nécessaires pour qualifier vos besoins et modéliser votre transformation numérique. Votre Diagnostic d'Architecture Cible et la roadmap de transition sont désormais générés ci-dessous.",
             "is_qualified": True
         }
 
@@ -284,16 +284,16 @@ def generate_recommendations_and_twin(profile, conversation):
         defaults={
             "source": ProspectDossier.INBOUND_CONVERSATION,
             "status": ProspectDossier.NEW,
-            "raw_qualification_data": {
+            "raw_conversation_data": {
                 "profile": profile,
                 "message_count": conversation.messages.count()
             }
         }
     )
     
-    # Update raw qualification data if dossier already existed
+    # Update raw conversation data if dossier already existed
     if not created:
-        dossier.raw_qualification_data = {
+        dossier.raw_conversation_data = {
             "profile": profile,
             "message_count": conversation.messages.count()
         }

@@ -183,8 +183,8 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
       {/* Sub-Header & Switcher */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-900 pb-4 shrink-0">
         <div>
-          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Business Twin Interactif</h3>
-          <p className="text-xs text-zinc-400 mt-0.5">Étudiez la transformation numérique planifiée pour {companyName}.</p>
+          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Diagnostic d'Architecture Cible</h3>
+          <p className="text-xs text-zinc-400 mt-0.5">Étudiez la cible d'architecture technique et fonctionnelle planifiée pour {companyName}.</p>
         </div>
         
         {/* Navigation Tabs */}

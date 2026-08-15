@@ -99,7 +99,7 @@ export default function BusinessTwinSlides({
         <div className="flex items-center gap-2.5">
           <Logo size={24} showBg={true} />
           <div>
-            <h4 className="text-xs font-bold text-zinc-100">Jumeau Numérique B2B</h4>
+            <h4 className="text-xs font-bold text-zinc-100">Diagnostic d'Architecture Cible</h4>
             <p className="text-[10px] text-zinc-400 font-medium">{companyName}</p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function BusinessTwinSlides({
               </h2>
               <div className="h-0.5 w-12 orange-gradient-bg" />
               <p className="text-sm text-zinc-650 dark:text-zinc-350 max-w-md font-medium leading-relaxed">
-                {slide.content.subtitle || "Jumeau Numérique & Plan de transition technologique modélisé pour"}
+                {slide.content.subtitle || "Diagnostic d'Architecture Cible & Plan de transition technologique pour"}
               </p>
               <span className="px-3.5 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 text-orange-500 text-xs font-bold shadow-sm shadow-orange-500/10 uppercase tracking-wider">
                 {companyName}
@@ -329,7 +329,7 @@ export default function BusinessTwinSlides({
             </h2>
             <div className="h-0.5 w-12 orange-gradient-bg" />
             <p className="text-sm text-zinc-600 dark:text-zinc-300 max-w-xs font-medium">
-              Jumeau Numérique & Plan de transition technologique modélisé pour
+              Diagnostic d'Architecture Cible & Plan de transition technologique pour
             </p>
             <span className="px-3.5 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 text-orange-500 text-xs font-bold shadow-sm shadow-orange-500/10 uppercase tracking-wider">
               {companyName}

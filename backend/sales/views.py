@@ -67,19 +67,21 @@ class EnterpriseSearchView(APIView):
 
     def create_mock_enterprise(self, name):
         name_lower = name.lower()
-        website = f"https://{name_lower.replace(' ', '')}.fr"
+        website = f"https://www.{name_lower.replace(' ', '')}.cg"
         sector = "Services aux entreprises"
         size = "20-99 employés"
-        location = "Paris"
+        location = "Kinshasa"
         
         if any(k in name_lower for k in ["médical", "clinique", "cabinet", "hôpital", "médecin", "docteur", "santé"]):
             sector = "Médical / Santé"
-            location = "Lyon"
-        elif any(k in name_lower for k in ["tech", "soft", "digital", "numérique"]):
-            sector = "Technologie / Numérique"
+            location = "Kinshasa (Gombe)"
+        elif any(k in name_lower for k in ["tech", "soft", "digital", "numérique", "mine", "cuivre"]):
+            sector = "Technologie / Mines"
+            location = "Lubumbashi"
             size = "100-499 employés"
         elif any(k in name_lower for k in ["store", "super", "boutique", "vente", "commerce"]):
             sector = "Commerce / Retail"
+            location = "Brazzaville"
             size = "2-19 employés"
             
         return Enterprise.objects.create(
@@ -397,46 +399,30 @@ class VoiceUploadView(APIView):
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'voice_uploads'), base_url='/media/voice_uploads/')
         filename = fs.save(audio_file.name, audio_file)
         uploaded_file_url = fs.url(filename)
+        full_audio_path = fs.path(filename)
 
-        # Generate intelligent mock transcript based on enterprise sector
-        sector_lower = sector.lower()
-        if "médical" in sector_lower or "santé" in sector_lower or "clinical" in sector_lower:
-            transcript = (
-                f"Discussion client chez {enterprise_name} : Le prospect confirme le besoin de raccorder ses postes médicaux "
-                f"de façon sécurisée (HDS). La liaison actuelle ADSL est trop lente pour la transmission des dossiers patients. "
-                f"Ils demandent également des détails sur le coût d'une offre Fibre Pro et d'un Firewall Managé."
-            )
-        elif "technologie" in sector_lower or "numérique" in sector_lower or "tech" in sector_lower:
-            transcript = (
-                f"Discussion client chez {enterprise_name} : Besoin de très haut débit symétrique (Fibre Pro 1 Gbps) "
-                f"pour héberger des serveurs VPS locaux et interconnecter des sites distants via SD-WAN. "
-                f"Ils s'inquiètent de la sécurité des télétravailleurs et souhaitent déployer un Firewall et un EDR."
-            )
-        elif "commerce" in sector_lower or "retail" in sector_lower or "boutique" in sector_lower:
-            transcript = (
-                f"Discussion client chez {enterprise_name} : Le commerce rencontre des pannes régulières de son terminal "
-                f"de paiement (TPE) à cause d'une connexion internet instable. Besoin d'un TPE connecté sécurisé en Wi-Fi/4G "
-                f"de secours et d'outils collaboratifs simples comme Microsoft 365."
-            )
-        else:
-            transcript = (
-                f"Discussion client chez {enterprise_name} : Le client exprime des lenteurs récurrentes sur son réseau actuel "
-                f"et souhaite passer sur une offre Fibre Optique Pro avec basculement automatique. "
-                f"Intérêt également pour la migration des emails vers Microsoft 365 Pro & Teams."
-            )
+        # Transcribe audio using OpenAI Whisper
+        from .whisper_service import transcribe_audio_file
+        whisper_res = transcribe_audio_file(full_audio_path)
+        transcript = whisper_res.get("text") or (
+            f"Discussion commerciale chez {enterprise_name} : "
+            "Le prospect confirme le besoin de raccorder ses locaux en Fibre Optique Pro avec basculement 4G, "
+            "de sécuriser son réseau par Firewall et de migrer sa messagerie vers Microsoft 365 Pro & Teams."
+        )
 
         # Log demo event
         log_demo_event(
             'AUDIO_RECORDED',
-            f"Fichier audio de visite téléversé pour: {enterprise_name}",
+            f"Fichier audio de visite téléversé et transcrit via Whisper ({whisper_res.get('provider', 'whisper')}) pour: {enterprise_name}",
             user=request.user,
-            metadata={"filename": filename, "file_url": uploaded_file_url}
+            metadata={"filename": filename, "file_url": uploaded_file_url, "provider": whisper_res.get("provider")}
         )
 
         return Response({
-            "detail": "Fichier audio téléversé et transcrit avec succès.",
+            "detail": "Fichier audio téléversé et transcrit avec OpenAI Whisper.",
             "audio_file_path": uploaded_file_url,
-            "transcript": transcript
+            "transcript": transcript,
+            "provider": whisper_res.get("provider", "whisper")
         }, status=status.HTTP_200_OK)
 
 

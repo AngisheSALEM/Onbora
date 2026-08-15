@@ -16,7 +16,7 @@ DiscoveryAPI -> Orange_Kaabu_B2B: "3. Vérifie/Crée un profil prospect Kaabu"
 Orange_Kaabu_B2B -> DiscoveryAPI: "4. Retourne Kaabu_ID"
 DiscoveryAPI -> Database: "5. Crée la session en BDD avec Kaabu_ID"
 
-loop "Dialogue de Qualification" {
+loop "Dialogue de conversation" {
   Client -> Portal: "6. Envoie une réponse"
   Portal -> DiscoveryAPI: "7. POST /api/discovery/conversations/:id/messages/"
   DiscoveryAPI -> LLM_Service: "8. Analyse du besoin + Extrait profil"

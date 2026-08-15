@@ -38,6 +38,7 @@ urlpatterns = [
     path('', api_root),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
+    path('api/accounts/', include('accounts.urls')),
     path('api/discovery/', include('discovery.urls')),
     path('api/kam/', include('kam.urls')),
     path('api/sales/', include('sales.urls')),
@@ -46,11 +47,18 @@ urlpatterns = [
     
     # Aliases v1
     path('api/v1/auth/', include('accounts.urls')),
+    path('api/v1/accounts/', include('accounts.urls')),
     path('api/v1/discovery/', include('discovery.urls')),
     path('api/v1/kam/', include('kam.urls')),
     path('api/v1/sales/', include('sales.urls')),
     path('api/v1/reporting/', include('reporting.urls')),
     path('api/v1/catalog/', include('catalog.urls')),
 ]
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 

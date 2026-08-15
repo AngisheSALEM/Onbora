@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('source', models.CharField(choices=[('INBOUND_CONVERSATION', 'Conversation en ligne'), ('OUTBOUND_VISIT', 'Visite commerciale terrain')], default='INBOUND_CONVERSATION', max_length=30)),
                 ('status', models.CharField(choices=[('NEW', 'Nouveau'), ('IN_REVIEW', 'En revue'), ('ACCEPTED', 'Accepté'), ('REJECTED', 'Rejeté')], default='NEW', max_length=20)),
-                ('raw_qualification_data', models.JSONField(blank=True, default=dict, help_text='Consolidation des données de qualification (besoins, contraintes, outils actuels)')),
+                ('raw_conversation_data', models.JSONField(blank=True, default=dict, help_text='Consolidation des données de conversation (besoins, contraintes, outils actuels)')),
                 ('internal_kam_notes', models.TextField(blank=True, default='')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),

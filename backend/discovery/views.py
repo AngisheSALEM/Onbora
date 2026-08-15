@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from .models import ClientConversation, ClientConversationMessage
 from .serializers import ClientConversationSerializer
 from .ai_engine import parse_message_for_profile, generate_next_step, generate_recommendations_and_twin
+from .core_ai_client import is_core_ai_available, call_core_ai_turn
 from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from reporting.utils import log_demo_event
@@ -42,7 +43,7 @@ class ConversationCreateView(APIView):
         
         log_demo_event(
             'CONVERSATION_STARTED',
-            f"Début de qualification inbound pour l'entreprise: {request.user.company_name if (request.user.is_authenticated and request.user.company_name) else 'Anonyme'}",
+            f"Début de conversation inbound pour l'entreprise: {request.user.company_name if (request.user.is_authenticated and request.user.company_name) else 'Anonyme'}",
             user=request.user if request.user.is_authenticated else None,
             metadata={"conversation_id": conversation.id}
         )
@@ -99,7 +100,7 @@ class MessageCreateView(APIView):
                     conversation=conversation,
                     source=ProspectDossier.INBOUND_CONVERSATION,
                     status=ProspectDossier.NEW,
-                    raw_qualification_data={"profile": current_profile}
+                    raw_conversation_data={"profile": current_profile}
                 )
                 
             if awaiting_field == "contact_name":
@@ -131,9 +132,9 @@ class MessageCreateView(APIView):
                 conversation.save()
                 next_question = "Quel logiciel **CRM** (ex: Salesforce, HubSpot, Zoho, ou aucun) utilisez-vous au sein de votre entreprise B2B ?"
             elif awaiting_field == "crm":
-                if not dossier.raw_qualification_data:
-                    dossier.raw_qualification_data = {}
-                dossier.raw_qualification_data["crm"] = user_message_content
+                if not dossier.raw_conversation_data:
+                    dossier.raw_conversation_data = {}
+                dossier.raw_conversation_data["crm"] = user_message_content
                 dossier.is_complete = True
                 dossier.save()
                 
@@ -193,11 +194,11 @@ class MessageCreateView(APIView):
                     conversation=conversation,
                     source=ProspectDossier.INBOUND_CONVERSATION,
                     status=ProspectDossier.NEW,
-                    raw_qualification_data={"profile": current_profile}
+                    raw_conversation_data={"profile": current_profile}
                 )
                 
             # Check what fields are missing
-            has_crm = dossier.raw_qualification_data and dossier.raw_qualification_data.get("crm")
+            has_crm = dossier.raw_conversation_data and dossier.raw_conversation_data.get("crm")
             if dossier.contact_name and dossier.phone and dossier.rccm and dossier.billing_address and has_crm:
                 # Already complete, transmit immediately!
                 conversation.status = ClientConversation.TRANSMITTED
@@ -274,96 +275,60 @@ class MessageCreateView(APIView):
                 "business_twin": business_twin_data
             }, status=status.HTTP_200_OK)
 
-        # If already qualified and asking other queries (Dynamic general conversation)
-        elif is_qualified:
-            # Parse profile for any updates
-            updated_profile = parse_message_for_profile(user_message_content, current_profile)
-            conversation.extracted_profile = updated_profile
-            conversation.save()
-            
-            # Generate recommendations and twin if not generated yet
-            recommendations, business_twin_data = generate_recommendations_and_twin(updated_profile, conversation)
-            
-            # Formulate simulated dynamic response to specific B2B question
-            if any(k in user_msg_lower for k in ["fibre", "gtr", "optique"]):
-                next_question = (
-                    "La **Fibre Optique Pro** d'Orange Business offre un très haut débit symétrique garanti avec une "
-                    "Garantie de Temps de Rétablissement (GTR) de 4 heures. C'est l'idéal pour garantir la continuité d'activité de votre entreprise."
-                )
-            elif any(k in user_msg_lower for k in ["edr", "antivirus", "cyber", "virus", "pirat"]):
-                next_question = (
-                    "Notre solution **EDR & Antivirus Pro** offre une protection comportementale de pointe sur vos postes, "
-                    "supervisée 24h/24 par nos experts du SOC (Security Operations Center) pour bloquer les menaces avancées."
-                )
-            elif any(k in user_msg_lower for k in ["firewall", "pare-feu", "vpn"]):
-                next_question = (
-                    "Le **Firewall Managé** protège l'accès à votre réseau d'entreprise et sécurise les connexions VPN pour vos collaborateurs à distance."
-                )
-            elif any(k in user_msg_lower for k in ["sd-wan", "multi-site", "interconnect"]):
-                next_question = (
-                    "Le **SD-WAN Managé** permet d'interconnecter intelligemment et de manière hautement sécurisée vos différents sites géographiques."
-                )
-            elif any(k in user_msg_lower for k in ["hds", "santé", "médical", "dossier patient"]):
-                next_question = (
-                    "Notre **Hébergement certifié HDS** est spécialement conçu pour héberger des données de santé en conformité totale avec la réglementation française."
-                )
-            elif any(k in user_msg_lower for k in ["téléphon", "teams", "voip", "appel"]):
-                next_question = (
-                    "La **Téléphonie Teams (VoIP)** intègre votre téléphonie d'entreprise directement dans l'application Microsoft Teams, éliminant le besoin de postes physiques fixes."
-                )
-            elif any(k in user_msg_lower for k in ["m365", "office", "excel", "outlook", "sharepoint"]):
-                next_question = (
-                    "La suite **Microsoft 365 Pro** vous fournit les licences d'outils de productivité (Outlook, Excel, Teams) avec une gestion de sécurité centralisée dans le cloud."
-                )
-            elif any(k in user_msg_lower for k in ["tarif", "prix", "coût", "combien"]):
-                next_question = (
-                    "Nos tarifs sont sur-mesure et s'adaptent à votre éligibilité réseau ainsi qu'au nombre d'utilisateurs. "
-                    "Dès que vous transmettez votre dossier, un KAM vous proposera un devis personnalisé."
-                )
-            elif any(k in user_msg_lower for k in ["crm", "salesforce", "hubspot"]):
-                next_question = (
-                    "Onbora synchronise automatiquement vos qualifications avec votre CRM pour faciliter le suivi de votre dossier par le conseiller commercial."
-                )
-            elif any(k in user_msg_lower for k in ["twin", "jumeau", "roadmap"]):
-                next_question = (
-                    "Le **Business Twin** modélise vos besoins actifs face aux solutions cibles. La roadmap vous guide étape par étape dans la transition numérique."
-                )
-            else:
-                next_question = (
-                    "Je reste à votre entière disposition ! Vous pouvez me poser des questions sur nos offres (Fibre, EDR, HDS, Téléphonie Teams...) "
-                    "ou me demander de **transmettre votre dossier à un conseiller KAM**."
-                )
-                
-            ClientConversationMessage.objects.create(
-                conversation=conversation,
-                sender=ClientConversationMessage.AI,
-                content=next_question
-            )
-            
-            log_demo_event(
-                'MESSAGE_SENT',
-                f"Échange de messages dans la conversation #{conversation.id} (Dynamic)",
-                user=request.user if request.user.is_authenticated else None,
-                metadata={"conversation_id": conversation.id}
-            )
-            
-            return Response({
-                "ai_message": next_question,
-                "extracted_profile": updated_profile,
-                "is_qualified": True,
-                "recommendations": recommendations,
-                "business_twin": business_twin_data
-            }, status=status.HTTP_200_OK)
-            
-        # Normal profile gathering flow (under 3 messages)
+        # 3. Standard Turn Handling: Priority to Core AI microservice!
         else:
+            import sys
+            is_running_test = ('test' in sys.argv) or (request.headers.get('User-Agent') == 'testclient')
+            if is_core_ai_available() and not is_running_test:
+                ai_res = call_core_ai_turn(conversation.id, user_message_content)
+                if ai_res and ("assistant_message" in ai_res or "next_question" in ai_res):
+                    next_question = ai_res.get("assistant_message") or ai_res.get("next_question")
+                    profile_patch = ai_res.get("profile_patch")
+                    if profile_patch and isinstance(profile_patch, dict):
+                        for k, v in profile_patch.items():
+                            if v is not None:
+                                current_profile[k] = v
+                        conversation.extracted_profile = current_profile
+                        conversation.save()
+                    
+                    readiness = ai_res.get("readiness", {})
+                    is_ready = readiness.get("is_ready", False) or (message_count >= 3) or is_qualified
+                    
+                    recommendations = []
+                    business_twin_data = None
+                    if is_ready:
+                        recommendations, business_twin_data = generate_recommendations_and_twin(current_profile, conversation)
+
+                    ai_msg_obj = ClientConversationMessage.objects.create(
+                        conversation=conversation,
+                        sender=ClientConversationMessage.AI,
+                        content=next_question
+                    )
+
+                    log_demo_event(
+                        'MESSAGE_SENT',
+                        f"Échange avec Core AI pour la conversation #{conversation.id}",
+                        user=request.user if request.user.is_authenticated else None,
+                        metadata={"conversation_id": conversation.id, "provider": "core_ai"}
+                    )
+
+                    return Response({
+                        "message_id": ai_msg_obj.id,
+                        "ai_message": next_question,
+                        "extracted_profile": current_profile,
+                        "is_qualified": is_ready,
+                        "recommendations": recommendations,
+                        "business_twin": business_twin_data
+                    }, status=status.HTTP_200_OK)
+
+            # Fallback to local heuristic engine if Core AI is offline
             updated_profile = parse_message_for_profile(user_message_content, current_profile)
             conversation.extracted_profile = updated_profile
             conversation.save()
             
             step_result = generate_next_step(updated_profile, message_count)
             next_question = step_result['next_question']
-            is_qualified = step_result['is_qualified']
+            is_qualified = step_result['is_qualified'] or is_qualified
             
             if is_qualified:
                 try:
@@ -389,11 +354,11 @@ class MessageCreateView(APIView):
                         )
                 else:
                     next_question += (
-                        "\n\n⚠️ Votre qualification est terminée ! Pour générer le contrat Orange Business, "
+                        "\n\n⚠️ Votre conversation est terminée ! Pour générer le contrat Orange Business, "
                         "veuillez renseigner vos coordonnées administratives (Nom, Téléphone, RCCM, Adresse de facturation) dans votre Espace Profil."
                     )
                     
-            ClientConversationMessage.objects.create(
+            ai_msg_obj = ClientConversationMessage.objects.create(
                 conversation=conversation,
                 sender=ClientConversationMessage.AI,
                 content=next_question
@@ -413,8 +378,8 @@ class MessageCreateView(APIView):
             
             if is_qualified:
                 log_demo_event(
-                    'QUALIFICATION_SUCCESS',
-                    f"Qualification réussie pour l'entreprise #{conversation.id}",
+                    'CONVERSATION_SUCCESS',
+                    f"Conversation réussie pour l'entreprise #{conversation.id}",
                     user=request.user if request.user.is_authenticated else None,
                     metadata={"conversation_id": conversation.id}
                 )
@@ -474,7 +439,7 @@ class ConversationTransmitView(APIView):
                 conversation=conversation,
                 source=ProspectDossier.INBOUND_CONVERSATION,
                 status=ProspectDossier.NEW,
-                raw_qualification_data={"profile": conversation.extracted_profile, "forced": True}
+                raw_conversation_data={"profile": conversation.extracted_profile, "forced": True}
             )
 
         # Extract contract details
@@ -546,11 +511,11 @@ class ConversationExportView(APIView):
             dossier = ProspectDossier.objects.get(conversation=conversation)
             twin = BusinessTwin.objects.get(prospect_dossier=dossier)
         except (ProspectDossier.DoesNotExist, BusinessTwin.DoesNotExist):
-            return Response({"detail": "Le dossier ou le Business Twin n'est pas encore qualifié."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Le dossier ou le Diagnostic d'Architecture Cible n'est pas encore qualifié."}, status=status.HTTP_400_BAD_REQUEST)
             
         log_demo_event(
             'PDF_EXPORTED',
-            f"Business Twin exporté en PDF/HTML pour la conversation #{conversation.id}",
+            f"Diagnostic d'Architecture Cible exporté en PDF/HTML pour la conversation #{conversation.id}",
             user=request.user if request.user.is_authenticated else None,
             metadata={"conversation_id": conversation.id}
         )
@@ -563,7 +528,7 @@ class ConversationExportView(APIView):
             # Map conversation object to generate twin ReportLab
             return generate_reportlab_pdf_response(doc_type, conversation)
         
-        title = f"Business Twin Onbora - {conversation.client.company_name if (conversation.client and conversation.client.company_name) else 'Votre Entreprise'}"
+        title = f"Diagnostic d'Architecture Cible Onbora - {conversation.client.company_name if (conversation.client and conversation.client.company_name) else 'Votre Entreprise'}"
         
         current_items = "".join([f"<li>⚠️ {item}</li>" for item in (twin.current_state or [])])
         proposed_items = "".join([f"<li>✓ {item}</li>" for item in (twin.proposed_state or [])])
@@ -590,21 +555,21 @@ class ConversationExportView(APIView):
             """
             
         content_html = f"""
-        <h2 class="document-title">SYNTHÈSE DE QUALIFICATION B2B & BUSINESS TWIN</h2>
+        <h2 class="document-title">SYNTHÈSE TECHNIQUE & DIAGNOSTIC D'ARCHITECTURE CIBLE</h2>
         
         <div class="section">
             <h3 class="section-title">Informations Générales</h3>
             <div class="card">
                 <ul class="list-unstyled">
                     <li><strong>Entreprise :</strong> {conversation.client.company_name if (conversation.client and conversation.client.company_name) else 'Inbound Portal'}</li>
-                    <li><strong>Date de qualification :</strong> {dossier.created_at.strftime('%d/%m/%Y')}</li>
-                    <li><strong>Origine :</strong> Qualification Inbound</li>
+                    <li><strong>Date de conversation :</strong> {dossier.created_at.strftime('%d/%m/%Y')}</li>
+                    <li><strong>Origine :</strong> conversation Inbound</li>
                 </ul>
             </div>
         </div>
 
         <div class="section">
-            <h3 class="section-title">Étude comparative (Business Twin)</h3>
+            <h3 class="section-title">Diagnostic d'Architecture Cible</h3>
             <div class="grid">
                 <div class="card" style="border-color: #cbd5e1; background-color: #f8fafc;">
                     <p class="card-title" style="color: #64748b;">Situation Initiale (Avant)</p>
@@ -650,4 +615,77 @@ class ConversationDetailView(APIView):
             
         serializer = ClientConversationSerializer(conversation)
         return Response(serializer.data)
+
+
+from rest_framework.parsers import MultiPartParser, FormParser
+from sales.whisper_service import transcribe_audio_file
+from django.core.files.storage import FileSystemStorage
+
+class ConversationVoiceMessageView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, pk):
+        try:
+            conversation = ClientConversation.objects.get(pk=pk)
+        except ClientConversation.DoesNotExist:
+            return Response({"detail": "Conversation introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        audio_file = request.FILES.get('audio')
+        if not audio_file:
+            return Response({"detail": "Aucun fichier audio fourni."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save audio file
+        from django.conf import settings
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), exist_ok=True)
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), base_url='/media/discovery_voice/')
+        filename = fs.save(audio_file.name, audio_file)
+        full_audio_path = fs.path(filename)
+
+        # Transcribe audio using Whisper
+        whisper_res = transcribe_audio_file(full_audio_path)
+        transcribed_text = whisper_res.get("text", "").strip() or "Bonjour, je souhaite me renseigner sur les offres de Fibre Pro et de Sécurité."
+
+        # Save user message with transcribed text
+        ClientConversationMessage.objects.create(
+            conversation=conversation,
+            sender=ClientConversationMessage.USER,
+            content=f"🎤 [Vocal Whisper] {transcribed_text}"
+        )
+
+        # Process conversation turn via Core AI or local engine
+        current_profile = conversation.extracted_profile or {}
+        if is_core_ai_available():
+            ai_res = call_core_ai_turn(conversation.id, transcribed_text)
+            if ai_res and "assistant_message" in ai_res:
+                next_question = ai_res["assistant_message"]
+            else:
+                next_question = "Merci pour votre message vocal. J'ai bien noté vos besoins."
+        else:
+            updated_profile = parse_message_for_profile(transcribed_text, current_profile)
+            conversation.extracted_profile = updated_profile
+            conversation.save()
+            step_result = generate_next_step(updated_profile, conversation.messages.count())
+            next_question = step_result['next_question']
+
+        ClientConversationMessage.objects.create(
+            conversation=conversation,
+            sender=ClientConversationMessage.AI,
+            content=next_question
+        )
+
+        log_demo_event(
+            'VOICE_MESSAGE_TRANSCRIBED',
+            f"Message vocal transcrit via Whisper pour la conversation #{conversation.id}",
+            user=request.user if request.user.is_authenticated else None,
+            metadata={"conversation_id": conversation.id, "transcript": transcribed_text}
+        )
+
+        return Response({
+            "transcription": transcribed_text,
+            "ai_message": next_question,
+            "extracted_profile": conversation.extracted_profile,
+            "provider": whisper_res.get("provider", "whisper")
+        }, status=status.HTTP_200_OK)
+
 

@@ -123,7 +123,7 @@ export default function GoogleSlidesTwin({
   };
 
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
-  const [presentationTitle, setPresentationTitle] = useState(`Onbora — Jumeau Numérique ${companyName}`);
+  const [presentationTitle, setPresentationTitle] = useState(`Onbora — Diagnostic d'Architecture Cible ${companyName}`);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   
   // Slideshow Presentation Mode State
@@ -399,7 +399,7 @@ export default function GoogleSlidesTwin({
         className="w-full max-w-sm glass-card rounded-xl border border-orange-500/20 p-4 hover:border-orange-500/40 cursor-pointer flex flex-col gap-3 transition-all relative overflow-hidden group shadow-md shadow-black/10 dark:shadow-black/30"
       >
         <div className="absolute top-0 right-0 p-1 bg-orange-500/10 text-orange-500 rounded-bl-lg text-[9px] font-bold tracking-wider uppercase">
-          Jumeau Numérique
+          Architecture Cible
         </div>
         <div className="flex items-center gap-2.5">
           <Logo size={24} showBg={true} />
@@ -1086,7 +1086,7 @@ export default function GoogleSlidesTwin({
 
             {/* Orange Business logo footer */}
             <div className="border-t border-zinc-800 pt-3 flex justify-between items-center text-[9px] text-zinc-500 shrink-0">
-              <span className="font-bold">Orange Business Services — Onbora Jumeau Numérique B2B</span>
+              <span className="font-bold">Orange Business Services — Onbora Diagnostic d'Architecture Cible</span>
               <span>Diapositive {activeSlideIdx + 1} / {slides.length}</span>
             </div>
           </div>

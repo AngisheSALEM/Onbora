@@ -78,7 +78,7 @@ class DossierBusinessTwinView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except BusinessTwin.DoesNotExist:
             return Response({
-                "detail": "Aucun Business Twin n'a été généré pour ce dossier."
+                "detail": "Aucun Diagnostic d'Architecture Cible n'a été généré pour ce dossier."
             }, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -125,7 +125,7 @@ class DossierExportView(APIView):
 
         title = f"Dossier Client Onbora - {company_name}"
         
-        profile_data = dossier.raw_qualification_data.get('profile', {}) if dossier.raw_qualification_data else {}
+        profile_data = dossier.raw_conversation_data.get('profile', {}) if dossier.raw_conversation_data else {}
         current_problems = profile_data.get('current_problems', [])
         current_tools = profile_data.get('current_tools', [])
         
@@ -161,7 +161,7 @@ class DossierExportView(APIView):
                 
             twin_html = f"""
             <div class="section">
-                <h3 class="section-title">Étude comparative (Business Twin)</h3>
+                <h3 class="section-title">Diagnostic d'Architecture Cible</h3>
                 <div class="grid">
                     <div class="card" style="border-color: #cbd5e1; background-color: #f8fafc;">
                         <p class="card-title" style="color: #64748b;">Situation Initiale (Avant)</p>
@@ -195,9 +195,9 @@ class DossierExportView(APIView):
         except BusinessTwin.DoesNotExist:
             twin_html = """
             <div class="section">
-                <h3 class="section-title">Étude comparative (Business Twin)</h3>
+                <h3 class="section-title">Diagnostic d'Architecture Cible</h3>
                 <div class="card">
-                    <p style="margin: 0; color: #64748b; font-size: 13px; font-style: italic;">Aucun Business Twin n'a été généré pour ce dossier.</p>
+                    <p style="margin: 0; color: #64748b; font-size: 13px; font-style: italic;">Aucun Diagnostic d'Architecture Cible n'a été généré pour ce dossier.</p>
                 </div>
             </div>
             """
@@ -227,7 +227,7 @@ class DossierExportView(APIView):
         </div>
 
         <div class="section">
-            <h3 class="section-title">Synthèse de Qualification</h3>
+            <h3 class="section-title">Synthèse de conversation</h3>
             <div class="grid">
                 <div class="card">
                     <p class="card-title">Secteur & Taille</p>
@@ -272,14 +272,14 @@ class DossierProvisionView(APIView):
         if not service:
             return Response({"detail": "Paramètre 'service' requis."}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Initialize raw_qualification_data if needed
-        if not isinstance(dossier.raw_qualification_data, dict):
-            dossier.raw_qualification_data = {}
+        # Initialize raw_conversation_data if needed
+        if not isinstance(dossier.raw_conversation_data, dict):
+            dossier.raw_conversation_data = {}
             
-        if 'provisioning' not in dossier.raw_qualification_data:
-            dossier.raw_qualification_data['provisioning'] = {}
+        if 'provisioning' not in dossier.raw_conversation_data:
+            dossier.raw_conversation_data['provisioning'] = {}
             
-        prov = dossier.raw_qualification_data['provisioning']
+        prov = dossier.raw_conversation_data['provisioning']
         
         # Get company name
         company_name = "l'entreprise"

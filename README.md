@@ -90,7 +90,7 @@ python manage.py seed_demo_users
 
 | Rôle | Nom d'utilisateur | Mot de passe | Espace & Description |
 | :--- | :--- | :--- | :--- |
-| **Client B2B** | `client` | `clientpass` | `/client` : Espace de qualification autonome (Onbora Copilot) |
+| **Client B2B** | `client` | `clientpass` | `/client` : Espace de conversation autonome (Onbora Copilot) |
 | **Commercial** | `sales` | `salespass` | `/sales` : Dictaphone Whisper & transcription de visite terrain |
 | **KAM (Conseiller)** | `kam` | `kampass` | `/kam` : Workspace de traitement, notes & provisioning MSP |
 | **Admin (Superviseur)** | `admin` | `adminpass` | `/admin` : Console d'adoption et logs d'activité en temps réel |

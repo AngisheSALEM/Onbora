@@ -33,15 +33,23 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     
     def validate(self, data):
-        username = data.get('username')
+        login_input = data.get('username', '').strip()
         password = data.get('password')
         
-        if username and password:
-            user = authenticate(username=username, password=password)
+        if login_input and password:
+            user_obj = None
+            if '@' in login_input:
+                user_obj = User.objects.filter(email__iexact=login_input).first()
+            if not user_obj:
+                user_obj = User.objects.filter(username__iexact=login_input).first()
+                
+            username_to_auth = user_obj.username if user_obj else login_input
+            user = authenticate(username=username_to_auth, password=password)
+            
             if not user:
-                raise serializers.ValidationError("Identifiants incorrects.")
+                raise serializers.ValidationError("Identifiants incorrects. Vérifiez votre identifiant/email et mot de passe.")
         else:
-            raise serializers.ValidationError("Le nom d'utilisateur et le mot de passe sont requis.")
+            raise serializers.ValidationError("Le nom d'utilisateur ou l'email ainsi que le mot de passe sont requis.")
             
         data['user'] = user
         return data

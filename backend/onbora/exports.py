@@ -501,7 +501,7 @@ def generate_reportlab_pdf_response(doc_type, obj):
                 pass
         
         if twin:
-            story.append(Paragraph("3. Synthèse d'Audit - Business Twin", h1_style))
+            story.append(Paragraph("3. Synthèse d'Audit - Diagnostic d'Architecture Cible", h1_style))
             twin_info = [
                 Paragraph("<b>Situation Initiale (Dysfonctionnements détectés) :</b>", bold_body_style),
             ]
@@ -537,13 +537,13 @@ def generate_reportlab_pdf_response(doc_type, obj):
             story.append(t_services)
             
     # -------------------------------------------------------------
-    # DOCUMENT 2: JUMEAU NUMÉRIQUE (Business Twin Report)
+    # DOCUMENT 2: DIAGNOSTIC D'ARCHITECTURE CIBLE
     # -------------------------------------------------------------
     elif doc_type == 'business_twin' or doc_type == 'twin':
         story.append(draw_logo_header())
         story.append(Spacer(1, 20))
-        story.append(Paragraph("Étude d'Impact & Business Twin", title_style))
-        story.append(Paragraph(f"Transition Numérique modélisée pour l'entreprise {company_name}", subtitle_style))
+        story.append(Paragraph("Diagnostic d'Architecture Cible", title_style))
+        story.append(Paragraph(f"Architecture Technique & Fonctionnelle ciblée pour l'entreprise {company_name}", subtitle_style))
         
         # Load twin details
         twin = None
@@ -557,7 +557,7 @@ def generate_reportlab_pdf_response(doc_type, obj):
             except Exception: pass
             
         if not twin:
-            story.append(Paragraph("Aucun diagnostic n'a encore été finalisé pour ce client. Veuillez terminer l'audit en ligne pour générer le Business Twin.", body_style))
+            story.append(Paragraph("Aucun diagnostic n'a encore été finalisé pour ce client. Veuillez terminer l'audit en ligne pour générer le Diagnostic d'Architecture Cible.", body_style))
         else:
             story.append(Paragraph("1. Analyse Comparée de l'Infrastructure", h1_style))
             
@@ -629,10 +629,10 @@ def generate_reportlab_pdf_response(doc_type, obj):
         audio_path = "Aucun fichier audio."
         
         if class_name == "VisitReport":
-            notes = obj.notes or ""
-            transcription = obj.transcription or ""
-            summary = obj.summary or ""
-            audio_path = obj.audio_file_path or "Non renseigné"
+            notes = getattr(obj, 'notes', getattr(obj, 'raw_transcript', '')) or ""
+            transcription = getattr(obj, 'raw_transcript', getattr(obj, 'transcription', '')) or "Aucune transcription vocale disponible."
+            summary = getattr(obj, 'executive_summary', getattr(obj, 'summary', '')) or "Aucune synthèse rédigée."
+            audio_path = getattr(obj, 'audio_file_path', None) or "Non renseigné"
             
         story.append(Paragraph("1. Détails de la Visite", h1_style))
         visit_info = [
@@ -788,7 +788,7 @@ def generate_reportlab_pdf_response(doc_type, obj):
         story.append(t_price)
         story.append(Spacer(1, 20))
         
-        story.append(Paragraph("Note : Les tarifs indiqués ci-dessus sont des estimations basées sur l'audit initial de qualification. La facturation définitive commencera dès la livraison de l'accès Fibre principal.", body_style))
+        story.append(Paragraph("Note : Les tarifs indiqués ci-dessus sont des estimations basées sur l'audit initial de conversation. La facturation définitive commencera dès la livraison de l'accès Fibre principal.", body_style))
         story.append(Spacer(1, 25))
         
         # Simple initials box
@@ -887,8 +887,8 @@ def generate_reportlab_pdf_response(doc_type, obj):
         story.append(Paragraph("3. Contacter le Support Client Onbora", h1_style))
         story.append(Paragraph("Notre centre d'assistance technique est disponible 24h/24 et 7j/7 pour vous accompagner :", body_style))
         story.append(Paragraph("• 📞 <b>Numéro vert de support</b> : 0 800 123 456 (gratuit depuis un poste Onbora)", body_style))
-        story.append(Paragraph("• ✉️ <b>Email de support</b> : support@onbora-obs.fr", body_style))
-        story.append(Paragraph("• 🌐 <b>Portail de gestion de tickets</b> : https://client.onbora.fr/tickets", body_style))
+        story.append(Paragraph("• ✉️ <b>Email de support</b> : support@onbora.cg", body_style))
+        story.append(Paragraph("• 🌐 <b>Portail de gestion de tickets</b> : https://client.onbora.cg/tickets", body_style))
 
     # Fallback to general cover sheet if type not matched
     else:
@@ -896,7 +896,7 @@ def generate_reportlab_pdf_response(doc_type, obj):
         story.append(Spacer(1, 20))
         story.append(Paragraph("Document de Synthèse Client", title_style))
         story.append(Paragraph(f"Export documentaire Onbora — {company_name}", subtitle_style))
-        story.append(Paragraph("Ce document rassemble les spécifications et les détails liés à la qualification de votre dossier commercial Orange Business Services.", body_style))
+        story.append(Paragraph("Ce document rassemble les spécifications et les détails liés à la conversation de votre dossier commercial Orange Business Services.", body_style))
 
     # Build document
     doc.build(story, canvasmaker=NumberedCanvas)

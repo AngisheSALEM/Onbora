@@ -3,9 +3,9 @@ from django.conf import settings
 
 class DemoEvent(models.Model):
     EVENT_TYPES = (
-        ('CONVERSATION_STARTED', 'Début de qualification inbound'),
+        ('CONVERSATION_STARTED', 'Début de conversation inbound'),
         ('MESSAGE_SENT', 'Message envoyé'),
-        ('QUALIFICATION_SUCCESS', 'Qualification réussie'),
+        ('CONVERSATION_SUCCESS', 'Conversation réussie'),
         ('DOSSIER_TRANSMITTED', 'Dossier transmis au KAM'),
         ('REPORT_GENERATED', 'Rapport commercial généré'),
         ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'),

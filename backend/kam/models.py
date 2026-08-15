@@ -26,7 +26,7 @@ class ProspectDossier(models.Model):
     
     STATUS_CHOICES = [
         (DRAFT, 'Brouillon'),
-        (QUALIFYING, 'Qualification en cours'),
+        (QUALIFYING, 'conversation en cours'),
         (NEW, 'Nouveau / Qualifié'),
         (DISPATCHED, 'Affecté au KAM'),
         (IN_REVIEW, 'En revue'),
@@ -76,10 +76,10 @@ class ProspectDossier(models.Model):
     rccm = models.CharField(max_length=100, blank=True, default='', help_text="Numéro d'immatriculation RCCM")
     billing_address = models.TextField(blank=True, default='', help_text="Adresse complète de facturation")
     is_complete = models.BooleanField(default=False, help_text="Indique si le dossier contractuel est complet")
-    raw_qualification_data = models.JSONField(
+    raw_conversation_data = models.JSONField(
         default=dict,
         blank=True,
-        help_text="Consolidation des données de qualification (besoins, contraintes, outils actuels)"
+        help_text="Consolidation des données de conversation (besoins, contraintes, outils actuels)"
     )
     internal_kam_notes = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)

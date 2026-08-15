@@ -203,7 +203,7 @@ def build_pdf():
     
     # --- PAGE 4: COMPOSANTS DE CONVERSATION ---
     story.append(Paragraph("4. Interface de Conversation (Chatbot)", h1_style))
-    story.append(Paragraph("L'interface de qualification conversationnelle structure les echanges entre l'IA (Onbora) et le prospect. Les bulles Onbora sont grises/blanches pour representer le systeme, et les bulles Client sont orange pour focaliser les actions de l'utilisateur.", body_style))
+    story.append(Paragraph("L'interface de conversation conversationnelle structure les echanges entre l'IA (Onbora) et le prospect. Les bulles Onbora sont grises/blanches pour representer le systeme, et les bulles Client sont orange pour focaliser les actions de l'utilisateur.", body_style))
     story.append(Spacer(1, 10))
     story.append(make_chat_mockup())
     story.append(Spacer(1, 20))

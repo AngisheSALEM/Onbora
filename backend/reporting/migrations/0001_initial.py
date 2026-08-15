@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='DemoEvent',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('event_type', models.CharField(choices=[('CONVERSATION_STARTED', 'Début de qualification inbound'), ('MESSAGE_SENT', 'Message envoyé'), ('QUALIFICATION_SUCCESS', 'Qualification réussie'), ('DOSSIER_TRANSMITTED', 'Dossier transmis au KAM'), ('REPORT_GENERATED', 'Rapport commercial généré'), ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'), ('PDF_EXPORTED', 'PDF exporté')], max_length=50)),
+                ('event_type', models.CharField(choices=[('CONVERSATION_STARTED', 'Début de conversation inbound'), ('MESSAGE_SENT', 'Message envoyé'), ('conversation_SUCCESS', 'conversation réussie'), ('DOSSIER_TRANSMITTED', 'Dossier transmis au KAM'), ('REPORT_GENERATED', 'Rapport commercial généré'), ('INTERNAL_NOTES_UPDATED', 'Notes internes KAM modifiées'), ('PDF_EXPORTED', 'PDF exporté')], max_length=50)),
                 ('description', models.TextField()),
                 ('metadata', models.JSONField(blank=True, default=dict)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
