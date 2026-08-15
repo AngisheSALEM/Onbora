@@ -11,8 +11,8 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final _usernameController = TextEditingController(text: 'commercial');
-  final _passwordController = TextEditingController(text: 'demo123');
+  final _usernameController = TextEditingController(text: 'sales1');
+  final _passwordController = TextEditingController(text: 'sales1pass');
   final _formKey = GlobalKey<FormState>();
   String _selectedServer = 'Render Cloud';
 
@@ -231,7 +231,7 @@ class _LoginViewState extends State<LoginView> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
-                                'Compte démo : commercial / demo123 (ou commercial@onbora.cg)',
+                                'Compte démo Render : sales1 / sales1pass (ou commercial / demo123)',
                                 style: TextStyle(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.w500),
                               ),
                             ),

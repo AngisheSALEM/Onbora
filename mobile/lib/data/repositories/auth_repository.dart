@@ -9,7 +9,7 @@ class AuthRepository {
 
   Future<UserModel> login(String username, String password) async {
     final response = await _apiClient.post(
-      '/api/accounts/login/',
+      '/api/auth/login/',
       body: {
         'username': username,
         'password': password,
@@ -33,7 +33,7 @@ class AuthRepository {
 
   Future<UserModel?> getProfile() async {
     try {
-      final response = await _apiClient.get('/api/accounts/me/');
+      final response = await _apiClient.get('/api/auth/me/');
       return UserModel.fromJson(response as Map<String, dynamic>);
     } catch (_) {
       return null;
