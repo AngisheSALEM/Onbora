@@ -12,6 +12,9 @@ class AuthViewModel extends ChangeNotifier {
   UserModel? _currentUser;
   UserModel? get currentUser => _currentUser;
 
+  bool _isBootstrapping = true;
+  bool get isBootstrapping => _isBootstrapping;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -22,7 +25,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   Future<void> checkAuthStatus() async {
-    _isLoading = true;
+    _isBootstrapping = true;
     notifyListeners();
 
     try {
@@ -45,7 +48,7 @@ class AuthViewModel extends ChangeNotifier {
     } catch (_) {
       _isAuthenticated = false;
     } finally {
-      _isLoading = false;
+      _isBootstrapping = false;
       notifyListeners();
     }
   }

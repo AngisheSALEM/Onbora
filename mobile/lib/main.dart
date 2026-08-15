@@ -42,7 +42,7 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
 
-    if (authVm.isLoading) {
+    if (authVm.isBootstrapping) {
       return const Scaffold(
         body: Center(
           child: Column(

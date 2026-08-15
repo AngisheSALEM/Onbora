@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -52,10 +53,12 @@ class ApiClient {
     final headers = await _getHeaders(includeAuth: includeAuth);
 
     try {
-      final response = await _httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 25));
+      final response = await _httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de se connecter au serveur backend. Vérifiez votre connexion internet.");
+      throw ApiException("Impossible de se connecter au serveur backend. Vérifiez votre connexion ou l'adresse du serveur.");
+    } on TimeoutException {
+      throw ApiException("Le serveur Render prend du temps à démarrer (Cold Start). Veuillez réessayer dans 15 secondes.");
     } on Exception catch (e) {
       throw ApiException("Erreur réseau: ${e.toString()}");
     }
@@ -67,12 +70,14 @@ class ApiClient {
     final jsonBody = body != null ? jsonEncode(body) : null;
 
     try {
-      final response = await _httpClient.post(uri, headers: headers, body: jsonBody).timeout(const Duration(seconds: 25));
+      final response = await _httpClient.post(uri, headers: headers, body: jsonBody).timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de joindre le serveur Onbora sur ${ApiConfig.baseUrl}");
+      throw ApiException("Impossible de joindre le serveur Onbora sur ${ApiConfig.baseUrl}. Le serveur s'initialise ou votre connexion est coupée.");
+    } on TimeoutException {
+      throw ApiException("Délai d'attente dépassé (Cold Start Render). Réessayez la connexion.");
     } on Exception catch (e) {
-      throw ApiException("Erreur requête POST: ${e.toString()}");
+      throw ApiException("Erreur connexion: ${e.toString()}");
     }
   }
 
