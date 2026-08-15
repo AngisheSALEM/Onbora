@@ -29,7 +29,7 @@ class DictaphoneRecordingView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -64,7 +64,7 @@ class DictaphoneRecordingView extends StatelessWidget {
                     : dictVm.state == RecordingState.stopped
                         ? 'ENREGISTREMENT TERMINÉ'
                         : dictVm.state == RecordingState.uploading
-                            ? 'ANALYSE WHISPER SPPECH-TO-TEXT...'
+                            ? 'ANALYSE WHISPER SPEECH-TO-TEXT...'
                             : 'Appuyez pour démarrer l\'enregistrement',
                 style: TextStyle(
                   color: dictVm.state == RecordingState.recording ? const Color(0xFFF97316) : Colors.grey,
@@ -99,7 +99,7 @@ class DictaphoneRecordingView extends StatelessWidget {
                           color: (dictVm.state == RecordingState.recording
                                   ? const Color(0xFFEF4444)
                                   : const Color(0xFFF97316))
-                              .withOpacity(0.4),
+                              .withValues(alpha: 0.4),
                           blurRadius: dictVm.state == RecordingState.recording ? 30 : 15,
                           spreadRadius: dictVm.state == RecordingState.recording ? 10 : 2,
                         ),

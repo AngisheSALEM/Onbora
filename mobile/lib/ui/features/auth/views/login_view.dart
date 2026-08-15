@@ -37,6 +37,8 @@ class _LoginViewState extends State<LoginView> {
           SnackBar(
             content: Text(authVm.errorMessage!),
             backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -79,7 +81,7 @@ class _LoginViewState extends State<LoginView> {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF97316).withOpacity(0.12),
+                                color: const Color(0xFFF97316).withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -130,7 +132,7 @@ class _LoginViewState extends State<LoginView> {
                                         color: _selectedServer == 'Render Cloud' ? Colors.white : Colors.transparent,
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: _selectedServer == 'Render Cloud'
-                                            ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)]
+                                            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
                                             : [],
                                       ),
                                       child: Row(
@@ -156,7 +158,7 @@ class _LoginViewState extends State<LoginView> {
                                         color: _selectedServer == 'Local' ? Colors.white : Colors.transparent,
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: _selectedServer == 'Local'
-                                            ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)]
+                                            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
                                             : [],
                                       ),
                                       child: Row(
@@ -227,7 +229,7 @@ class _LoginViewState extends State<LoginView> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.08),
+                                color: Colors.blue.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(

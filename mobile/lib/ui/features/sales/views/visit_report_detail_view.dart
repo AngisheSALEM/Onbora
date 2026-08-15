@@ -48,7 +48,7 @@ class VisitReportDetailView extends StatelessWidget {
                       padding: const EdgeInsets.all(16),
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.12),
+                        color: Colors.green.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.green),
                       ),
@@ -77,7 +77,7 @@ class VisitReportDetailView extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF97316).withOpacity(0.2),
+                              color: const Color(0xFFF97316).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.description_rounded, color: Color(0xFFF97316), size: 28),
@@ -150,7 +150,7 @@ class VisitReportDetailView extends StatelessWidget {
                             runSpacing: 8,
                             children: report.confirmedNeeds.map((need) {
                               return Chip(
-                                backgroundColor: Colors.green.withOpacity(0.12),
+                                backgroundColor: Colors.green.withValues(alpha: 0.12),
                                 side: BorderSide.none,
                                 label: Text(
                                   need,

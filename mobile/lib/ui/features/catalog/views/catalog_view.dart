@@ -113,7 +113,7 @@ class _CatalogViewState extends State<CatalogView> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: Colors.blue.withOpacity(0.12),
+                                          color: Colors.blue.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -126,7 +126,7 @@ class _CatalogViewState extends State<CatalogView> {
                                         ),
                                       ),
                                       Text(
-                                        '${item.monthlyPrice.toStringAsFixed(2)} €/mois',
+                                        '${item.monthlyPrice.toStringAsFixed(0)} \$ / mois',
                                         style: const TextStyle(
                                           color: Color(0xFFF97316),
                                           fontSize: 16,
@@ -148,7 +148,7 @@ class _CatalogViewState extends State<CatalogView> {
                                   if (item.setupPrice > 0) ...[
                                     const SizedBox(height: 10),
                                     Text(
-                                      'Frais d\'accès au service : ${item.setupPrice.toStringAsFixed(2)} €',
+                                      'Frais d\'accès au service : ${item.setupPrice.toStringAsFixed(0)} \$',
                                       style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
                                     ),
                                   ],
