@@ -15,6 +15,7 @@ class _LoginViewState extends State<LoginView> {
   final _passwordController = TextEditingController(text: 'sales1pass');
   final _formKey = GlobalKey<FormState>();
   String _selectedServer = 'Render Cloud';
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -33,12 +34,19 @@ class _LoginViewState extends State<LoginView> {
 
       if (!mounted) return;
       if (!success && authVm.errorMessage != null) {
+        // Show Floating Toast / SnackBar for quick retry
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authVm.errorMessage!),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white),
+                const SizedBox(width: 10),
+                Expanded(child: Text(authVm.errorMessage!)),
+              ],
+            ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -49,6 +57,10 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
     final theme = Theme.of(context);
+    final password = _passwordController.text;
+    final hasMinLength = password.length >= 6;
+    final hasLetters = password.contains(RegExp(r'[a-zA-Z]'));
+    final hasDigits = password.contains(RegExp(r'[0-9]'));
 
     return Scaffold(
       body: Container(
@@ -103,10 +115,11 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Espace Commercial & Copilote Terrain',
+                            'Espace Commercial & Copilote Terrain 🇨🇩',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontSize: 13,
+                              color: const Color(0xFF64748B),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -177,41 +190,112 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 20),
 
-                          // Username / Email input
+                          // 3-Part Practical Error Banner if login failed
+                          if (authVm.errorMessage != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '1. Échec de Connexion (Serveur Render)',
+                                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '2. Pourquoi : ${authVm.errorMessage}',
+                                    style: const TextStyle(color: Color(0xFF475569), fontSize: 11),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    '3. Action : Si Render sort de veille (cold start), réessayez dans 15s.',
+                                    style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          // Username / Email input (with inline validation)
                           TextFormField(
                             controller: _usernameController,
                             keyboardType: TextInputType.emailAddress,
                             decoration: const InputDecoration(
-                              labelText: 'Identifiant / Email',
+                              labelText: 'Identifiant / Email *',
                               prefixIcon: Icon(Icons.person_outline_rounded),
+                              hintText: 'sales1 ou commercial@onbora.cg',
                             ),
-                            validator: (val) => val == null || val.isEmpty ? 'Veuillez saisir votre identifiant' : null,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return 'L\'identifiant est obligatoire';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
 
-                          // Password input
+                          // Password input (with toggle obscure & dynamic requirements)
                           TextFormField(
                             controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Mot de passe',
-                              prefixIcon: Icon(Icons.lock_outline_rounded),
+                            obscureText: _obscurePassword,
+                            onChanged: (_) => setState(() {}),
+                            decoration: InputDecoration(
+                              labelText: 'Mot de passe *',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
+                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              ),
                             ),
-                            validator: (val) => val == null || val.isEmpty ? 'Veuillez saisir votre mot de passe' : null,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return 'Le mot de passe est obligatoire';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Dynamic Password Requirements Checklist
+                          Row(
+                            children: [
+                              _buildRequirementChip('6+ car.', hasMinLength),
+                              const SizedBox(width: 6),
+                              _buildRequirementChip('Lettres', hasLetters),
+                              const SizedBox(width: 6),
+                              _buildRequirementChip('Chiffres', hasDigits),
+                            ],
                           ),
                           const SizedBox(height: 24),
 
-                          // Submit Button
+                          // Submit Button with Progress State
                           ElevatedButton(
                             onPressed: authVm.isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: const Color(0xFFF97316),
                             ),
                             child: authVm.isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Connexion à Render Cloud...',
+                                        style: TextStyle(fontSize: 14, color: Colors.white),
+                                      ),
+                                    ],
                                   )
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -233,7 +317,7 @@ class _LoginViewState extends State<LoginView> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
-                                'Compte démo Render : sales1 / sales1pass (ou commercial / demo123)',
+                                'Compte démo Render : sales1 / sales1pass',
                                 style: TextStyle(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.w500),
                               ),
                             ),
@@ -247,6 +331,35 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRequirementChip(String label, bool isSatisfied) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: isSatisfied ? Colors.green.withValues(alpha: 0.12) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSatisfied ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 12,
+            color: isSatisfied ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: isSatisfied ? FontWeight.bold : FontWeight.normal,
+              color: isSatisfied ? Colors.green : Colors.grey,
+            ),
+          ),
+        ],
       ),
     );
   }

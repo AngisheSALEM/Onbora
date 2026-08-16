@@ -7,6 +7,7 @@ import 'ui/features/sales/view_models/sales_view_model.dart';
 import 'ui/features/sales/view_models/dictaphone_view_model.dart';
 import 'ui/features/catalog/view_models/catalog_view_model.dart';
 import 'ui/main_navigation_view.dart';
+import 'ui/shared/skeleton_loader.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,18 +44,7 @@ class AuthGate extends StatelessWidget {
     final authVm = context.watch<AuthViewModel>();
 
     if (authVm.isBootstrapping) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: Color(0xFFF97316)),
-              SizedBox(height: 16),
-              Text('Initialisation de l\'application Onbora...'),
-            ],
-          ),
-        ),
-      );
+      return const AppBootstrapSkeleton();
     }
 
     if (authVm.isAuthenticated) {
@@ -62,5 +52,53 @@ class AuthGate extends StatelessWidget {
     }
 
     return const LoginView();
+  }
+}
+
+/// High-End Skeleton Loader for App Bootstrap (Replaces plain text/spinner splash)
+class AppBootstrapSkeleton extends StatelessWidget {
+  const AppBootstrapSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const SkeletonBox(width: 160, height: 20, borderRadius: 6),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: SkeletonBox(width: 32, height: 32, borderRadius: 16),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SkeletonBox(height: 160, borderRadius: 20),
+            const SizedBox(height: 24),
+            const SkeletonBox(width: 140, height: 18, borderRadius: 6),
+            const SizedBox(height: 12),
+            const SkeletonBox(height: 90, borderRadius: 18),
+            const SizedBox(height: 24),
+            Row(
+              children: const [
+                Expanded(child: SkeletonBox(height: 80, borderRadius: 16)),
+                SizedBox(width: 10),
+                Expanded(child: SkeletonBox(height: 80, borderRadius: 16)),
+                SizedBox(width: 10),
+                Expanded(child: SkeletonBox(height: 80, borderRadius: 16)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const SkeletonBox(width: 180, height: 18, borderRadius: 6),
+            const SizedBox(height: 12),
+            const Expanded(child: SkeletonCard()),
+          ],
+        ),
+      ),
+    );
   }
 }
