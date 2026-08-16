@@ -41,13 +41,13 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  SkeletonContainer(height: 70, borderRadius: 16),
+                  SkeletonBox(height: 70, borderRadius: 16),
                   SizedBox(height: 20),
-                  SkeletonContainer(height: 100, borderRadius: 16),
+                  SkeletonBox(height: 100, borderRadius: 16),
                   SizedBox(height: 16),
-                  SkeletonContainer(height: 120, borderRadius: 16),
+                  SkeletonBox(height: 120, borderRadius: 16),
                   SizedBox(height: 16),
-                  SkeletonContainer(height: 140, borderRadius: 16),
+                  SkeletonBox(height: 140, borderRadius: 16),
                 ],
               ),
             )

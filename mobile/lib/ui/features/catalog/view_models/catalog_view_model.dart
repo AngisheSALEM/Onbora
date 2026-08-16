@@ -25,7 +25,10 @@ class CatalogViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _items = await _catalogRepository.getCatalog();
+      final itemsFuture = _catalogRepository.getCatalog();
+      final delayFuture = Future.delayed(const Duration(milliseconds: 500));
+      final res = await Future.wait([itemsFuture, delayFuture]);
+      _items = res[0] as List<CatalogItemModel>;
       _filterItems();
     } finally {
       _isLoading = false;

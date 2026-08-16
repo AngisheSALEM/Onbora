@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../view_models/sales_view_model.dart';
 import 'enterprise_search_view.dart';
 import 'visit_preparation_view.dart';
+import 'dictaphone_recording_view.dart';
 
 class SalesHomeView extends StatelessWidget {
   const SalesHomeView({super.key});
@@ -13,12 +14,13 @@ class SalesHomeView extends StatelessWidget {
     final salesVm = context.watch<SalesViewModel>();
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Row(
           children: const [
             Icon(Icons.directions_run_rounded, color: Color(0xFFF97316)),
             SizedBox(width: 8),
-            Text('Copilote Commercial'),
+            Text('Copilote Commercial Onbora'),
           ],
         ),
         actions: [
@@ -34,7 +36,7 @@ class SalesHomeView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Card Banner
+            // Hero Welcome Card Banner
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -44,12 +46,12 @@ class SalesHomeView extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -57,28 +59,56 @@ class SalesHomeView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF97316).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.4)),
                         ),
-                        child: const Icon(Icons.mic_rounded, color: Color(0xFFF97316), size: 24),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.person_pin_rounded, color: Color(0xFFF97316), size: 14),
+                            SizedBox(width: 6),
+                            Text(
+                              'Commercial Terrain 🇨🇩',
+                              style: TextStyle(color: Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Dictaphone & IA Terrain',
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.wb_sunny_rounded, color: Colors.amber, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'Kinshasa • 29°C',
+                              style: TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   const Text(
-                    'Recherchez un prospect CRM, préparez votre brief de rendez-vous et dictez votre compte-rendu vocal.',
+                    'Copilote IA & Dictaphone Terrain',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Qualifiez vos prospects B2B, générez vos briefs personnalisés et dictez vos compte-rendus vocaux.',
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.4),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
@@ -87,7 +117,12 @@ class SalesHomeView extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.search_rounded, size: 20),
-                    label: const Text('Nouvelle Visite Client'),
+                    label: const Text('Rechercher un Prospect CRM'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF97316),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ],
               ),
@@ -96,13 +131,25 @@ class SalesHomeView extends StatelessWidget {
 
             // Section Title: Flow Status
             Text(
-              'Rendez-vous en cours',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              'Rendez-vous Client en Cours',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
             ),
             const SizedBox(height: 12),
 
             if (salesVm.selectedEnterprise == null) ...[
-              Card(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
@@ -113,7 +160,7 @@ class SalesHomeView extends StatelessWidget {
                           color: Colors.blue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.domain_add_rounded, color: Colors.blue, size: 28),
+                        child: const Icon(Icons.domain_add_rounded, color: Colors.blue, size: 30),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -122,11 +169,11 @@ class SalesHomeView extends StatelessWidget {
                           children: const [
                             Text(
                               'Aucune entreprise sélectionnée',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A)),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Sélectionnez une entreprise du CRM pour démarrer.',
+                              'Recherchez et choisissez un prospect dans le CRM Kaabu pour démarrer.',
                               style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                             ),
                           ],
@@ -138,11 +185,18 @@ class SalesHomeView extends StatelessWidget {
               ),
             ] else ...[
               // Enterprise Selected Active Card
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Color(0xFFF97316), width: 1.5),
-                  borderRadius: BorderRadius.circular(16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFF97316), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(18),
@@ -159,7 +213,7 @@ class SalesHomeView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              salesVm.selectedEnterprise!.sector ?? 'Prospect',
+                              salesVm.selectedEnterprise!.sector ?? 'Prospect B2B',
                               style: const TextStyle(
                                 color: Color(0xFFF97316),
                                 fontSize: 12,
@@ -167,21 +221,27 @@ class SalesHomeView extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Text(
-                            salesVm.selectedEnterprise!.location ?? 'Kinshasa / RDC',
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          Row(
+                            children: const [
+                              Icon(Icons.circle, color: Color(0xFF10B981), size: 8),
+                              SizedBox(width: 4),
+                              Text(
+                                'Visite Active',
+                                style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       Text(
                         salesVm.selectedEnterprise!.name,
-                        style: theme.textTheme.titleLarge?.copyWith(fontSize: 18),
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        salesVm.selectedEnterprise!.website ?? 'www.prospect.cg',
-                        style: const TextStyle(color: Colors.blue, fontSize: 13),
+                        '${salesVm.selectedEnterprise!.location ?? 'Kinshasa'} • ${salesVm.selectedEnterprise!.approximateSize}',
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                       ),
                       const Divider(height: 24),
                       Row(
@@ -196,9 +256,26 @@ class SalesHomeView extends StatelessWidget {
                               },
                               icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
                               label: Text(
-                                salesVm.currentPrep != null ? 'Voir Préparation' : 'Préparer la Visite',
-                                style: const TextStyle(fontSize: 13),
+                                salesVm.currentPrep != null ? 'Brief Généré' : 'Préparer la Visite',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const DictaphoneRecordingView()),
+                                );
+                              },
+                              icon: const Icon(Icons.mic_rounded, size: 18),
+                              label: const Text(
+                                'Dictaphone',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF97316)),
                             ),
                           ),
                         ],
@@ -210,10 +287,22 @@ class SalesHomeView extends StatelessWidget {
             ],
             const SizedBox(height: 24),
 
+            // Performance KPI Cards
+            Row(
+              children: [
+                _buildKpiCard(title: 'Visites Prévues', count: '3', icon: Icons.event_available_rounded, color: Colors.blue),
+                const SizedBox(width: 12),
+                _buildKpiCard(title: 'Rapports IA', count: '12', icon: Icons.auto_awesome_rounded, color: Colors.purple),
+                const SizedBox(width: 12),
+                _buildKpiCard(title: 'Pipeline RDC', count: '45k \$', icon: Icons.payments_rounded, color: const Color(0xFF10B981)),
+              ],
+            ),
+            const SizedBox(height: 24),
+
             // Quick Actions Grid
             Text(
               'Actions Rapides Terrain',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
             ),
             const SizedBox(height: 12),
             GridView.count(
@@ -264,6 +353,47 @@ class SalesHomeView extends StatelessWidget {
     );
   }
 
+  Widget _buildKpiCard({
+    required String title,
+    required String count,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 8),
+            Text(
+              count,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionCard(
     BuildContext context, {
     required String title,
@@ -272,7 +402,19 @@ class SalesHomeView extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -293,7 +435,7 @@ class SalesHomeView extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
               ),
               const SizedBox(height: 2),
               Text(

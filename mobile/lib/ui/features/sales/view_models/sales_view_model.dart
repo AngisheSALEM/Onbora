@@ -52,7 +52,10 @@ class SalesViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _searchResults = await _salesRepository.searchEnterprises(query);
+      final resultsFuture = _salesRepository.searchEnterprises(query);
+      final delayFuture = Future.delayed(const Duration(milliseconds: 500));
+      final res = await Future.wait([resultsFuture, delayFuture]);
+      _searchResults = res[0] as List<EnterpriseModel>;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('ApiException: ', '');
     } finally {
@@ -78,7 +81,10 @@ class SalesViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentPrep = await _salesRepository.createVisitPreparation(_selectedEnterprise!.id);
+      final prepFuture = _salesRepository.createVisitPreparation(_selectedEnterprise!.id);
+      final delayFuture = Future.delayed(const Duration(milliseconds: 600));
+      final res = await Future.wait([prepFuture, delayFuture]);
+      _currentPrep = res[0] as VisitPrepModel;
       _isCreatingPrep = false;
       notifyListeners();
       return true;
