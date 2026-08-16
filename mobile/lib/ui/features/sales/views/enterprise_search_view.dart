@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/sales_view_model.dart';
 import 'visit_preparation_view.dart';
+import '../../../shared/skeleton_loader.dart';
 
 class EnterpriseSearchView extends StatefulWidget {
   const EnterpriseSearchView({super.key});
@@ -16,9 +17,8 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
   @override
   void initState() {
     super.initState();
-    // Default search sample
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SalesViewModel>().searchEnterprises('Clinique');
+      context.read<SalesViewModel>().searchEnterprises('Rawbank');
     });
   }
 
@@ -26,6 +26,10 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _triggerSearch(String query) {
+    context.read<SalesViewModel>().searchEnterprises(query.trim());
   }
 
   @override
@@ -47,10 +51,10 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    onSubmitted: (val) => salesVm.searchEnterprises(val),
+                    onSubmitted: _triggerSearch,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Nom d\'entreprise, SIREN, secteur...',
+                      hintText: 'Nom d\'entreprise, secteur, ville...',
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),
@@ -60,7 +64,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                               icon: const Icon(Icons.clear_rounded, color: Colors.grey),
                               onPressed: () {
                                 _searchController.clear();
-                                salesVm.searchEnterprises('');
+                                _triggerSearch('');
                               },
                             )
                           : null,
@@ -69,7 +73,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: () => salesVm.searchEnterprises(_searchController.text),
+                  onPressed: () => _triggerSearch(_searchController.text),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -79,34 +83,80 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
             ),
           ),
 
-          // Loading or Results List
-          Expanded(
-            child: salesVm.isSearching
-                ? const Center(
+          // 3-Part Error State Banner
+          if (salesVm.errorMessage != null)
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircularProgressIndicator(color: Color(0xFFF97316)),
-                        SizedBox(height: 16),
-                        Text('Interrogation CRM Kaabu & BDD local...'),
+                        const Text(
+                          'Erreur de recherche CRM',
+                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          salesVm.errorMessage!,
+                          style: const TextStyle(color: Color(0xFF475569), fontSize: 12),
+                        ),
                       ],
                     ),
-                  )
+                  ),
+                ],
+              ),
+            ),
+
+          // Results List or States
+          Expanded(
+            child: salesVm.isSearching
+                ? const SkeletonListLoader(count: 4)
                 : salesVm.searchResults.isEmpty
-                    ? Center(
+                    ? SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            const SizedBox(height: 40),
                             Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.shade400),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Aucune entreprise trouvée',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Aucun prospect trouvé pour "${_searchController.text}"'
+                                  : 'Aucune entreprise trouvée',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Essayez un terme comme "Clinique", "Tech" ou "Boutique"',
-                              style: TextStyle(color: Colors.grey, fontSize: 13),
+                              'Essayez l\'un des mots-clés suggérés ci-dessous :',
+                              style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                            ),
+                            const SizedBox(height: 20),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: ['Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'].map((suggestion) {
+                                return ActionChip(
+                                  label: Text(suggestion),
+                                  avatar: const Icon(Icons.saved_search_rounded, size: 16),
+                                  onPressed: () {
+                                    _searchController.text = suggestion;
+                                    _triggerSearch(suggestion);
+                                  },
+                                );
+                              }).toList(),
                             ),
                           ],
                         ),

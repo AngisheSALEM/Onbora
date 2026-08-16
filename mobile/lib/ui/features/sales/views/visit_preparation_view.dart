@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/sales_view_model.dart';
 import 'dictaphone_recording_view.dart';
+import '../../../shared/skeleton_loader.dart';
 
 class VisitPreparationView extends StatefulWidget {
   const VisitPreparationView({super.key});
@@ -11,6 +12,8 @@ class VisitPreparationView extends StatefulWidget {
 }
 
 class _VisitPreparationViewState extends State<VisitPreparationView> {
+  bool _showAdvancedPitch = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,28 +36,48 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
         title: const Text('Brief de Préparation Visite'),
       ),
       body: salesVm.isCreatingPrep
-          ? const Center(
+          ? Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Color(0xFFF97316)),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  SkeletonContainer(height: 70, borderRadius: 16),
+                  SizedBox(height: 20),
+                  SkeletonContainer(height: 100, borderRadius: 16),
                   SizedBox(height: 16),
-                  Text('Génération du brief de visite personnalisé par Onbora AI...'),
+                  SkeletonContainer(height: 120, borderRadius: 16),
+                  SizedBox(height: 16),
+                  SkeletonContainer(height: 140, borderRadius: 16),
                 ],
               ),
             )
           : prep == null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Aucun brief généré.'),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () => salesVm.prepareVisit(),
-                        child: const Text('Générer le Brief'),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.note_alt_outlined, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Aucun brief généré pour le moment',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Générez votre brief personnalisé avec l\'IA Onbora pour structurer votre entretien.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          onPressed: () => salesVm.prepareVisit(),
+                          icon: const Icon(Icons.auto_awesome_rounded),
+                          label: const Text('Générer le Brief avec l\'IA'),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : SingleChildScrollView(
@@ -83,7 +106,7 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${enterprise?.sector ?? 'Secteur'} • ${enterprise?.location ?? 'France'}',
+                                    '${enterprise?.sector ?? 'Secteur'} • ${enterprise?.location ?? 'Kinshasa / RDC'}',
                                     style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                                   ),
                                 ],
@@ -112,12 +135,32 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Custom Pitch
-                      _buildSectionCard(
-                        title: 'Pitch Commercial Sur-Mesure',
-                        icon: Icons.campaign_rounded,
-                        color: const Color(0xFFF97316),
-                        content: prep.customPitch,
+                      // Progressive Disclosure: Pitch Commercial collapsible
+                      Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              onTap: () => setState(() => _showAdvancedPitch = !_showAdvancedPitch),
+                              leading: const Icon(Icons.campaign_rounded, color: Color(0xFFF97316)),
+                              title: const Text(
+                                'Pitch Commercial Sur-Mesure',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFFF97316)),
+                              ),
+                              trailing: Icon(
+                                _showAdvancedPitch ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                                color: const Color(0xFFF97316),
+                              ),
+                            ),
+                            if (_showAdvancedPitch)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                                child: Text(
+                                  prep.customPitch,
+                                  style: const TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF334155)),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
 

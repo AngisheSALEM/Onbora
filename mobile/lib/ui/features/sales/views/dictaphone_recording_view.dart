@@ -4,8 +4,23 @@ import '../view_models/dictaphone_view_model.dart';
 import '../view_models/sales_view_model.dart';
 import 'visit_report_detail_view.dart';
 
-class DictaphoneRecordingView extends StatelessWidget {
+class DictaphoneRecordingView extends StatefulWidget {
   const DictaphoneRecordingView({super.key});
+
+  @override
+  State<DictaphoneRecordingView> createState() => _DictaphoneRecordingViewState();
+}
+
+class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
+  int _processingStep = 1;
+
+  void _simulateProgressSteps() async {
+    setState(() => _processingStep = 1);
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (mounted) setState(() => _processingStep = 2);
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (mounted) setState(() => _processingStep = 3);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +130,7 @@ class DictaphoneRecordingView extends StatelessWidget {
               ),
               const Spacer(),
 
-              // Transcript Preview Card when stopped/completed
+              // Transcript Preview Card with Character Counter
               if (dictVm.transcribedText.isNotEmpty) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -128,12 +143,21 @@ class DictaphoneRecordingView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.graphic_eq_rounded, color: Color(0xFF14B8A6), size: 18),
-                          SizedBox(width: 8),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.graphic_eq_rounded, color: Color(0xFF14B8A6), size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Transcription Vocale (Whisper AI)',
+                                style: TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
                           Text(
-                            'Transcription Vocale (Whisper AI)',
-                            style: TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold, fontSize: 13),
+                            '${dictVm.transcribedText.length} caract.',
+                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
                           ),
                         ],
                       ),
@@ -150,6 +174,37 @@ class DictaphoneRecordingView extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
 
+              // Dynamic Step Progress Indicator during AI Generation
+              if (salesVm.isGeneratingReport || dictVm.isUploading) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    children: [
+                      LinearProgressIndicator(
+                        value: _processingStep / 3.0,
+                        backgroundColor: const Color(0xFF334155),
+                        color: const Color(0xFF14B8A6),
+                        minHeight: 6,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _processingStep == 1
+                            ? 'Étape 1/3 : Transcription vocale Whisper AI en cours...'
+                            : _processingStep == 2
+                                ? 'Étape 2/3 : Analyse et extraction des besoins télécoms...'
+                                : 'Étape 3/3 : Génération du compte-rendu et plan d\'actions...',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
               // Bottom Action Buttons
               if (dictVm.state == RecordingState.stopped || dictVm.state == RecordingState.completed) ...[
                 SizedBox(
@@ -159,6 +214,7 @@ class DictaphoneRecordingView extends StatelessWidget {
                     onPressed: salesVm.isGeneratingReport || dictVm.isUploading
                         ? null
                         : () async {
+                            _simulateProgressSteps();
                             final transcript = dictVm.transcribedText.isNotEmpty
                                 ? dictVm.transcribedText
                                 : await dictVm.uploadAndTranscribe(enterprise?.name ?? 'Client');
@@ -184,7 +240,7 @@ class DictaphoneRecordingView extends StatelessWidget {
                         : const Icon(Icons.auto_awesome_rounded, size: 22),
                     label: Text(
                       salesVm.isGeneratingReport || dictVm.isUploading
-                          ? 'Génération du Rapport IA...'
+                          ? 'Traitement IA...'
                           : 'Générer le Rapport avec Onbora IA',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/catalog_view_model.dart';
+import '../../../shared/skeleton_loader.dart';
 
 class CatalogView extends StatefulWidget {
   const CatalogView({super.key});
@@ -47,12 +48,21 @@ class _CatalogViewState extends State<CatalogView> {
                   controller: _searchController,
                   onChanged: (val) => catalogVm.searchCatalog(val),
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Rechercher une offre (Fibre, Firewall, Teams...)',
-                    hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                    hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                     filled: true,
-                    fillColor: Color(0xFF1E293B),
-                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFF97316)),
+                    fillColor: const Color(0xFF1E293B),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFF97316)),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              catalogVm.searchCatalog('');
+                            },
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -88,12 +98,43 @@ class _CatalogViewState extends State<CatalogView> {
             ),
           ),
 
-          // Items List
+          // Items List with Skeleton & Actionable Empty States
           Expanded(
             child: catalogVm.isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFF97316)))
+                ? const SkeletonListLoader(count: 5)
                 : catalogVm.filteredItems.isEmpty
-                    ? const Center(child: Text('Aucune offre MSP trouvée.'))
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Aucune offre MSP ne correspond à vos critères',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Filtre actuel : "${catalogVm.selectedCategory}"',
+                                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                              ),
+                              const SizedBox(height: 20),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  catalogVm.filterByCategory('Toutes');
+                                  catalogVm.searchCatalog('');
+                                },
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Réinitialiser les Filtres'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: catalogVm.filteredItems.length,
