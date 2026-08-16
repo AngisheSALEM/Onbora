@@ -35,6 +35,9 @@ class _ShimmerEffectState extends State<ShimmerEffect> with SingleTickerProvider
         return ShaderMask(
           blendMode: BlendMode.srcATop,
           shaderCallback: (bounds) {
+            if (bounds.isEmpty || bounds.width <= 0 || bounds.height <= 0) {
+              return const LinearGradient(colors: [Colors.transparent, Colors.transparent]).createShader(bounds);
+            }
             return LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

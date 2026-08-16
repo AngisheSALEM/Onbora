@@ -13,9 +13,15 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _usernameController = TextEditingController(text: 'sales1');
   final _passwordController = TextEditingController(text: 'sales1pass');
-  final _formKey = GlobalKey<FormState>();
+  late GlobalKey<FormState> _formKey;
   String _selectedServer = 'Render Cloud';
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+  }
 
   @override
   void dispose() {
@@ -34,7 +40,6 @@ class _LoginViewState extends State<LoginView> {
 
       if (!mounted) return;
       if (!success && authVm.errorMessage != null) {
-        // Show Floating Toast / SnackBar for quick retry
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
