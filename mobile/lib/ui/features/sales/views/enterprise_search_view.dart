@@ -19,7 +19,8 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SalesViewModel>().searchEnterprises('Rawbank');
+      // Fetch all enterprises on initial load
+      context.read<SalesViewModel>().searchEnterprises('');
     });
   }
 
@@ -39,24 +40,17 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
     final quickSectors = ['Toutes', 'Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Recherche Prospect CRM'),
+        title: const Text('Rechercher un prospect'),
         elevation: 0,
       ),
       body: Column(
         children: [
-          // Hero Banner Header with Gradient
+          // Search Header Bar
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-              ),
-            ),
+            color: const Color(0xFF0F172A),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -65,14 +59,14 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                     Icon(Icons.hub_rounded, color: Color(0xFFF97316), size: 22),
                     SizedBox(width: 8),
                     Text(
-                      'Base Prospect CRM Kaabu 🇨🇩',
+                      'Base Entreprises & CRM',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Recherchez et qualifiez les comptes B2B cibles en RDC',
+                  'Recherchez et qualifiez les comptes B2B cibles',
                   style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                 ),
                 const SizedBox(height: 16),
@@ -92,7 +86,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                           onSubmitted: _triggerSearch,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            hintText: 'Nom d\'entreprise, secteur, SIREN...',
+                            hintText: 'Nom d\'entreprise, secteur, ville...',
                             hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -185,7 +179,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Erreur de Recherche CRM',
+                          'Erreur de recherche',
                           style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                         const SizedBox(height: 2),
@@ -213,8 +207,8 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                             const SizedBox(height: 30),
                             Container(
                               padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF1F5F9),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.search_off_rounded, size: 54, color: Color(0xFF64748B)),
@@ -223,13 +217,13 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                             Text(
                               _searchController.text.isNotEmpty
                                   ? 'Aucun prospect trouvé pour "${_searchController.text}"'
-                                  : 'Aucune entreprise ciblée',
+                                  : 'Aucune entreprise trouvée',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Veuillez vérifier l\'orthographe ou essayer l\'un des prospects modèles ci-dessous :',
+                              'Veuillez vérifier l\'orthographe ou essayer l\'un des prospects ci-dessous :',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
                             ),
@@ -238,7 +232,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                               spacing: 8,
                               runSpacing: 8,
                               alignment: WrapAlignment.center,
-                              children: ['Rawbank RDC', 'Vodacom Congo', 'TFM Mining', 'Clinique Ngaliema'].map((suggestion) {
+                              children: ['Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'].map((suggestion) {
                                 return ActionChip(
                                   label: Text(suggestion),
                                   avatar: const Icon(Icons.business_rounded, size: 16, color: Color(0xFFF97316)),
@@ -259,35 +253,25 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                           final enterprise = salesVm.searchResults[index];
                           final isSelected = salesVm.selectedEnterprise?.id == enterprise.id;
 
-                          return Container(
+                          return Card(
                             margin: const EdgeInsets.only(bottom: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFFF97316) : const Color(0xFFE2E8F0),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: isSelected ? const Color(0xFFF97316) : Colors.transparent,
                                 width: isSelected ? 2 : 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
-                                  // Avatar Gradient Initial
+                                  // Avatar Initial
                                   Container(
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF0F172A), Color(0xFF334155)],
-                                      ),
+                                      color: const Color(0xFF0F172A),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Center(
@@ -312,7 +296,6 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 16,
-                                                  color: Color(0xFF0F172A),
                                                 ),
                                               ),
                                             ),
@@ -330,7 +313,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                                                     Icon(Icons.circle, color: Color(0xFF10B981), size: 6),
                                                     SizedBox(width: 4),
                                                     Text(
-                                                      'Sync Kaabu',
+                                                      'Synchro CRM',
                                                       style: TextStyle(
                                                         color: Color(0xFF10B981),
                                                         fontSize: 10,
@@ -360,7 +343,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                                             const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF64748B)),
                                             const SizedBox(width: 4),
                                             Text(
-                                              enterprise.location ?? 'Kinshasa, RDC',
+                                              enterprise.location ?? 'Non renseigné',
                                               style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                                             ),
                                           ],

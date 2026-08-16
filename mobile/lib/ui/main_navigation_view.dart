@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/theme_provider.dart';
+import '../core/api/api_config.dart';
 import 'features/sales/views/sales_home_view.dart';
 import 'features/catalog/views/catalog_view.dart';
 import 'features/auth/view_models/auth_view_model.dart';
@@ -22,6 +24,8 @@ class _MainNavigationViewState extends State<MainNavigationView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -32,7 +36,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         onTap: (index) => setState(() => _currentIndex = index),
         selectedItemColor: const Color(0xFFF97316),
         unselectedItemColor: const Color(0xFF64748B),
-        backgroundColor: Colors.white,
+        backgroundColor: theme.cardColor,
         elevation: 8,
         items: const [
           BottomNavigationBarItem(
@@ -45,7 +49,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_rounded),
-            label: 'Mon Profil',
+            label: 'Profil & Paramètres',
           ),
         ],
       ),
@@ -59,16 +63,19 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
+    final themeProvider = context.watch<ThemeProvider>();
     final user = authVm.currentUser;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mon Profil Commercial'),
+        title: const Text('Profil & Paramètres'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // Avatar Header
             const CircleAvatar(
               radius: 40,
               backgroundColor: Color(0xFF0F172A),
@@ -77,11 +84,11 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               user?.displayName ?? 'Commercial Onbora',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
-              user?.email ?? 'commercial@onbora.cg',
+              user?.email ?? 'commercial@onbora.cd',
               style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
             ),
             const SizedBox(height: 12),
@@ -92,11 +99,79 @@ class ProfileTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'Rôle : ${user?.role ?? "SALESPERSON"}',
+                'Rôle : ${user?.role ?? "COMMERCIAL"}',
                 style: const TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 28),
+
+            // Settings Card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Text(
+                        'Paramètres d\'Apparence & Thème',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
+                    const Divider(),
+
+                    // Dark Mode Switch
+                    SwitchListTile(
+                      value: themeProvider.isDarkMode,
+                      onChanged: (_) => themeProvider.toggleTheme(),
+                      title: const Text('Thème Sombre', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: Text(
+                        themeProvider.isDarkMode ? 'Mode sombre activé' : 'Mode clair activé',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      secondary: Icon(
+                        themeProvider.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                        color: const Color(0xFFF97316),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Server Config Details Card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Serveur & Synchronisation',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.cloud_done_rounded, color: Color(0xFF10B981), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Serveur distant : ${ApiConfig.baseUrl}',
+                            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 50,

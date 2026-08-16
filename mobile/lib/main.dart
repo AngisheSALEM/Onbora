@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'ui/features/auth/view_models/auth_view_model.dart';
 import 'ui/features/auth/views/login_view.dart';
 import 'ui/features/sales/view_models/sales_view_model.dart';
@@ -11,7 +12,12 @@ import 'ui/shared/skeleton_loader.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const OnboraSalesApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const OnboraSalesApp(),
+    ),
+  );
 }
 
 class OnboraSalesApp extends StatelessWidget {
@@ -19,6 +25,8 @@ class OnboraSalesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()..checkAuthStatus()),
@@ -30,6 +38,8 @@ class OnboraSalesApp extends StatelessWidget {
         title: 'Onbora Sales',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeProvider.themeMode,
         home: const AuthGate(),
       ),
     );
@@ -55,14 +65,13 @@ class AuthGate extends StatelessWidget {
   }
 }
 
-/// High-End Skeleton Loader for App Bootstrap (Replaces plain text/spinner splash)
+/// High-End Skeleton Loader for App Bootstrap
 class AppBootstrapSkeleton extends StatelessWidget {
   const AppBootstrapSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const SkeletonBox(width: 160, height: 20, borderRadius: 6),
         actions: const [

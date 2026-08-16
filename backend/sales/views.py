@@ -19,7 +19,9 @@ class EnterpriseSearchView(APIView):
     def get(self, request):
         query = request.query_params.get('q', '').strip()
         if not query:
-            return Response([])
+            queryset = Enterprise.objects.all()
+            serializer = EnterpriseSerializer(queryset, many=True)
+            return Response(serializer.data)
             
         # 1. Search in CRM Kaabu (Inbound/Outbound real-time check)
         from sales.integrations.kaabu import KaabuClient

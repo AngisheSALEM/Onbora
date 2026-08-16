@@ -115,7 +115,7 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Espace Commercial & Copilote Terrain 🇨🇩',
+                            'Espace Commercial & Copilote Terrain',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontSize: 13,

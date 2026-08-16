@@ -41,11 +41,7 @@ class SalesViewModel extends ChangeNotifier {
   String? get successMessage => _successMessage;
 
   Future<void> searchEnterprises(String query) async {
-    if (query.trim().isEmpty) {
-      _searchResults = [];
-      notifyListeners();
-      return;
-    }
+    // Empty query fetches all enterprises from backend
 
     _isSearching = true;
     _errorMessage = null;
