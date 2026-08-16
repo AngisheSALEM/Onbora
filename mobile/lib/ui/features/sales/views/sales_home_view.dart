@@ -20,7 +20,12 @@ class SalesHomeView extends StatelessWidget {
           children: const [
             Icon(Icons.directions_run_rounded, color: Color(0xFFF97316)),
             SizedBox(width: 8),
-            Text('Copilote Commercial Onbora'),
+            Flexible(
+              child: Text(
+                'Copilote Commercial',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -39,7 +44,7 @@ class SalesHomeView extends StatelessWidget {
             // Hero Welcome Card Banner
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -58,8 +63,10 @@ class SalesHomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.spaceBetween,
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -69,6 +76,7 @@ class SalesHomeView extends StatelessWidget {
                           border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.4)),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: const [
                             Icon(Icons.person_pin_rounded, color: Color(0xFFF97316), size: 14),
                             SizedBox(width: 6),
@@ -86,6 +94,7 @@ class SalesHomeView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: const [
                             Icon(Icons.wb_sunny_rounded, color: Colors.amber, size: 14),
                             SizedBox(width: 4),
@@ -101,27 +110,30 @@ class SalesHomeView extends StatelessWidget {
                   const SizedBox(height: 14),
                   const Text(
                     'Copilote IA & Dictaphone Terrain',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   const Text(
                     'Qualifiez vos prospects B2B, générez vos briefs personnalisés et dictez vos compte-rendus vocaux.',
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.4),
                   ),
-                  const SizedBox(height: 18),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const EnterpriseSearchView()),
-                      );
-                    },
-                    icon: const Icon(Icons.search_rounded, size: 20),
-                    label: const Text('Rechercher un Prospect CRM'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF97316),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const EnterpriseSearchView()),
+                        );
+                      },
+                      icon: const Icon(Icons.search_rounded, size: 20),
+                      label: const Text('Rechercher un Prospect CRM'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF97316),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
                 ],
@@ -151,7 +163,7 @@ class SalesHomeView extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
                       Container(
@@ -160,16 +172,16 @@ class SalesHomeView extends StatelessWidget {
                           color: Colors.blue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.domain_add_rounded, color: Colors.blue, size: 30),
+                        child: const Icon(Icons.domain_add_rounded, color: Colors.blue, size: 28),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
                             Text(
                               'Aucune entreprise sélectionnée',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A)),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
                             ),
                             SizedBox(height: 4),
                             Text(
@@ -199,51 +211,56 @@ class SalesHomeView extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF97316).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              salesVm.selectedEnterprise!.sector ?? 'Prospect B2B',
-                              style: const TextStyle(
-                                color: Color(0xFFF97316),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF97316).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                salesVm.selectedEnterprise!.sector ?? 'Prospect B2B',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFFF97316),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: const [
                               Icon(Icons.circle, color: Color(0xFF10B981), size: 8),
                               SizedBox(width: 4),
                               Text(
                                 'Visite Active',
-                                style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         salesVm.selectedEnterprise!.name,
-                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 17, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${salesVm.selectedEnterprise!.location ?? 'Kinshasa'} • ${salesVm.selectedEnterprise!.approximateSize}',
                         style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                       ),
-                      const Divider(height: 24),
+                      const Divider(height: 20),
                       Row(
                         children: [
                           Expanded(
@@ -254,14 +271,15 @@ class SalesHomeView extends StatelessWidget {
                                   MaterialPageRoute(builder: (_) => const VisitPreparationView()),
                                 );
                               },
-                              icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
+                              icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
                               label: Text(
-                                salesVm.currentPrep != null ? 'Brief Généré' : 'Préparer la Visite',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                salesVm.currentPrep != null ? 'Brief Généré' : 'Préparer Visite',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () {
@@ -270,10 +288,11 @@ class SalesHomeView extends StatelessWidget {
                                   MaterialPageRoute(builder: (_) => const DictaphoneRecordingView()),
                                 );
                               },
-                              icon: const Icon(Icons.mic_rounded, size: 18),
+                              icon: const Icon(Icons.mic_rounded, size: 16),
                               label: const Text(
                                 'Dictaphone',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF97316)),
                             ),
@@ -290,10 +309,10 @@ class SalesHomeView extends StatelessWidget {
             // Performance KPI Cards
             Row(
               children: [
-                _buildKpiCard(title: 'Visites Prévues', count: '3', icon: Icons.event_available_rounded, color: Colors.blue),
-                const SizedBox(width: 12),
+                _buildKpiCard(title: 'Visites', count: '3', icon: Icons.event_available_rounded, color: Colors.blue),
+                const SizedBox(width: 10),
                 _buildKpiCard(title: 'Rapports IA', count: '12', icon: Icons.auto_awesome_rounded, color: Colors.purple),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 _buildKpiCard(title: 'Pipeline RDC', count: '45k \$', icon: Icons.payments_rounded, color: const Color(0xFF10B981)),
               ],
             ),
@@ -361,7 +380,7 @@ class SalesHomeView extends StatelessWidget {
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -378,15 +397,20 @@ class SalesHomeView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 20),
-            const SizedBox(height: 8),
-            Text(
-              count,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                count,
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color),
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               title,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
             ),
           ],
         ),
@@ -419,28 +443,33 @@ class SalesHomeView extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+              const SizedBox(height: 10),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
               ),
             ],
           ),

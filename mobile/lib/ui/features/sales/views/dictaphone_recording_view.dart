@@ -36,7 +36,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             children: [
@@ -52,14 +52,17 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                   children: [
                     const Icon(Icons.business_rounded, color: Color(0xFFF97316), size: 18),
                     const SizedBox(width: 8),
-                    Text(
-                      enterprise?.name ?? 'Entreprise Ciblée',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    Flexible(
+                      child: Text(
+                        enterprise?.name ?? 'Entreprise Ciblée',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
 
               // Timer Display
               Text(
@@ -81,6 +84,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                         : dictVm.state == RecordingState.uploading
                             ? 'ANALYSE WHISPER SPEECH-TO-TEXT...'
                             : 'Appuyez pour démarrer l\'enregistrement',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: dictVm.state == RecordingState.recording ? const Color(0xFFF97316) : Colors.grey,
                   fontSize: 13,
@@ -88,7 +92,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                   letterSpacing: 1.1,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
               // Large Animated Microphone Record Button
               Center(
@@ -102,8 +106,8 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    height: 140,
-                    width: 140,
+                    height: 130,
+                    width: 130,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: dictVm.state == RecordingState.recording
@@ -122,13 +126,13 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                     ),
                     child: Icon(
                       dictVm.state == RecordingState.recording ? Icons.stop_rounded : Icons.mic_rounded,
-                      size: 64,
+                      size: 60,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // Transcript Preview Card with Character Counter
               if (dictVm.transcribedText.isNotEmpty) ...[
@@ -145,15 +149,20 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.graphic_eq_rounded, color: Color(0xFF14B8A6), size: 18),
-                              SizedBox(width: 8),
-                              Text(
-                                'Transcription Vocale (Whisper AI)',
-                                style: TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                            ],
+                          Expanded(
+                            child: Row(
+                              children: const [
+                                Icon(Icons.graphic_eq_rounded, color: Color(0xFF14B8A6), size: 18),
+                                SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Transcription Vocale (Whisper AI)',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           Text(
                             '${dictVm.transcribedText.length} caract.',
@@ -197,6 +206,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                             : _processingStep == 2
                                 ? 'Étape 2/3 : Analyse et extraction des besoins télécoms...'
                                 : 'Étape 3/3 : Génération du compte-rendu et plan d\'actions...',
+                        textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ],
