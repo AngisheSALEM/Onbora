@@ -1,12 +1,12 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from reporting.models import DemoEvent
 from kam.models import ProspectDossier
 from reporting.application.dtos import DemoEventDTO, DemoStatsDTO
 from shared.application.use_case import BaseUseCase
 
 
-class LogDemoEventUseCase(BaseUseCase[tuple[str, str, Optional[Any], Optional[Dict[str, Any]]], Optional[DemoEvent]]):
-    def execute(self, params: tuple[str, str, Optional[Any], Optional[Dict[str, Any]]]) -> Optional[DemoEvent]:
+class LogDemoEventUseCase(BaseUseCase[Tuple[str, str, Optional[Any], Optional[Dict[str, Any]]], Optional[DemoEvent]]):
+    def execute(self, params: Tuple[str, str, Optional[Any], Optional[Dict[str, Any]]]) -> Optional[DemoEvent]:
         event_type, description, user, metadata = params
         if metadata is None:
             metadata = {}
@@ -22,8 +22,8 @@ class LogDemoEventUseCase(BaseUseCase[tuple[str, str, Optional[Any], Optional[Di
             return None
 
 
-class GetDemoStatsUseCase(BaseUseCase[None, DemoStatsDTO]):
-    def execute(self, request: None = None) -> DemoStatsDTO:
+class GetDemoStatsUseCase(BaseUseCase[Any, DemoStatsDTO]):
+    def execute(self, request: Any = None) -> DemoStatsDTO:
         total_dossiers = ProspectDossier.objects.count()
         inbound_count = ProspectDossier.objects.filter(source=ProspectDossier.INBOUND_CONVERSATION).count()
         outbound_count = ProspectDossier.objects.filter(source=ProspectDossier.OUTBOUND_VISIT).count()
@@ -62,8 +62,8 @@ class GetDemoStatsUseCase(BaseUseCase[None, DemoStatsDTO]):
         )
 
 
-class GetDemoLogsUseCase(BaseUseCase[None, List[Dict[str, Any]]]):
-    def execute(self, request: None = None) -> List[Dict[str, Any]]:
+class GetDemoLogsUseCase(BaseUseCase[Any, List[Dict[str, Any]]]):
+    def execute(self, request: Any = None) -> List[Dict[str, Any]]:
         logs = []
         for log in DemoEvent.objects.all():
             logs.append({

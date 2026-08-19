@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
@@ -100,8 +100,8 @@ class SearchEnterprisesUseCase(BaseUseCase[str, List[Enterprise]]):
         )
 
 
-class CreateVisitPreparationUseCase(BaseUseCase[tuple[int, Any], VisitPreparation]):
-    def execute(self, params: tuple[int, Any]) -> VisitPreparation:
+class CreateVisitPreparationUseCase(BaseUseCase[Tuple[int, Any], VisitPreparation]):
+    def execute(self, params: Tuple[int, Any]) -> VisitPreparation:
         enterprise_id, user = params
         try:
             enterprise = Enterprise.objects.get(pk=enterprise_id)
@@ -129,8 +129,8 @@ class CreateVisitPreparationUseCase(BaseUseCase[tuple[int, Any], VisitPreparatio
         return prep
 
 
-class CreateVisitReportUseCase(BaseUseCase[tuple[int, str, Optional[str], Any], VisitReport]):
-    def execute(self, params: tuple[int, str, Optional[str], Any]) -> VisitReport:
+class CreateVisitReportUseCase(BaseUseCase[Tuple[int, str, Optional[str], Any], VisitReport]):
+    def execute(self, params: Tuple[int, str, Optional[str], Any]) -> VisitReport:
         prep_id, raw_transcript, audio_file_path, user = params
         try:
             prep = VisitPreparation.objects.get(pk=prep_id)
@@ -186,8 +186,8 @@ class CreateVisitReportUseCase(BaseUseCase[tuple[int, str, Optional[str], Any], 
         return report
 
 
-class TransmitVisitReportUseCase(BaseUseCase[tuple[int, Any], int]):
-    def execute(self, params: tuple[int, Any]) -> int:
+class TransmitVisitReportUseCase(BaseUseCase[Tuple[int, Any], int]):
+    def execute(self, params: Tuple[int, Any]) -> int:
         report_id, user = params
         try:
             report = VisitReport.objects.get(pk=report_id)
@@ -261,8 +261,8 @@ class TransmitVisitReportUseCase(BaseUseCase[tuple[int, Any], int]):
         return dossier.id
 
 
-class ProcessVoiceUploadUseCase(BaseUseCase[tuple[Any, Optional[int], Any], VoiceUploadResultDTO]):
-    def execute(self, params: tuple[Any, Optional[int], Any]) -> VoiceUploadResultDTO:
+class ProcessVoiceUploadUseCase(BaseUseCase[Tuple[Any, Optional[int], Any], VoiceUploadResultDTO]):
+    def execute(self, params: Tuple[Any, Optional[int], Any]) -> VoiceUploadResultDTO:
         audio_file, prep_id, user = params
 
         enterprise_name = "le client"

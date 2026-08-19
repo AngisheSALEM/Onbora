@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import uuid
 
 
@@ -20,6 +20,6 @@ class EventBus:
     def publish(self, event: DomainEvent) -> None:
         raise NotImplementedError
 
-    def publish_all(self, events: list[DomainEvent]) -> None:
+    def publish_all(self, events: List[DomainEvent]) -> None:
         for event in events:
             self.publish(event)

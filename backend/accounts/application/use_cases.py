@@ -1,3 +1,4 @@
+from typing import Any, List, Optional
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from accounts.models import User
@@ -85,8 +86,8 @@ class GetMeUseCase(BaseUseCase[User, UserDTO]):
         )
 
 
-class ListKAMsUseCase(BaseUseCase[None, list[UserDTO]]):
-    def execute(self, request: None = None) -> list[UserDTO]:
+class ListKAMsUseCase(BaseUseCase[Any, List[UserDTO]]):
+    def execute(self, request: Any = None) -> List[UserDTO]:
         kams = User.objects.filter(role=User.KAM)
         return [
             UserDTO(

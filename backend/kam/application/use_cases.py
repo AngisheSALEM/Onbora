@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from kam.models import ProspectDossier
 from kam.domain.exceptions import DossierNotFoundException
 from kam.application.dtos import ProspectDossierDTO, ProvisionRequestDTO
@@ -6,8 +6,8 @@ from reporting.utils import log_demo_event
 from shared.application.use_case import BaseUseCase
 
 
-class ManageProvisioningUseCase(BaseUseCase[tuple[int, str, str, Any], ProspectDossier]):
-    def execute(self, params: tuple[int, str, str, Any]) -> ProspectDossier:
+class ManageProvisioningUseCase(BaseUseCase[Tuple[int, str, str, Any], ProspectDossier]):
+    def execute(self, params: Tuple[int, str, str, Any]) -> ProspectDossier:
         dossier_id, service, action, user = params
         try:
             dossier = ProspectDossier.objects.get(pk=dossier_id)

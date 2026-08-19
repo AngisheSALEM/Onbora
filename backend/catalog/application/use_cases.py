@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, Tuple
 from catalog.models import ServiceCatalog
 from catalog.domain.exceptions import ServiceNotFoundException
 from catalog.application.dtos import (
@@ -21,8 +21,8 @@ def _to_dto(service: ServiceCatalog) -> ServiceCatalogDTO:
     )
 
 
-class ListServicesUseCase(BaseUseCase[None, List[ServiceCatalogDTO]]):
-    def execute(self, request: None = None) -> List[ServiceCatalogDTO]:
+class ListServicesUseCase(BaseUseCase[Any, List[ServiceCatalogDTO]]):
+    def execute(self, request: Any = None) -> List[ServiceCatalogDTO]:
         services = ServiceCatalog.objects.all().order_by('id')
         return [_to_dto(s) for s in services]
 
@@ -48,8 +48,8 @@ class CreateServiceUseCase(BaseUseCase[CreateServiceDTO, ServiceCatalogDTO]):
         return _to_dto(service)
 
 
-class UpdateServiceUseCase(BaseUseCase[tuple[int, UpdateServiceDTO], ServiceCatalogDTO]):
-    def execute(self, params: tuple[int, UpdateServiceDTO]) -> ServiceCatalogDTO:
+class UpdateServiceUseCase(BaseUseCase[Tuple[int, UpdateServiceDTO], ServiceCatalogDTO]):
+    def execute(self, params: Tuple[int, UpdateServiceDTO]) -> ServiceCatalogDTO:
         service_id, dto = params
         try:
             service = ServiceCatalog.objects.get(pk=service_id)
@@ -81,8 +81,8 @@ class DeleteServiceUseCase(BaseUseCase[int, bool]):
             raise ServiceNotFoundException(service_id)
 
 
-class UploadCatalogUseCase(BaseUseCase[tuple[str, Any], CatalogUploadResultDTO]):
-    def execute(self, params: tuple[str, Any]) -> CatalogUploadResultDTO:
+class UploadCatalogUseCase(BaseUseCase[Tuple[str, Any], CatalogUploadResultDTO]):
+    def execute(self, params: Tuple[str, Any]) -> CatalogUploadResultDTO:
         filename, uploaded_file = params
         from catalog.parser import (
             extract_text_from_pdf,

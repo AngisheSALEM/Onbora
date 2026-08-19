@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import sys
 from discovery.models import ClientConversation, ClientConversationMessage
 from discovery.domain.exceptions import ConversationNotFoundException, EmptyMessageException
@@ -20,8 +20,8 @@ from reporting.utils import log_demo_event
 from shared.application.use_case import BaseUseCase
 
 
-class CreateConversationUseCase(BaseUseCase[tuple[Optional[Any], str], ClientConversation]):
-    def execute(self, params: tuple[Optional[Any], str]) -> ClientConversation:
+class CreateConversationUseCase(BaseUseCase[Tuple[Optional[Any], str], ClientConversation]):
+    def execute(self, params: Tuple[Optional[Any], str]) -> ClientConversation:
         user, channel = params
         client = user if (user and user.is_authenticated) else None
 
@@ -52,8 +52,8 @@ class CreateConversationUseCase(BaseUseCase[tuple[Optional[Any], str], ClientCon
         return conversation
 
 
-class SendMessageUseCase(BaseUseCase[tuple[int, str, Any, Any], SendMessageResponseDTO]):
-    def execute(self, params: tuple[int, str, Any, Any]) -> SendMessageResponseDTO:
+class SendMessageUseCase(BaseUseCase[Tuple[int, str, Any, Any], SendMessageResponseDTO]):
+    def execute(self, params: Tuple[int, str, Any, Any]) -> SendMessageResponseDTO:
         conversation_id, content, user, request = params
         content = content.strip()
         if not content:
