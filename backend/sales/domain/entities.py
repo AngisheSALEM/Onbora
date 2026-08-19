@@ -12,6 +12,12 @@ class EnterpriseEntity(AggregateRoot):
     sector: Optional[str] = None
     approximate_size: Optional[str] = None
     location: Optional[str] = None
+    plaque: str = "Kinshasa (Gombe)"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_ready_for_conversion: bool = True
+    conversion_score: int = 85
+    recommended_solution: str = "Fibre Optique Pro + Microsoft 365"
     existing_crm_data: Dict[str, Any] = field(default_factory=dict)
     siren: Optional[str] = None
     siret: Optional[str] = None

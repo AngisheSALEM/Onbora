@@ -1,12 +1,24 @@
 from django.db import models
 from django.conf import settings
 
+
 class Enterprise(models.Model):
     name = models.CharField(max_length=100)
     website = models.URLField(blank=True, null=True)
     sector = models.CharField(max_length=100, blank=True, null=True)
     approximate_size = models.CharField(max_length=50, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Plaque / Zone géographique & OpenStreetMap Geocoding
+    plaque = models.CharField(max_length=100, default='Kinshasa (Gombe)', db_index=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    
+    # Qualification Commerciale IA
+    is_ready_for_conversion = models.BooleanField(default=True)
+    conversion_score = models.IntegerField(default=85)  # 0 à 100%
+    recommended_solution = models.CharField(max_length=200, blank=True, default='Fibre Optique Pro + Microsoft 365')
+    
     existing_crm_data = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -27,7 +39,7 @@ class Enterprise(models.Model):
     last_sync_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.plaque})"
 
 
 class VisitPreparation(models.Model):

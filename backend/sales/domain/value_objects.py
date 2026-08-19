@@ -1,4 +1,6 @@
 from enum import Enum
+from dataclasses import dataclass
+from shared.domain.entities import ValueObject
 
 
 class SyncStatus(str, Enum):
@@ -29,3 +31,29 @@ class PlatformChoice(str, Enum):
             (cls.TIKTOK.value, 'TikTok'),
             (cls.FACEBOOK.value, 'Facebook'),
         ]
+
+
+class PlaqueTerritory(str, Enum):
+    KINSHASA_GOMBE = 'Kinshasa (Gombe)'
+    KINSHASA_LIMETE = 'Kinshasa (Limete)'
+    BRAZZAVILLE_CENTRE = 'Brazzaville (Centre/Plateau)'
+    POINTE_NOIRE_CENTRE = 'Pointe-Noire (Centre)'
+    LUBUMBASHI_CENTRE = 'Lubumbashi (Centre)'
+    ABIDJAN_PLATEAU = 'Abidjan (Plateau)'
+    DAKAR_CENTRE = 'Dakar (Plateau)'
+
+    @classmethod
+    def choices(cls):
+        return [(p.value, p.value) for p in cls]
+
+
+class ConversionReadiness(str, Enum):
+    READY = 'READY'
+    IN_PROGRESS = 'IN_PROGRESS'
+    COLD = 'COLD'
+
+
+@dataclass(frozen=True)
+class GPSCoordinates(ValueObject):
+    latitude: float
+    longitude: float

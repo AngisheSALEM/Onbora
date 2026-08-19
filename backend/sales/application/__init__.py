@@ -1,5 +1,9 @@
 from .dtos import (
     EnterpriseDTO,
+    EnterpriseMapDTO,
+    EnterpriseBriefDTO,
+    PlaqueDTO,
+    SalespersonActivityDTO,
     VisitPreparationDTO,
     VisitReportDTO,
     VoiceUploadResultDTO,
@@ -7,6 +11,10 @@ from .dtos import (
 )
 from .use_cases import (
     SearchEnterprisesUseCase,
+    GetEnterprisesForMapUseCase,
+    GetEnterpriseBriefUseCase,
+    ListPlaquesUseCase,
+    GetSalespersonActivityUseCase,
     CreateVisitPreparationUseCase,
     CreateVisitReportUseCase,
     TransmitVisitReportUseCase,
@@ -15,11 +23,19 @@ from .use_cases import (
 
 __all__ = [
     'EnterpriseDTO',
+    'EnterpriseMapDTO',
+    'EnterpriseBriefDTO',
+    'PlaqueDTO',
+    'SalespersonActivityDTO',
     'VisitPreparationDTO',
     'VisitReportDTO',
     'VoiceUploadResultDTO',
     'ScraperCredentialDTO',
     'SearchEnterprisesUseCase',
+    'GetEnterprisesForMapUseCase',
+    'GetEnterpriseBriefUseCase',
+    'ListPlaquesUseCase',
+    'GetSalespersonActivityUseCase',
     'CreateVisitPreparationUseCase',
     'CreateVisitReportUseCase',
     'TransmitVisitReportUseCase',
