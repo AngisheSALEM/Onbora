@@ -2,9 +2,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.permissions import IsAdmin
 from .models import ServiceCatalog
 from .serializers import ServiceCatalogSerializer
+from .application.use_cases import (
+    ListServicesUseCase,
+    GetServiceDetailUseCase,
+    CreateServiceUseCase,
+    UpdateServiceUseCase,
+    DeleteServiceUseCase,
+    UploadCatalogUseCase,
+)
+from .application.dtos import CreateServiceDTO, UpdateServiceDTO
+from .domain.exceptions import ServiceNotFoundException
+
 
 class ServiceCatalogListCreateView(APIView):
     def get_permissions(self):
@@ -13,16 +25,40 @@ class ServiceCatalogListCreateView(APIView):
         return [IsAuthenticated(), IsAdmin()]
 
     def get(self, request):
-        services = ServiceCatalog.objects.all().order_by('id')
-        serializer = ServiceCatalogSerializer(services, many=True)
-        return Response(serializer.data)
+        services = ListServicesUseCase().execute()
+        return Response([
+            {
+                "id": s.id,
+                "name": s.name,
+                "category": s.category,
+                "description": s.description,
+                "benefits": s.benefits,
+                "technical_requirements": s.technical_requirements,
+            }
+            for s in services
+        ])
 
     def post(self, request):
         serializer = ServiceCatalogSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            dto = CreateServiceDTO(
+                name=serializer.validated_data['name'],
+                category=serializer.validated_data['category'],
+                description=serializer.validated_data['description'],
+                benefits=serializer.validated_data.get('benefits', ''),
+                technical_requirements=serializer.validated_data.get('technical_requirements', {}),
+            )
+            service_dto = CreateServiceUseCase().execute(dto)
+            return Response({
+                "id": service_dto.id,
+                "name": service_dto.name,
+                "category": service_dto.category,
+                "description": service_dto.description,
+                "benefits": service_dto.benefits,
+                "technical_requirements": service_dto.technical_requirements,
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ServiceCatalogDetailView(APIView):
     def get_permissions(self):
@@ -30,38 +66,51 @@ class ServiceCatalogDetailView(APIView):
             return [AllowAny()]
         return [IsAuthenticated(), IsAdmin()]
 
-    def get_object(self, pk):
-        try:
-            return ServiceCatalog.objects.get(pk=pk)
-        except ServiceCatalog.DoesNotExist:
-            return None
-
     def get(self, request, pk):
-        service = self.get_object(pk)
-        if not service:
+        try:
+            s = GetServiceDetailUseCase().execute(pk)
+            return Response({
+                "id": s.id,
+                "name": s.name,
+                "category": s.category,
+                "description": s.description,
+                "benefits": s.benefits,
+                "technical_requirements": s.technical_requirements,
+            })
+        except ServiceNotFoundException:
             return Response({"detail": "Service introuvable."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = ServiceCatalogSerializer(service)
-        return Response(serializer.data)
 
     def put(self, request, pk):
-        service = self.get_object(pk)
-        if not service:
-            return Response({"detail": "Service introuvable."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = ServiceCatalogSerializer(service, data=request.data, partial=True)
+        serializer = ServiceCatalogSerializer(data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            dto = UpdateServiceDTO(
+                name=serializer.validated_data.get('name'),
+                category=serializer.validated_data.get('category'),
+                description=serializer.validated_data.get('description'),
+                benefits=serializer.validated_data.get('benefits'),
+                technical_requirements=serializer.validated_data.get('technical_requirements'),
+            )
+            try:
+                s = UpdateServiceUseCase().execute((pk, dto))
+                return Response({
+                    "id": s.id,
+                    "name": s.name,
+                    "category": s.category,
+                    "description": s.description,
+                    "benefits": s.benefits,
+                    "technical_requirements": s.technical_requirements,
+                })
+            except ServiceNotFoundException:
+                return Response({"detail": "Service introuvable."}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        service = self.get_object(pk)
-        if not service:
+        try:
+            DeleteServiceUseCase().execute(pk)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ServiceNotFoundException:
             return Response({"detail": "Service introuvable."}, status=status.HTTP_404_NOT_FOUND)
-        service.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
-from rest_framework.parsers import MultiPartParser, FormParser
-from .parser import extract_text_from_pdf, extract_text_from_docx, parse_catalog_text, extract_simulated_services
 
 class CatalogUploadView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -72,8 +121,6 @@ class CatalogUploadView(APIView):
             return Response({"detail": "Aucun fichier n'a été téléversé."}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.FILES['file']
-        
-        # File size limit validation: 15 MB max
         MAX_FILE_SIZE = 15 * 1024 * 1024
         if uploaded_file.size > MAX_FILE_SIZE:
             return Response(
@@ -81,35 +128,10 @@ class CatalogUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        filename = uploaded_file.name
-        
-        file_type = 'unknown'
-        if filename.endswith('.pdf'):
-            file_type = 'pdf'
-        elif filename.endswith('.docx'):
-            file_type = 'docx'
-        elif filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff')):
-            file_type = 'image'
-        elif filename.endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv')):
-            file_type = 'video'
-            
-        extracted_text = ""
-        services = []
-        
-        if file_type == 'pdf':
-            extracted_text = extract_text_from_pdf(uploaded_file)
-            services = parse_catalog_text(extracted_text)
-        elif file_type == 'docx':
-            extracted_text = extract_text_from_docx(uploaded_file)
-            services = parse_catalog_text(extracted_text)
-            
-        # Fallback / Simulated high-fidelity extraction for scans/videos
-        if not services:
-            services = extract_simulated_services(filename, file_type)
-            
+        result = UploadCatalogUseCase().execute((uploaded_file.name, uploaded_file))
         return Response({
-            "filename": filename,
-            "file_type": file_type,
-            "services_found_count": len(services),
-            "services": services
+            "filename": result.filename,
+            "file_type": result.file_type,
+            "services_found_count": result.services_found_count,
+            "services": result.services
         }, status=status.HTTP_200_OK)

@@ -5,8 +5,12 @@ from rest_framework.permissions import AllowAny
 from .models import ProspectDossier
 from twin.models import BusinessTwin
 from .serializers import ProspectDossierSerializer, BusinessTwinSerializer
+from .application.use_cases import ManageProvisioningUseCase
+from .domain.exceptions import DossierNotFoundException
 from accounts.permissions import IsKAMOrAdmin
 from reporting.utils import log_demo_event
+from onbora.exports import get_export_response
+
 
 class DossierListView(generics.ListAPIView):
     serializer_class = ProspectDossierSerializer
@@ -23,6 +27,7 @@ class DossierListView(generics.ListAPIView):
         if status_param:
             queryset = queryset.filter(status=status_param)
         return queryset
+
 
 class DossierDetailView(generics.RetrieveUpdateAPIView):
     queryset = ProspectDossier.objects.all()
@@ -63,6 +68,7 @@ class DossierDetailView(generics.RetrieveUpdateAPIView):
                 metadata={"dossier_id": instance.id, "status": instance.status}
             )
 
+
 class DossierBusinessTwinView(APIView):
     permission_classes = [IsKAMOrAdmin]
     
@@ -81,8 +87,6 @@ class DossierBusinessTwinView(APIView):
                 "detail": "Aucun Diagnostic d'Architecture Cible n'a été généré pour ce dossier."
             }, status=status.HTTP_404_NOT_FOUND)
 
-
-from onbora.exports import get_export_response
 
 class DossierExportView(APIView):
     permission_classes = [AllowAny]
@@ -261,60 +265,14 @@ class DossierProvisionView(APIView):
     permission_classes = [IsKAMOrAdmin]
     
     def post(self, request, pk):
-        try:
-            dossier = ProspectDossier.objects.get(pk=pk)
-        except ProspectDossier.DoesNotExist:
-            return Response({"detail": "Dossier introuvable."}, status=status.HTTP_404_NOT_FOUND)
-            
         service = request.data.get('service')
-        action = request.data.get('action', 'start') # 'start' or 'complete'
+        action = request.data.get('action', 'start')
         
         if not service:
             return Response({"detail": "Paramètre 'service' requis."}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Initialize raw_conversation_data if needed
-        if not isinstance(dossier.raw_conversation_data, dict):
-            dossier.raw_conversation_data = {}
-            
-        if 'provisioning' not in dossier.raw_conversation_data:
-            dossier.raw_conversation_data['provisioning'] = {}
-            
-        prov = dossier.raw_conversation_data['provisioning']
-        
-        # Get company name
-        company_name = "l'entreprise"
-        if dossier.source == ProspectDossier.INBOUND_CONVERSATION and dossier.conversation:
-            profile = dossier.conversation.extracted_profile or {}
-            company_name = profile.get('company_name') or "Client Inbound"
-        elif dossier.source == ProspectDossier.OUTBOUND_VISIT and dossier.visit_report:
-            company_name = dossier.visit_report.preparation.enterprise.name
-
-        service_labels = {
-            'fibre': 'Fibre Optique Pro',
-            'm365': 'Microsoft 365 Cloud',
-            'firewall': 'Pare-feu Centralisé & EDR'
-        }
-        label = service_labels.get(service, service)
-        
-        if action == 'start':
-            prov[service] = 'PROVISIONING'
-            log_demo_event(
-                'PROVISIONING_STARTED',
-                f"Provisioning {label} initialisé pour {company_name}",
-                user=request.user if request.user.is_authenticated else None,
-                metadata={"dossier_id": dossier.id, "service": service}
-            )
-        elif action == 'complete':
-            prov[service] = 'COMPLETED'
-            log_demo_event(
-                'PROVISIONING_COMPLETED',
-                f"Provisioning {label} activé avec succès pour {company_name}",
-                user=request.user if request.user.is_authenticated else None,
-                metadata={"dossier_id": dossier.id, "service": service}
-            )
-        else:
-            prov[service] = 'PENDING'
-            
-        dossier.save()
-        return Response(ProspectDossierSerializer(dossier).data, status=status.HTTP_200_OK)
-
+        try:
+            dossier = ManageProvisioningUseCase().execute((pk, service, action, request.user))
+            return Response(ProspectDossierSerializer(dossier).data, status=status.HTTP_200_OK)
+        except DossierNotFoundException:
+            return Response({"detail": "Dossier introuvable."}, status=status.HTTP_404_NOT_FOUND)
