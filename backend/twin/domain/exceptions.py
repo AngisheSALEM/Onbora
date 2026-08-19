@@ -1,3 +1,4 @@
+from typing import Any
 from shared.domain.exceptions import EntityNotFoundException
 
 
