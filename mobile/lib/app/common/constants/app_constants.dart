@@ -42,39 +42,43 @@ abstract class AppConstants {
   static const double borderRadiusAppleButton = 16.0;
   static const double borderRadiusPill = 999.0;
 
-  // --- Official Orange Brand Colors (Charte Graphique Orange) ---
-  /// Orange Signature Officiel (#FF7900)
-  static const Color orangeOfficial = Color(0xFFFF7900);
-  static const Color accentOrange = Color(0xFFFF7900); // Alias principal
+  // --- Brand Accent Colors (Electric Blue #2563EB) ---
+  static const Color primaryBlue = Color(0xFF2563EB);
+  static const Color orangeOfficial = Color(0xFF2563EB); // Updated to electric blue #2563EB
+  static const Color accentOrange = Color(0xFF2563EB);
   
-  /// Eco-Branding Digital Sombre : Noir Absolu & Noir Studio (#000000 & #121212)
+  /// Eco-Branding Digital Sombre : Noir Absolu & Gris Studio
   static const Color pureBlack = Color(0xFF000000);
-  static const Color primaryNavy = Color(0xFF000000); // Scaffolds sombres
-  static const Color primaryDark = Color(0xFF141414); // Cartes sombres studio
-  static const Color cardDarkSurface = Color(0xFF181818); // Cartes élevées
-  static const Color cardDarkBorder = Color(0xFF262626); // Bordure discrète 1px
+  static const Color primaryNavy = Color(0xFF000000);
+  static const Color primaryDark = Color(0xFF141416);
+  static const Color cardDarkGrey = Color(0xFF1C1C22); // Solid Grey Dark Card
+  static const Color cardLightGrey = Color(0xFFF1F2F6); // Solid Grey Light Card
+  static const Color cardDarkSurface = Color(0xFF1C1C22);
+  static const Color cardDarkBorder = Colors.transparent;
 
-  /// Eco-Branding Lumineux : Blanc Pur & Gris Clair Studio (#FFFFFF & #F6F6F6)
+  /// Eco-Branding Lumineux : Blanc Pur & Gris Clair Studio
   static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color backgroundLight = Color(0xFFF7F7F7);
-  static const Color cardLight = Colors.white;
-  static const Color borderLight = Color(0xFFE5E7EB);
+  static const Color backgroundLight = Color(0xFFF8F9FA);
+  static const Color cardLight = Color(0xFFF1F2F6);
+  static const Color borderLight = Colors.transparent;
 
-  /// Apple Glassmorphism Blur & Surface Tokens
-  static const double glassBlurSigma = 16.0;
-  static const Color glassDarkSurface = Color(0xD9141416); // 85% opacity dark obsidian
-  static const Color glassLightSurface = Color(0xEAFFFFFF); // 92% opacity crisp white
-  static const Color glassDarkBorder = Color(0x2EFFFFFF); // 18% specular white border
-  static const Color glassLightBorder = Color(0x66E5E7EB); // Translucent border
+  /// Card Surface Tokens (Clean Grey without Glass or Borders)
+  static const Color cardDark = Color(0xFF1C1C22);
+  static const Color glassDarkSurface = Color(0xFF1C1C22);
+  static const Color glassLightSurface = Color(0xFFF1F2F6);
+  static const Color glassDarkBorder = Colors.transparent;
+  static const Color glassLightBorder = Colors.transparent;
 
-  /// Status & Secondary Colors (Max 20% du design)
+  /// Status & Secondary Colors
   static const Color successGreen = Color(0xFF10B981); // Emerald 500
   static const Color errorRed = Color(0xFFEF4444); // Red 500
-  static const Color infoBlue = Color(0xFF3B82F6); // Blue 500
+  static const Color infoBlue = Color(0xFF2563EB); // Electric Blue #2563EB
 
-  // --- Subtle Digital Lighting (Halo Minimaliste Orange) ---
-  static const Color glowOrangeDark = Color(0x28FF7900); // #FF7900 @ 16%
-  static const Color glowOrangeLight = Color(0x16FF7900); // #FF7900 @ 9%
+  // --- Subtle Digital Lighting ---
+  static const Color glowBlueDark = Color(0x282563EB);
+  static const Color glowBlueLight = Color(0x162563EB);
+  static const Color glowOrangeDark = Color(0x282563EB);
+  static const Color glowOrangeLight = Color(0x162563EB);
 
   // --- High-Contrast Typography (Passe-Passe Noir d'encre & Blanc Pur) ---
   static const Color textDark = Color(0xFF000000); // Noir pur
@@ -151,6 +155,6 @@ abstract class AppConstants {
   // MapLibre & MapTiler Vector Tiles Config
   static const String mapTilerApiKey = 'YOUR_MAPTILER_KEY';
   static const String mapTilerStreetsStyleUrl = 'https://api.maptiler.com/maps/streets-v2/style.json?key=';
-  static const String mapTilerDarkStyleUrl = 'https://api.maptiler.com/maps/dataviz-dark/style.json?key=';
+  static const String mapTilerDarkStyleUrl = 'https://api.maptiler.com/maps/streets-v2-dark/style.json?key=';
   static const String mapLibreDemoStyleUrl = 'https://demotiles.maplibre.org/style.json';
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/sales_controller.dart';
 import 'widget/ai_brief_modal.dart';
 import '../../../common/constants/app_constants.dart';
@@ -70,7 +71,7 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : AppConstants.textDark),
+            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
             tooltip: 'Retour',
             onPressed: _handleBack,
           ),
@@ -95,9 +96,6 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E1E22) : Colors.white,
                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                      border: Border.all(
-                        color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                      ),
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -115,12 +113,13 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         prefixIcon: Icon(
-                          Icons.search_rounded,
+                          LucideIcons.search,
                           color: isDark ? Colors.white70 : AppConstants.textDark,
+                          size: 18,
                         ),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, color: Colors.grey, size: 20),
+                                icon: const Icon(LucideIcons.x, color: Colors.grey, size: 18),
                                 onPressed: () {
                                   _searchController.clear();
                                   salesController.searchEnterprises('');
@@ -201,7 +200,7 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: const [
-                                        Icon(Icons.check_circle_rounded, color: AppConstants.successGreen, size: 13),
+                                        Icon(LucideIcons.checkCircle2, color: AppConstants.successGreen, size: 13),
                                         SizedBox(width: 4),
                                         Text(
                                           'OK',

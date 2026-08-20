@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import '../controller/sales_controller.dart';
 import 'widget/ai_brief_modal.dart';
@@ -183,7 +184,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                             ),
                           ),
                           child: Center(
-                            child: Icon(Icons.map_rounded, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
+                            child: Icon(LucideIcons.map, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -206,7 +207,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.search_rounded,
+                              LucideIcons.search,
                               size: 18,
                               color: isDark ? Colors.white : AppConstants.textDark,
                             ),
@@ -395,16 +396,16 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
-                                color: AppConstants.orangeOfficial,
+                                color: isDark ? Colors.white : const Color(0xFF18181B),
                                 borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
                                   'Démarrer Visite',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
                                   ),
                                 ),
                               ),

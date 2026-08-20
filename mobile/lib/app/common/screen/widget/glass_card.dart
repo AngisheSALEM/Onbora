@@ -31,33 +31,27 @@ class GlassCard extends StatelessWidget {
     final rRadius = borderRadius ?? BorderRadius.circular(AppConstants.borderRadiusAppleCard);
 
     final defaultBgColor = color ??
-        (isDark ? const Color(0xEE18181B) : const Color(0xF8FFFFFF));
-
-    final defaultBorder = border ??
-        Border.all(
-          color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-          width: 1.0,
-        );
+        (isDark ? const Color(0xFF1C1C22) : const Color(0xFFF1F2F6));
 
     Widget cardBody = Container(
       margin: margin,
       decoration: BoxDecoration(
         color: defaultBgColor,
         borderRadius: rRadius,
-        border: defaultBorder,
+        border: null, // STRICTLY ZERO BORDER
         boxShadow: [
           if (isDark)
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
               spreadRadius: 0,
             )
           else
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
               spreadRadius: 0,
             ),
         ],

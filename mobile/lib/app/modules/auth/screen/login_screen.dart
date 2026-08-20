@@ -57,26 +57,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 20),
                   
-                  // Official Orange Brand Square Symbol (Solid #FF7900 Square with crisp White Icon)
+                  // Onbora Official App Icon
                   Container(
-                    width: 64,
-                    height: 64,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
-                      color: AppConstants.orangeOfficial,
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
                       boxShadow: [
                         BoxShadow(
-                          color: AppConstants.orangeOfficial.withValues(alpha: 0.35),
-                          blurRadius: 20,
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                          blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.directions_run_rounded,
-                        size: 40,
-                        color: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
+                      child: Image.asset(
+                        'assets/icons/app_icon.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF2563EB),
+                          child: const Icon(Icons.directions_run_rounded, color: Colors.white, size: 36),
+                        ),
                       ),
                     ),
                   ),
@@ -261,34 +264,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onPressed: authController.isLoading.value ? null : _handleLogin,
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 15),
-                                    backgroundColor: AppConstants.orangeOfficial,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                    foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                                   ),
                                   child: authController.isLoading.value
                                       ? Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
-                                          children: const [
+                                          children: [
                                             SizedBox(
                                               height: 18,
                                               width: 18,
-                                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                              child: CircularProgressIndicator(color: isDark ? const Color(0xFF121214) : Colors.white, strokeWidth: 2),
                                             ),
-                                            SizedBox(width: 10),
+                                            const SizedBox(width: 10),
                                             Text(
                                               'Connexion en cours...',
-                                              style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                                              style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF121214) : Colors.white, fontWeight: FontWeight.bold),
                                             ),
                                           ],
                                         )
                                       : Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
-                                          children: const [
+                                          children: [
                                             Text(
                                               AppConstants.loginButton,
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
                                             ),
-                                            SizedBox(width: 8),
-                                            Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
+                                            const SizedBox(width: 8),
+                                            const Icon(Icons.arrow_forward_rounded, size: 18),
                                           ],
                                         ),
                                 ),

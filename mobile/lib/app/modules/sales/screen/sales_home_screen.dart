@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/sales_controller.dart';
 import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
@@ -39,7 +40,7 @@ class SalesHomeScreen extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Icon(Icons.directions_run_rounded, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
+                child: Icon(LucideIcons.footprints, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
               ),
             ),
             const SizedBox(width: 10),
@@ -59,7 +60,7 @@ class SalesHomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white70 : AppConstants.textDark),
+            icon: Icon(LucideIcons.rotateCcw, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
             tooltip: 'Réinitialiser la visite',
             onPressed: () {
               if (salesController.selectedEnterprise.value != null) {
@@ -94,10 +95,10 @@ class SalesHomeScreen extends StatelessWidget {
                           salesController.resetFlow();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConstants.orangeOfficial,
-                          foregroundColor: Colors.white,
+                          backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                          foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                         ),
-                        child: const Text('Réinitialiser', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: Text('Réinitialiser', style: TextStyle(color: isDark ? const Color(0xFF121214) : Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -130,7 +131,7 @@ class SalesHomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                     child: Row(
                       children: [
-                        Icon(Icons.search_rounded, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 22),
+                        Icon(LucideIcons.search, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -161,7 +162,7 @@ class SalesHomeScreen extends StatelessWidget {
                             color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(Icons.arrow_forward_rounded, size: 16, color: isDark ? Colors.white70 : AppConstants.textDark),
+                          child: Icon(LucideIcons.arrowRight, size: 16, color: isDark ? Colors.white70 : AppConstants.textDark),
                         ),
                       ],
                     ),
@@ -178,31 +179,28 @@ class SalesHomeScreen extends StatelessWidget {
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
                 ),
-                const SizedBox(height: AppConstants.marginMd),
+                const SizedBox(height: 12),
 
-                // 3. Active Meeting Card (Apple-style Squircle Glass)
+                // 3. Active Meeting Card
                 Obx(() {
                   final selected = salesController.selectedEnterprise.value;
                   if (selected == null) {
                     return GlassCard(
-                      onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppConstants.paddingLg),
                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(14),
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
                               color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                              ),
+                              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
                             ),
                             child: Icon(
-                              Icons.domain_add_rounded,
-                              color: isDark ? Colors.white : AppConstants.textDark,
-                              size: 28,
+                              LucideIcons.building2,
+                              color: isDark ? Colors.white70 : AppConstants.textDark,
+                              size: 22,
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -213,16 +211,16 @@ class SalesHomeScreen extends StatelessWidget {
                                 Text(
                                   'Aucun rendez-vous en cours',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
                                     color: isDark ? Colors.white : AppConstants.textDark,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Sélectionnez une entreprise depuis la carte ou la recherche pour démarrer.',
+                                  'Sélectionnez un compte sur la carte ou via la recherche pour démarrer une visite.',
                                   style: TextStyle(
-                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
                                     fontSize: 12,
                                     height: 1.35,
                                   ),
@@ -236,10 +234,6 @@ class SalesHomeScreen extends StatelessWidget {
                   }
 
                   return GlassCard(
-                    border: Border.all(
-                      color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                      width: 1.0,
-                    ),
                     padding: const EdgeInsets.all(AppConstants.paddingLg),
                     borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
                     child: Column(
@@ -254,9 +248,6 @@ class SalesHomeScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
                                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                  border: Border.all(
-                                    color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                                  ),
                                 ),
                                 child: Text(
                                   selected.sector ?? 'Prospect Orange B2B',
@@ -316,14 +307,14 @@ class SalesHomeScreen extends StatelessWidget {
                             fontSize: AppConstants.fontSizeSm,
                           ),
                         ),
-                        const Divider(height: 22),
+                        const SizedBox(height: 16),
                         Row(
                           children: [
                             Expanded(
                               child: ScaleTap(
                                 child: OutlinedButton.icon(
                                   onPressed: () => Get.toNamed(Routes.VISIT_PREPARATION),
-                                  icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
+                                  icon: const Icon(LucideIcons.fileCheck, size: 16),
                                   label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
@@ -345,17 +336,25 @@ class SalesHomeScreen extends StatelessWidget {
                               child: ScaleTap(
                                 child: ElevatedButton.icon(
                                   onPressed: () => Get.toNamed(Routes.DICTAPHONE),
-                                  icon: const Icon(Icons.mic_rounded, size: 16, color: Colors.white),
-                                  label: const FittedBox(
+                                  icon: Icon(
+                                    LucideIcons.mic,
+                                    size: 16,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
+                                  label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
                                       'Dictaphone',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                        color: isDark ? const Color(0xFF121214) : Colors.white,
+                                      ),
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppConstants.orangeOfficial,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                    foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
@@ -439,9 +438,9 @@ class SalesHomeScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                Icons.business_rounded,
+                                LucideIcons.building2,
                                 color: isDark ? Colors.white70 : AppConstants.textDark,
-                                size: 20,
+                                size: 18,
                               ),
                             ),
                             const SizedBox(width: 12),

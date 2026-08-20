@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/main_navigation_controller.dart';
 import '../../sales/screen/plaque_map_home_screen.dart';
 import '../../sales/screen/sales_home_screen.dart';
 import '../../catalog/screen/catalog_screen.dart';
 import '../../profile/screen/profile_screen.dart';
-import '../../../common/constants/app_constants.dart';
+import '../../../common/screen/widget/scale_tap.dart';
+
+class _NavItem {
+  final IconData icon;
+  final String label;
+
+  const _NavItem({required this.icon, required this.label});
+}
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -23,6 +31,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     SalesHomeScreen(),
     CatalogScreen(),
     ProfileScreen(),
+  ];
+
+  static const List<_NavItem> _navItems = [
+    _NavItem(icon: LucideIcons.mapPin, label: 'Carte & Plaques'),
+    _NavItem(icon: LucideIcons.footprints, label: 'Visites Terrain'),
+    _NavItem(icon: LucideIcons.layers, label: 'Offres B2B'),
+    _NavItem(icon: LucideIcons.user, label: 'Profil & IA'),
   ];
 
   @override
@@ -65,56 +80,57 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF141416) : Colors.white,
-              border: Border(
-                top: BorderSide(
-                  color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                  width: 1.0,
-                ),
-              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
             child: SafeArea(
               top: false,
-              child: BottomNavigationBar(
-                currentIndex: controller.currentIndex.value,
-                onTap: controller.changePage,
-                selectedItemColor: AppConstants.orangeOfficial,
-                unselectedItemColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                type: BottomNavigationBarType.fixed,
-                selectedFontSize: 11,
-                unselectedFontSize: 11,
-                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.map_rounded),
-                    activeIcon: Icon(Icons.map_rounded),
-                    label: 'Carte & Plaques',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.directions_run_rounded),
-                    activeIcon: Icon(Icons.directions_run_rounded),
-                    label: 'Visites Terrain',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.inventory_2_rounded),
-                    activeIcon: Icon(Icons.inventory_2_rounded),
-                    label: 'Offres B2B',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_rounded),
-                    activeIcon: Icon(Icons.person_rounded),
-                    label: 'Profil & IA',
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: List.generate(_navItems.length, (index) {
+                    final item = _navItems[index];
+                    final isSelected = controller.currentIndex.value == index;
+
+                    return ScaleTap(
+                      onTap: () => controller.changePage(index),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        color: Colors.transparent,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, animation) => FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                          child: isSelected
+                              ? Text(
+                                  item.label,
+                                  key: ValueKey('text_$index'),
+                                  style: TextStyle(
+                                    color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                    letterSpacing: -0.2,
+                                  ),
+                                )
+                              : Icon(
+                                  item.icon,
+                                  key: ValueKey('icon_$index'),
+                                  size: 22,
+                                  color: isDark ? const Color(0xFF71717A) : const Color(0xFFA1A1AA),
+                                ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
           ),

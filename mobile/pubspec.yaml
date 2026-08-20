@@ -42,6 +42,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   latlong2: ^0.10.1
   maplibre_gl: ^0.27.0
+  lucide_icons_flutter: ^3.1.15
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +69,7 @@ flutter:
   # Assets configuration
   assets:
     - .env
+    - assets/icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

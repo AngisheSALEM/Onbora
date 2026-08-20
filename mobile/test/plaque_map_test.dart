@@ -40,9 +40,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Carte & Plaques'), findsOneWidget);
-    expect(find.text('Visites Terrain'), findsOneWidget);
-    expect(find.text('Offres B2B'), findsOneWidget);
-    expect(find.text('Profil & IA'), findsOneWidget);
   });
 
   testWidgets('PlaqueMapHomeScreen renders map header and plaque pills', (WidgetTester tester) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../model/enterprise_model.dart';
 import '../../controller/sales_controller.dart';
 import '../../../../routes/app_routes.dart';
@@ -235,14 +236,18 @@ class AiBriefModal extends StatelessWidget {
                           salesCtrl.selectEnterprise(enterprise);
                           Get.toNamed(Routes.VISIT_PREPARATION);
                         },
-                        icon: const Icon(Icons.directions_run_rounded, size: 18, color: Colors.white),
-                        label: const Text(
+                        icon: Icon(LucideIcons.footprints, size: 18, color: isDark ? const Color(0xFF121214) : Colors.white),
+                        label: Text(
                           'Démarrer Visite',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF121214) : Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConstants.orangeOfficial,
-                          foregroundColor: Colors.white,
+                          backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                          foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
@@ -268,7 +273,7 @@ class AiBriefModal extends StatelessWidget {
                         ),
                       ),
                       child: Icon(
-                        Icons.mic_rounded,
+                        LucideIcons.mic,
                         color: isDark ? Colors.white : AppConstants.textDark,
                         size: 20,
                       ),

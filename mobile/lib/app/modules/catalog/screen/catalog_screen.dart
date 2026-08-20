@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/catalog_controller.dart';
 import 'widget/catalog_item_card.dart';
 import '../../../common/constants/app_constants.dart';
@@ -62,9 +63,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF1E1E22) : Colors.white,
                           borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                          border: Border.all(
-                            color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                          ),
                         ),
                         child: TextField(
                           controller: _searchController,
@@ -78,10 +76,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            prefixIcon: Icon(Icons.search_rounded, color: isDark ? Colors.white70 : AppConstants.textDark),
+                            prefixIcon: Icon(LucideIcons.search, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(Icons.clear_rounded, color: Colors.grey),
+                                    icon: const Icon(LucideIcons.x, color: Colors.grey, size: 18),
                                     onPressed: () {
                                       _searchController.clear();
                                       catalogController.searchCatalog('');

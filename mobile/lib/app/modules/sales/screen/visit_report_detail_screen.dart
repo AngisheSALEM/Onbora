@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/sales_controller.dart';
 import '../../../core/api/api_config.dart';
@@ -60,7 +61,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : AppConstants.textDark),
+            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
             tooltip: 'Retour',
             onPressed: () => Get.back(),
           ),
@@ -77,7 +78,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
               final report = salesController.currentReport.value;
               if (report == null) return const SizedBox.shrink();
               return IconButton(
-                icon: Icon(Icons.picture_as_pdf_rounded, color: isDark ? Colors.white70 : AppConstants.textDark),
+                icon: Icon(LucideIcons.download, color: isDark ? Colors.white70 : AppConstants.textDark, size: 20),
                 tooltip: 'Télécharger Export PDF',
                 onPressed: () async {
                   final pdfUrl = '${ApiConfig.activeBaseUrl}/api/sales/visit-reports/${report.id}/export/?format=pdf';
@@ -240,7 +241,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(Icons.auto_awesome_rounded, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
+                                  child: Icon(LucideIcons.sparkles, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -257,7 +258,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(height: 20),
+                            const SizedBox(height: 12),
                             Text(
                               report.executiveSummary,
                               style: TextStyle(
@@ -287,7 +288,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     color: AppConstants.successGreen.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.verified_rounded, color: AppConstants.successGreen, size: 18),
+                                  child: const Icon(LucideIcons.checkCircle2, color: AppConstants.successGreen, size: 18),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -316,7 +317,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     need,
                                     style: const TextStyle(color: AppConstants.successGreen, fontWeight: FontWeight.w800, fontSize: 13),
                                   ),
-                                  avatar: const Icon(Icons.check_rounded, color: AppConstants.successGreen, size: 16),
+                                  avatar: const Icon(LucideIcons.check, color: AppConstants.successGreen, size: 15),
                                 );
                               }).toList(),
                             ),
@@ -341,7 +342,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(Icons.task_alt_rounded, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
+                                  child: Icon(LucideIcons.listChecks, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -358,7 +359,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(height: 20),
+                            const SizedBox(height: 12),
                             Column(
                               children: report.actionsTodo.map((action) {
                                 return Padding(
@@ -366,7 +367,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.arrow_right_rounded, color: isDark ? Colors.white70 : AppConstants.textDark),
+                                      Icon(LucideIcons.arrowRight, color: isDark ? Colors.white70 : AppConstants.textDark, size: 16),
                                       const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
@@ -407,7 +408,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                           color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF1F5F9),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Icon(Icons.email_outlined, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
+                                        child: Icon(LucideIcons.mail, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                                       ),
                                       const SizedBox(width: 8),
                                       Flexible(
@@ -429,13 +430,13 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: Icon(Icons.copy_rounded, size: 18, color: isDark ? Colors.white70 : AppConstants.textDark),
+                                      icon: Icon(LucideIcons.copy, size: 18, color: isDark ? Colors.white70 : AppConstants.textDark),
                                       tooltip: 'Copier l\'email',
                                       onPressed: _copyEmailToClipboard,
                                     ),
                                     IconButton(
                                       icon: Icon(
-                                        _isEditingEmail ? Icons.check_circle_rounded : Icons.edit_rounded,
+                                        _isEditingEmail ? LucideIcons.checkCircle2 : LucideIcons.edit3,
                                         size: 18,
                                         color: _isEditingEmail ? AppConstants.successGreen : (isDark ? Colors.white70 : AppConstants.textDark),
                                       ),
@@ -446,7 +447,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(height: 16),
+                            const SizedBox(height: 12),
                             if (_isEditingEmail)
                               TextFormField(
                                 controller: _emailController,
@@ -464,9 +465,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E1E1E).withValues(alpha: 0.6)
-                                      : AppConstants.backgroundLight,
+                                  color: isDark ? const Color(0xFF18181A) : const Color(0xFFF8FAFC),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
@@ -487,7 +486,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Transmit to KAM Button (#FF7900 CTA)
+                    // Transmit to KAM Button
                     SizedBox(
                       width: double.infinity,
                       height: 54,
@@ -497,21 +496,21 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                             ? null
                             : () => salesController.transmitReportToKAM(),
                           icon: salesController.isTransmitting.value
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(color: isDark ? const Color(0xFF121214) : Colors.white, strokeWidth: 2),
                                 )
-                              : const Icon(Icons.send_rounded, size: 22, color: Colors.white),
+                              : Icon(LucideIcons.send, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
                           label: Text(
                             salesController.isTransmitting.value
                                 ? 'Transmission au KAM en cours...'
                                 : 'Transmettre le Dossier au KAM',
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppConstants.orangeOfficial,
-                            foregroundColor: Colors.white,
+                            backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                            foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                           ),
                         ),
                       ),

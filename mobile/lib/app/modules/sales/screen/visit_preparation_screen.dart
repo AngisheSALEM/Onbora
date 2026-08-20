@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/sales_controller.dart';
 import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
@@ -41,7 +42,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : AppConstants.textDark),
+            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
             tooltip: 'Retour',
             onPressed: () => Get.back(),
           ),
@@ -55,7 +56,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white70 : AppConstants.textDark),
+              icon: Icon(LucideIcons.rotateCcw, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
               tooltip: 'Régénérer le brief',
               onPressed: () {
                 final enterprise = salesController.selectedEnterprise.value;
@@ -182,7 +183,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     _buildSectionCard(
                       context,
                       title: 'Objectif du Rendez-vous',
-                      icon: Icons.flag_rounded,
+                      icon: LucideIcons.target,
                       content: prep.meetingObjective,
                     ),
                     const SizedBox(height: 14),
@@ -191,7 +192,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     _buildSectionCard(
                       context,
                       title: 'Hypothèses Terrain à Vérifier',
-                      icon: Icons.psychology_rounded,
+                      icon: LucideIcons.brain,
                       content: prep.hypothesisToVerify,
                     ),
                     const SizedBox(height: 14),
@@ -214,7 +215,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                                       color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Icon(Icons.campaign_rounded, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
+                                    child: Icon(LucideIcons.megaphone, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -228,8 +229,9 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                                     ),
                                   ),
                                   Icon(
-                                    _showAdvancedPitch ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                                    _showAdvancedPitch ? LucideIcons.chevronUp : LucideIcons.chevronDown,
                                     color: isDark ? Colors.white70 : AppConstants.textDark,
+                                    size: 18,
                                   ),
                                 ],
                               ),
@@ -256,29 +258,37 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     _buildSectionCard(
                       context,
                       title: 'Questions Clés à Poser',
-                      icon: Icons.quiz_rounded,
+                      icon: LucideIcons.helpCircle,
                       content: prep.keyQuestions,
                     ),
                     const SizedBox(height: 24),
 
-                    // Action Button: Launch Voice Dictaphone (#FF7900 CTA)
+                    // Action Button: Launch Voice Dictaphone
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: ScaleTap(
                         child: ElevatedButton.icon(
                           onPressed: () => Get.toNamed(Routes.DICTAPHONE),
-                          icon: const Icon(Icons.mic_rounded, size: 22, color: Colors.white),
-                          label: const FittedBox(
+                          icon: Icon(
+                            LucideIcons.mic,
+                            size: 20,
+                            color: isDark ? const Color(0xFF121214) : Colors.white,
+                          ),
+                          label: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               'Démarrer l\'Enregistrement Vocal (Dictaphone)',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? const Color(0xFF121214) : Colors.white,
+                              ),
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppConstants.orangeOfficial,
-                            foregroundColor: Colors.white,
+                            backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                            foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                           ),
                         ),
                       ),
@@ -333,7 +343,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                 ),
               ],
             ),
-            const Divider(height: 20),
+            const SizedBox(height: 12),
             Text(
               content,
               style: TextStyle(

@@ -25,11 +25,8 @@ class CatalogItemCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
+                  color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                  border: Border.all(
-                    color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                  ),
                 ),
                 child: Text(
                   item.category,

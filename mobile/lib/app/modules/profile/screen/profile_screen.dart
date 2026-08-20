@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/profile_controller.dart';
 import '../../sales/controller/sales_controller.dart';
 import '../../../routes/app_routes.dart';
@@ -60,12 +61,9 @@ class ProfileScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF222228) : const Color(0xFF18181B),
                           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
-                          border: Border.all(
-                            color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                          ),
                         ),
                         child: const Center(
-                          child: Icon(Icons.person_rounded, size: 32, color: Colors.white),
+                          child: Icon(LucideIcons.user, size: 28, color: Colors.white),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -134,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
                           color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(Icons.description_rounded, color: isDark ? Colors.white70 : AppConstants.textDark, size: 24),
+                        child: Icon(LucideIcons.fileText, color: isDark ? Colors.white70 : AppConstants.textDark, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -161,9 +159,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        LucideIcons.chevronRight,
                         color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
-                        size: 24,
+                        size: 20,
                       ),
                     ],
                   ),
@@ -183,7 +181,7 @@ class ProfileScreen extends StatelessWidget {
                           color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF0FDF4),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.event_available_rounded, color: AppConstants.successGreen, size: 24),
+                        child: const Icon(LucideIcons.calendarCheck, color: AppConstants.successGreen, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -210,9 +208,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        LucideIcons.chevronRight,
                         color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
-                        size: 24,
+                        size: 20,
                       ),
                     ],
                   ),
@@ -237,7 +235,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       secondary: Icon(
-                        themeCtrl.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                        themeCtrl.isDarkMode ? LucideIcons.moon : LucideIcons.sun,
                         color: isDark ? Colors.white70 : AppConstants.textDark,
                         size: 20,
                       ),
@@ -253,7 +251,7 @@ class ProfileScreen extends StatelessWidget {
                   child: ScaleTap(
                     child: OutlinedButton.icon(
                       onPressed: () => controller.logout(),
-                      icon: const Icon(Icons.logout_rounded, color: AppConstants.errorRed, size: 18),
+                      icon: const Icon(LucideIcons.logOut, color: AppConstants.errorRed, size: 18),
                       label: const Text(
                         'Se Déconnecter',
                         style: TextStyle(color: AppConstants.errorRed, fontWeight: FontWeight.w800),

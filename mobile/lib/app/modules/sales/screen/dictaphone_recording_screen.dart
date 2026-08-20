@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/dictaphone_controller.dart';
 import '../controller/sales_controller.dart';
 import '../../../routes/app_routes.dart';
@@ -37,7 +38,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : AppConstants.textDark),
+            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
             tooltip: 'Retour',
             onPressed: () => Get.back(),
           ),
@@ -74,7 +75,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.business_rounded, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 16),
+                          Icon(LucideIcons.building2, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 16),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
@@ -170,9 +171,9 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                             ),
                             child: Center(
                               child: Icon(
-                                isRec ? Icons.stop_rounded : Icons.mic_rounded,
+                                isRec ? LucideIcons.square : LucideIcons.mic,
                                 color: Colors.white,
-                                size: 52,
+                                size: isRec ? 44 : 50,
                               ),
                             ),
                           ),
@@ -197,7 +198,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.graphic_eq_rounded, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 18),
+                                Icon(LucideIcons.activity, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 18),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Transcription Vocale Whisper AI',
@@ -246,7 +247,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 LinearProgressIndicator(
                                   value: _processingStep / 3.0,
                                   backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE5E7EB),
-                                  color: AppConstants.orangeOfficial,
+                                  color: isDark ? Colors.white : const Color(0xFF18181B),
                                   minHeight: 6,
                                 ),
                                 const SizedBox(height: 12),
@@ -258,9 +259,9 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                           : 'Étape 3/3 : Génération du compte-rendu et plan d\'actions...',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: isDark ? Colors.white70 : AppConstants.textDark,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                    fontWeight: FontWeight.w700,
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -272,7 +273,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     );
                   }),
 
-                  // Bottom Action Buttons (#FF7900 Official CTA)
+                  // Bottom Action Buttons
                   Obx(() {
                     final st = dictController.state;
                     final isProcessing = salesController.isGeneratingReport.value || dictController.isUploading.value;
@@ -302,19 +303,19 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                     }
                                   },
                             icon: isProcessing
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    child: CircularProgressIndicator(color: isDark ? const Color(0xFF121214) : Colors.white, strokeWidth: 2),
                                   )
-                                : const Icon(Icons.auto_awesome_rounded, size: 22, color: Colors.white),
+                                : Icon(LucideIcons.sparkles, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
                             label: Text(
                               isProcessing ? 'Traitement IA...' : AppConstants.dictaphoneGenerateBtn,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppConstants.orangeOfficial,
-                              foregroundColor: Colors.white,
+                              backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                              foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                             ),
                           ),
                         ),
