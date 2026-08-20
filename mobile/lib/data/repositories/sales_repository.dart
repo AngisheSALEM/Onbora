@@ -132,13 +132,16 @@ class SalesRepository {
     String? audioFilePath,
   }) async {
     try {
+      final body = <String, dynamic>{
+        'preparation': preparationId,
+        'raw_transcript': rawTranscript,
+      };
+      if (audioFilePath != null) {
+        body['audio_file_path'] = audioFilePath;
+      }
       final response = await _apiClient.post(
         '/api/sales/visit-reports/',
-        body: {
-          'preparation': preparationId,
-          'raw_transcript': rawTranscript,
-          if (audioFilePath != null) 'audio_file_path': audioFilePath,
-        },
+        body: body,
       );
 
       return VisitReportModel.fromJson(response as Map<String, dynamic>);

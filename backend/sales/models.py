@@ -2,7 +2,34 @@ from django.db import models
 from django.conf import settings
 
 
+class Plaque(models.Model):
+    code = models.CharField(max_length=50, unique=True, db_index=True, help_text="Code unique de la plaque (ex: KIN-GOMBE)")
+    name = models.CharField(max_length=150, help_text="Nom complet (ex: Kinshasa - Gombe)")
+    city = models.CharField(max_length=100, default="Kinshasa")
+    latitude = models.FloatField(default=-4.3033)
+    longitude = models.FloatField(default=15.3083)
+    radius_km = models.FloatField(default=5.0)
+    assigned_salespersons = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        limit_choices_to={'role': 'SALESPERSON'},
+        related_name='assigned_plaques'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
 class Enterprise(models.Model):
+    plaque_rel = models.ForeignKey(
+        Plaque,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='enterprises'
+    )
     name = models.CharField(max_length=100)
     website = models.URLField(blank=True, null=True)
     sector = models.CharField(max_length=100, blank=True, null=True)
@@ -13,6 +40,20 @@ class Enterprise(models.Model):
     plaque = models.CharField(max_length=100, default='Kinshasa (Gombe)', db_index=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    
+    # Données de Scraping & Profilage
+    scraping_status = models.CharField(
+        max_length=20,
+        choices=[('PENDING', 'En attente'), ('SCRAPED', 'Scrapé'), ('FAILED', 'Échoué')],
+        default='PENDING'
+    )
+    scraped_data = models.JSONField(default=dict, blank=True, help_text="Données brutes issues du web et réseaux sociaux")
+    
+    # Hypothèses & Brief Commercial générés par l'IA
+    ai_hypotheses = models.JSONField(default=list, blank=True, help_text="Hypothèses commerciales pré-visite")
+    ai_tailored_pitch = models.TextField(blank=True, default='', help_text="Pitch personnalisé généré par l'IA")
+    ai_key_questions = models.JSONField(default=list, blank=True, help_text="Questions stratégiques préconisées")
+    ai_potential_objections = models.JSONField(default=list, blank=True, help_text="Objections probables et contre-arguments")
     
     # Qualification Commerciale IA
     is_ready_for_conversion = models.BooleanField(default=True)
@@ -61,6 +102,26 @@ class VisitPreparation(models.Model):
         return f"Brief: {self.enterprise.name} par {self.salesperson.username}"
 
 
+class LiveVisitSession(models.Model):
+    preparation = models.ForeignKey(VisitPreparation, on_delete=models.CASCADE, related_name='live_sessions')
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='live_sessions')
+    salesperson = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='live_sessions')
+    session_status = models.CharField(
+        max_length=20,
+        choices=[('ACTIVE', 'Active'), ('PAUSED', 'En pause'), ('COMPLETED', 'Terminée')],
+        default='ACTIVE'
+    )
+    live_transcript = models.TextField(blank=True, default='', help_text="Transcription incrémentale de l'échange")
+    detected_needs = models.JSONField(default=list, blank=True, help_text="Besoins détectés en temps réel")
+    detected_objections = models.JSONField(default=list, blank=True, help_text="Objections formulées en direct")
+    live_proposition = models.JSONField(default=dict, blank=True, help_text="JSON dynamique de proposition commerciale")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Session Live #{self.id} : {self.enterprise.name} ({self.session_status})"
+
+
 class VisitReport(models.Model):
     preparation = models.OneToOneField(VisitPreparation, on_delete=models.CASCADE, related_name='report')
     raw_transcript = models.TextField(blank=True, default='')
@@ -71,6 +132,12 @@ class VisitReport(models.Model):
     follow_up_email_draft = models.TextField(blank=True, default='')
     audio_file_path = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Boucle d'amélioration continue & Feedback vers Core AI
+    original_ai_output = models.JSONField(default=dict, blank=True, help_text="Sortie brute originale fournie par Core AI")
+    ai_feedback_rating = models.IntegerField(null=True, blank=True, help_text="Note attribuée par le commercial (1 à 5 étoiles)")
+    ai_feedback_comments = models.TextField(blank=True, default='', help_text="Remarques et corrections apportées par l'humain")
+    ai_feedback_sent_at = models.DateTimeField(null=True, blank=True, help_text="Date d'envoi du feedback au Core AI")
 
     def __str__(self):
         return f"Rapport: {self.preparation.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"

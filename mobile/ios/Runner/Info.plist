@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Onbora Sales a besoin de l'accès au microphone pour l'enregistrement vocal du dictaphone commercial.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Onbora Sales utilise la reconnaissance vocale pour retranscrire vos comptes-rendus de visite terrain.</string>
 </dict>
 </plist>

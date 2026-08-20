@@ -16,6 +16,13 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 subprojects {
+    plugins.withId("com.android.library") {
+        if (!plugins.hasPlugin("org.jetbrains.kotlin.android") && !plugins.hasPlugin("kotlin-android")) {
+            apply(plugin = "org.jetbrains.kotlin.android")
+        }
+    }
+}
+subprojects {
     project.evaluationDependsOn(":app")
 }
 

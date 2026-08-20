@@ -34,7 +34,7 @@ class _CatalogViewState extends State<CatalogView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Catalogue Solutions MSP'),
+        title: const Text('Catalogue Solutions Orange B2B'),
       ),
       body: Column(
         children: [
@@ -112,7 +112,7 @@ class _CatalogViewState extends State<CatalogView> {
                               const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
                               const SizedBox(height: 16),
                               const Text(
-                                'Aucune offre MSP ne correspond à vos critères',
+                                'Aucune offre Orange B2B ne correspond à vos critères',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),

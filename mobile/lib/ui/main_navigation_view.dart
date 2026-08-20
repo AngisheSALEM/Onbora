@@ -45,7 +45,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2_rounded),
-            label: 'Catalogue MSP',
+            label: 'Catalogue Orange B2B',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_rounded),

@@ -1,0 +1,119 @@
+// ==============================================================================
+// ONBORA B2B SALES COPILOT - ARCHITECTURE & WORKFLOW GLOBAL (ERASER.IO CODE)
+// Copiez-collez l'un des blocs ci-dessous directement dans l'éditeur Eraser.io
+// ==============================================================================
+
+// ==============================================================================
+// BLOC 1 : DIAGRAMME D'ARCHITECTURE & FLUX DE DONNÉES (ERASER FLOWCHART DSL)
+// ==============================================================================
+
+title Onbora Sales Copilot - Architecture Mobile & Serveur
+
+// --- Group: Application Mobile (Flutter) ---
+group Application Mobile Flutter [color: orange] {
+  auth_screen [icon: lock, label: "Écran Connexion & Session\n(SharedPreferences JWT)"]
+  plaque_lock [icon: shield, label: "Sas Sécurité Plaque\n(Cloisonnement Portefeuille)"]
+  home_dash [icon: layout, label: "Dashboard Copilote\n(KPIs Visites & Rapports IA)"]
+  search_prospect [icon: search, label: "Recherche Prospects B2B\n(Filtre par Plaque/Secteur)"]
+  visit_prep [icon: file-text, label: "Brief & Pitch IA\n(Hypothèses & Questions)"]
+  dictaphone [icon: mic, label: "Dictaphone Audio\n(Enregistrement Vocal)"]
+  report_view [icon: check-circle, label: "Compte-Rendu Synthétisé\n(Besoins, Actions, Email)"]
+  visits_history [icon: calendar, label: "Historique des Visites\n(Journalier & Mensuel - Confidentiel)"]
+  catalog_view [icon: shopping-bag, label: "Catalogue Offres MSP\n(Fibre, Cloud, Sécurité, Santé)"]
+}
+
+// --- Group: Serveur Backend (Django REST Framework) ---
+group Serveur Backend Django [color: blue] {
+  api_gateway [icon: server, label: "API Gateway DRF\n(api.onbora.cd / Render)"]
+  auth_service [icon: user-check, label: "Service Auth & Token\n(/api/auth/login/)"]
+  sales_service [icon: briefcase, label: "Service Ventes & Visites\n(/api/sales/)"]
+  catalog_service [icon: database, label: "Service Catalogue MSP\n(/api/catalog/services/)"]
+  report_service [icon: bar-chart-2, label: "Service Reporting & PDF\n(/api/sales/visit-reports/)"]
+}
+
+// --- Group: Moteurs IA & Traitement Données ---
+group Pipeline Intelligence Artificielle [color: purple] {
+  whisper_ai [icon: cpu, label: "Transcription Vocale\n(Whisper AI STT)"]
+  llm_engine [icon: zap, label: "Moteur Synthèse LLM\n(Extraction Besoins & Plan Actions)"]
+  pdf_generator [icon: file, label: "Générateur PDF\n(Export Dossier Client)"]
+}
+
+// --- Group: Systèmes Externes & Intégrations ---
+group Écosystème & CRM B2B [color: green] {
+  crm_kaabu [icon: users, label: "CRM Kaabu / Orange\n(Base Comptes & SIREN)"]
+  arrow_sphere [icon: cloud, label: "ArrowSphere / Cloud\n(Provisioning MSP & Tenants)"]
+  kam_dossier [icon: send, label: "Interface KAM\n(Prise en charge Affaire)"]
+}
+
+// --- Connexions & Flux Utilisateur ---
+auth_screen > auth_service: 1. Authentification & Token JWT
+auth_service > auth_screen: Session sauvegardée en local
+auth_screen > home_dash: Auto-login direct
+
+home_dash > plaque_lock: Accès Prospection
+plaque_lock > search_prospect: Code Plaque validé (Cloisonnement)
+search_prospect > sales_service: Recherche ciblée
+sales_service > crm_kaabu: Synchro temps réel comptes B2B
+
+search_prospect > visit_prep: Sélection Entreprise
+visit_prep > sales_service: Génération Brief IA
+sales_service > llm_engine: Analyse contexte secteur
+llm_engine > visit_prep: Pitch & Questions clés
+
+visit_prep > dictaphone: Démarrage Entretien
+dictaphone > sales_service: Upload Audio / Flux Vocal
+sales_service > whisper_ai: Transcription automatique
+whisper_ai > llm_engine: Structuration entretien
+llm_engine > report_view: Compte-rendu qualifié généré
+
+report_view > sales_service: Validation Commercial
+sales_service > kam_dossier: Transmission automatique au KAM
+sales_service > pdf_generator: Génération Export PDF
+
+home_dash > visits_history: Clic KPI "Visites"
+visits_history > sales_service: Récupération historique
+sales_service > visits_history: Vues Journalière & Mensuelle (Masquage confidentiel)
+
+home_dash > catalog_view: Navigation Catalogue
+catalog_view > catalog_service: Consultation offres & tarifs MSP
+catalog_service > arrow_sphere: Vérification éligibilité Cloud
+
+
+// ==============================================================================
+// BLOC 2 : DIAGRAMME DE SÉQUENCE COMPLET (ERASER SEQUENCE DIAGRAM DSL)
+// ==============================================================================
+
+// Copiez le bloc ci-dessous dans Eraser.io en mode "Sequence Diagram" :
+
+/*
+sequenceDiagram
+Commercial (Flutter App) > Backend API (Django): 1. POST /api/auth/login/ (sales1 / mot de passe)
+Backend API (Django) > Base de Données: Vérification utilisateur & rôle SALESPERSON
+Base de Données > Backend API (Django): Token JWT + Infos Utilisateur
+Backend API (Django) > Commercial (Flutter App): 200 OK (Token + Stockage SharedPreferences)
+
+Commercial (Flutter App) > Commercial (Flutter App): 2. Sas Sécurité Plaque (ex: PLAQUE-KIN-01)
+Commercial (Flutter App) > Backend API (Django): 3. GET /api/sales/enterprises/search/?q=Rawbank
+Backend API (Django) > CRM Kaabu / SIREN: Recherche & Dédoublonnage compte
+CRM Kaabu / SIREN > Backend API (Django): Données entreprise synchronisées
+Backend API (Django) > Commercial (Flutter App): Liste des prospects assignés à la plaque
+
+Commercial (Flutter App) > Backend API (Django): 4. POST /api/sales/visit-preparations/ {enterprise: id}
+Backend API (Django) > Moteur IA LLM: Analyse du secteur, hypothèses & pitch
+Moteur IA LLM > Backend API (Django): Brief généré (Objectif, Pitch, Questions clés)
+Backend API (Django) > Commercial (Flutter App): Affichage du Brief de Visite IA
+
+Commercial (Flutter App) > Backend API (Django): 5. Enregistrement Dictaphone vocal
+Commercial (Flutter App) > Backend API (Django): 6. POST /api/sales/visit-reports/ (Audio / Transcrit)
+Backend API (Django) > Whisper AI: Transcription vocale Speech-to-Text
+Whisper AI > Moteur IA LLM: Analyse conversation & extraction besoins
+Moteur IA LLM > Backend API (Django): Compte-rendu structuré (Besoins confirmés, Actions, Email de relance)
+Backend API (Django) > Commercial (Flutter App): Affichage du Rapport Synthétisé
+
+Commercial (Flutter App) > Backend API (Django): 7. POST /api/sales/visit-reports/{id}/transmit/
+Backend API (Django) > Interface KAM: Création du Dossier Prospect pour le KAM
+Backend API (Django) > Commercial (Flutter App): 200 OK ("Dossier transmis au KAM avec succès")
+
+Commercial (Flutter App) > Backend API (Django): 8. GET /api/sales/visit-preparations/ (Historique)
+Backend API (Django) > Commercial (Flutter App): Liste des visites (Aujourd'hui / Ce mois-ci - Données sensibles masquées)
+*/

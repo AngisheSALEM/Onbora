@@ -4,22 +4,31 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Enterprise, VisitPreparation, VisitReport, ScraperCredential
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
 from .serializers import (
+    PlaqueSerializer,
+    PlaqueDetailSerializer,
     EnterpriseSerializer,
     EnterpriseMapSerializer,
     EnterpriseBriefSerializer,
-    PlaqueSerializer,
     SalespersonActivitySerializer,
+    LiveVisitSessionSerializer,
+    LiveCopilotTurnSerializer,
     VisitPreparationSerializer,
     VisitReportSerializer,
+    CoreAIFeedbackSerializer,
     ScraperCredentialSerializer,
 )
 from .application.use_cases import (
+    ListPlaquesUseCase,
+    GetPlaqueDetailUseCase,
+    ScrapeAndEnrichEnterpriseUseCase,
+    ProcessLiveCopilotTurnUseCase,
+    GenerateVisitReportWithAIUseCase,
+    SubmitCoreAIFeedbackUseCase,
     SearchEnterprisesUseCase,
     GetEnterprisesForMapUseCase,
     GetEnterpriseBriefUseCase,
-    ListPlaquesUseCase,
     GetSalespersonActivityUseCase,
     CreateVisitPreparationUseCase,
     CreateVisitReportUseCase,
@@ -27,13 +36,164 @@ from .application.use_cases import (
     ProcessVoiceUploadUseCase,
 )
 from .domain.exceptions import (
+    PlaqueNotFoundException,
     EnterpriseNotFoundException,
     VisitPreparationNotFoundException,
+    LiveVisitSessionNotFoundException,
     VisitReportNotFoundException,
 )
 from accounts.permissions import IsSalespersonOrAdmin, IsAdmin
 from onbora.exports import get_export_response
 from reporting.utils import log_demo_event
+
+
+class PlaqueListCreateView(APIView):
+    """
+    GET: Liste toutes les plaques territoriales actives avec le nombre de leads et commerciaux assignés.
+    POST: Crée une nouvelle plaque de prospection territoriale.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        use_case = ListPlaquesUseCase()
+        plaques_dto = use_case.execute()
+        serializer = PlaqueSerializer(plaques_dto, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = PlaqueSerializer(data=request.data)
+        if serializer.is_valid():
+            plaque = serializer.save()
+            return Response(PlaqueSerializer(plaque).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PlaqueDetailView(APIView):
+    """
+    GET: Détail d'une plaque avec la liste complète de ses entreprises / leads qualifiés.
+    PATCH: Modifie la plaque ou assigne des commerciaux.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request, pk):
+        try:
+            plaque_obj = Plaque.objects.prefetch_related('enterprises', 'assigned_salespersons').get(pk=pk)
+            serializer = PlaqueDetailSerializer(plaque_obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Plaque.DoesNotExist:
+            return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        try:
+            plaque_obj = Plaque.objects.get(pk=pk)
+        except Plaque.DoesNotExist:
+            return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PlaqueSerializer(plaque_obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EnterpriseEnrichView(APIView):
+    """
+    POST: Déclenche le pipeline de Scraping Web & Social + Génération d'Hypothèses IA pré-visite.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request, pk):
+        try:
+            use_case = ScrapeAndEnrichEnterpriseUseCase()
+            enriched_dto = use_case.execute((pk, request.user))
+            return Response({
+                "message": "Entreprise scrapée et enrichie d'hypothèses commerciales avec succès.",
+                "enterprise": EnterpriseSerializer(Enterprise.objects.get(pk=pk)).data
+            }, status=status.HTTP_200_OK)
+        except EnterpriseNotFoundException:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LiveCopilotTurnView(APIView):
+    """
+    POST: Endpoint temps réel pour le copilote en direct pendant la visite.
+    Reçoit le fragment vocal ou textuel transcrit par Whisper -> Core AI -> retourne le JSON de proposition dynamique.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        enterprise_id = request.data.get('enterprise_id')
+        transcript_chunk = request.data.get('transcript_chunk', '').strip()
+
+        if not enterprise_id:
+            return Response({"detail": "L'identifiant de l'entreprise est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            use_case = ProcessLiveCopilotTurnUseCase()
+            turn_dto = use_case.execute((enterprise_id, transcript_chunk, request.user))
+            serializer = LiveCopilotTurnSerializer(turn_dto)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except EnterpriseNotFoundException:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VisitReportGenerateFromAIView(APIView):
+    """
+    POST: Génère le compte-rendu exécutif de visite via Core AI et transmet le dossier au backoffice KAM.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        preparation_id = request.data.get('preparation_id')
+        transcript = request.data.get('transcript', '').strip()
+
+        if not preparation_id:
+            return Response({"detail": "L'identifiant de la fiche de préparation est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            use_case = GenerateVisitReportWithAIUseCase()
+            result_dto = use_case.execute((preparation_id, transcript, request.user))
+            return Response({
+                "message": "Rapport de visite généré par Core AI et transmis au KAM avec succès.",
+                "report_id": result_dto.report_id,
+                "dossier_id": result_dto.dossier_id,
+                "enterprise_name": result_dto.enterprise_name,
+                "executive_summary": result_dto.executive_summary,
+                "confirmed_needs": result_dto.confirmed_needs,
+                "objections_raised": result_dto.objections_raised,
+                "actions_todo": result_dto.actions_todo,
+                "follow_up_email_draft": result_dto.follow_up_email_draft,
+            }, status=status.HTTP_201_CREATED)
+        except VisitPreparationNotFoundException:
+            return Response({"detail": "Fiche de préparation introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VisitReportFeedbackView(APIView):
+    """
+    POST: Envoie une évaluation humaine (note, remarques) à Core AI pour l'amélioration continue du modèle.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request, pk):
+        serializer = CoreAIFeedbackSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        rating = serializer.validated_data['rating']
+        comments = serializer.validated_data.get('comments', '')
+
+        try:
+            use_case = SubmitCoreAIFeedbackUseCase()
+            feedback_dto = use_case.execute((pk, rating, comments, request.user))
+            return Response({
+                "message": "Feedback d'évaluation envoyé au Core AI pour entraînement continu.",
+                "report_id": feedback_dto.report_id,
+                "rating": feedback_dto.rating,
+                "status": feedback_dto.status,
+                "submitted_at": feedback_dto.submitted_at
+            }, status=status.HTTP_200_OK)
+        except VisitReportNotFoundException:
+            return Response({"detail": "Rapport de visite introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class EnterpriseSearchView(APIView):
@@ -47,10 +207,6 @@ class EnterpriseSearchView(APIView):
 
 
 class EnterpriseMapView(APIView):
-    """
-    OpenStreetMap API endpoint returning geocoded enterprises.
-    Supports filtering by plaque (territory), conversion readiness, and free text search.
-    """
     permission_classes = [IsSalespersonOrAdmin]
 
     def get(self, request):
@@ -59,14 +215,40 @@ class EnterpriseMapView(APIView):
         search_query = request.query_params.get('q')
 
         enterprises = GetEnterprisesForMapUseCase().execute((plaque, ready_only, search_query))
+        
+        if request.query_params.get('format') == 'geojson':
+            features = [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [e.longitude, e.latitude]
+                    },
+                    "properties": {
+                        "id": e.id,
+                        "name": e.name,
+                        "sector": e.sector,
+                        "approximate_size": e.approximate_size,
+                        "location": e.location,
+                        "plaque": e.plaque,
+                        "is_ready_for_conversion": e.is_ready_for_conversion,
+                        "conversion_score": e.conversion_score,
+                        "recommended_solution": e.recommended_solution,
+                        "existing_crm_status": e.existing_crm_status,
+                    }
+                }
+                for e in enterprises
+            ]
+            return Response({
+                "type": "FeatureCollection",
+                "features": features
+            }, status=status.HTTP_200_OK)
+
         serializer = EnterpriseMapSerializer(enterprises, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class EnterpriseBriefView(APIView):
-    """
-    Returns or auto-generates the AI Brief for a given enterprise on the map.
-    """
     permission_classes = [IsSalespersonOrAdmin]
 
     def get(self, request, pk):
@@ -79,21 +261,17 @@ class EnterpriseBriefView(APIView):
 
 
 class PlaqueListView(APIView):
-    """
-    Returns the list of territorial plaques/zones with ready prospects count and map centers.
-    """
+    """Alias pour la liste des plaques vers MapLibre"""
     permission_classes = [IsSalespersonOrAdmin]
 
     def get(self, request):
-        plaques = ListPlaquesUseCase().execute()
-        serializer = PlaqueSerializer(plaques, many=True)
+        use_case = ListPlaquesUseCase()
+        plaques_dto = use_case.execute()
+        serializer = PlaqueSerializer(plaques_dto, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SalespersonActivityView(APIView):
-    """
-    Returns active meetings and past AI visit reports for the connected salesperson (Profile screen).
-    """
     permission_classes = [IsSalespersonOrAdmin]
 
     def get(self, request):
@@ -175,35 +353,30 @@ class VisitReportExportView(APIView):
             return generate_reportlab_pdf_response(doc_type, report)
 
         title = f"Rapport de Visite Commerciale - {report.preparation.enterprise.name}"
-        
         needs_html = "".join([f'<span class="badge badge-success">{need}</span>' for need in report.confirmed_needs])
         objections_html = "".join([f'<span class="badge badge-danger">{obj}</span>' for obj in report.objections_raised])
-        
         actions_items = "".join([f"<li>👉 {action}</li>" for action in report.actions_todo])
 
         content_html = f"""
         <h2 class="document-title">COMPTE-RENDU DE VISITE TERRAIN</h2>
-        
         <div class="section">
             <h3 class="section-title">Informations Générales</h3>
             <div class="card">
                 <ul class="list-unstyled">
                     <li><strong>Entreprise visitée :</strong> {report.preparation.enterprise.name}</li>
-                    <li><strong>Commercial :</strong> {report.preparation.salesperson.first_name} {report.preparation.salesperson.last_name}</li>
+                    <li><strong>Commercial :</strong> {report.preparation.salesperson.first_name if report.preparation.salesperson else 'N/A'} {report.preparation.salesperson.last_name if report.preparation.salesperson else ''}</li>
                     <li><strong>Plaque territoriale :</strong> {report.preparation.enterprise.plaque}</li>
                     <li><strong>Date de la visite :</strong> {report.created_at.strftime('%d/%m/%Y %H:%M')}</li>
                     <li><strong>Objectif initial :</strong> {report.preparation.meeting_objective}</li>
                 </ul>
             </div>
         </div>
-
         <div class="section">
             <h3 class="section-title">Synthèse Commerciale</h3>
             <div class="card">
                 <p style="margin: 0; font-size: 13px; line-height: 1.6;">{report.executive_summary}</p>
             </div>
         </div>
-
         <div class="section">
             <h3 class="section-title">Besoins & Objections</h3>
             <div class="grid">
@@ -217,7 +390,6 @@ class VisitReportExportView(APIView):
                 </div>
             </div>
         </div>
-
         <div class="section">
             <h3 class="section-title">Prochaines Actions à Mener</h3>
             <div class="card">
@@ -226,7 +398,6 @@ class VisitReportExportView(APIView):
                 </ul>
             </div>
         </div>
-
         <div class="section">
             <h3 class="section-title">Proposition de Mail de Relance</h3>
             <div class="card" style="background-color: #f8fafc; border-color: #cbd5e1;">

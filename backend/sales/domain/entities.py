@@ -6,7 +6,22 @@ from .value_objects import SyncStatus, PlatformChoice
 
 
 @dataclass
+class PlaqueEntity(AggregateRoot):
+    code: str = ""
+    name: str = ""
+    city: str = "Kinshasa"
+    latitude: float = -4.3033
+    longitude: float = 15.3083
+    radius_km: float = 5.0
+    assigned_salespersons_ids: List[int] = field(default_factory=list)
+    total_leads_count: int = 0
+    ready_leads_count: int = 0
+    is_active: bool = True
+
+
+@dataclass
 class EnterpriseEntity(AggregateRoot):
+    plaque_id: Optional[int] = None
     name: str = ""
     website: Optional[str] = None
     sector: Optional[str] = None
@@ -15,6 +30,15 @@ class EnterpriseEntity(AggregateRoot):
     plaque: str = "Kinshasa (Gombe)"
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    
+    # Scraping & AI Hypotheses
+    scraping_status: str = "PENDING"
+    scraped_data: Dict[str, Any] = field(default_factory=dict)
+    ai_hypotheses: List[str] = field(default_factory=list)
+    ai_tailored_pitch: str = ""
+    ai_key_questions: List[str] = field(default_factory=list)
+    ai_potential_objections: List[str] = field(default_factory=list)
+    
     is_ready_for_conversion: bool = True
     conversion_score: int = 85
     recommended_solution: str = "Fibre Optique Pro + Microsoft 365"
@@ -39,6 +63,18 @@ class VisitPreparationEntity(AggregateRoot):
 
 
 @dataclass
+class LiveVisitSessionEntity(AggregateRoot):
+    preparation_id: int = 0
+    enterprise_id: int = 0
+    salesperson_id: int = 0
+    session_status: str = "ACTIVE"
+    live_transcript: str = ""
+    detected_needs: List[str] = field(default_factory=list)
+    detected_objections: List[str] = field(default_factory=list)
+    live_proposition: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class VisitReportEntity(AggregateRoot):
     preparation_id: int = 0
     raw_transcript: str = ""
@@ -48,9 +84,14 @@ class VisitReportEntity(AggregateRoot):
     actions_todo: List[str] = field(default_factory=list)
     follow_up_email_draft: str = ""
     audio_file_path: Optional[str] = None
+    original_ai_output: Dict[str, Any] = field(default_factory=dict)
+    ai_feedback_rating: Optional[int] = None
+    ai_feedback_comments: str = ""
+    ai_feedback_sent_at: Optional[datetime] = None
 
 
 @dataclass
 class ScraperCredentialEntity(Entity):
     platform: str = PlatformChoice.LINKEDIN.value
     cookies_value: str = ""
+

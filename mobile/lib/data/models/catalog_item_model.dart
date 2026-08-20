@@ -20,7 +20,7 @@ class CatalogItemModel {
   factory CatalogItemModel.fromJson(Map<String, dynamic> json) {
     return CatalogItemModel(
       id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? 'Offre MSP',
+      name: json['name'] as String? ?? 'Offre Orange B2B',
       category: json['category'] as String? ?? 'Services',
       description: json['description'] as String? ?? '',
       monthlyPrice: (json['monthly_price'] as num?)?.toDouble() ?? 0.0,

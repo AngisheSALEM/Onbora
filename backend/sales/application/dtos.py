@@ -5,6 +5,20 @@ from shared.application.dtos import BaseDTO
 
 
 @dataclass
+class PlaqueDTO(BaseDTO):
+    id: int
+    code: str
+    name: str
+    city: str
+    center_latitude: float
+    center_longitude: float
+    radius_km: float
+    total_enterprises: int
+    ready_count: int
+    assigned_salespersons_names: List[str] = field(default_factory=list)
+
+
+@dataclass
 class EnterpriseDTO(BaseDTO):
     id: int
     name: str
@@ -13,8 +27,15 @@ class EnterpriseDTO(BaseDTO):
     approximate_size: Optional[str] = None
     location: Optional[str] = None
     plaque: str = "Kinshasa (Gombe)"
+    plaque_id: Optional[int] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    scraping_status: str = "PENDING"
+    scraped_data: Dict[str, Any] = field(default_factory=dict)
+    ai_hypotheses: List[str] = field(default_factory=list)
+    ai_tailored_pitch: str = ""
+    ai_key_questions: List[str] = field(default_factory=list)
+    ai_potential_objections: List[str] = field(default_factory=list)
     is_ready_for_conversion: bool = True
     conversion_score: int = 85
     recommended_solution: str = "Fibre Optique Pro + Microsoft 365"
@@ -25,6 +46,21 @@ class EnterpriseDTO(BaseDTO):
     arrowsphere_tenant_id: Optional[str] = None
     sync_status: str = "PENDING"
     last_sync_date: Optional[datetime] = None
+
+
+@dataclass
+class PlaqueDetailDTO(BaseDTO):
+    id: int
+    code: str
+    name: str
+    city: str
+    center_latitude: float
+    center_longitude: float
+    radius_km: float
+    total_enterprises: int
+    ready_count: int
+    assigned_salespersons: List[Dict[str, Any]] = field(default_factory=list)
+    leads: List[EnterpriseDTO] = field(default_factory=list)
 
 
 @dataclass
@@ -57,17 +93,9 @@ class EnterpriseBriefDTO(BaseDTO):
     hypothesis_to_verify: str
     custom_pitch: str
     key_questions: str
+    ai_hypotheses: List[str] = field(default_factory=list)
+    ai_potential_objections: List[str] = field(default_factory=list)
     recommended_catalog_services: List[Dict[str, Any]] = field(default_factory=list)
-
-
-@dataclass
-class PlaqueDTO(BaseDTO):
-    name: str
-    display_name: str
-    total_enterprises: int
-    ready_count: int
-    center_latitude: float
-    center_longitude: float
 
 
 @dataclass
@@ -77,6 +105,39 @@ class SalespersonActivityDTO(BaseDTO):
     total_visits_count: int = 0
     total_transmitted_count: int = 0
     conversion_rate: float = 0.0
+
+
+@dataclass
+class LiveCopilotTurnDTO(BaseDTO):
+    session_id: int
+    enterprise_id: int
+    enterprise_name: str
+    active_sentiment: str
+    detected_needs: List[str]
+    detected_objections: List[str]
+    realtime_proposition: Dict[str, Any]
+
+
+@dataclass
+class PostVisitReportResultDTO(BaseDTO):
+    report_id: int
+    dossier_id: int
+    enterprise_name: str
+    executive_summary: str
+    confirmed_needs: List[str]
+    objections_raised: List[str]
+    actions_todo: List[str]
+    follow_up_email_draft: str
+    status: str = "TRANSMITTED_TO_KAM"
+
+
+@dataclass
+class CoreAIFeedbackDTO(BaseDTO):
+    report_id: int
+    rating: int
+    comments: str
+    status: str
+    submitted_at: str
 
 
 @dataclass
@@ -102,6 +163,8 @@ class VisitReportDTO(BaseDTO):
     actions_todo: List[str] = field(default_factory=list)
     follow_up_email_draft: str = ""
     audio_file_path: Optional[str] = None
+    ai_feedback_rating: Optional[int] = None
+    ai_feedback_comments: str = ""
 
 
 @dataclass
@@ -117,3 +180,4 @@ class ScraperCredentialDTO(BaseDTO):
     platform: str
     cookies_value: str
     updated_at: Optional[datetime] = None
+

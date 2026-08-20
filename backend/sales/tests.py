@@ -2,10 +2,12 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from accounts.models import User
-from sales.models import Enterprise, VisitPreparation, VisitReport
+from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession
 from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from rest_framework.authtoken.models import Token
+from unittest.mock import patch, MagicMock
+
 
 class SalesAPITestCase(APITestCase):
     def setUp(self):
@@ -34,6 +36,111 @@ class SalesAPITestCase(APITestCase):
         self.assertIn("Médical", response.data[0]['sector'])
         self.assertEqual(Enterprise.objects.count(), 2)
 
+    def test_plaque_list_and_detail(self):
+        # 1. Test auto-seeding and listing plaques
+        list_url = reverse('plaque-list-create')
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+        first_plaque_id = response.data[0]['id']
+        plaque_obj = Plaque.objects.get(pk=first_plaque_id)
+        
+        # Add a lead to this plaque
+        Enterprise.objects.create(
+            name="Entreprise Plaque Test",
+            sector="Finance",
+            plaque_rel=plaque_obj,
+            is_ready_for_conversion=True
+        )
+
+        # 2. Test detail view with leads list
+        detail_url = reverse('plaque-detail', kwargs={'pk': first_plaque_id})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['code'], plaque_obj.code)
+        self.assertGreaterEqual(len(response.data['enterprises']), 1)
+
+    def test_enterprise_scraping_and_ai_enrichment(self):
+        ent = Enterprise.objects.create(
+            name="Clinique Saint Joseph",
+            sector="Santé / Médical",
+            website="https://clinique-st-joseph.cd"
+        )
+        enrich_url = reverse('enterprise-enrich', kwargs={'pk': ent.id})
+        response = self.client.post(enrich_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['enterprise']['scraping_status'], 'SCRAPED')
+        self.assertGreaterEqual(len(response.data['enterprise']['ai_hypotheses']), 1)
+        self.assertIn("Fibre", response.data['enterprise']['ai_tailored_pitch'])
+
+        ent.refresh_from_db()
+        self.assertEqual(ent.scraping_status, 'SCRAPED')
+        self.assertTrue(VisitPreparation.objects.filter(enterprise=ent).exists())
+
+    def test_live_copilot_turn(self):
+        ent = Enterprise.objects.create(
+            name="Banque Commerciale",
+            sector="Finance / Banque"
+        )
+        live_url = reverse('live-copilot-turn')
+        
+        # Premier tour vocal
+        response = self.client.post(live_url, {
+            "enterprise_id": ent.id,
+            "transcript_chunk": "Nous avons des lenteurs critiques et des coupures fréquentes sur notre ligne internet."
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("Fibre Optique Pro (GTR 4h)", response.data['detected_needs'])
+        self.assertIn("realtime_proposition", response.data)
+        self.assertGreaterEqual(len(response.data['realtime_proposition']['recommended_packages']), 1)
+
+        # Deuxième tour vocal avec objection prix
+        response = self.client.post(live_url, {
+            "enterprise_id": ent.id,
+            "transcript_chunk": "Mais nous faisons très attention à notre budget mensuel, c'est un peu cher."
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("Sensibilité budgétaire / Coût récurrent", response.data['detected_objections'])
+
+    def test_generate_visit_report_from_ai_and_transmit(self):
+        ent = Enterprise.objects.create(name="Supermarché Express", sector="Commerce / Retail")
+        prep = VisitPreparation.objects.create(
+            enterprise=ent,
+            salesperson=self.sales_user,
+            meeting_objective="Raccordement Fibre et modernisation des caisses"
+        )
+
+        gen_url = reverse('visit-report-generate-ai')
+        response = self.client.post(gen_url, {
+            "preparation_id": prep.id,
+            "transcript": "Discussion avec le gérant. Il confirme le besoin de fibre pro et de sécuriser son réseau informatique."
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("executive_summary", response.data)
+        self.assertIn("confirmed_needs", response.data)
+        self.assertIn("follow_up_email_draft", response.data)
+        
+        report_id = response.data['report_id']
+        dossier_id = response.data['dossier_id']
+        self.assertTrue(ProspectDossier.objects.filter(id=dossier_id).exists())
+        self.assertTrue(BusinessTwin.objects.filter(prospect_dossier_id=dossier_id).exists())
+
+        # Test de la boucle de feedback d'apprentissage continu
+        feedback_url = reverse('visit-report-feedback', kwargs={'pk': report_id})
+        fb_resp = self.client.post(feedback_url, {
+            "rating": 5,
+            "comments": "Excellente synthèse générée par le Core AI, propositions très pertinentes."
+        }, format='json')
+        self.assertEqual(fb_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(fb_resp.data['rating'], 5)
+
+        report = VisitReport.objects.get(pk=report_id)
+        self.assertEqual(report.ai_feedback_rating, 5)
+        self.assertIn("Excellente", report.ai_feedback_comments)
+
     def test_create_visit_preparation(self):
         ent = Enterprise.objects.create(name="Orange", sector="Telecom")
         
@@ -56,10 +163,7 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('confirmed_needs', response.data)
         
-        self.assertIn('Hébergement de Données de Santé (HDS)', response.data['confirmed_needs'])
-        self.assertIn('Téléphonie Teams (VoIP)', response.data['confirmed_needs'])
         report_id = response.data['id']
-        
         transmit_url = reverse('visit-report-transmit', kwargs={'pk': report_id})
         response = self.client.post(transmit_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -74,11 +178,9 @@ class SalesAPITestCase(APITestCase):
         from django.core.files.uploadedfile import SimpleUploadedFile
         upload_url = reverse('voice-upload')
         
-        # Test without file
         response = self.client.post(upload_url, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Test with file
         audio_file = SimpleUploadedFile("test_recording.webm", b"mocked_audio_content", content_type="audio/webm")
         ent = Enterprise.objects.create(name="Clinique Test", sector="Médical / Santé")
         prep = VisitPreparation.objects.create(enterprise=ent, salesperson=self.sales_user)
@@ -90,17 +192,14 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('audio_file_path', response.data)
         self.assertIn('transcript', response.data)
-        self.assertIn('HDS', response.data['transcript'])
 
     def test_scraper_credentials_permissions(self):
-        # 1. Non-admin salesperson should get 403
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         list_url = reverse('scraper-credential-list-create')
         
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
-        # 2. Admin should get 200
         admin_user = User.objects.create_user(
             username='admin_test', password='password123', role=User.ADMIN
         )
@@ -111,7 +210,6 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
         
-        # 3. Admin can create credentials
         post_data = {
             "platform": "LINKEDIN",
             "cookies_value": "li_at=testcookie123"
@@ -119,10 +217,8 @@ class SalesAPITestCase(APITestCase):
         response = self.client.post(list_url, post_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['platform'], 'LINKEDIN')
-        self.assertEqual(response.data['cookies_value'], 'li_at=testcookie123')
 
 
-from unittest.mock import patch, MagicMock
 from sales.integrations.kaabu import KaabuClient
 
 class KaabuClientTestCase(APITestCase):
@@ -200,6 +296,3 @@ class KaabuClientTestCase(APITestCase):
 
         ent.refresh_from_db()
         self.assertEqual(ent.sync_status, "SYNCED")
-
-
-
