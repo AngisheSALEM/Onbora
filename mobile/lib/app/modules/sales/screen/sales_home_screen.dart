@@ -312,21 +312,41 @@ class SalesHomeScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: ScaleTap(
-                                child: OutlinedButton.icon(
-                                  onPressed: () => Get.toNamed(Routes.VISIT_PREPARATION),
-                                  icon: const Icon(LucideIcons.fileCheck, size: 16),
-                                  label: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      salesController.currentPrep.value != null ? 'Brief Prêt' : 'Préparer Brief',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-                                    ),
+                                onTap: () => Get.toNamed(Routes.VISIT_PREPARATION),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    color: salesController.currentPrep.value != null
+                                        ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                                        : (isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9)),
+                                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                                   ),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        LucideIcons.fileCheck,
+                                        size: 16,
+                                        color: salesController.currentPrep.value != null
+                                            ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB))
+                                            : (isDark ? Colors.white70 : AppConstants.textDark),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          salesController.currentPrep.value != null ? 'Brief Prêt' : 'Préparer Brief',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            color: salesController.currentPrep.value != null
+                                                ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8))
+                                                : (isDark ? Colors.white : AppConstants.textDark),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -23,11 +24,60 @@ class PlaqueMapHomeScreen extends StatefulWidget {
 class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
   MapLibreMapController? _mapController;
   bool _isStyleLoaded = false;
+  bool _hasLocationPermission = false;
 
   static const LatLng _kinshasaGombeCenter = LatLng(-4.3033, 15.3084);
   static const LatLng _kinshasaLimeteCenter = LatLng(-4.3450, 15.3400);
   static const LatLng _kinshasaNgaliemaCenter = LatLng(-4.3250, 15.2600);
   static const LatLng _lubumbashiCenter = LatLng(-11.6608, 27.4794);
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndRequestLocationPermission();
+  }
+
+  Future<void> _checkAndRequestLocationPermission() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+        if (mounted) {
+          setState(() {
+            _hasLocationPermission = true;
+          });
+        }
+      }
+    } catch (_) {
+      // Permission non disponible (environnement test/web ou refus)
+    }
+  }
+
+  Future<void> _recenterOnUser() async {
+    await _checkAndRequestLocationPermission();
+    if (_hasLocationPermission) {
+      try {
+        final pos = await Geolocator.getCurrentPosition();
+        final userLatLng = LatLng(pos.latitude, pos.longitude);
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: userLatLng, zoom: 15.0),
+          ),
+        );
+      } catch (_) {}
+    } else {
+      Get.snackbar(
+        'Localisation requise',
+        'Veuillez activer la géolocalisation pour afficher votre position sur la carte.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        backgroundColor: const Color(0xEE18181B),
+        colorText: Colors.white,
+      );
+    }
+  }
 
   String _getMapStyle(bool isDark) {
     final apiKey = dotenv.env['MAPTILER_API_KEY'] ?? AppConstants.mapTilerApiKey;
@@ -154,8 +204,10 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                 onMapCreated: _onMapCreated,
                 onStyleLoadedCallback: _onStyleLoaded,
                 trackCameraPosition: true,
-                myLocationEnabled: false,
-                compassEnabled: false,
+                myLocationEnabled: _hasLocationPermission,
+                myLocationTrackingMode: MyLocationTrackingMode.none,
+                myLocationRenderMode: MyLocationRenderMode.normal,
+                compassEnabled: true,
               ),
             ),
 
@@ -167,121 +219,157 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                  // Barre Supérieure
-                  GlassCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(LucideIcons.map, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Carte Territoire Orange B2B',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                              color: isDark ? Colors.white : AppConstants.textDark,
-                            ),
-                          ),
-                        ),
-                        ScaleTap(
-                          onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
+                    // Barre Supérieure
+                    GlassCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
-                              shape: BoxShape.circle,
+                              color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                              ),
                             ),
-                            child: Icon(
-                              LucideIcons.search,
-                              size: 18,
-                              color: isDark ? Colors.white : AppConstants.textDark,
+                            child: Center(
+                              child: Icon(LucideIcons.map, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Carte Territoire Orange B2B',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                color: isDark ? Colors.white : AppConstants.textDark,
+                              ),
+                            ),
+                          ),
+                          ScaleTap(
+                            onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                LucideIcons.search,
+                                size: 18,
+                                color: isDark ? Colors.white : AppConstants.textDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                  // Sélecteur de Plaques
-                  SizedBox(
-                    height: 34,
-                    child: Obx(() {
-                      final selectedPlaque = salesController.selectedPlaqueFilter.value;
-                      final plaques = salesController.availablePlaques;
+                    // Sélecteur de Plaques
+                    SizedBox(
+                      height: 34,
+                      child: Obx(() {
+                        final selectedPlaque = salesController.selectedPlaqueFilter.value;
+                        final plaques = salesController.availablePlaques;
 
-                      return ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: const ClampingScrollPhysics(),
-                        itemCount: plaques.length,
-                        itemBuilder: (context, index) {
-                          final plaque = plaques[index];
-                          final isSelected = selectedPlaque == plaque;
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const ClampingScrollPhysics(),
+                          itemCount: plaques.length,
+                          itemBuilder: (context, index) {
+                            final plaque = plaques[index];
+                            final isSelected = selectedPlaque == plaque;
 
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: ScaleTap(
-                              onTap: () => _onPlaqueSelected(plaque, salesController),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? (isDark ? Colors.white : const Color(0xFF18181B))
-                                      : (isDark ? const Color(0xDD18181C) : const Color(0xF8FFFFFF)),
-                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                  border: Border.all(
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ScaleTap(
+                                onTap: () => _onPlaqueSelected(plaque, salesController),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
                                     color: isSelected
                                         ? (isDark ? Colors.white : const Color(0xFF18181B))
-                                        : (isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight),
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
+                                        : (isDark ? const Color(0xDD18181C) : const Color(0xF8FFFFFF)),
+                                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? (isDark ? Colors.white : const Color(0xFF18181B))
+                                          : (isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight),
                                     ),
-                                  ],
-                                ),
-                                child: Text(
-                                  plaque == 'Toutes' ? 'Toutes les plaques' : plaque,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? (isDark ? const Color(0xFF121214) : Colors.white)
-                                        : (isDark ? Colors.white : AppConstants.textDark),
-                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                    fontSize: 11,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    plaque == 'Toutes' ? 'Toutes les plaques' : plaque,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? (isDark ? const Color(0xFF121214) : Colors.white)
+                                          : (isDark ? Colors.white : AppConstants.textDark),
+                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                ],
+                            );
+                          },
+                        );
+                      }),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
 
-          // 3. Carte Flottante Inférieure : Entreprise Sélectionnée
+          // 3. Bouton Flottant : Me Géolocaliser (Position temps réel avec halo bleu Google Maps)
+          Positioned(
+            right: 16,
+            bottom: 165,
+            child: ScaleTap(
+              onTap: _recenterOnUser,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xEE18181C) : Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    LucideIcons.locateFixed,
+                    size: 20,
+                    color: _hasLocationPermission
+                        ? const Color(0xFF2563EB)
+                        : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 4. Carte Flottante Inférieure : Entreprise Sélectionnée
           Positioned(
             left: 16,
             right: 16,
@@ -297,126 +385,123 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
               return RepaintBoundary(
                 child: GlassCard(
                   padding: const EdgeInsets.all(14),
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                selected.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 16,
-                                  color: isDark ? Colors.white : AppConstants.textDark,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${selected.sector} • ${selected.location}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: selected.isConverted
-                                ? AppConstants.successGreen.withValues(alpha: 0.15)
-                                : AppConstants.accentYellow.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                            border: Border.all(
-                              color: selected.isConverted ? AppConstants.successGreen : AppConstants.accentYellow,
-                            ),
-                          ),
-                          child: Text(
-                            selected.isConverted ? 'Converti' : 'À convertir',
-                            style: TextStyle(
-                              color: selected.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ScaleTap(
-                            onTap: () {
-                              salesController.selectEnterprise(selected);
-                              AiBriefModal.show(context, selected);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                                border: Border.all(
-                                  color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Voir le Débrief',
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selected.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: isDark ? Colors.white : AppConstants.textDark,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ScaleTap(
-                            onTap: () {
-                              salesController.selectEnterprise(selected);
-                              Get.toNamed(Routes.VISIT_PREPARATION);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isDark ? Colors.white : const Color(0xFF18181B),
-                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Démarrer Visite',
-                                  style: TextStyle(
-                                    fontSize: 12,
                                     fontWeight: FontWeight.w900,
-                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${selected.sector} • ${selected.location}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: selected.isConverted
+                                  ? AppConstants.successGreen.withValues(alpha: 0.15)
+                                  : AppConstants.accentYellow.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                              border: Border.all(
+                                color: selected.isConverted ? AppConstants.successGreen : AppConstants.accentYellow,
+                              ),
+                            ),
+                            child: Text(
+                              selected.isConverted ? 'Converti' : 'À convertir',
+                              style: TextStyle(
+                                color: selected.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ScaleTap(
+                              onTap: () {
+                                salesController.selectEnterprise(selected);
+                                AiBriefModal.show(context, selected);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Voir le Débrief',
+                                    style: TextStyle(
+                                      color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ScaleTap(
+                              onTap: () {
+                                salesController.selectEnterprise(selected);
+                                Get.toNamed(Routes.VISIT_PREPARATION);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white : const Color(0xFF18181B),
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Démarrer Visite',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      color: isDark ? const Color(0xFF121214) : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               );
             }),
           ),

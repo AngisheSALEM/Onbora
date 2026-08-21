@@ -206,7 +206,7 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
                 '${visit.sector} • ${visit.location}',
                 style: TextStyle(color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight, fontSize: 12),
               ),
-              const Divider(height: 18),
+              const SizedBox(height: 12),
 
               // Date, Time & Confidentiality Tag
               Row(

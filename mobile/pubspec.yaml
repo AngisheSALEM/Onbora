@@ -43,6 +43,8 @@ dependencies:
   latlong2: ^0.10.1
   maplibre_gl: ^0.27.0
   lucide_icons_flutter: ^3.1.15
+  geolocator: ^13.0.2
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

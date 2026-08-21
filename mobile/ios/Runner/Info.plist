@@ -70,5 +70,9 @@
 	<string>Onbora Sales a besoin de l'accès au microphone pour l'enregistrement vocal du dictaphone commercial.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Onbora Sales utilise la reconnaissance vocale pour retranscrire vos comptes-rendus de visite terrain.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Onbora Sales utilise votre géolocalisation pour afficher votre position en temps réel sur la carte des plaques et vous guider vers vos prospects.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Onbora Sales utilise votre géolocalisation pour afficher votre position en temps réel sur la carte des plaques et vous guider vers vos prospects.</string>
 </dict>
 </plist>
