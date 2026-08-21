@@ -69,7 +69,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
                   <div className="flex-1 flex flex-col items-center justify-center gap-2 w-full px-1">
                     <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-1.5 w-full flex flex-col gap-1">
                       <span className="text-[7px] font-bold text-zinc-300">Connexion professionnelle</span>
-                      <span className="text-[9px] font-black text-orange-500 tracking-widest animate-pulse">48</span>
+                      <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 tracking-widest animate-pulse">48</span>
                       <span className="text-[6px] text-zinc-500">Entrez ce nombre pour valider</span>
                     </div>
                     
@@ -94,7 +94,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
               {/* Window Header */}
               <div className="bg-zinc-900 px-2.5 py-1.5 flex items-center justify-between border-b border-zinc-800">
                 <span className="text-[8px] font-bold text-zinc-400 flex items-center gap-1.5">
-                  <Icons.Network size={10} className="text-orange-500" />
+                  <Icons.Network size={10} className="text-blue-600 dark:text-blue-400" />
                   Cisco Secure Client
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
@@ -109,7 +109,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
                       {currentStep >= 2 ? 'vpn.onbora-entreprise.fr' : ''}
                     </span>
                     {currentStep === 1 && (
-                      <span className="w-0.5 h-3 bg-orange-500 animate-pulse"></span>
+                      <span className="w-0.5 h-3 bg-blue-600 animate-pulse"></span>
                     )}
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
                     currentStep >= 4 
                       ? 'bg-zinc-800 border border-zinc-750 text-zinc-400' 
                       : currentStep >= 2
-                        ? 'bg-orange-500 shadow-orange-500/20 active:scale-95'
+                        ? 'bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.30)] active:scale-95'
                         : 'bg-zinc-800 border border-zinc-850 text-zinc-600'
                   }`}>
                     {currentStep >= 4 ? 'Disconnect' : 'Connect'}
@@ -193,7 +193,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
 
               <div className="flex items-center justify-between p-1.5 bg-zinc-950/40 rounded border border-zinc-850/50">
                 <div className="flex items-center gap-2">
-                  <Icons.FileText className="text-orange-500 shrink-0" size={12} />
+                  <Icons.FileText className="text-blue-600 dark:text-blue-400 shrink-0" size={12} />
                   <span className="text-zinc-300 font-bold">Roadmap_Onboarding_Client.pdf</span>
                 </div>
                 {currentStep >= 3 ? (
@@ -214,7 +214,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
           <div className="w-full h-full flex flex-col justify-between p-4 bg-zinc-900 rounded-2xl border border-zinc-800 text-left text-[8px]">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
               <span className="font-bold text-zinc-300 flex items-center gap-1">
-                <Icons.Phone size={10} className="text-orange-500" />
+                <Icons.Phone size={10} className="text-blue-600 dark:text-blue-400" />
                 Teams Phone - Paramètres
               </span>
             </div>
@@ -228,7 +228,7 @@ export default function StepMediaViewer({ mediaType, currentStep }: StepMediaVie
                 
                 {/* Switch button */}
                 <div className={`w-8 h-4 rounded-full p-0.5 transition-colors cursor-pointer ${
-                  currentStep >= 2 ? 'bg-orange-500' : 'bg-zinc-700'
+                  currentStep >= 2 ? 'bg-blue-600' : 'bg-zinc-700'
                 }`}>
                   <div className={`w-3 h-3 rounded-full bg-white transition-transform ${
                     currentStep >= 2 ? 'translate-x-4' : 'translate-x-0'

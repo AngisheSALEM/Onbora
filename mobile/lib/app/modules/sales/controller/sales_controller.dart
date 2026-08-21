@@ -559,11 +559,16 @@ class SalesController extends GetxController {
       isGeneratingReport.value = false;
       return true;
     } catch (_) {
+      final clientName = selectedEnterprise.value?.name ?? "le client";
+      final hasTranscript = transcript.trim().isNotEmpty;
+
       currentReport.value = VisitReportModel(
         id: currentPrep.value!.id,
         preparationId: currentPrep.value!.id,
-        rawTranscript: transcript.isNotEmpty ? transcript : 'Discussion commerciale terrain.',
-        executiveSummary: 'Rendez-vous qualitatif chez ${selectedEnterprise.value?.name ?? "le client"}. Le client confirme son intérêt pour les offres Orange B2B (Fibre & Sécurité).',
+        rawTranscript: hasTranscript ? transcript : 'Aucun enregistrement vocal capturé.',
+        executiveSummary: hasTranscript
+            ? 'Échange enregistré avec $clientName : "$transcript". Analyse en cours par le copilote IA.'
+            : 'Rendez-vous qualitatif chez $clientName.',
         confirmedNeeds: selectedEnterprise.value?.keyNeeds ?? const ['Fibre Optique Pro 50 Mbps', 'Microsoft 365 Pro', 'Firewall Managé Orange'],
         objectionsRaised: const ['Validation du budget trimestriel'],
         actionsTodo: const ['Transmettre l\'étude d\'éligibilité Fibre', 'Envoyer le devis officiel Orange B2B'],

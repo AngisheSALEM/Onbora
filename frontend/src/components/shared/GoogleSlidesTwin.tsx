@@ -69,7 +69,7 @@ const EditableText = ({
           onChange={(e) => setVal(e.target.value)}
           onBlur={handleBlur}
           autoFocus
-          className={`bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 border border-orange-500 rounded p-1 focus:outline-none w-full leading-normal ${className}`}
+          className={`bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 border border-blue-600 rounded p-1 focus:outline-none w-full leading-normal ${className}`}
         />
       );
     }
@@ -80,7 +80,7 @@ const EditableText = ({
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleBlur}
         autoFocus
-        className={`bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 border border-orange-500 rounded p-1 focus:outline-none w-full ${className}`}
+        className={`bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 border border-blue-600 rounded p-1 focus:outline-none w-full ${className}`}
       />
     );
   }
@@ -91,7 +91,7 @@ const EditableText = ({
         e.stopPropagation();
         setIsEditing(true);
       }}
-      className={`cursor-pointer hover:bg-orange-500/10 hover:border-orange-500/30 border border-transparent rounded p-0.5 transition-all ${className}`}
+      className={`cursor-pointer hover:bg-blue-600/10 hover:border-blue-600/30 border border-transparent rounded p-0.5 transition-all ${className}`}
       title="Double-cliquer pour modifier"
     >
       {text || <span className="text-zinc-400 italic">Double-cliquer pour modifier</span>}
@@ -396,23 +396,23 @@ export default function GoogleSlidesTwin({
     return (
       <div 
         onClick={onOpenFull}
-        className="w-full max-w-sm glass-card rounded-xl border border-orange-500/20 p-4 hover:border-orange-500/40 cursor-pointer flex flex-col gap-3 transition-all relative overflow-hidden group shadow-md shadow-black/10 dark:shadow-black/30"
+        className="w-full max-w-sm studio-card p-4 hover:shadow-md cursor-pointer flex flex-col gap-3 transition-all relative overflow-hidden group shadow-sm"
       >
-        <div className="absolute top-0 right-0 p-1 bg-orange-500/10 text-orange-500 rounded-bl-lg text-[9px] font-bold tracking-wider uppercase">
+        <div className="absolute top-0 right-0 p-1 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-bl-lg text-[9px] font-bold tracking-wider uppercase">
           Architecture Cible
         </div>
         <div className="flex items-center gap-2.5">
           <Logo size={24} showBg={true} />
           <div>
-            <h4 className="text-xs font-bold text-zinc-805 dark:text-zinc-150">Présentation Google Slides</h4>
+            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-150">Présentation Google Slides</h4>
             <p className="text-[10px] text-zinc-500 font-medium">{companyName}</p>
           </div>
         </div>
         
         {/* Fake Mini Slide View */}
-        <div className="h-24 bg-zinc-100 dark:bg-zinc-950/60 rounded-lg border border-zinc-200 dark:border-zinc-900 flex items-center justify-center p-3 relative overflow-hidden">
+        <div className="h-24 studio-subcard rounded-xl flex items-center justify-center p-3 relative overflow-hidden">
           <div className="text-center">
-            <Icons.Sparkles className="text-orange-500 w-5 h-5 mx-auto mb-1 animate-pulse" />
+            <Icons.Sparkles className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1 animate-pulse" />
             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-300 uppercase tracking-wider">
               Consulter les slides Google Slides
             </span>
@@ -433,7 +433,7 @@ export default function GoogleSlidesTwin({
       <header className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-850 px-4 py-2 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo Google Slides Clone */}
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-amber-500/20">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-blue-600/20">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
               <line x1="9" y1="9" x2="15" y2="9"/>
@@ -452,7 +452,7 @@ export default function GoogleSlidesTwin({
                   onChange={(e) => setPresentationTitle(e.target.value)}
                   onBlur={() => setIsEditingTitle(false)}
                   autoFocus
-                  className="text-sm font-bold text-zinc-900 dark:text-zinc-50 border-b border-orange-500 focus:outline-none bg-transparent py-0.5"
+                  className="text-sm font-bold text-zinc-900 dark:text-zinc-50 border-b border-blue-600 focus:outline-none bg-transparent py-0.5"
                 />
               ) : (
                 <span 
@@ -463,7 +463,7 @@ export default function GoogleSlidesTwin({
                 </span>
               )}
               {/* Starred */}
-              <Icons.Sparkles size={12} className="text-amber-500 cursor-pointer animate-pulse" />
+              <Icons.Sparkles size={12} className="text-blue-600 dark:text-blue-400 cursor-pointer animate-pulse" />
             </div>
           </div>
         </div>
@@ -476,14 +476,14 @@ export default function GoogleSlidesTwin({
             disabled={showImportView}
             className="px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Icons.Sun size={14} className="text-amber-500 rotate-90" />
+            <Icons.Sun size={14} className="text-blue-600 rotate-90" />
             Lire la présentation
           </button>
           
-          {/* Google Share Orange Button */}
+          {/* Google Share Blue Button */}
           <button 
             onClick={() => alert("Lien de partage copié dans le presse-papiers !")}
-            className="px-4 py-1.5 rounded-lg orange-gradient-bg hover:opacity-90 active:scale-98 text-xs font-bold text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-orange-500/10"
+            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-98 text-xs font-bold text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
           >
             <Icons.Send size={12} />
             Partager
@@ -546,7 +546,7 @@ export default function GoogleSlidesTwin({
               setShowImportView(true);
               setActiveSlideIdx(-1);
             }}
-            className={`p-1 rounded transition-all cursor-pointer flex items-center justify-center ${showImportView ? 'bg-amber-500 text-white' : 'hover:bg-zinc-200 dark:hover:bg-zinc-850 text-orange-500'}`}
+            className={`p-1 rounded transition-all cursor-pointer flex items-center justify-center ${showImportView ? 'bg-blue-600 text-white' : 'hover:bg-zinc-200 dark:hover:bg-zinc-850 text-blue-600 dark:text-blue-400'}`}
             title="Importer depuis Google Slides (Lien)"
           >
             <Icons.Download size={15} />
@@ -579,7 +579,7 @@ export default function GoogleSlidesTwin({
               }}
               className={`flex items-start gap-1 p-1 rounded-lg border cursor-pointer transition-all ${
                 (!showImportView && activeSlideIdx === idx) 
-                  ? 'border-orange-500 bg-orange-500/5' 
+                  ? 'border-blue-600 bg-blue-600/5' 
                   : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
               }`}
             >
@@ -588,7 +588,7 @@ export default function GoogleSlidesTwin({
               <div className="flex-1 aspect-video bg-zinc-100 dark:bg-zinc-900 rounded border border-zinc-300 dark:border-zinc-850 flex items-center justify-center p-1 overflow-hidden relative">
                 <span className="text-[6px] font-black text-zinc-700 dark:text-zinc-300 uppercase truncate max-w-[80px] text-center">{slide.title}</span>
                 {/* Tiny preview details */}
-                <div className="absolute bottom-0.5 right-0.5 p-px bg-orange-500/20 text-orange-500 rounded text-[5px] font-extrabold scale-75">
+                <div className="absolute bottom-0.5 right-0.5 p-px bg-blue-600/20 text-blue-600 dark:text-blue-400 rounded text-[5px] font-extrabold scale-75">
                   {slide.type.toUpperCase()}
                 </div>
               </div>
@@ -603,13 +603,13 @@ export default function GoogleSlidesTwin({
             }}
             className={`flex items-start gap-1 p-1 mt-2 rounded-lg border cursor-pointer transition-all ${
               showImportView 
-                ? 'border-orange-500 bg-orange-500/5' 
+                ? 'border-blue-600 bg-blue-600/5' 
                 : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
             }`}
           >
             <span className="text-[10px] font-bold text-zinc-400 mt-1">📥</span>
             <div className="flex-1 aspect-video bg-zinc-55 dark:bg-zinc-900 rounded border border-zinc-300 dark:border-zinc-850 flex flex-col items-center justify-center p-1 overflow-hidden relative text-center">
-              <Icons.Download className="text-orange-500" size={12} />
+              <Icons.Download className="text-blue-600 dark:text-blue-400" size={12} />
               <span className="text-[5px] font-black text-zinc-650 dark:text-zinc-400 uppercase mt-0.5">Importer Slides</span>
             </div>
           </div>
@@ -633,13 +633,13 @@ export default function GoogleSlidesTwin({
             <div className="w-full aspect-video max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl shadow-lg flex flex-col justify-between p-8 relative overflow-hidden text-left">
               
               {/* Radial gradient background */}
-              <div className="absolute inset-0 bg-radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.015) 0%, transparent 80%) pointer-events-none" />
+              <div className="absolute inset-0 bg-radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.015) 0%, transparent 80%) pointer-events-none" />
 
               {showImportView ? (
                 /* INLINE SLIDES IMPORT MENU (NO MODALS) */
                 <div className="flex flex-col justify-center h-full gap-4 max-w-md mx-auto p-4 z-10">
                   <div className="flex items-center gap-2 border-b border-zinc-150 dark:border-zinc-800 pb-2">
-                    <span className="p-1 bg-amber-500 text-white rounded shadow-sm flex items-center justify-center">
+                    <span className="p-1 bg-blue-600 text-white rounded shadow-sm flex items-center justify-center">
                       <Icons.Download size={14} />
                     </span>
                     <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-wide">
@@ -652,13 +652,13 @@ export default function GoogleSlidesTwin({
 
                   {isImporting ? (
                     <div className="flex flex-col gap-2.5 py-2">
-                      <div className="flex justify-between items-center text-[10px] font-bold text-orange-500">
+                      <div className="flex justify-between items-center text-[10px] font-bold text-blue-600 dark:text-blue-400">
                         <span>Importation en cours...</span>
                         <span>{importProgress}%</span>
                       </div>
                       <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-850 rounded-full overflow-hidden">
                         <div 
-                          className="h-full orange-gradient-bg transition-all duration-305"
+                          className="h-full bg-blue-600 transition-all duration-305"
                           style={{ width: `${importProgress}%` }}
                         />
                       </div>
@@ -672,7 +672,7 @@ export default function GoogleSlidesTwin({
                         onChange={(e) => setImportUrl(e.target.value)}
                         required
                         placeholder="https://docs.google.com/presentation/d/..."
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-850 bg-zinc-55 dark:bg-zinc-950/40 text-[10px] focus:outline-none focus:border-orange-500 transition-all w-full text-zinc-900 dark:text-zinc-150"
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-850 bg-zinc-55 dark:bg-zinc-950/40 text-[10px] focus:outline-none focus:border-blue-600 transition-all w-full text-zinc-900 dark:text-zinc-150"
                       />
                       <div className="flex justify-end gap-2">
                         <button
@@ -687,7 +687,7 @@ export default function GoogleSlidesTwin({
                         </button>
                         <button
                           type="submit"
-                          className="px-3 py-1.5 orange-gradient-bg hover:opacity-90 active:scale-98 text-[9px] font-bold text-white rounded-lg transition-all cursor-pointer shadow-sm shadow-orange-500/10"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-[9px] font-bold text-white rounded-lg transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                         >
                           Lancer l'importation
                         </button>
@@ -708,7 +708,7 @@ export default function GoogleSlidesTwin({
                       }}
                       className="text-base font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tight"
                     />
-                    <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded border border-orange-500/20 bg-orange-500/10 text-orange-500 tracking-wider">
+                    <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 tracking-wider">
                       {activeSlide.type}
                     </span>
                   </div>
@@ -770,9 +770,9 @@ export default function GoogleSlidesTwin({
                         </div>
 
                         {/* Cible MSP (Right) */}
-                        <div className="flex flex-col gap-2 p-3 bg-orange-500/[0.01] border border-orange-500/10 rounded-xl">
-                          <span className="text-[8px] font-black uppercase text-orange-500 border-b border-orange-500/10 pb-1 flex items-center gap-1.5">
-                            <Icons.Check size={10} className="text-orange-500" /> Cible MSP (Après)
+                        <div className="flex flex-col gap-2 p-3 bg-blue-600/[0.02] border border-blue-600/10 rounded-xl">
+                          <span className="text-[8px] font-black uppercase text-blue-600 dark:text-blue-400 border-b border-blue-600/10 pb-1 flex items-center gap-1.5">
+                            <Icons.Check size={10} className="text-blue-600 dark:text-blue-400" /> Cible MSP (Après)
                           </span>
                           <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto">
                             {(activeSlide.content.targetItems || []).map((item, idx) => (
@@ -805,7 +805,7 @@ export default function GoogleSlidesTwin({
                               <span className="font-semibold text-zinc-700 dark:text-zinc-300">{m.label}</span>
                               <div className="flex gap-2 text-[9px] font-black">
                                 <span className="text-zinc-500">Avant: {m.before}%</span>
-                                <span className="text-orange-500">Après: {m.after}%</span>
+                                <span className="text-blue-600 dark:text-blue-400">Après: {m.after}%</span>
                               </div>
                             </div>
                             {/* SVG comparison bar */}
@@ -815,7 +815,7 @@ export default function GoogleSlidesTwin({
                                 style={{ width: `${m.before}%` }}
                               />
                               <div 
-                                className="absolute left-0 top-0.5 bottom-0.5 orange-gradient-bg rounded opacity-90 transition-all duration-700"
+                                className="absolute left-0 top-0.5 bottom-0.5 bg-blue-600 rounded opacity-90 transition-all duration-700"
                                 style={{ width: `${m.after}%` }}
                               />
                               <span className="relative z-10 text-[8px] font-black text-white pl-1 bg-black/10 rounded px-1">
@@ -848,7 +848,7 @@ export default function GoogleSlidesTwin({
                                 className="text-[10px] font-bold text-zinc-900 dark:text-zinc-50"
                               />
                               <span className={`text-[7px] font-black px-1 rounded uppercase ${
-                                svc.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                                svc.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                               }`}>
                                 {svc.priority}
                               </span>
@@ -875,7 +875,7 @@ export default function GoogleSlidesTwin({
                       <div className="flex flex-col gap-2 max-h-[145px] overflow-y-auto">
                         {(activeSlide.content.roadmap || []).map((step, idx) => (
                           <div key={idx} className="flex gap-2.5 items-start p-2 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-900">
-                            <span className="w-4.5 h-4.5 rounded-full orange-gradient-bg text-white text-[9px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="w-4.5 h-4.5 rounded-full bg-blue-600 text-white text-[9px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/20">
                               {idx + 1}
                             </span>
                             <EditableText
@@ -913,9 +913,9 @@ export default function GoogleSlidesTwin({
 
                   </div>
 
-                  {/* Orange Business logo footer */}
+                  {/* Logo footer */}
                   <div className="border-t border-zinc-100 dark:border-zinc-850 pt-2 flex justify-between items-center text-[8px] text-zinc-400 dark:text-zinc-500 shrink-0 z-10">
-                    <span className="font-bold">Orange Business Services — Copilote Onbora</span>
+                    <span className="font-bold">Copilote Onbora</span>
                     <span>Confidence level: 98%</span>
                   </div>
                 </>
@@ -943,7 +943,7 @@ export default function GoogleSlidesTwin({
               }}
               disabled={showImportView}
               rows={2}
-              className="w-full p-2 text-xs bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl outline-none focus:border-orange-500 text-zinc-800 dark:text-zinc-300 transition-all font-medium disabled:opacity-55"
+              className="w-full p-2 text-xs bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl outline-none focus:border-blue-600 text-zinc-800 dark:text-zinc-300 transition-all font-medium disabled:opacity-55"
               placeholder="Cliquez pour ajouter des notes sur le pitch client..."
             />
           </div>
@@ -965,13 +965,13 @@ export default function GoogleSlidesTwin({
             onClick={(e) => e.stopPropagation()} // prevent double advance
             className="w-full aspect-video max-w-4xl bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col justify-between p-12 relative overflow-hidden text-left"
           >
-            {/* Orange glowing background effect */}
-            <div className="absolute inset-0 bg-radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.04) 0%, transparent 80%) pointer-events-none" />
+            {/* Glowing background effect */}
+            <div className="absolute inset-0 bg-radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.04) 0%, transparent 80%) pointer-events-none" />
 
             {/* Slide title */}
             <div className="border-b border-zinc-800 pb-3 flex justify-between items-center shrink-0">
               <span className="text-xl font-black text-zinc-50 tracking-tight uppercase">{activeSlide.title}</span>
-              <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded border border-orange-500/20 bg-orange-500/10 text-orange-500 tracking-wider">
+              <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 tracking-wider">
                 {activeSlide.type}
               </span>
             </div>
@@ -1004,9 +1004,9 @@ export default function GoogleSlidesTwin({
                       ))}
                     </ul>
                   </div>
-                  <div className="flex flex-col gap-3 p-4 bg-orange-500/[0.02] border border-orange-500/10 rounded-xl">
-                    <span className="text-[9px] font-black uppercase text-orange-500 border-b border-orange-500/10 pb-1.5 flex items-center gap-1.5">
-                      <Icons.Check size={10} className="text-orange-500" /> Cible MSP (Après)
+                  <div className="flex flex-col gap-3 p-4 bg-blue-600/[0.02] border border-blue-600/10 rounded-xl">
+                    <span className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 border-b border-blue-600/10 pb-1.5 flex items-center gap-1.5">
+                      <Icons.Check size={10} className="text-blue-600 dark:text-blue-400" /> Cible MSP (Après)
                     </span>
                     <ul className="flex flex-col gap-2">
                       {(activeSlide.content.targetItems || []).map((item, idx) => (
@@ -1029,12 +1029,12 @@ export default function GoogleSlidesTwin({
                         <span className="font-semibold text-zinc-300">{m.label}</span>
                         <div className="flex gap-2 text-[10px] font-black">
                           <span className="text-zinc-500">Avant: {m.before}%</span>
-                          <span className="text-orange-500">Après: {m.after}%</span>
+                          <span className="text-blue-600 dark:text-blue-400">Après: {m.after}%</span>
                         </div>
                       </div>
                       <div className="relative h-6 bg-zinc-950 rounded-lg overflow-hidden border border-zinc-800 flex items-center px-1">
                         <div className="absolute left-0 top-0 bottom-0 bg-zinc-800/60 border-r border-zinc-700 w-1/5" style={{ width: `${m.before}%` }} />
-                        <div className="absolute left-0 top-0.5 bottom-0.5 orange-gradient-bg rounded opacity-90 w-4/5" style={{ width: `${m.after}%` }} />
+                        <div className="absolute left-0 top-0.5 bottom-0.5 bg-blue-600 rounded opacity-90 w-4/5" style={{ width: `${m.after}%` }} />
                         <span className="relative z-10 text-[9px] font-black text-white pl-2">
                           +{m.after - m.before}% gain de performance
                         </span>
@@ -1052,7 +1052,7 @@ export default function GoogleSlidesTwin({
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-bold text-zinc-100">{svc.name}</span>
                         <span className={`text-[8px] font-black px-1.5 rounded uppercase ${
-                          svc.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                          svc.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                         }`}>
                           {svc.priority}
                         </span>
@@ -1068,7 +1068,7 @@ export default function GoogleSlidesTwin({
                 <div className="flex flex-col gap-3">
                   {(activeSlide.content.roadmap || []).map((step, idx) => (
                     <div key={idx} className="flex gap-3 items-start p-3 rounded-xl bg-zinc-950/60 border border-zinc-800">
-                      <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/20">
                         {idx + 1}
                       </span>
                       <p className="text-xs text-zinc-300 leading-relaxed flex-1">{step}</p>
@@ -1084,9 +1084,9 @@ export default function GoogleSlidesTwin({
 
             </div>
 
-            {/* Orange Business logo footer */}
+            {/* Footer */}
             <div className="border-t border-zinc-800 pt-3 flex justify-between items-center text-[9px] text-zinc-500 shrink-0">
-              <span className="font-bold">Orange Business Services — Onbora Diagnostic d'Architecture Cible</span>
+              <span className="font-bold">Onbora Diagnostic d'Architecture Cible</span>
               <span>Diapositive {activeSlideIdx + 1} / {slides.length}</span>
             </div>
           </div>
@@ -1107,7 +1107,7 @@ export default function GoogleSlidesTwin({
                   <rect width="4" height="16" x="6" y="4" rx="1"/><rect width="4" height="16" x="14" y="4" rx="1"/>
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-orange-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-600">
                   <polygon points="6 3 20 12 6 21 6 3"/>
                 </svg>
               )}

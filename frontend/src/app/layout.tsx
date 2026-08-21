@@ -44,8 +44,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans relative overflow-x-hidden transition-colors duration-300">
         <div className="matrix-grid" />
         <div className="noise-overlay" />
-        <div className="glow-orb-orange-1" />
-        <div className="glow-orb-orange-2" />
         <AuthProvider>
           <div className="relative z-10 flex-1 flex flex-col">
             {children}

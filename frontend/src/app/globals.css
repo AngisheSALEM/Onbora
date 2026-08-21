@@ -7,10 +7,9 @@
   --background: #F8F9FA;
   --foreground: #000000;
 
-  /* Signature & Accent Colors */
+  /* Signature & Accent Colors (Pure Electric Blue #2563EB) */
   --color-primary-blue: #2563EB;
   --color-accent-blue-light: #60A5FA;
-  --color-brand-orange: #FF7900;
   
   /* Status Colors */
   --color-status-success: #10B981;
@@ -41,10 +40,9 @@
   --background: #141416;
   --foreground: #FFFFFF;
 
-  /* Signature & Accent Colors */
+  /* Signature & Accent Colors (Pure Electric Blue #2563EB) */
   --color-primary-blue: #2563EB;
   --color-accent-blue-light: #60A5FA;
-  --color-brand-orange: #FF7900;
 
   /* Standard Tailwind Overrides for Dark Mode (Studio Dark / OLED) */
   --color-zinc-50: #FFFFFF; /* Primary text & CTA */
@@ -75,16 +73,9 @@
   /* Custom Colors */
   --color-primary-blue: var(--color-primary-blue);
   --color-accent-blue-light: var(--color-accent-blue-light);
-  --color-brand-orange: var(--color-brand-orange);
   --color-status-success: var(--color-status-success);
   --color-status-warning: var(--color-status-warning);
   --color-status-error: var(--color-status-error);
-
-  /* Overriding Tailwind Orange with Brand Orange */
-  --color-orange-500: #FF7900;
-  --color-orange-600: #E56C00;
-  --color-orange-700: #CC6000;
-  --color-orange-400: #FF9433;
 
   /* Overriding Tailwind Blue with Brand Electric Blue */
   --color-blue-500: #2563EB;
@@ -167,7 +158,11 @@ body {
   background: #F4F4F5;
 }
 
-/* Blue Glow */
+/* Electric Blue Gradient & Glow */
+.blue-gradient-bg {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+}
+
 .glow-blue {
   box-shadow: 0 0 20px rgba(37, 99, 235, 0.20);
 }

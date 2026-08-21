@@ -1110,7 +1110,7 @@ export default function ClientDiscoveryPage() {
               {/* Nouvelle conversation Pill-Button */}
               <button
                 onClick={handleStartNewChat}
-                className="w-full py-2 px-4 rounded-full bg-brand-orange hover:bg-orange-600 text-white text-xs font-extrabold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
+                className="w-full py-2 px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-[0_0_20px_rgba(37,99,235,0.20)] hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
               >
                 <span className="text-sm font-light">+</span> Nouvelle conversation
               </button>
@@ -1122,13 +1122,13 @@ export default function ClientDiscoveryPage() {
             <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-4">
               
               {/* Section Formations (Gemini Notebooks Style) */}
-              <div className="border border-zinc-200 dark:border-zinc-850 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
-                <div className="w-full px-3 py-2 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-100/50 dark:bg-zinc-900/50">
+              <div className="studio-card p-3 overflow-hidden shadow-sm">
+                <div className="w-full pb-2 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80">
                   <button
                     onClick={() => setFormationsExpanded(!formationsExpanded)}
                     className="flex items-center gap-2 text-left font-bold text-[10px] uppercase tracking-wider text-zinc-800 dark:text-zinc-200 cursor-pointer"
                   >
-                    <Icons.Briefcase size={14} className="text-orange-500 shrink-0" />
+                    <Icons.Briefcase size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>Formations</span>
                     <span className="text-zinc-400 font-normal flex items-center shrink-0 ml-1">
                       {formationsExpanded ? <Icons.ChevronLeft size={10} className="-rotate-90 transition-transform" /> : <Icons.ChevronLeft size={10} className="rotate-90 transition-transform" />}
@@ -1141,7 +1141,7 @@ export default function ClientDiscoveryPage() {
                         setTrainings(prev => [...prev, { id: String(Date.now()), title }]);
                       }
                     }}
-                    className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-extrabold text-orange-500 cursor-pointer flex items-center justify-center transition-colors"
+                    className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 cursor-pointer flex items-center justify-center transition-colors"
                     title="Ajouter une nouvelle session de formation"
                   >
                     + Nouveau
@@ -1149,7 +1149,7 @@ export default function ClientDiscoveryPage() {
                 </div>
 
                 {formationsExpanded && (
-                  <div className="p-2 flex flex-col gap-1 bg-zinc-50/30 dark:bg-zinc-950/20 max-h-[180px] overflow-y-auto">
+                  <div className="pt-2 flex flex-col gap-1 max-h-[180px] overflow-y-auto">
                     {trainings.map((t) => (
                       <button
                         key={t.id}
@@ -1169,13 +1169,13 @@ export default function ClientDiscoveryPage() {
 
               {/* Accordion: Suivi des Commandes (Visible ONLY if qualified) */}
               {isQualified && recommendations.length > 0 && (
-                <div className="border border-zinc-200 dark:border-zinc-850 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+                <div className="studio-card p-3 overflow-hidden shadow-sm">
                   <button
                     onClick={() => toggleSection('orders')}
-                    className="w-full px-3.5 py-2.5 flex items-center justify-between text-left font-bold text-[10px] uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-100/50 dark:bg-zinc-900/50 hover:bg-zinc-150/60 dark:hover:bg-zinc-850/50 transition-all cursor-pointer text-zinc-800 dark:text-zinc-200"
+                    className="w-full pb-2 flex items-center justify-between text-left font-bold text-[10px] uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800/80 hover:opacity-80 transition-all cursor-pointer text-zinc-800 dark:text-zinc-200"
                   >
                     <span className="flex items-center gap-2">
-                      <Icons.Folder size={14} className="text-orange-500 shrink-0" /> Suivi des Commandes
+                      <Icons.Folder size={14} className="text-blue-600 dark:text-blue-400 shrink-0" /> Suivi des Commandes
                     </span>
                     <span className="text-zinc-400 font-normal flex items-center shrink-0">
                       {expandedSections.includes('orders') ? <Icons.ChevronLeft size={12} className="-rotate-90 transition-transform" /> : <Icons.ChevronLeft size={12} className="rotate-90 transition-transform" />}
@@ -1183,7 +1183,7 @@ export default function ClientDiscoveryPage() {
                   </button>
 
                   {expandedSections.includes('orders') && (
-                    <div className="p-3 flex flex-col gap-2.5 bg-zinc-50/30 dark:bg-zinc-950/20 max-h-[280px] overflow-y-auto">
+                    <div className="pt-3 flex flex-col gap-2.5 max-h-[280px] overflow-y-auto">
                       {recommendations.map((service, idx) => {
                         const provStatus = dossierDetails?.raw_conversation_data?.provisioning?.[mapServiceNameToKey(service.name)] || 
                                            (transmissionSuccess ? 'COMMANDÉ' : 'BROUILLON');
@@ -1192,10 +1192,10 @@ export default function ClientDiscoveryPage() {
                         let statusLabel = 'Devis';
                         
                         if (provStatus === 'COMMANDÉ' || provStatus === 'PENDING') {
-                          statusColor = 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+                          statusColor = 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20';
                           statusLabel = 'Commandé';
                         } else if (provStatus === 'PROVISIONING' || provStatus === 'IN_PROGRESS') {
-                          statusColor = 'bg-orange-500/10 text-orange-500 border border-orange-500/20 animate-pulse';
+                          statusColor = 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 animate-pulse';
                           statusLabel = 'Acquisition';
                         } else if (provStatus === 'COMPLETED' || provStatus === 'ACTIVE') {
                           statusColor = 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
@@ -1207,7 +1207,7 @@ export default function ClientDiscoveryPage() {
                             key={idx}
                             onClick={async () => {
                               // Trigger chatbot explanation for this service
-                              const query = `Donne-moi des détails techniques, le fonctionnement et l'utilité du service "${service.name}" que j'ai commandé chez Orange Business.`;
+                              const query = `Donne-moi des détails techniques, le fonctionnement et l'utilité du service "${service.name}" que j'ai commandé.`;
                               setInputValue('');
                               setLoading(true);
                               
@@ -1242,10 +1242,10 @@ export default function ClientDiscoveryPage() {
                                 setLoading(false);
                               }
                             }}
-                            className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-orange-500/50 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-1 group"
+                            className="p-3 rounded-xl studio-subcard hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-1 group"
                           >
                             <div className="flex justify-between items-start gap-1">
-                              <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-orange-500 transition-colors leading-tight">
+                              <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 transition-colors leading-tight">
                                 {service.name}
                               </h4>
                               <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-full uppercase shrink-0 scale-90 ${statusColor}`}>
@@ -1263,23 +1263,23 @@ export default function ClientDiscoveryPage() {
                       <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2.5 flex flex-col gap-2 shrink-0">
                         <button
                           onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/discovery/conversations/${conversationId}/export/`, '_blank')}
-                          className="w-full py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-800 dark:text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-800 dark:text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Icons.Download size={12} /> Exporter Twin (PDF)
                         </button>
 
                         {transmissionSuccess ? (
-                          <div className="p-2 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-lg text-[9px] font-semibold text-center animate-fade-in flex flex-col leading-normal">
+                          <div className="p-2 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-xl text-[9px] font-semibold text-center animate-fade-in flex flex-col leading-normal">
                             <span>✓ Dossier contractuel transmis !</span>
-                            <span className="text-[8px] text-orange-400">
-                              {dossierDetails?.is_complete ? "Dossier complet." : "Le KAM vous contactera par téléphone."}
+                            <span className="text-[8px] text-blue-500 dark:text-blue-300">
+                              {dossierDetails?.is_complete ? "Dossier complet." : "Le conseiller vous contactera par téléphone."}
                             </span>
                           </div>
                         ) : (
                           <button
                             onClick={() => setContractModalOpen(true)}
                             disabled={transmitting}
-                            className="w-full py-2 orange-gradient-bg hover:opacity-90 text-white rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-orange-500/10"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                           >
                             {transmitting ? 'Envoi...' : 'Transmettre au KAM'}
                           </button>
@@ -1305,9 +1305,9 @@ export default function ClientDiscoveryPage() {
                       <button
                         key={conv.id}
                         onClick={() => handleSelectHistoryConversation(conv.id)}
-                        className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-between group cursor-pointer ${
+                        className={`w-full text-left py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-between group cursor-pointer ${
                           isActive
-                            ? 'bg-orange-500/10 text-orange-500 font-bold border-l-2 border-orange-500 pl-2.5'
+                            ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold border-l-2 border-blue-600 pl-2.5'
                             : 'text-zinc-655 hover:bg-zinc-150/50 dark:text-zinc-400 dark:hover:bg-zinc-900/50'
                         }`}
                       >
@@ -1331,15 +1331,15 @@ export default function ClientDiscoveryPage() {
             <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none">
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Photo d'avatar (Initials badge) */}
-                <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
                   {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
                   <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">
-                    {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Salem Balagizi'}
+                    {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Client'}
                   </span>
                   <span className="text-[9px] text-zinc-500 truncate">
-                    {user?.company_name || 'Client Orange'}
+                    {user?.company_name || 'Client B2B'}
                   </span>
                 </div>
               </div>
@@ -1359,8 +1359,8 @@ export default function ClientDiscoveryPage() {
           {sidebarOpen && (
             <div
               onPointerDown={startResizing}
-              className={`hidden md:block w-[3px] hover:w-[5px] bg-zinc-200 hover:bg-orange-500/40 active:bg-orange-500 dark:bg-zinc-900 dark:hover:bg-orange-500/30 transition-all cursor-col-resize h-full shrink-0 z-20 ${
-                isResizing ? '!bg-orange-500 w-[5px]' : ''
+              className={`hidden md:block w-[3px] hover:w-[5px] bg-zinc-200 hover:bg-blue-600/40 active:bg-blue-600 dark:bg-zinc-900 dark:hover:bg-blue-600/30 transition-all cursor-col-resize h-full shrink-0 z-20 ${
+                isResizing ? '!bg-blue-600 w-[5px]' : ''
               }`}
               title="Faites glisser pour redimensionner l'historique"
             />
@@ -1398,7 +1398,7 @@ export default function ClientDiscoveryPage() {
                 />
                 <button
                   onClick={startVoiceCall}
-                  className="flex px-3 py-1.5 rounded-lg border border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-500 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-sm shadow-orange-500/10"
+                  className="flex px-3 py-1.5 rounded-xl border border-blue-600 bg-blue-600/10 hover:bg-blue-600 hover:text-white text-xs font-bold text-blue-600 dark:text-blue-400 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                   title="Commencer un chat vocal direct avec Onbora"
                 >
                   <Icons.Phone size={14} />
@@ -1413,7 +1413,7 @@ export default function ClientDiscoveryPage() {
                 <div className="w-full max-w-2xl relative p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xl flex flex-col gap-4">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-150 dark:border-zinc-850">
                     <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
-                      <Icons.Sparkles size={14} className="text-orange-500 shrink-0 animate-pulse" /> Présentation du Diagnostic d'Architecture Cible
+                      <Icons.Sparkles size={14} className="text-blue-600 dark:text-blue-400 shrink-0 animate-pulse" /> Présentation du Diagnostic d'Architecture Cible
                     </h3>
                     <button
                       onClick={() => setActiveSlideIndex(null)}
@@ -1452,8 +1452,8 @@ export default function ClientDiscoveryPage() {
                   <div
                     className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       msg.sender === 'USER'
-                        ? 'orange-gradient-bg text-white rounded-tr-none'
-                        : 'glass-card text-zinc-800 dark:text-zinc-100 rounded-tl-none'
+                        ? 'bg-blue-600 text-white rounded-tr-none'
+                        : 'studio-card text-zinc-800 dark:text-zinc-100 rounded-tl-none'
                     }`}
                   >
                     {msg.content}
@@ -1465,7 +1465,7 @@ export default function ClientDiscoveryPage() {
                         type="button"
                         onClick={() => speakText(msg.content, msg.id)}
                         className={`px-2.5 py-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold ${
-                          currentlyPlayingMsgId === msg.id ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                          currentlyPlayingMsgId === msg.id ? 'text-blue-600 dark:text-blue-400 bg-blue-600/10' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                         }`}
                         title={currentlyPlayingMsgId === msg.id ? "Arrêter la lecture" : "Écouter le message (TTS)"}
                       >
@@ -1489,7 +1489,7 @@ export default function ClientDiscoveryPage() {
                               sendMessageAPI(msg.retry_payload);
                             }
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-orange-500 text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold shadow-sm"
+                          className="px-2.5 py-1 rounded-lg bg-blue-600 text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold shadow-sm"
                           title="Réessayer de renvoyer le message"
                         >
                           <Icons.Refresh size={11} /> Réessayer
@@ -1520,7 +1520,7 @@ export default function ClientDiscoveryPage() {
               {loading && (
                 <div className="mr-auto items-start flex flex-col max-w-[85%]">
                   <span className="text-[10px] font-bold text-zinc-500 mb-1">Onbora Copilot</span>
-                  <div className="px-4 py-3 rounded-2xl glass-card rounded-tl-none flex items-center gap-1">
+                  <div className="px-4 py-3 rounded-2xl studio-card rounded-tl-none flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                     <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                     <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -1531,7 +1531,7 @@ export default function ClientDiscoveryPage() {
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSendMessage} className="p-4 bg-white/80 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-900 shrink-0 glass-form">
+            <form onSubmit={handleSendMessage} className="p-4 bg-white/80 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-900 shrink-0">
               <div className="relative flex items-center">
                 <input
                   id="chat-input-field"
@@ -1541,12 +1541,12 @@ export default function ClientDiscoveryPage() {
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={
                     transmissionSuccess
-                      ? "Dossier transmis au KAM. Posez une question au copilote..."
+                      ? "Dossier transmis au conseiller. Posez une question au copilote..."
                       : isQualified
                       ? "Posez une question ou dites que vous voulez envoyer votre dossier au KAM..."
                       : "Répondez au copilote Onbora..."
                   }
-                  className="w-full pl-4 pr-24 py-3 rounded-xl border border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50 disabled:opacity-60"
+                  className="w-full pl-4 pr-24 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:border-blue-600 transition-all text-zinc-950 dark:text-white disabled:opacity-60"
                 />
                 <div className="absolute right-2 flex items-center gap-1.5">
                   <button
@@ -1555,7 +1555,7 @@ export default function ClientDiscoveryPage() {
                     onClick={toggleSpeechToText}
                     className={`p-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
                       isListening 
-                        ? 'bg-orange-500 text-white animate-pulse' 
+                        ? 'bg-blue-600 text-white animate-pulse' 
                         : 'text-zinc-400 hover:text-zinc-200 bg-transparent hover:bg-zinc-800/40'
                     }`}
                     title={isListening ? "Arrêter l'écoute" : "Dicter (Speech-to-Text)"}
@@ -1565,7 +1565,7 @@ export default function ClientDiscoveryPage() {
                   <button
                     type="submit"
                     disabled={loading || !inputValue.trim()}
-                    className="px-3 py-1.5 orange-gradient-bg hover:opacity-90 active:scale-98 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-40 cursor-pointer"
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-40 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                   >
                     Envoyer
                   </button>
@@ -1583,7 +1583,7 @@ export default function ClientDiscoveryPage() {
         initialModuleId={selectedTrainingId}
         onAskCopilot={(stepTitle, moduleTitle) => {
           setTrainingOpen(false);
-          const query = `Je suis bloqué sur l'étape "${stepTitle}" du module de formation "${moduleTitle}". Peux-tu m'expliquer en détail ce que je dois faire et comment fonctionne cette solution Orange ?`;
+          const query = `Je suis bloqué sur l'étape "${stepTitle}" du module de formation "${moduleTitle}". Peux-tu m'expliquer en détail ce que je dois faire ?`;
           setInputValue(query);
           setTimeout(() => {
             const input = document.getElementById('chat-input-field') as HTMLInputElement;
@@ -1609,7 +1609,7 @@ export default function ClientDiscoveryPage() {
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${
                 callState === 'listening' ? 'bg-green-500 animate-pulse' : 
-                callState === 'thinking' ? 'bg-orange-500 animate-spin' : 
+                callState === 'thinking' ? 'bg-blue-600 animate-spin' : 
                 'bg-blue-500 animate-pulse'
               }`} />
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
@@ -1624,10 +1624,10 @@ export default function ClientDiscoveryPage() {
           <div className="flex-1 flex flex-col justify-center items-center gap-8 max-w-md w-full mx-auto">
             <div className="relative flex justify-center items-center w-full h-48">
               {/* Outer glowing pulsing orb */}
-              <div className={`absolute w-48 h-48 rounded-full border border-orange-500/10 transition-all duration-1000 ${
-                callState === 'listening' ? 'scale-110 bg-orange-500/[0.02] animate-pulse' : 
-                callState === 'thinking' ? 'scale-90 bg-purple-500/[0.02]' : 
-                'scale-105 bg-blue-500/[0.03] animate-pulse'
+              <div className={`absolute w-48 h-48 rounded-full border border-blue-600/20 transition-all duration-1000 ${
+                callState === 'listening' ? 'scale-110 bg-blue-600/[0.05] animate-pulse' : 
+                callState === 'thinking' ? 'scale-90 bg-blue-500/[0.05]' : 
+                'scale-105 bg-blue-500/[0.05] animate-pulse'
               }`} />
               
               <canvas 
@@ -1654,7 +1654,7 @@ export default function ClientDiscoveryPage() {
               
               {callTranscriptAi && (
                 <div className="p-4 rounded-2xl bg-zinc-900/65 border border-zinc-800/80 max-h-40 overflow-y-auto text-left shadow-lg">
-                  <p className="text-[10px] font-bold text-orange-400 mb-1">Onbora :</p>
+                  <p className="text-[10px] font-bold text-blue-400 mb-1">Onbora :</p>
                   <p className="text-xs text-zinc-200 leading-relaxed">
                     {callTranscriptAi}
                   </p>
@@ -1693,9 +1693,9 @@ export default function ClientDiscoveryPage() {
       {/* Contract Signature Information Modal */}
       {contractModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-2xl p-6 shadow-xl flex flex-col gap-4 animate-scale-in text-black dark:text-zinc-50">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col gap-4 animate-scale-in text-black dark:text-zinc-50">
             <div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Engagement Contractuel Orange Business</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Engagement Contractuel Client</h3>
               <p className="text-[11px] text-zinc-505 dark:text-zinc-400 mt-1">
                 Veuillez renseigner les informations réglementaires de signature de contrat pour finaliser votre dossier.
               </p>
@@ -1709,7 +1709,7 @@ export default function ClientDiscoveryPage() {
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="Ex: Jean Dupont"
-                  className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                  className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -1720,7 +1720,7 @@ export default function ClientDiscoveryPage() {
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="Ex: +33 6 12 34 56 78"
-                  className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                  className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -1731,7 +1731,7 @@ export default function ClientDiscoveryPage() {
                   value={rccm}
                   onChange={(e) => setRccm(e.target.value)}
                   placeholder="Ex: RCCM-BF-OUA-2023-B-1234"
-                  className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                  className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -1742,16 +1742,16 @@ export default function ClientDiscoveryPage() {
                   onChange={(e) => setBillingAddress(e.target.value)}
                   placeholder="Adresse postale complète, Code de facturation, Ville..."
                   rows={2}
-                  className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 resize-none"
+                  className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 resize-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-3 mt-3">
               <button
                 type="button"
                 onClick={() => setContractModalOpen(false)}
-                className="flex-1 py-2 rounded-lg border border-zinc-205 dark:border-zinc-850 bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl border border-zinc-205 dark:border-zinc-850 bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer"
               >
                 Annuler
               </button>
@@ -1759,7 +1759,7 @@ export default function ClientDiscoveryPage() {
                 type="button"
                 onClick={handleTransmit}
                 disabled={transmitting || !contactName.trim() || !contactPhone.trim() || !rccm.trim() || !billingAddress.trim()}
-                className="flex-1 py-2 orange-gradient-bg text-white text-xs font-bold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-orange-500/10"
+                className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
               >
                 {transmitting ? 'Transmission...' : 'Valider & Transmettre'}
               </button>

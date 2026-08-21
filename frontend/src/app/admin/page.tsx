@@ -424,7 +424,7 @@ export default function AdminDashboard() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-zinc-700 border-t-orange-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-zinc-700 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -473,7 +473,7 @@ export default function AdminDashboard() {
             {/* Header info */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
               <div>
-                <span className="px-2.5 py-0.5 w-fit bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wider uppercase shadow-sm shadow-orange-500/20">
+                <span className="px-2.5 py-0.5 w-fit bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full text-[9px] font-bold tracking-wider uppercase shadow-sm shadow-blue-500/20">
                   Supervision Back-office & Territoires
                 </span>
                 <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-2 uppercase">Console Superviseur Onbora</h2>
@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab('territory')}
                   className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'territory'
-                      ? 'bg-orange-500 text-white shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
@@ -498,7 +498,7 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab('supervision')}
                   className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'supervision'
-                      ? 'bg-orange-500 text-white shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
@@ -508,7 +508,7 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab('catalog')}
                   className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'catalog'
-                      ? 'bg-orange-500 text-white shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
@@ -730,16 +730,16 @@ export default function AdminDashboard() {
                     </div>
                     <button
                       onClick={() => handleOpenModal()}
-                      className="px-3.5 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-orange-500/20 hover:bg-orange-600 cursor-pointer transition-all animate-pulse hover:animate-none"
+                      className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)] hover:bg-blue-700 cursor-pointer transition-all animate-pulse hover:animate-none"
                     >
                       <Icons.Sparkles size={12} /> Ajouter un service
                     </button>
                   </div>
 
                   {/* Intelligent Document Ingestion Zone */}
-                  <div className="glass-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-850 shadow-sm flex flex-col md:flex-row gap-6 items-stretch">
+                  <div className="studio-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-stretch">
                     {/* Left: upload drag zone */}
-                    <div className="flex-1 flex flex-col justify-center items-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-colors relative cursor-pointer group">
+                    <div className="flex-1 flex flex-col justify-center items-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center hover:border-blue-600/50 transition-colors relative cursor-pointer group">
                       <input
                         type="file"
                         accept=".pdf,.docx,image/*,video/*"
@@ -750,7 +750,7 @@ export default function AdminDashboard() {
                       
                       {uploadStage === 'idle' ? (
                         <div className="flex flex-col items-center gap-2 text-zinc-500">
-                          <div className="p-3 bg-orange-500/10 text-orange-500 rounded-xl group-hover:scale-105 transition-transform duration-200">
+                          <div className="p-3 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-xl group-hover:scale-105 transition-transform duration-200">
                             <Icons.Download size={24} className="rotate-180" />
                           </div>
                           <span className="text-xs font-bold text-zinc-800 dark:text-zinc-250">Import Mensuel Intelligent</span>
@@ -765,8 +765,8 @@ export default function AdminDashboard() {
                           <span className="text-[10px] text-zinc-400">Importez les services extraits à droite ou importez un autre fichier.</span>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-4 text-orange-500 py-3">
-                          <div className="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+                        <div className="flex flex-col items-center gap-4 text-blue-600 py-3">
+                          <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
                           <div className="flex flex-col gap-1">
                             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                               {uploadStage === 'uploading' && "Téléversement du fichier..."}
@@ -782,7 +782,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Right: proposed items or status info */}
-                    <div className="flex-1 flex flex-col justify-between min-h-[160px] bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 p-5 rounded-2xl">
+                    <div className="flex-1 flex flex-col justify-between min-h-[160px] studio-subcard p-5 rounded-2xl">
                       {proposedServices.length > 0 ? (
                         <div className="flex flex-col gap-4 h-full justify-between">
                           <div>
@@ -796,7 +796,7 @@ export default function AdminDashboard() {
                                     setSelectedProposedIndices(proposedServices.map((_, i) => i));
                                   }
                                 }}
-                                className="text-[9px] font-black text-orange-500 uppercase hover:underline cursor-pointer"
+                                className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase hover:underline cursor-pointer"
                               >
                                 {selectedProposedIndices.length === proposedServices.length ? "Tout désélectionner" : "Tout sélectionner"}
                               </button>
@@ -813,7 +813,7 @@ export default function AdminDashboard() {
                                         prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
                                       );
                                     }}
-                                    className="accent-orange-500 cursor-pointer"
+                                    className="accent-blue-600 cursor-pointer"
                                   />
                                   <div className="flex-1">
                                     <span className="font-bold text-zinc-800 dark:text-zinc-200">{s.name}</span>
@@ -827,7 +827,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={handleImportProposed}
                             disabled={selectedProposedIndices.length === 0}
-                            className="w-full py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-400 text-white rounded-lg text-xs font-bold shadow-sm shadow-orange-500/10 cursor-pointer flex items-center justify-center gap-1.5 transition-all mt-3"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-lg text-xs font-bold shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer flex items-center justify-center gap-1.5 transition-all mt-3"
                           >
                             <Icons.Sparkles size={12} /> Importer les services sélectionnés ({selectedProposedIndices.length})
                           </button>
@@ -849,12 +849,12 @@ export default function AdminDashboard() {
 
                   {loadingServices ? (
                     <div className="flex justify-center p-12">
-                      <div className="w-6 h-6 border-2 border-zinc-750 border-t-orange-500 rounded-full animate-spin" />
+                      <div className="w-6 h-6 border-2 border-zinc-750 border-t-blue-600 rounded-full animate-spin" />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {services.map(s => (
-                        <div key={s.id} className="glass-card rounded-2xl p-5 border border-zinc-200 dark:border-zinc-850 hover:border-orange-500/30 transition-all flex flex-col gap-4 shadow-sm relative group">
+                        <div key={s.id} className="studio-card p-5 hover:shadow-md transition-all flex flex-col gap-4 relative group">
                           
                           {/* Badges */}
                           <div className="flex justify-between items-start">
@@ -871,7 +871,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => handleOpenModal(s)}
-                                className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 transition-colors cursor-pointer"
+                                className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors cursor-pointer"
                                 title="Modifier"
                               >
                                 <Icons.Edit size={12} />
@@ -881,37 +881,21 @@ export default function AdminDashboard() {
                                 className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors cursor-pointer"
                                 title="Supprimer"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/>
-                                </svg>
+                                <Icons.Trash2 size={12} />
                               </button>
                             </div>
                           </div>
 
-                          {/* Details */}
-                          <div>
-                            <h4 className="text-xs font-black uppercase text-zinc-900 dark:text-zinc-50">{s.name}</h4>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-3 leading-relaxed">{s.description}</p>
+                          {/* Content */}
+                          <div className="flex flex-col gap-1.5">
+                            <h4 className="text-xs font-bold leading-snug">{s.name}</h4>
+                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-3 leading-relaxed">{s.description}</p>
                           </div>
 
-                          <div className="border-t border-zinc-100 dark:border-zinc-850 pt-3 flex flex-col gap-2 mt-auto">
-                            <div>
-                              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Avantages clients :</span>
-                              <p className="text-[9px] text-zinc-600 dark:text-zinc-300 mt-0.5 italic">✓ {s.benefits}</p>
-                            </div>
-                            
-                            {s.technical_requirements && Object.keys(s.technical_requirements).length > 0 && (
-                              <div>
-                                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Prérequis techniques :</span>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {Object.entries(s.technical_requirements).map(([key, val]: any) => (
-                                    <span key={key} className="text-[8px] font-semibold bg-zinc-100 dark:bg-zinc-850 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-800">
-                                      {key}: {String(val)}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                          {/* Benefits footer */}
+                          <div className="border-t border-zinc-100 dark:border-zinc-900 pt-3 flex flex-col gap-1">
+                            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">Avantages</span>
+                            <span className="text-[10px] text-zinc-600 dark:text-zinc-300 font-medium line-clamp-2 leading-relaxed">{s.benefits}</span>
                           </div>
                         </div>
                       ))}
@@ -927,7 +911,7 @@ export default function AdminDashboard() {
                       </div>
                       <button
                         onClick={() => handleOpenFaqModal()}
-                        className="px-3.5 py-1.5 bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                        className="px-3.5 py-1.5 bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600/20 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
                       >
                         <Icons.Sparkles size={12} /> Ajouter une FAQ
                       </button>
@@ -935,7 +919,7 @@ export default function AdminDashboard() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {faqs.map(faq => (
-                        <div key={faq.id} className="glass-card rounded-2xl p-5 border border-zinc-200 dark:border-zinc-850 hover:border-orange-500/30 transition-all flex flex-col gap-3 relative group">
+                        <div key={faq.id} className="studio-card p-5 hover:shadow-md transition-all flex flex-col gap-3 relative group">
                           <div className="flex justify-between items-center">
                             <span className="px-2 py-0.5 rounded-full text-[8px] font-bold bg-zinc-100 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 uppercase tracking-wider">
                               {faq.category}
@@ -944,7 +928,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => handleOpenFaqModal(faq)}
-                                className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 transition-colors cursor-pointer"
+                                className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors cursor-pointer"
                                 title="Modifier"
                               >
                                 <Icons.Edit size={10} />
@@ -954,15 +938,13 @@ export default function AdminDashboard() {
                                 className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors cursor-pointer"
                                 title="Supprimer"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/>
-                                </svg>
+                                <Icons.Trash2 size={10} />
                               </button>
                             </div>
                           </div>
                           <div>
                             <h4 className="text-xs font-black text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
-                              <Icons.HelpCircle size={14} className="text-orange-500 shrink-0" />
+                              <Icons.HelpCircle size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
                               {faq.question}
                             </h4>
                             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-2 bg-zinc-50/50 dark:bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-900/60 leading-relaxed font-medium">
@@ -1008,7 +990,7 @@ export default function AdminDashboard() {
                         value={formName}
                         onChange={e => setFormName(e.target.value)}
                         placeholder="Ex: Fibre Optique d'Entreprise"
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -1017,7 +999,7 @@ export default function AdminDashboard() {
                       <select
                         value={formCategory}
                         onChange={e => setFormCategory(e.target.value)}
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       >
                         <option value="CONNECTIVITY">Connectivité</option>
                         <option value="CLOUD">Cloud / Hébergement</option>
@@ -1035,7 +1017,7 @@ export default function AdminDashboard() {
                         value={formDescription}
                         onChange={e => setFormDescription(e.target.value)}
                         placeholder="Description complète de l'offre..."
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500 resize-none"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600 resize-none"
                       />
                     </div>
 
@@ -1047,7 +1029,7 @@ export default function AdminDashboard() {
                         value={formBenefits}
                         onChange={e => setFormBenefits(e.target.value)}
                         placeholder="Ex: Disponibilité garantie 99.9%, débits symétriques."
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -1058,7 +1040,7 @@ export default function AdminDashboard() {
                         required
                         value={formTechnical}
                         onChange={e => setFormTechnical(e.target.value)}
-                        className="p-2 text-xs font-mono rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs font-mono rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -1072,7 +1054,7 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         type="submit"
-                        className="px-3.5 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-bold hover:bg-orange-600 transition-all cursor-pointer shadow-sm"
+                        className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                       >
                         Enregistrer
                       </button>
@@ -1107,7 +1089,7 @@ export default function AdminDashboard() {
                         value={faqQuestion}
                         onChange={e => setFaqQuestion(e.target.value)}
                         placeholder="Ex: Comment activer mon abonnement ?"
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       />
                     </div>
 
@@ -1116,7 +1098,7 @@ export default function AdminDashboard() {
                       <select
                         value={faqCategory}
                         onChange={e => setFaqCategory(e.target.value)}
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600"
                       >
                         <option value="GENERAL">Général</option>
                         <option value="CONNECTIVITY">Connectivité</option>
@@ -1133,7 +1115,7 @@ export default function AdminDashboard() {
                         value={faqAnswer}
                         onChange={e => setFaqAnswer(e.target.value)}
                         placeholder="Saisissez la réponse détaillée..."
-                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-orange-500 resize-none"
+                        className="p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 outline-none focus:border-blue-600 resize-none"
                       />
                     </div>
 
@@ -1147,7 +1129,7 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         type="submit"
-                        className="px-3.5 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-bold hover:bg-orange-600 transition-all cursor-pointer shadow-sm"
+                        className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                       >
                         Enregistrer
                       </button>

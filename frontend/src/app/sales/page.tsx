@@ -485,12 +485,12 @@ export default function SalesDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
+            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
               Intégration simulée pour le MVP
             </span>
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial Orange</p>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial</p>
             </div>
             <ThemeToggle />
             <TrainingLauncher 
@@ -514,7 +514,7 @@ export default function SalesDashboard() {
                 onClick={() => setActiveTab('workflow')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'workflow'
-                    ? 'orange-gradient-bg text-white shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
                 }`}
               >
@@ -528,7 +528,7 @@ export default function SalesDashboard() {
                 onClick={() => setActiveTab('slides')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'slides'
-                    ? 'orange-gradient-bg text-white shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
                 }`}
               >
@@ -560,13 +560,13 @@ export default function SalesDashboard() {
           
           {/* Step 1: Search & targeting */}
           {step === 'search' && (
-            <div className="glass-card rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
+            <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
               <div className="flex flex-col gap-2">
-                <span className="mr-auto px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                <span className="mr-auto px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
                   Ciblage
                 </span>
                 <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Sélectionner l'entreprise cible</h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Recherchez une entreprise. Notre outil simulera un scraping web et consultera le CRM pour pré-remplir la fiche.</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Recherchez une entreprise. Notre outil consultera la base pour pré-remplir la fiche.</p>
               </div>
 
               <div className="relative">
@@ -575,10 +575,10 @@ export default function SalesDashboard() {
                   placeholder="Tapez le nom d'une entreprise (ex: Cabinet Médical Santé, TechSoft...)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-blue-600 transition-all text-zinc-900 dark:text-zinc-50"
                 />
                 {searching && (
-                  <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-zinc-700 border-t-orange-500 rounded-full animate-spin" />
+                  <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-zinc-700 border-t-blue-600 rounded-full animate-spin" />
                 )}
                 {/* Suggestions */}
                 {enterprises.length > 0 && (
@@ -597,7 +597,7 @@ export default function SalesDashboard() {
                             <span>{ent.location}</span>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-orange-500">Préparer la visite →</span>
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Préparer la visite →</span>
                       </button>
                     ))}
                   </div>
@@ -612,9 +612,9 @@ export default function SalesDashboard() {
                 <>
                   {/* Step 2: Brief pre-visit */}
                   {step === 'brief' && (
-                    <div className="glass-card rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
+                    <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
                       <div className="flex justify-between items-center">
-                        <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
                           Brief Pré-Visite
                         </span>
                         <button
@@ -648,10 +648,11 @@ export default function SalesDashboard() {
                             <div className="h-20 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
                               <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-11/12" />
                               <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-full" />
+                              <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-full" />
                               <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-md w-3/4" />
                             </div>
                           </div>
-                          <p className="text-xs text-zinc-500 italic mt-2">Scraping du site web & consultation CRM en cours...</p>
+                          <p className="text-xs text-zinc-500 italic mt-2">Consultation de la fiche et analyse du contexte...</p>
                         </div>
                       ) : visitPrep ? (
                         <div className="flex flex-col gap-6">
@@ -669,8 +670,8 @@ export default function SalesDashboard() {
                           </div>
 
                           {/* Objective */}
-                          <div className="p-4 bg-orange-500/5 border border-orange-500/10 rounded-xl flex flex-col gap-1">
-                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wide">Objectif de la visite</span>
+                          <div className="p-4 bg-blue-600/5 border border-blue-600/10 rounded-xl flex flex-col gap-1">
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Objectif de la visite</span>
                             <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-normal">{visitPrep.meeting_objective}</p>
                           </div>
 
@@ -700,7 +701,7 @@ export default function SalesDashboard() {
 
                           <button
                             onClick={handleStartVisit}
-                            className="w-full py-3 orange-gradient-bg hover:opacity-90 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer"
                           >
                             Démarrer le Rendez-vous →
                           </button>
@@ -711,7 +712,7 @@ export default function SalesDashboard() {
 
                   {/* Step 3: Active Visit Mode */}
                   {step === 'visit' && (
-                    <div className="w-full flex flex-col gap-5 glass-card rounded-2xl p-6 shadow-sm justify-between bg-white dark:bg-zinc-950/20 animate-fade-in">
+                    <div className="w-full flex flex-col gap-5 studio-card p-6 shadow-sm justify-between animate-fade-in">
                       <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
                         <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
                           Rendez-vous en cours
@@ -722,7 +723,7 @@ export default function SalesDashboard() {
                       </div>
 
                       {/* Dictaphone Audio Recorder */}
-                      <div className="bg-zinc-100 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex flex-col items-center gap-4 w-full">
+                      <div className="studio-subcard rounded-2xl p-6 flex flex-col items-center gap-4 w-full">
                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
                         
                         <div className="flex flex-col items-center gap-4 mt-2">
@@ -732,7 +733,7 @@ export default function SalesDashboard() {
                             className={`w-16 h-16 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md disabled:opacity-50 ${
                               isRecording
                                 ? 'bg-red-500 hover:bg-red-650 text-white scale-105 animate-pulse'
-                                : 'orange-gradient-bg hover:opacity-90 text-white'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             }`}
                           >
                             {isRecording ? (
@@ -750,8 +751,8 @@ export default function SalesDashboard() {
                           )}
 
                           {isProcessingAudio && (
-                            <div className="flex items-center gap-2 text-[10px] text-orange-500 font-bold">
-                              <div className="w-3.5 h-3.5 border-2 border-zinc-350 border-t-orange-500 rounded-full animate-spin" />
+                            <div className="flex items-center gap-2 text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                              <div className="w-3.5 h-3.5 border-2 border-zinc-350 border-t-blue-600 rounded-full animate-spin" />
                               <span>Transcription par Whisper en cours...</span>
                             </div>
                           )}
@@ -772,7 +773,7 @@ export default function SalesDashboard() {
                               return (
                                 <span 
                                   key={i} 
-                                  className={`w-1 ${heights[i % heights.length]} bg-gradient-to-t from-red-500 via-orange-500 to-amber-400 rounded-full`} 
+                                  className={`w-1 ${heights[i % heights.length]} bg-gradient-to-t from-blue-600 via-blue-400 to-indigo-300 rounded-full`} 
                                   style={{ animationDelay: delays[i % delays.length], animationDuration: '0.8s' }}
                                 />
                               );
@@ -791,7 +792,7 @@ export default function SalesDashboard() {
                           value={rawNotes}
                           onChange={(e) => setRawNotes(e.target.value)}
                           rows={5}
-                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50 font-medium"
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-blue-600 transition-all text-zinc-900 dark:text-zinc-50 font-medium"
                         />
                       </div>
 
@@ -805,7 +806,7 @@ export default function SalesDashboard() {
                         <button
                           onClick={handleGenerateReport}
                           disabled={!rawNotes.trim() || generatingReport}
-                          className="flex-1 py-2.5 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md"
+                          className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                         >
                           {generatingReport ? 'Analyse par l\'IA...' : 'Générer le Rapport →'}
                         </button>
@@ -815,9 +816,9 @@ export default function SalesDashboard() {
 
                   {/* Step 4: Post-Visit Report Analysis & Validation */}
                   {step === 'report' && visitReport && (
-                    <div className="w-full flex flex-col gap-5 glass-card rounded-2xl p-6 shadow-sm bg-white dark:bg-zinc-950/20">
+                    <div className="w-full flex flex-col gap-5 studio-card p-6 shadow-sm">
                       <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
-                        <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
                           Rapport Commercial Généré
                         </span>
                         <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate max-w-[160px]">
@@ -828,7 +829,7 @@ export default function SalesDashboard() {
                       {/* Executive Summary */}
                       <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
-                        <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed bg-zinc-50 dark:bg-zinc-950/20 p-3.5 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium">
+                        <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed studio-subcard p-3.5 rounded-xl font-medium">
                           {visitReport.executive_summary}
                         </p>
                       </div>
@@ -839,7 +840,7 @@ export default function SalesDashboard() {
                           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Besoins validés</span>
                           <div className="flex flex-wrap gap-1">
                             {visitReport.confirmed_needs.map((need, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-650 dark:text-orange-400 border border-orange-500/20 text-[9px] font-bold">
+                              <span key={idx} className="px-2 py-0.5 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 text-[9px] font-bold">
                                 {need}
                               </span>
                             ))}
@@ -876,7 +877,7 @@ export default function SalesDashboard() {
                           value={emailDraft}
                           onChange={(e) => setEmailDraft(e.target.value)}
                           rows={5}
-                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs font-mono focus:outline-none focus:border-blue-600 transition-all text-zinc-900 dark:text-zinc-50"
                         />
                       </div>
 
@@ -896,9 +897,9 @@ export default function SalesDashboard() {
                         <button
                           onClick={handleTransmitToKam}
                           disabled={transmitting}
-                          className="flex-1 py-2 orange-gradient-bg hover:opacity-90 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1"
+                          className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)] flex items-center justify-center gap-1"
                         >
-                          {transmitting ? 'Transmission...' : 'Transmettre KAM'} <Icons.ChevronRight size={12} />
+                          {transmitting ? 'Transmission...' : 'Transmettre'} <Icons.ChevronRight size={12} />
                         </button>
                       </div>
                     </div>
@@ -906,20 +907,20 @@ export default function SalesDashboard() {
 
                   {/* Step 5: Transmitted screen */}
                   {step === 'transmitted' && (
-                    <div className="glass-card rounded-2xl p-8 shadow-sm flex flex-col items-center gap-6 text-center animate-fade-in">
-                      <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full flex items-center justify-center text-xl font-bold shadow-sm shadow-orange-500/25">
+                    <div className="studio-card p-8 shadow-sm flex flex-col items-center gap-6 text-center animate-fade-in">
+                      <div className="w-14 h-14 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xl font-bold shadow-[0_0_20px_rgba(37,99,235,0.20)]">
                         ✓
                       </div>
                       <div className="flex flex-col gap-2">
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Dossier transmis avec succès</h2>
                         <p className="text-xs text-zinc-400 leading-normal max-w-md mx-auto">
-                          Le rapport de visite a été structuré et envoyé au **Workspace KAM** sous le dossier **#{createdDossierId}**. Un e-mail de suivi a été préparé pour le prospect.
+                          Le rapport de visite a été structuré et envoyé à l'espace de suivi sous le dossier **#{createdDossierId}**. Un e-mail de suivi a été préparé pour le prospect.
                         </p>
                       </div>
 
                       <button
                         onClick={handleReset}
-                        className="px-6 py-2.5 orange-gradient-bg hover:opacity-90 active:scale-98 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                       >
                         Prospecter une autre entreprise
                       </button>
@@ -929,10 +930,10 @@ export default function SalesDashboard() {
               )}
 
               {activeTab === 'slides' && (
-                <div className="w-full flex flex-col bg-zinc-50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-zinc-850 rounded-2xl p-6 shadow-sm animate-fade-in gap-4">
+                <div className="w-full flex flex-col studio-card p-6 shadow-sm animate-fade-in gap-4">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-zinc-150 dark:border-zinc-850 pb-4 gap-3">
                     <div className="flex flex-col">
-                      <span className="px-2 py-0.5 mr-auto rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                      <span className="px-2 py-0.5 mr-auto rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
                         Livrable de Présentation
                       </span>
                       <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">
@@ -943,7 +944,7 @@ export default function SalesDashboard() {
                     {/* Slide mode toggler button */}
                     <button
                       onClick={() => setIsEditingSlides(!isEditingSlides)}
-                      className="px-4 py-2 rounded-xl border border-orange-500/20 hover:border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-650 dark:text-orange-400 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto shadow-sm"
+                      className="px-4 py-2 rounded-xl border border-blue-600/20 hover:border-blue-600/40 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto shadow-sm"
                     >
                       {isEditingSlides ? (
                         <>

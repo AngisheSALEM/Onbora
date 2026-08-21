@@ -27,7 +27,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
     <div className="flex flex-col gap-5 h-full justify-between">
       <div className="flex flex-col gap-4 overflow-y-auto pr-1">
         {/* Title */}
-        <div className="flex items-center gap-2 text-orange-500">
+        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
           <Icons.BookOpen size={16} />
           <h4 className="text-xs uppercase font-bold tracking-wider">
             Quiz de validation
@@ -53,7 +53,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
                 optionStyle = "border-zinc-200 dark:border-zinc-900 opacity-60 text-zinc-400";
               }
             } else if (selectedOptionIndex === index) {
-              optionStyle = "border-orange-500 bg-orange-500/5 ring-1 ring-orange-500 text-orange-600 dark:text-orange-400";
+              optionStyle = "border-blue-600 bg-blue-600/5 ring-1 ring-blue-600 text-blue-600 dark:text-blue-400";
             }
 
             return (
@@ -68,7 +68,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
                 <div className="flex items-start gap-3">
                   <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[9px] font-bold mt-0.5 ${
                     selectedOptionIndex === index 
-                      ? 'border-orange-500 text-orange-500' 
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400' 
                       : 'border-zinc-350 dark:border-zinc-700 text-zinc-400'
                   }`}>
                     {String.fromCharCode(65 + index)}
@@ -118,7 +118,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
             <button
               disabled={selectedOptionIndex === null}
               onClick={handleSubmit}
-              className="flex-2 py-2 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-orange-500/10"
+              className="flex-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
             >
               Valider ma réponse
             </button>

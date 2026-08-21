@@ -70,14 +70,14 @@ const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
     DRAFT: 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
     QUALIFYING: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
-    NEW: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    NEW: 'bg-blue-600/10 text-blue-600 border-blue-600/20',
     DISPATCHED: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
     IN_REVIEW: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
     ESTIMATE_PREPARED: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
     NEGOTIATION: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
     ACCEPTED: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    PROVISIONING: 'bg-orange-500/10 text-orange-500 border-orange-500/20 animate-pulse',
-    COMPLETED: 'bg-orange-600/15 text-orange-650 dark:text-orange-400 border-orange-500/30',
+    PROVISIONING: 'bg-blue-600/10 text-blue-600 border-blue-600/20 animate-pulse',
+    COMPLETED: 'bg-blue-600/15 text-blue-600 dark:text-blue-400 border-blue-600/30',
     TRAINING: 'bg-teal-500/10 text-teal-650 border-teal-500/20',
     REJECTED: 'bg-red-500/10 text-red-500 border-red-500/20'
   };
@@ -280,14 +280,14 @@ export default function KamDashboard() {
 
         {/* Notification Alert Toast */}
         {newDossierNotification && (
-          <div className="bg-orange-500 text-white px-6 py-2.5 flex items-center justify-between text-xs font-bold shadow-md animate-fade-in shrink-0 relative z-20">
+          <div className="bg-blue-600 text-white px-6 py-2.5 flex items-center justify-between text-xs font-bold shadow-md animate-fade-in shrink-0 relative z-20">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-white animate-ping" />
               <span>🔔 {newDossierNotification}</span>
             </div>
             <button
               onClick={() => setNewDossierNotification(null)}
-              className="bg-transparent border-none text-white hover:text-orange-100 font-extrabold cursor-pointer text-xs ml-4"
+              className="bg-transparent border-none text-white hover:text-blue-100 font-extrabold cursor-pointer text-xs ml-4"
             >
               Fermer
             </button>
@@ -327,7 +327,7 @@ export default function KamDashboard() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all font-semibold cursor-pointer"
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-blue-600 transition-all font-semibold cursor-pointer"
               >
                 <option value="">Tous les statuts</option>
                 <option value="DRAFT">Brouillon</option>
@@ -371,7 +371,7 @@ export default function KamDashboard() {
                     onClick={() => handleSelectDossier(d)}
                     className={`w-full p-4 flex flex-col gap-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-950/40 transition-all cursor-pointer border-l-2 ${
                       selectedDossier?.id === d.id
-                        ? 'bg-zinc-100 dark:bg-zinc-950/30 border-orange-500 sidebar-active-tab'
+                        ? 'bg-zinc-100 dark:bg-zinc-950/30 border-blue-600 sidebar-active-tab'
                         : 'border-transparent'
                     }`}
                   >
@@ -401,7 +401,7 @@ export default function KamDashboard() {
             <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none">
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Photo d'avatar (Initials badge) */}
-                <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
                   {user?.first_name ? user.first_name[0].toUpperCase() : 'K'}
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
@@ -458,10 +458,10 @@ export default function KamDashboard() {
               <div className="p-6 md:p-8 flex flex-col gap-6 max-w-4xl w-full mx-auto animate-fade-in pb-16">
                 
                 {/* Prospect Header Card */}
-                <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between gap-6">
+                <div className="studio-card p-6 shadow-sm flex flex-col md:flex-row justify-between gap-6">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-bold uppercase tracking-wide">
+                      <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
                         {selectedDossier.source === 'INBOUND_CONVERSATION' ? 'Qualifié en ligne' : 'Rapport Commercial'}
                       </span>
                       <span className="text-zinc-400 text-xs">•</span>
@@ -509,13 +509,13 @@ export default function KamDashboard() {
                   </div>
 
                   {/* Actions & Assignments */}
-                  <div className="flex flex-col gap-3 min-w-[200px] bg-zinc-50/50 dark:bg-zinc-950/20 p-4 border border-zinc-150 dark:border-zinc-800 rounded-xl justify-center shrink-0">
+                  <div className="flex flex-col gap-3 min-w-[200px] studio-subcard p-4 rounded-xl justify-center shrink-0">
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Statut du Prospect</label>
                       <select
                         value={dossierStatus}
                         onChange={(e: any) => setDossierStatus(e.target.value)}
-                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-orange-500 transition-all font-semibold cursor-pointer"
+                        className="text-xs px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 focus:outline-none focus:border-blue-600 transition-all font-semibold cursor-pointer"
                       >
                         <option value="DRAFT">Brouillon</option>
                         <option value="QUALIFYING">conversation en cours</option>
@@ -538,7 +538,7 @@ export default function KamDashboard() {
                         {!assignedKam && user?.role === 'KAM' && (
                           <button
                             onClick={handleAssignToMe}
-                            className="text-[9px] font-bold text-orange-500 hover:text-orange-600 border-none bg-transparent cursor-pointer"
+                            className="text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline border-none bg-transparent cursor-pointer"
                           >
                             S'assigner
                           </button>
@@ -548,7 +548,7 @@ export default function KamDashboard() {
                         <select
                           value={assignedKam || ''}
                           onChange={(e) => setAssignedKam(e.target.value ? Number(e.target.value) : null)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-orange-500 transition-all cursor-pointer"
+                          className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-600 transition-all cursor-pointer"
                         >
                           <option value="">-- Non assigné --</option>
                           {kamList.map(k => (
@@ -609,20 +609,20 @@ export default function KamDashboard() {
                 </div>
 
                 {/* Internal Notes card */}
-                <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+                <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
                   <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Notes Internes du Conseiller</h3>
                   <textarea
                     value={internalNotes}
                     onChange={(e) => setInternalNotes(e.target.value)}
                     placeholder="Saisissez des notes sur les échanges téléphoniques, les relances ou les besoins techniques..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-orange-500 transition-all text-zinc-900 dark:text-zinc-50"
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-sm focus:outline-none focus:border-blue-600 transition-all text-zinc-900 dark:text-zinc-50"
                   />
                   <div className="flex justify-end">
                     <button
                       onClick={handleSaveDossier}
                       disabled={updating}
-                      className="px-5 py-2.5 orange-gradient-bg hover:opacity-90 active:scale-98 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm shadow-orange-500/10"
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                     >
                       {updating ? 'Enregistrement...' : 'Enregistrer les modifications'}
                     </button>
@@ -635,7 +635,7 @@ export default function KamDashboard() {
                     onClick={() => setActiveTab('conversation')}
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'conversation'
-                        ? 'border-orange-500 text-orange-500'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
@@ -645,7 +645,7 @@ export default function KamDashboard() {
                     onClick={() => setActiveTab('twin')}
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'twin'
-                        ? 'border-orange-500 text-orange-500'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
@@ -655,7 +655,7 @@ export default function KamDashboard() {
                     onClick={() => setActiveTab('provisioning')}
                     className={`py-3.5 px-6 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                       activeTab === 'provisioning'
-                        ? 'border-orange-500 text-orange-500'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300'
                     }`}
                   >
@@ -665,7 +665,7 @@ export default function KamDashboard() {
 
                 {/* Tab Contents */}
                  {loadingDetail ? (
-                  <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-pulse">
+                  <div className="studio-card p-6 shadow-sm flex flex-col gap-6 animate-pulse">
                     <div className="flex flex-col gap-2">
                       <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded-md w-1/3" />
                       <div className="h-2.5 bg-zinc-200 dark:bg-zinc-800 rounded-md w-1/2" />
@@ -698,7 +698,7 @@ export default function KamDashboard() {
                     </div>
                   </div>
                 ) : activeTab === 'conversation' ? (
-                  <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
+                  <div className="studio-card p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Besoins et contexte client</h3>
                       <p className="text-xs text-zinc-400 mt-0.5">Synthèse des informations recueillies.</p>
@@ -763,7 +763,7 @@ export default function KamDashboard() {
                     <div className="border-t border-zinc-150 dark:border-zinc-800 pt-5 mt-3 flex flex-col gap-4">
                       <div>
                         <h4 className="text-xs font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wider">
-                          Engagement Contractuel Orange Business
+                          Engagement Contractuel Client
                         </h4>
                         <p className="text-[10px] text-zinc-505 mt-0.5">
                           Validez ou complétez les informations pour la signature du contrat.
@@ -778,7 +778,7 @@ export default function KamDashboard() {
                             value={dossierContactName}
                             onChange={(e) => setDossierContactName(e.target.value)}
                             placeholder="Ex: Jean Dupont"
-                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                           />
                         </div>
 
@@ -789,7 +789,7 @@ export default function KamDashboard() {
                             value={dossierPhone}
                             onChange={(e) => setDossierPhone(e.target.value)}
                             placeholder="Ex: +33 6 12 34 56 78"
-                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                           />
                         </div>
 
@@ -800,7 +800,7 @@ export default function KamDashboard() {
                             value={dossierRccm}
                             onChange={(e) => setDossierRccm(e.target.value)}
                             placeholder="Ex: RCCM-BF-OUA-2023-B-1234"
-                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600"
                           />
                         </div>
 
@@ -811,7 +811,7 @@ export default function KamDashboard() {
                             onChange={(e) => setDossierBillingAddress(e.target.value)}
                             placeholder="Adresse complète..."
                             rows={1}
-                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 resize-none"
+                            className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 resize-none"
                           />
                         </div>
                       </div>
@@ -828,17 +828,17 @@ export default function KamDashboard() {
                   )
                 ) : (
                   // Tab 3: Simulated MSP Integration Provisioning (Priority 10)
-                  <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
+                  <div className="studio-card p-6 shadow-sm flex flex-col gap-6 animate-fade-in">
                     <div>
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
-                        <Icons.Settings className="text-orange-500" size={16} /> Simulation de Provisioning MSP
+                        <Icons.Settings className="text-blue-600 dark:text-blue-400" size={16} /> Simulation de Provisioning MSP
                       </h3>
                       <p className="text-xs text-zinc-400 mt-0.5">
                         Activez et provisionnez les solutions d'infrastructure et de sécurité à la demande.
                       </p>
                     </div>
 
-                    <div className="p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl text-[10px] font-bold flex items-center gap-2 shadow-sm">
+                    <div className="p-3.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-xl text-[10px] font-bold flex items-center gap-2 shadow-sm">
                       <Icons.Sparkles size={14} className="shrink-0 animate-pulse" />
                       <span><strong>Intégration simulée pour le MVP :</strong> Les opérations de provisioning, raccordement physique et d'activation de licences logicielles sont orchestrées par des simulations de tâches asynchrones.</span>
                     </div>
@@ -848,7 +848,7 @@ export default function KamDashboard() {
                         {
                           key: 'fibre',
                           label: 'Liaison Fibre Optique Pro Dédiée (GTR 4h)',
-                          desc: 'Provisioning de la ligne physique Orange Business Services, raccordement du routeur d\'entreprise.',
+                          desc: 'Provisioning de la ligne physique, raccordement du routeur d\'entreprise.',
                         },
                         {
                           key: 'm365',
@@ -872,7 +872,7 @@ export default function KamDashboard() {
                               {/* Small simulated status indicator */}
                               <div className="flex items-center gap-2 mt-2">
                                 <span className={`w-1.5 h-1.5 rounded-full ${
-                                  provStatus === 'COMPLETED' ? 'bg-orange-500' : provStatus === 'PROVISIONING' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-700'
+                                  provStatus === 'COMPLETED' ? 'bg-blue-600' : provStatus === 'PROVISIONING' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-700'
                                 }`} />
                                 <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500">
                                   {provStatus === 'COMPLETED' ? 'Activé & Opérationnel' : provStatus === 'PROVISIONING' ? 'Configuration en cours' : 'Non configuré'}
@@ -893,12 +893,12 @@ export default function KamDashboard() {
                                 <button
                                   onClick={() => handleProvisionService(item.key, 'complete')}
                                   disabled={!!provisioningLoading}
-                                  className="w-full sm:w-auto px-4 py-2 orange-gradient-bg hover:opacity-90 text-[10px] font-bold text-white rounded-xl transition-all cursor-pointer disabled:opacity-40 animate-pulse"
+                                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-[10px] font-bold text-white rounded-xl transition-all cursor-pointer disabled:opacity-40 animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                                 >
                                   {provisioningLoading === `${item.key}_complete` ? 'Finalisation...' : 'Finaliser la Configuration'}
                                 </button>
                               ) : (
-                                <div className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] font-black uppercase tracking-wider rounded-xl text-center">
+                                <div className="px-4 py-2 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase tracking-wider rounded-xl text-center">
                                   ✓ Provisionné
                                 </div>
                               )}

@@ -103,9 +103,9 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
         <div className="relative w-full max-w-md bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md h-full shadow-2xl flex flex-col z-10 animate-fade-in border-l border-zinc-200 dark:border-zinc-900">
           
           {/* Header */}
-          <div className="p-5 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between bg-zinc-50/40 dark:bg-zinc-950/40 shrink-0">
+          <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center font-black text-xs shadow-sm shadow-orange-500/20">
+              <span className="w-7 h-7 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs shadow-sm">
                 <Icons.BookOpen size={14} />
               </span>
               <div>
@@ -124,7 +124,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
 
           {/* Persona & Navigation Tab Selectors (Only shown when not inside a module training step) */}
           {viewState !== 'STEPS' && viewState !== 'QUIZ' && (
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-950/20 flex flex-col gap-3 shrink-0">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-col gap-3 shrink-0">
               {/* Persona switcher */}
               <div className="flex bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200/50 dark:border-zinc-800/50">
                 <button
@@ -164,7 +164,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     onClick={() => setViewState('STATS')}
                     className={`px-3 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer border-none ${
                       viewState === 'STATS'
-                        ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                        ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
                     }`}
                   >
@@ -174,7 +174,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     onClick={() => setViewState('CATALOG')}
                     className={`px-3 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer border-none ${
                       viewState === 'CATALOG'
-                        ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                        ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
                     }`}
                   >
@@ -198,7 +198,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                       onClick={() => setCategoryFilter(cat)}
                       className={`px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-pointer capitalize transition-all ${
                         categoryFilter === cat
-                          ? 'bg-orange-500 border-orange-500 text-white shadow-sm shadow-orange-500/15'
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-600/20'
                           : 'border-zinc-200 dark:border-zinc-800 text-zinc-650 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950/20'
                       }`}
                     >
@@ -213,11 +213,11 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     return (
                       <div
                         key={module.id}
-                        className="p-4 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-900 hover:border-zinc-350 dark:hover:border-zinc-850 transition-all flex flex-col gap-3 group"
+                        className="p-4 studio-subcard rounded-xl hover:shadow-sm transition-all flex flex-col gap-3 group"
                       >
                         <div className="flex justify-between items-start gap-3">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-extrabold uppercase text-orange-500 tracking-wider">
+                            <span className="text-[9px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
                               {module.category === 'collab' ? 'Collab' : module.category === 'phone' ? 'Téléphonie' : module.category} • {module.duration}
                             </span>
                             <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 leading-snug">
@@ -242,7 +242,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                           
                           <button
                             onClick={() => handleStartModule(module)}
-                            className="py-1.5 px-3 rounded-lg bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-[10px] font-black text-white dark:text-zinc-950 transition-all border-none cursor-pointer flex items-center gap-1 group-hover:translate-x-0.5 duration-200"
+                            className="py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-[10px] font-black text-white transition-all border-none cursor-pointer flex items-center gap-1 group-hover:translate-x-0.5 duration-200 shadow-[0_0_10px_rgba(37,99,235,0.20)]"
                           >
                             Lancer la formation
                             <Icons.ChevronRight size={10} />
@@ -281,7 +281,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
             {viewState === 'STATS' && selectedPersona === 'MANAGER' && (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-0.5">
-                  <h4 className="text-xs uppercase font-extrabold text-orange-500 tracking-wider">
+                  <h4 className="text-xs uppercase font-extrabold text-blue-600 dark:text-blue-400 tracking-wider">
                     Tableau de bord d'Adoption
                   </h4>
                   <p className="text-[11px] text-zinc-450 font-medium">
@@ -290,7 +290,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                 </div>
 
                 {/* Team metrics overview card */}
-                <div className="grid grid-cols-2 gap-2.5 bg-zinc-50 dark:bg-zinc-900/40 p-4 rounded-2xl border border-zinc-150 dark:border-zinc-900">
+                <div className="grid grid-cols-2 gap-2.5 studio-subcard p-4 rounded-2xl">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-zinc-500">Taux d'adoption global</span>
                     <span className="text-xl font-black text-zinc-850 dark:text-zinc-100 mt-1">79%</span>
@@ -317,7 +317,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     {MOCK_ADOPTION_STATS.map((stat, i) => (
                       <div
                         key={i}
-                        className="p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-xl flex items-center justify-between gap-3 text-[11px]"
+                        className="p-3 studio-subcard rounded-xl flex items-center justify-between gap-3 text-[11px]"
                       >
                         <div className="flex flex-col gap-0.5">
                           <span className="font-bold text-zinc-900 dark:text-zinc-150">{stat.user}</span>
@@ -331,7 +331,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                             </span>
                           )}
                           {stat.status === 'in_progress' && (
-                            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold rounded text-[9px] animate-pulse">
+                            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 font-bold rounded text-[9px] animate-pulse">
                               {stat.progress}%
                             </span>
                           )}
@@ -351,8 +351,8 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-950/40 shrink-0 text-center flex items-center justify-between text-[10px] text-zinc-450 font-medium">
-            <span>Orange Business Services © 2026</span>
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0 text-center flex items-center justify-between text-[10px] text-zinc-450 font-medium">
+            <span>Onbora Platform © 2026</span>
             <span className="flex items-center gap-1">
               <Icons.Shield size={10} className="text-green-500" />
               Secured Connection

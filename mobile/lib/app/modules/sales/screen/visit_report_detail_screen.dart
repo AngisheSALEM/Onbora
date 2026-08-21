@@ -226,6 +226,84 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // 0. Whisper AI Raw Transcript Block (Bloc Texte Brut Whisper pour vérification)
+                    RepaintBoundary(
+                      child: GlassCard(
+                        padding: const EdgeInsets.all(AppConstants.paddingLg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF222228) : const Color(0xFFE0E7FF),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        LucideIcons.mic,
+                                        color: AppConstants.primaryBlue,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Transcription Brute Whisper AI',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AppConstants.primaryBlue.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Audio STT',
+                                    style: TextStyle(
+                                      color: AppConstants.primaryBlue,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF141416) : const Color(0xFFE2E8F0).withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: SelectableText(
+                                report.rawTranscript.isNotEmpty
+                                    ? report.rawTranscript
+                                    : 'Aucune transcription brute reçue de Whisper AI.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark ? Colors.white : AppConstants.textDark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
                     // Executive Summary
                     RepaintBoundary(
                       child: GlassCard(

@@ -96,7 +96,7 @@ export default function EscalationModal({
                 placeholder="Ex: Le QR Code ne s'affiche pas à l'écran, ou l'application mobile dit 'Code invalide'..."
                 required
                 rows={3}
-                className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-zinc-450 font-medium"
+                className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-600 transition-colors placeholder:text-zinc-450 font-medium"
               />
             </div>
 
@@ -109,7 +109,7 @@ export default function EscalationModal({
               {!screenshot ? (
                 <div 
                   onClick={handleSimulateScreenshot}
-                  className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-orange-500 hover:bg-orange-500/5 rounded-xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all"
+                  className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-600 hover:bg-blue-600/5 rounded-xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all"
                 >
                   <Icons.FileText className="text-zinc-400" size={20} />
                   <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">

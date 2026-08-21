@@ -23,9 +23,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Sparkles className="text-orange-500 shrink-0" size={14} />
+                  <Icons.Sparkles className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Comment fonctionne le copilote Onbora ?
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
@@ -33,9 +33,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.LineChart className="text-orange-500 shrink-0" size={14} />
+                  <Icons.LineChart className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Qu'est-ce que le Diagnostic d'Architecture Cible ?
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
@@ -43,13 +43,13 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Mail className="text-orange-500 shrink-0" size={14} />
+                  <Icons.Mail className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Que se passe-t-il après la transmission de mon dossier ?
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
-                  Une fois transmis, votre dossier est verrouillé et envoyé dans la file d'attente d'un Key Account Manager (KAM) d'Orange Business. Il analysera votre Business Twin et vous recontactera sous 24h.
+                  Une fois transmis, votre dossier est verrouillé et envoyé dans la file d'attente d'un conseiller référent. Il analysera votre diagnostic et vous recontactera sous 24h.
                 </p>
               </div>
             </div>
@@ -65,7 +65,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
 
             <div className="flex flex-col gap-4">
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">1</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Ciblage & Recherche</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -75,7 +75,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">2</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Brief pré-visite</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -85,7 +85,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">3</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Dictaphone Whisper & Notes</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -95,11 +95,11 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full orange-gradient-bg text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">4</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Brouillon d'email & Envoi</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
-                    Modifiez le projet d'email pré-rédigé, exportez le rapport en PDF, puis transmettez le dossier qualifié au KAM.
+                    Modifiez le projet d'email pré-rédigé, exportez le rapport en PDF, puis transmettez le dossier qualifié au conseiller.
                   </p>
                 </div>
               </div>
@@ -110,14 +110,14 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         return (
           <div className="flex flex-col gap-5">
             <div>
-              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Guide de gestion KAM</h4>
+              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Guide de gestion Conseiller</h4>
               <p className="text-xs text-zinc-500 mt-1">Optimisez le suivi et la validation de votre portefeuille de prospects.</p>
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Activity className="text-orange-500 shrink-0" size={14} />
+                  <Icons.Activity className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Traiter la file d'attente
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
@@ -125,9 +125,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Edit className="text-orange-500 shrink-0" size={14} />
+                  <Icons.Edit className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Annotations et assignation
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
@@ -135,13 +135,13 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
                 </p>
               </div>
 
-              <div className="p-3.5 glass-card rounded-xl flex flex-col gap-1.5">
+              <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Download className="text-orange-500 shrink-0" size={14} />
+                  <Icons.Download className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Préparation du Pitch Client
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">
-                  Consultez le Business Twin interactif et la chronologie de déploiement estimée. Utilisez le bouton "Exporter le Dossier" pour l'imprimer avant votre rendez-vous de négociation.
+                  Consultez le diagnostic interactif et la chronologie de déploiement estimée. Utilisez le bouton "Exporter le Dossier" pour l'imprimer avant votre rendez-vous de négociation.
                 </p>
               </div>
             </div>
@@ -161,12 +161,12 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
       />
       
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-md bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md h-full shadow-2xl flex flex-col z-10 animate-fade-in border-l border-zinc-200 dark:border-zinc-900">
+      <div className="relative w-full max-w-md studio-card h-full shadow-2xl flex flex-col z-10 animate-fade-in rounded-none">
         
         {/* Header */}
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between bg-zinc-50/40 dark:bg-zinc-950/40 shrink-0">
+        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center font-black text-xs shadow-sm shadow-orange-500/20">?</span>
+            <span className="w-6 h-6 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs shadow-sm">?</span>
             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Centre d'Adoption Onbora</h3>
           </div>
           <button
@@ -183,8 +183,8 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-950/40 shrink-0 text-center">
-          <p className="text-[10px] text-zinc-500 font-medium">Orange Business Services © 2026</p>
+        <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 shrink-0 text-center">
+          <p className="text-[10px] text-zinc-500 font-medium">Onbora Platform © 2026</p>
         </div>
 
       </div>

@@ -39,7 +39,7 @@ export default function StepActions({
         <button
           onClick={() => onDoItForMe(actionConfig)}
           disabled={isExecutingDoItForMe}
-          className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md shadow-orange-500/10 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
+          className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
         >
           {isExecutingDoItForMe ? (
             <>

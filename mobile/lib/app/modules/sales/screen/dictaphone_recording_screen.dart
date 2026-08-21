@@ -135,11 +135,11 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     child: Obx(() {
                       final isRec = dictController.state == RecordingState.recording;
                       return ScaleTap(
-                        onTap: () {
+                        onTap: () async {
                           if (dictController.state == RecordingState.idle) {
-                            dictController.startRecording();
+                            await dictController.startRecording();
                           } else if (dictController.state == RecordingState.recording) {
-                            dictController.stopRecording();
+                            await dictController.stopRecording();
                           }
                         },
                         child: RepaintBoundary(

@@ -18,7 +18,7 @@ export default function StepInstruction({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase font-bold tracking-wider text-orange-500 bg-orange-500/10 px-2.5 py-1 rounded-full">
+        <span className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400 bg-blue-600/10 px-2.5 py-1 rounded-full">
           Étape {currentStep} sur {totalSteps}
         </span>
         <span className="text-[10px] text-zinc-400 font-semibold">

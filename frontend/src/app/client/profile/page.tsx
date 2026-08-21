@@ -254,7 +254,7 @@ export default function ClientProfilePage() {
           <div className="flex items-center gap-4">
             <Link 
               href="/client"
-              className="px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-orange-500/50 hover:text-orange-500 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-blue-600/50 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.MessageSquare size={14} />
               <span>Retour au Chat</span>
@@ -266,7 +266,7 @@ export default function ClientProfilePage() {
         <div className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-6 sm:p-10 flex flex-col gap-6">
           {loading ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-3">
-              <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+              <div className="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
               <p className="text-xs text-zinc-500">Chargement de votre espace de gestion...</p>
             </div>
           ) : (
@@ -275,10 +275,10 @@ export default function ClientProfilePage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                    <Icons.Users size={20} className="text-orange-500 shrink-0" /> Mon Espace Profil & Commandes
+                    <Icons.Users size={20} className="text-blue-600 dark:text-blue-400 shrink-0" /> Mon Espace Profil & Commandes
                   </h2>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Gérez vos informations de facturation, suivez l'avancement de vos commandes et visualisez les besoins transmis à votre KAM.
+                    Gérez vos informations de facturation, suivez l'avancement de vos commandes et visualisez les besoins transmis à votre conseiller.
                   </p>
                 </div>
               </div>
@@ -287,15 +287,15 @@ export default function ClientProfilePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Column 1: Coordonnées de l'Entreprise & Facturation */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
                   <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.FileText size={16} className="text-orange-500 shrink-0" /> Coordonnées Contractuelles
+                    <Icons.FileText size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Coordonnées Contractuelles
                   </h3>
 
                   {transmissionSuccess && (
                     <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl text-[11px] leading-normal font-semibold flex gap-2 items-start">
                       <span className="text-sm">✓</span>
-                      <span>Vos coordonnées sont verrouillées car une commande a été validée et transmise à votre Account Manager.</span>
+                      <span>Vos coordonnées sont verrouillées car une commande a été validée et transmise à votre conseiller.</span>
                     </div>
                   )}
 
@@ -309,7 +309,7 @@ export default function ClientProfilePage() {
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
                         placeholder="Nom Prénom du responsable"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
+                        className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 transition-all disabled:opacity-60"
                       />
                     </div>
 
@@ -321,7 +321,7 @@ export default function ClientProfilePage() {
                         value={contactPhone}
                         onChange={(e) => setContactPhone(e.target.value)}
                         placeholder="Ex: +33 6 12 34 56 78"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
+                        className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 transition-all disabled:opacity-60"
                       />
                     </div>
 
@@ -333,7 +333,7 @@ export default function ClientProfilePage() {
                         value={rccm}
                         onChange={(e) => setRccm(e.target.value)}
                         placeholder="Ex: RCCM-BF-OUA-2023-B-1234"
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60"
+                        className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 transition-all disabled:opacity-60"
                       />
                     </div>
 
@@ -345,7 +345,7 @@ export default function ClientProfilePage() {
                         onChange={(e) => setBillingAddress(e.target.value)}
                         placeholder="Adresse postale complète..."
                         rows={3}
-                        className="px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955/40 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-orange-500 transition-all disabled:opacity-60 resize-none"
+                        className="px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none focus:border-blue-600 transition-all disabled:opacity-60 resize-none"
                       />
                     </div>
 
@@ -355,7 +355,7 @@ export default function ClientProfilePage() {
                           type="button"
                           onClick={handleSaveProfileOnly}
                           disabled={profileSaving}
-                          className="w-full py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-850 dark:text-zinc-200 font-bold text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           {profileSaving ? 'Enregistrement...' : 'Enregistrer mon Profil'}
                         </button>
@@ -371,9 +371,9 @@ export default function ClientProfilePage() {
                 </div>
 
                 {/* Column 2: Suivi de l'Avancement des Commandes */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm">
+                <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
                   <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.Folder size={16} className="text-orange-500 shrink-0" /> Avancement de vos Commandes
+                    <Icons.Folder size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Avancement de vos Commandes
                   </h3>
 
                   {(() => {
@@ -402,12 +402,12 @@ export default function ClientProfilePage() {
                           return (
                             <div
                               key={idx}
-                              className="p-3 border border-zinc-150 dark:border-zinc-850 bg-white dark:bg-zinc-900/60 rounded-xl flex flex-col gap-3 hover:border-orange-500/30 transition-all group hover:shadow-sm"
+                              className="p-3.5 studio-subcard rounded-xl flex flex-col gap-3 hover:shadow-sm transition-all group"
                             >
                               <div className="flex justify-between items-start gap-1.5">
                                 <div>
-                                  <span className="text-[8px] font-bold text-orange-500 uppercase">{service.category}</span>
-                                  <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-200 leading-tight group-hover:text-orange-500 transition-colors">{service.name}</h4>
+                                  <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 uppercase">{service.category}</span>
+                                  <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-200 leading-tight group-hover:text-blue-600 transition-colors">{service.name}</h4>
                                   {!service.isCurrent && (
                                     <span className="text-[7.5px] text-zinc-400 dark:text-zinc-500 font-medium">({service.companyName})</span>
                                   )}
@@ -416,7 +416,7 @@ export default function ClientProfilePage() {
                                   provStatus === 'COMPLETED' || provStatus === 'ACTIVE' 
                                     ? 'bg-emerald-500/10 text-emerald-500' 
                                     : provStatus === 'PROVISIONING' 
-                                      ? 'bg-orange-500/10 text-orange-500 animate-pulse'
+                                      ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 animate-pulse'
                                       : 'bg-zinc-100 text-zinc-655 dark:bg-zinc-800 dark:text-zinc-400'
                                 }`}>
                                   {provStatus === 'COMPLETED' || provStatus === 'ACTIVE' ? 'Livré' : provStatus === 'PROVISIONING' ? 'Acquisition' : 'Devis'}
@@ -428,14 +428,14 @@ export default function ClientProfilePage() {
                                   <div key={sidx} className="flex md:flex-col flex-row items-center gap-2 md:gap-1 z-10 relative">
                                     <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-extrabold border shrink-0 ${
                                       st.done 
-                                        ? 'bg-orange-500 border-orange-600 text-white' 
+                                        ? 'bg-blue-600 border-blue-600 text-white' 
                                         : st.active 
-                                          ? 'bg-orange-100 border-orange-500 text-orange-500 animate-pulse'
+                                          ? 'bg-blue-100 border-blue-600 text-blue-600 animate-pulse'
                                           : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-450'
                                     }`}>
                                       {st.done ? '✓' : sidx + 1}
                                     </div>
-                                    <span className={st.done || st.active ? 'text-orange-500 font-bold' : 'text-zinc-400'}>{st.label}</span>
+                                    <span className={st.done || st.active ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-zinc-400'}>{st.label}</span>
                                   </div>
                                 ))}
                                 <div className="absolute top-[8px] left-[15%] right-[15%] h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-0 hidden md:block" />
@@ -449,13 +449,13 @@ export default function ClientProfilePage() {
                 </div>
 
                 {/* Column 3: Outils & Besoins transmis au KAM */}
-                <div className="lg:col-span-1 flex flex-col gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
                   <h3 className="text-xs font-bold text-zinc-855 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.Settings size={16} className="text-orange-500 shrink-0" /> Synthèse des Besoins Transmis
+                    <Icons.Settings size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Synthèse des Besoins Transmis
                   </h3>
 
                   <div className="flex flex-col gap-4 overflow-y-auto max-h-[500px]">
-                    <div className="p-3 bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-855 rounded-xl flex flex-col gap-2">
+                    <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-2">
                       <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Identité & Sites</h4>
                       <ul className="text-xs text-zinc-800 dark:text-zinc-300 space-y-1">
                         <li className="flex justify-between">
@@ -501,7 +501,7 @@ export default function ClientProfilePage() {
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {profile.current_tools.map((t, idx) => (
-                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-orange-500/10 text-orange-500 border border-orange-500/10 uppercase tracking-wide flex items-center gap-1">
+                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/10 uppercase tracking-wide flex items-center gap-1">
                               🎓 {t}
                             </span>
                           ))}
@@ -514,19 +514,19 @@ export default function ClientProfilePage() {
               </div>
 
               {/* Settings Section (Theme & Logout) */}
-              <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
+              <div className="studio-card p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Icons.Settings size={16} className="text-orange-500 shrink-0" /> Préférences & Paramètres
+                    <Icons.Settings size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Préférences & Paramètres
                   </h3>
                   <div className="flex flex-col gap-3 mt-3">
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Thème de l'Application</label>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleThemeChange('light')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'light'
-                            ? 'bg-orange-500 text-white border-transparent'
+                            ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
                         }`}
                       >
@@ -534,9 +534,9 @@ export default function ClientProfilePage() {
                       </button>
                       <button
                         onClick={() => handleThemeChange('dark')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'dark'
-                            ? 'bg-orange-500 text-white border-transparent'
+                            ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
                         }`}
                       >
@@ -544,9 +544,9 @@ export default function ClientProfilePage() {
                       </button>
                       <button
                         onClick={() => handleThemeChange('system')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'system'
-                            ? 'bg-orange-500 text-white border-transparent'
+                            ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
                         }`}
                       >
