@@ -4,57 +4,66 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #111827;
+  --background: #F8F9FA;
+  --foreground: #000000;
 
-  /* Brand Colors & Accents */
-  --color-brand-orange: #FF6600;
-  --color-accent-blue: #00A3E0;
-  --color-accent-purple: #7B3FE4;
-  --color-accent-yellow: #FFC72C;
+  /* Signature & Accent Colors */
+  --color-primary-blue: #2563EB;
+  --color-accent-blue-light: #60A5FA;
+  --color-brand-orange: #FF7900;
+  
+  /* Status Colors */
+  --color-status-success: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-error: #EF4444;
 
-  /* Standard Tailwind Overrides for Light Mode (Max it colors) */
+  /* Standard Tailwind Overrides for Light Mode (Studio Light) */
   --color-zinc-50: #FFFFFF;
-  --color-zinc-100: #F3F4F6;
-  --color-zinc-200: #E5E7EB;
+  --color-zinc-100: #F1F2F6; /* Solid Studio Card Surface */
+  --color-zinc-200: #E2E8F0; /* Sub-containers & chips */
   --color-zinc-300: #D1D5DB;
-  --color-zinc-400: #9CA3AF;
+  --color-zinc-400: #A1A1AA; /* Muted text */
   --color-zinc-500: #6B7280;
-  --color-zinc-600: #4B5563;
+  --color-zinc-600: #4B5563; /* Secondary text */
   --color-zinc-700: #374151;
   --color-zinc-800: #1F2937;
-  --color-zinc-900: #111827;
-  --color-zinc-950: #111827;
+  --color-zinc-900: #18181B; /* Main CTA button & dark text */
+  --color-zinc-950: #000000;
 
   /* Custom intermediary shades */
-  --color-zinc-55: #F9FAFB;
-  --color-zinc-150: #EEF2F6;
-  --color-zinc-205: #D1D5DB;
-  --color-zinc-850: #F3F4F6;
+  --color-zinc-55: #F8F9FA;
+  --color-zinc-150: #F1F2F6;
+  --color-zinc-205: #E2E8F0;
+  --color-zinc-850: #F1F2F6;
 }
 
 .dark {
-  --background: #1A1A1E;
+  --background: #141416;
   --foreground: #FFFFFF;
 
-  /* Standard Tailwind Overrides for Dark Mode (Max it colors) */
-  --color-zinc-50: #FFFFFF;
+  /* Signature & Accent Colors */
+  --color-primary-blue: #2563EB;
+  --color-accent-blue-light: #60A5FA;
+  --color-brand-orange: #FF7900;
+
+  /* Standard Tailwind Overrides for Dark Mode (Studio Dark / OLED) */
+  --color-zinc-50: #FFFFFF; /* Primary text & CTA */
   --color-zinc-100: #F4F4F5;
   --color-zinc-200: #E4E4E7;
-  --color-zinc-300: #D4D4D8;
-  --color-zinc-400: #A0A0AA; /* Secondary text */
-  --color-zinc-500: #71717A;
+  --color-zinc-300: #D1D5DB; /* Secondary text */
+  --color-zinc-400: #A1A1AA;
+  --color-zinc-500: #71717A; /* Muted text */
   --color-zinc-600: #52525B;
   --color-zinc-700: #3F3F46;
-  --color-zinc-800: #2D2D32; /* Card Surface */
-  --color-zinc-900: #242428; /* Card Secondary / Modals */
-  --color-zinc-950: #1A1A1E; /* Background Canvas */
+  --color-zinc-800: #222228; /* Sub-containers & chips */
+  --color-zinc-900: #1C1C22; /* Solid Studio Card Surface */
+  --color-zinc-950: #141416; /* Canvas Background */
 
   /* Custom intermediary shades mapped to dark surfaces */
-  --color-zinc-55: #242428;
-  --color-zinc-150: #2D2D32;
-  --color-zinc-205: #2D2D32;
-  --color-zinc-850: #242428;
+  --color-zinc-55: #1C1C22;
+  --color-zinc-150: #222228;
+  --color-zinc-205: #222228;
+  --color-zinc-850: #1C1C22;
 }
 
 @theme inline {
@@ -64,16 +73,23 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Custom Colors */
+  --color-primary-blue: var(--color-primary-blue);
+  --color-accent-blue-light: var(--color-accent-blue-light);
   --color-brand-orange: var(--color-brand-orange);
-  --color-accent-blue: var(--color-accent-blue);
-  --color-accent-purple: var(--color-accent-purple);
-  --color-accent-yellow: var(--color-accent-yellow);
+  --color-status-success: var(--color-status-success);
+  --color-status-warning: var(--color-status-warning);
+  --color-status-error: var(--color-status-error);
 
   /* Overriding Tailwind Orange with Brand Orange */
-  --color-orange-500: #FF6600;
-  --color-orange-600: #E55B00;
-  --color-orange-700: #CC5100;
-  --color-orange-400: #FF8533;
+  --color-orange-500: #FF7900;
+  --color-orange-600: #E56C00;
+  --color-orange-700: #CC6000;
+  --color-orange-400: #FF9433;
+
+  /* Overriding Tailwind Blue with Brand Electric Blue */
+  --color-blue-500: #2563EB;
+  --color-blue-600: #1D4ED8;
+  --color-blue-400: #60A5FA;
 
   /* Custom Intermediary Shades */
   --color-zinc-55: var(--color-zinc-55);
@@ -81,9 +97,10 @@
   --color-zinc-205: var(--color-zinc-205);
   --color-zinc-850: var(--color-zinc-850);
 
-  /* Custom Radii */
-  --radius-card: 16px;
-  --radius-tile: 12px;
+  /* Custom Radii matching Mobile App */
+  --radius-card: 22px;
+  --radius-button: 16px;
+  --radius-pill: 9999px;
 }
 
 body {
@@ -92,146 +109,121 @@ body {
   font-family: var(--font-sans);
   position: relative;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Background utilities */
-.matrix-grid {
-  position: fixed;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 102, 0, 0.015) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 102, 0, 0.015) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
+/* Studio Solid Cards (Zéro bordure, distinction par les contrastes de gris) */
+.studio-card, .glass-card {
+  background: #F1F2F6;
+  border: none !important;
+  border-radius: 22px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.noise-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.012;
-  pointer-events: none;
-  z-index: 1;
+.dark .studio-card, .dark .glass-card {
+  background: #1C1C22;
+  border: none !important;
+  border-radius: 22px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.glow-orb-orange-1 {
-  position: fixed;
-  top: -10%;
-  right: -10%;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 102, 0, 0.03) 0%, transparent 70%);
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  animation: floatOrb 25s infinite alternate ease-in-out;
+/* Sub-containers & Chips */
+.studio-subcard {
+  background: #E2E8F0;
+  border: none !important;
+  border-radius: 16px;
 }
 
-.dark .glow-orb-orange-1 {
-  background: radial-gradient(circle, rgba(255, 102, 0, 0.08) 0%, transparent 70%);
+.dark .studio-subcard {
+  background: #222228;
+  border: none !important;
+  border-radius: 16px;
 }
 
-.glow-orb-orange-2 {
-  position: fixed;
-  bottom: -10%;
-  left: -10%;
-  width: 700px;
-  height: 700px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.01) 0%, transparent 70%);
-  filter: blur(100px);
-  pointer-events: none;
-  z-index: 0;
-  animation: floatOrb 30s infinite alternate-reverse ease-in-out;
+/* Primary CTA Buttons */
+.btn-primary-cta {
+  background: #18181B;
+  color: #FFFFFF;
+  border: none !important;
+  border-radius: 16px;
+  font-weight: 800;
+  transition: all 0.15s ease;
 }
 
-.dark .glow-orb-orange-2 {
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.01) 0%, transparent 70%);
+.btn-primary-cta:hover {
+  opacity: 0.92;
 }
 
-@keyframes floatOrb {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, 30px) scale(1.05); }
-  100% { transform: translate(-20px, -40px) scale(0.95); }
+.dark .btn-primary-cta {
+  background: #FFFFFF;
+  color: #121214;
+  border: none !important;
+  border-radius: 16px;
+  font-weight: 800;
 }
 
-/* Glassmorphism Cards & Forms */
-.glass-card, .glass-form {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.dark .btn-primary-cta:hover {
+  background: #F4F4F5;
 }
 
-.dark .glass-card, .dark .glass-form {
-  background: rgba(45, 45, 50, 0.65) !important; /* #2D2D32 card surface opacity */
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+/* Blue Glow */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.20);
 }
 
-.glass-card:hover {
-  border-color: rgba(255, 102, 0, 0.3) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.06);
+/* Status Badges */
+.badge-success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border-radius: 9999px;
+  font-weight: 800;
 }
 
-.dark .glass-card:hover {
-  background: rgba(45, 45, 50, 0.8) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+.badge-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border-radius: 9999px;
+  font-weight: 800;
 }
 
-/* Glassmorphic inputs */
+.badge-error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  border-radius: 9999px;
+  font-weight: 800;
+}
+
+/* Clean Form Inputs */
 input[type="text"],
 input[type="password"],
 input[type="email"],
+input[type="number"],
 textarea,
 select {
-  background: rgba(0, 0, 0, 0.01) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 14px;
   color: var(--foreground) !important;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .dark input[type="text"],
 .dark input[type="password"],
 .dark input[type="email"],
+.dark input[type="number"],
 .dark textarea,
 .dark select {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #141416 !important;
+  border: 1px solid #282830 !important;
+  border-radius: 14px;
+  color: #FFFFFF !important;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="email"]:focus,
-textarea:focus,
-select:focus {
-  border-color: #FF6600 !important;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2) !important;
-}
-
-.orange-gradient-text {
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  background-image: linear-gradient(135deg, #111827 40%, #FF6600 100%);
-}
-
-.dark .orange-gradient-text {
-  background-image: linear-gradient(135deg, #ffffff 40%, #FF6600 100%);
-}
-
-.orange-gradient-bg {
-  background: linear-gradient(135deg, #FF6600 0%, #E55B00 100%);
+input:focus, textarea:focus, select:focus {
+  border-color: #2563EB !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
 }
 
 /* Custom Scrollbars */
@@ -239,53 +231,24 @@ select:focus {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
 }
-.dark ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-}
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 102, 0, 0.25);
-  border-radius: 3px;
+  background: #D1D5DB;
+  border-radius: 9999px;
 }
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2D2D35;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 102, 0, 0.45);
+  background: #9CA3AF;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3F3F4A;
 }
-
-.animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Active Indicator sidebar */
-.sidebar-active-tab {
-  position: relative;
-}
-.sidebar-active-tab::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 15%;
-  height: 70%;
-  width: 3px;
-  background-color: #FF6600;
-  border-radius: 0 2px 2px 0;
-}
-
-/* Status bulbs */
-.bulb-active {
-  background-color: #10B981;
-}
-.bulb-pending {
-  background-color: #FFC72C; /* Gold accent */
-}
-.bulb-inactive {
-  background-color: #6B7280;
-}
-
-

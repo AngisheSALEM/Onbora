@@ -537,29 +537,29 @@ export default function AdminDashboard() {
                     
                     {/* Stats cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
-                        <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">{stats.total_dossiers}</span>
-                        <p className="text-[9px] text-zinc-500 mt-2">Dossiers créés dans le pipe commercial</p>
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
+                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
+                        <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{stats.total_dossiers}</span>
+                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Dossiers créés dans le pipe commercial</p>
                       </div>
 
-                      <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Qualifiés en Ligne (Inbound)</span>
-                        <span className="text-3xl font-black text-orange-500">{stats.inbound_count}</span>
-                        <p className="text-[9px] text-zinc-500 mt-2">Conversation autonome</p>
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
+                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Qualifiés en Ligne (Inbound)</span>
+                        <span className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">{stats.inbound_count}</span>
+                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Conversation IA autonome</p>
                       </div>
 
-                      <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Visites Terrain (Outbound)</span>
-                        <span className="text-3xl font-black text-orange-400">{stats.outbound_count}</span>
-                        <p className="text-[9px] text-zinc-500 mt-2">Qualifiés par les commerciaux via dictaphone</p>
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
+                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Visites Terrain (Outbound)</span>
+                        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.outbound_count}</span>
+                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés par les commerciaux via dictaphone</p>
                       </div>
 
-                      <div className="glass-card rounded-2xl p-5 shadow-sm flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Taux de Conversion KAM</span>
-                        <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">{stats.conversion_rate}%</span>
-                        <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1 rounded-full overflow-hidden mt-2">
-                          <div className="orange-gradient-bg h-full" style={{ width: `${stats.conversion_rate}%` }} />
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
+                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Taux de Conversion KAM</span>
+                        <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{stats.conversion_rate}%</span>
+                        <div className="w-full bg-[#E2E8F0] dark:bg-[#222228] h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-blue-600 h-full rounded-full" style={{ width: `${stats.conversion_rate}%` }} />
                         </div>
                       </div>
                     </div>
@@ -567,64 +567,71 @@ export default function AdminDashboard() {
                     {/* Pipeline breakdown & Trend Chart */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Left: Counts */}
-                      <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Répartition du Pipeline KAM</h3>
-                        <div className="grid grid-cols-3 gap-4 text-center my-auto text-zinc-900 dark:text-zinc-100">
-                          <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Nouveau</span>
-                            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">{stats.status_counts.NEW}</p>
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
+                        <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">Répartition du Pipeline Commercial</h3>
+                        <div className="grid grid-cols-3 gap-3 text-center my-auto text-zinc-950 dark:text-white">
+                          <div className="p-4 studio-subcard rounded-[18px]">
+                            <span className="text-[10px] font-extrabold text-zinc-500 uppercase">Nouveau</span>
+                            <p className="text-xl font-black text-zinc-800 dark:text-zinc-200 mt-1">{stats.status_counts.NEW}</p>
                           </div>
-                          <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase">En revue</span>
-                            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">{stats.status_counts.IN_REVIEW}</p>
+                          <div className="p-4 studio-subcard rounded-[18px]">
+                            <span className="text-[10px] font-extrabold text-zinc-500 uppercase">En revue</span>
+                            <p className="text-xl font-black text-zinc-800 dark:text-zinc-200 mt-1">{stats.status_counts.IN_REVIEW}</p>
                           </div>
-                          <div className="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-150 dark:border-zinc-850 rounded-xl">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Pris en charge</span>
-                            <p className="text-lg font-black text-orange-500 mt-1">{stats.status_counts.ACCEPTED}</p>
+                          <div className="p-4 studio-subcard rounded-[18px]">
+                            <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase">Pris en charge</span>
+                            <p className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1">{stats.status_counts.ACCEPTED}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Right: SVG Trend Line Chart */}
-                      <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Courbe d'Adoption Hebdomadaire</h3>
+                      <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">Courbe d'Adoption Hebdomadaire</h3>
+                          <span className="text-[10px] bg-blue-600/10 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full font-extrabold">
+                            Dynamique 7 jours
+                          </span>
+                        </div>
                         <div className="relative h-32 w-full flex items-end">
                           <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
-                            <line x1="0" y1="20" x2="300" y2="20" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
-                            <line x1="0" y1="50" x2="300" y2="50" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
-                            <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
+                            <line x1="0" y1="20" x2="300" y2="20" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
+                            <line x1="0" y1="50" x2="300" y2="50" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
+                            <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
                             
+                            {/* Outbound Trend (Terrain) */}
                             <path
                               d="M 0 90 Q 50 80, 100 65 T 200 45 T 300 25"
                               fill="none"
-                              stroke="#71717a"
+                              stroke="#71717A"
                               strokeWidth="2"
                               strokeLinecap="round"
                             />
                             
+                            {/* Inbound Trend (IA & Digital) */}
                             <path
                               d="M 0 95 Q 50 85, 100 70 T 200 35 T 300 15"
                               fill="none"
-                              stroke="#f97316"
+                              stroke="#2563EB"
                               strokeWidth="3"
                               strokeLinecap="round"
                             />
 
                             <path
                               d="M 0 95 Q 50 85, 100 70 T 200 35 T 300 15 L 300 100 L 0 100 Z"
-                              fill="url(#gradient-orange)"
-                              opacity="0.05"
+                              fill="url(#gradient-blue)"
+                              opacity="0.12"
                             />
 
                             <defs>
-                              <linearGradient id="gradient-orange" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#f97316" />
-                                <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+                              <linearGradient id="gradient-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#2563EB" />
+                                <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
                               </linearGradient>
                             </defs>
                           </svg>
                           
-                          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] text-zinc-500 font-semibold px-1">
+                          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[9px] text-zinc-500 dark:text-zinc-400 font-bold px-1">
                             <span>Lun</span>
                             <span>Mar</span>
                             <span>Mer</span>
@@ -635,14 +642,14 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         
-                        <div className="flex gap-4 justify-center text-[9px] font-bold text-zinc-400">
-                          <div className="flex items-center gap-1">
-                            <span className="w-2.5 h-0.5 bg-orange-500 inline-block" />
-                            <span>Inbound (En Ligne)</span>
+                        <div className="flex gap-4 justify-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" />
+                            <span>Inbound (IA & Portail)</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="w-2.5 h-0.5 bg-zinc-600 inline-block" />
-                            <span>Outbound (Terrain)</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-3 h-1 bg-zinc-500 rounded-full inline-block" />
+                            <span>Outbound (Visites Terrain)</span>
                           </div>
                         </div>
                       </div>

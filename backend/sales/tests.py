@@ -296,3 +296,50 @@ class KaabuClientTestCase(APITestCase):
 
         ent.refresh_from_db()
         self.assertEqual(ent.sync_status, "SYNCED")
+
+    def test_supervisor_salesperson_lifecycle(self):
+        # 1. Create a supervisor user
+        supervisor = User.objects.create_user(
+            username='sup_test', password='sup_password', role=User.SUPERVISOR
+        )
+        sup_token = Token.objects.create(user=supervisor)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + sup_token.key)
+
+        # 2. Supervisor creates a new salesperson account
+        create_url = reverse('salesperson-list')
+        response = self.client.post(create_url, {
+            "username": "dieudonne_mukendi",
+            "password": "mobile_pass_2026",
+            "first_name": "Dieudonné",
+            "last_name": "Mukendi",
+            "phone": "+243 81 000 1234",
+            "location": "Kinshasa"
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        sales_id = response.data["id"]
+        self.assertEqual(response.data["username"], "dieudonne_mukendi")
+
+        # 3. Verify that the commercial can authenticate via /api/auth/login/
+        self.client.credentials()  # clear auth
+        login_url = reverse('login')
+        login_resp = self.client.post(login_url, {
+            "username": "dieudonne_mukendi",
+            "password": "mobile_pass_2026"
+        }, format='json')
+        self.assertEqual(login_resp.status_code, status.HTTP_200_OK)
+        self.assertIn("token", login_resp.data)
+        self.assertEqual(login_resp.data["user"]["role"], User.SALESPERSON)
+
+        # 4. Supervisor revokes/deletes the salesperson account
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + sup_token.key)
+        delete_url = reverse('salesperson-detail', kwargs={'pk': sales_id})
+        del_resp = self.client.delete(delete_url)
+        self.assertEqual(del_resp.status_code, status.HTTP_200_OK)
+
+        # 5. Verify that subsequent login attempt fails immediately
+        self.client.credentials()  # clear auth
+        failed_login = self.client.post(login_url, {
+            "username": "dieudonne_mukendi",
+            "password": "mobile_pass_2026"
+        }, format='json')
+        self.assertEqual(failed_login.status_code, status.HTTP_400_BAD_REQUEST)

@@ -8,36 +8,18 @@ interface LogoProps {
   size?: number;
 }
 
-export default function Logo({ className = "", showBg = true, size = 32 }: LogoProps) {
-  const imgElement = (
-    <img
-      src="/onbora_logo.png"
-      alt="Onbora Logo"
-      className="object-contain"
-      style={{
-        width: showBg ? '80%' : '100%',
-        height: showBg ? '80%' : '100%',
-      }}
-    />
-  );
-
-  if (showBg) {
-    return (
-      <div
-        className={`${className} flex items-center justify-center bg-orange-500 rounded-[24%]`}
-        style={{ width: size, height: size }}
-      >
-        {imgElement}
-      </div>
-    );
-  }
-
+export default function Logo({ className = "", showBg = true, size = 36 }: LogoProps) {
   return (
     <div
-      className={className}
-      style={{ width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+      className={`relative inline-flex items-center justify-center overflow-hidden rounded-[22%] shadow-sm ${className}`}
+      style={{ width: size, height: size }}
     >
-      {imgElement}
+      <img
+        src="/icone_onbora.jpeg"
+        alt="Onbora"
+        className="w-full h-full object-cover"
+        style={{ width: size, height: size }}
+      />
     </div>
   );
 }

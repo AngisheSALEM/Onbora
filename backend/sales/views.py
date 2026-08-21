@@ -12,6 +12,7 @@ from .serializers import (
     EnterpriseMapSerializer,
     EnterpriseBriefSerializer,
     SalespersonActivitySerializer,
+    SalespersonUserSerializer,
     LiveVisitSessionSerializer,
     LiveCopilotTurnSerializer,
     VisitPreparationSerializer,
@@ -111,7 +112,8 @@ class SalespersonListView(APIView):
 
     def post(self, request):
         from accounts.models import User
-        username = request.data.get('username', '').strip()
+        from rest_framework.authtoken.models import Token
+        username = request.data.get('username', '').strip().lower()
         password = request.data.get('password', '').strip()
         first_name = request.data.get('first_name', '').strip()
         last_name = request.data.get('last_name', '').strip()
@@ -125,16 +127,21 @@ class SalespersonListView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             return Response(
                 {"detail": f"Le nom d'utilisateur '{username}' est déjà utilisé."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         email = f"{username}@onbora.cg"
+        # Check if email is already taken
+        if User.objects.filter(email__iexact=email).exists():
+            email = f"{username}_{User.objects.count()}@onbora.cg"
+
         user = User.objects.create_user(
             username=username,
             email=email,
+            password=password,
             role=User.SALESPERSON,
             first_name=first_name,
             last_name=last_name,
@@ -143,8 +150,7 @@ class SalespersonListView(APIView):
             is_available=True,
             is_active=True
         )
-        user.set_password(password)
-        user.save()
+        Token.objects.get_or_create(user=user)
 
         if initial_plaque_id:
             try:
