@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'ADMIN')[];
+  allowedRoles?: ('CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'ADMIN')[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {

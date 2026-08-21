@@ -35,6 +35,20 @@ class Command(BaseCommand):
         admin_user.is_superuser = True
         admin_user.save()
 
+        self.stdout.write('1b. Création du compte Superviseur Back-office...')
+        supervisor_user = User.objects.create_user(
+            username='supervisor',
+            email='supervisor@onbora.cg',
+            role=User.SUPERVISOR,
+            first_name='Alain',
+            last_name='Mabiala',
+            company_name='Direction Commerciale & Superviseur Plaques',
+            phone='+243815555444'
+        )
+        supervisor_user.set_password('supervisorpass')
+        supervisor_user.is_staff = True
+        supervisor_user.save()
+
         self.stdout.write('2. Création des comptes commerciaux (Sales & Prospecteurs)...')
         sales_configs = [
             {

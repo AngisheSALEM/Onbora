@@ -1,12 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+
+const SupervisorTerritoryMap = dynamic(
+  () => import('@/components/supervisor/SupervisorTerritoryMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[520px] rounded-2xl flex items-center justify-center bg-zinc-100 dark:bg-zinc-900/40 text-xs text-zinc-400 font-medium animate-pulse">
+        Chargement de la carte vectorielle...
+      </div>
+    ),
+  }
+);
 
 interface Log {
   id: number;
@@ -39,7 +52,19 @@ export default function AdminDashboard() {
   const [filterType, setFilterType] = useState<string>('ALL');
 
   // Tabs and CRUD States
-  const [activeTab, setActiveTab] = useState<'supervision' | 'catalog'>('supervision');
+  const [activeTab, setActiveTab] = useState<'territory' | 'supervision' | 'catalog'>('territory');
+  const [supervisorData, setSupervisorData] = useState<{
+    plaques: any[];
+    enterprises: any[];
+    salespersons: any[];
+    recent_reports_feed: any[];
+  }>({
+    plaques: [],
+    enterprises: [],
+    salespersons: [],
+    recent_reports_feed: []
+  });
+  const [loadingSupervisor, setLoadingSupervisor] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [loadingServices, setLoadingServices] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,7 +126,26 @@ export default function AdminDashboard() {
     }
   ];
 
+  const loadSupervisorData = async () => {
+    setLoadingSupervisor(true);
+    try {
+      const data = await fetchAPI('/api/sales/supervisor-dashboard/');
+      setSupervisorData({
+        plaques: data.plaques || [],
+        enterprises: data.enterprises || [],
+        salespersons: data.salespersons || [],
+        recent_reports_feed: data.recent_reports_feed || [],
+      });
+    } catch (err) {
+      console.error("Erreur de chargement du tableau de bord superviseur:", err);
+    } finally {
+      setLoadingSupervisor(false);
+    }
+  };
+
   useEffect(() => {
+    loadSupervisorData();
+
     async function loadAdminData() {
       try {
         const statsData = await fetchAPI('/api/reporting/demo-stats/');
@@ -152,12 +196,15 @@ export default function AdminDashboard() {
     if (activeTab === 'catalog') {
       loadServices();
       loadCredentials();
+    } else if (activeTab === 'territory') {
+      loadSupervisorData();
     }
   }, [activeTab]);
 
   const handleRefresh = async () => {
     setLoading(true);
     try {
+      await loadSupervisorData();
       const statsData = await fetchAPI('/api/reporting/demo-stats/');
       setStats(statsData);
       const logsData = await fetchAPI('/api/reporting/demo-logs/');
@@ -383,7 +430,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
+    <ProtectedRoute allowedRoles={['ADMIN', 'SUPERVISOR']}>
       <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50">
         
         {/* Header */}
@@ -398,14 +445,16 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <button
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={loading || loadingSupervisor}
               className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-xs font-bold text-zinc-300 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <Icons.Refresh size={12} /> Rafraîchir
             </button>
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}</p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Superviseur Orange</p>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
+                {user?.role === 'SUPERVISOR' ? 'Superviseur Back-office' : 'Administrateur MSP'}
+              </p>
             </div>
             <ThemeToggle />
             <button
@@ -425,16 +474,26 @@ export default function AdminDashboard() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
               <div>
                 <span className="px-2.5 py-0.5 w-fit bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full text-[9px] font-bold tracking-wider uppercase shadow-sm shadow-orange-500/20">
-                  Supervision Technique
+                  Supervision Back-office & Territoires
                 </span>
-                <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-2 uppercase">Console d'Adoption MSP</h2>
+                <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-2 uppercase">Console Superviseur Onbora</h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl font-medium">
-                  Suivez l'activité commerciale en temps réel, observez l'état du pipe de conversation et gérez le catalogue de services MSP.
+                  Délimitez des plaques territoriales sur la carte, affectez des commerciaux aux secteurs et suivez les comptes-rendus de visite terrain.
                 </p>
               </div>
 
               {/* Tab Switcher */}
               <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl gap-1 border border-zinc-200 dark:border-zinc-800 shrink-0">
+                <button
+                  onClick={() => setActiveTab('territory')}
+                  className={`py-1.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'territory'
+                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                  }`}
+                >
+                  🗺️ Découpage & Carte Plaques
+                </button>
                 <button
                   onClick={() => setActiveTab('supervision')}
                   className={`py-1.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -458,14 +517,22 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {loading && !stats ? (
+            {loading && !stats && loadingSupervisor ? (
               <div className="flex-1 flex items-center justify-center p-12">
                 <div className="text-xs text-zinc-400 font-medium animate-pulse">Chargement des données de supervision...</div>
               </div>
-            ) : (
-              activeTab === 'supervision' ? (
-                stats && (
-                  <div className="flex flex-col gap-6 animate-fadeIn">
+            ) : activeTab === 'territory' ? (
+              <SupervisorTerritoryMap
+                plaques={supervisorData.plaques}
+                enterprises={supervisorData.enterprises}
+                salespersons={supervisorData.salespersons}
+                recentReports={supervisorData.recent_reports_feed}
+                onPlaqueCreated={loadSupervisorData}
+                onSalespersonAssigned={loadSupervisorData}
+              />
+            ) : activeTab === 'supervision' ? (
+              stats && (
+                <div className="flex flex-col gap-6 animate-fadeIn">
                     
                     {/* Stats cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -895,7 +962,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )
-            )}
+            }
 
             {/* Service Form Modal */}
             {isModalOpen && (

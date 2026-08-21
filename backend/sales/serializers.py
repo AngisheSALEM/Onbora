@@ -1,17 +1,40 @@
 from rest_framework import serializers
+from accounts.models import User
 from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
+
+
+class SalespersonUserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    assigned_plaques = serializers.SerializerMethodField()
+    reports_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'phone', 'location', 'is_available', 'assigned_plaques', 'reports_count']
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip() or obj.username
+
+    def get_assigned_plaques(self, obj):
+        return [p.code for p in obj.assigned_plaques.all()]
+
+    def get_reports_count(self, obj):
+        return VisitReport.objects.filter(preparation__salesperson=obj).count()
 
 
 class PlaqueSerializer(serializers.ModelSerializer):
     total_enterprises = serializers.IntegerField(read_only=True, required=False)
     ready_count = serializers.IntegerField(read_only=True, required=False)
     assigned_salespersons_names = serializers.ListField(read_only=True, required=False)
+    assigned_salespersons = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=User.objects.filter(role=User.SALESPERSON), required=False
+    )
 
     class Meta:
         model = Plaque
         fields = [
             'id', 'code', 'name', 'city', 'latitude', 'longitude', 'radius_km',
-            'is_active', 'total_enterprises', 'ready_count', 'assigned_salespersons_names', 'created_at'
+            'is_active', 'total_enterprises', 'ready_count', 'assigned_salespersons', 'assigned_salespersons_names', 'created_at'
         ]
 
 

@@ -10,12 +10,14 @@ class User(AbstractUser):
     CLIENT_B2B = 'CLIENT_B2B'
     SALESPERSON = 'SALESPERSON'
     KAM = 'KAM'
+    SUPERVISOR = 'SUPERVISOR'
     ADMIN = 'ADMIN'
     
     ROLE_CHOICES = [
         (CLIENT_B2B, 'Client B2B'),
         (SALESPERSON, 'Prospecteur / Commercial'),
         (KAM, 'Key Account Manager'),
+        (SUPERVISOR, 'Superviseur / Gestionnaire Back-office'),
         (ADMIN, 'Administrateur MSP'),
     ]
     

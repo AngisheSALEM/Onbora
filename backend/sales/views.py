@@ -89,11 +89,118 @@ class PlaqueDetailView(APIView):
         except Plaque.DoesNotExist:
             return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = PlaqueSerializer(plaque_obj, data=request.data, partial=True)
+            serializer = PlaqueSerializer(plaque_obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SalespersonListView(APIView):
+    """
+    GET: Liste tous les commerciaux avec leur statut et plaques affectées.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        from accounts.models import User
+        salespersons = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques')
+        serializer = SalespersonUserSerializer(salespersons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AssignSalespersonsToPlaqueView(APIView):
+    """
+    POST: Assigne une liste de commerciaux à une plaque donnée.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request, pk):
+        from accounts.models import User
+        try:
+            plaque = Plaque.objects.get(pk=pk)
+        except Plaque.DoesNotExist:
+            return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        salesperson_ids = request.data.get('salesperson_ids', [])
+        salespersons = User.objects.filter(id__in=salesperson_ids, role=User.SALESPERSON)
+        plaque.assigned_salespersons.set(salespersons)
+        plaque.save()
+
+        log_demo_event(
+            'SALESPERSON_ASSIGNED_PLAQUE',
+            f"{len(salespersons)} commercial(aux) assigné(s) à la plaque {plaque.name}",
+            user=request.user if request.user.is_authenticated else None,
+            metadata={"plaque_id": plaque.id, "salesperson_ids": salesperson_ids}
+        )
+
+        return Response({
+            "message": f"Commerciaux affectés à la plaque {plaque.code} avec succès.",
+            "plaque": PlaqueDetailSerializer(plaque).data
+        }, status=status.HTTP_200_OK)
+
+
+class SupervisorDashboardView(APIView):
+    """
+    GET: Fournit une vue agrégée en temps réel pour la console superviseur/admin:
+    - Plaques & découpage territorial
+    - Leads géolocalisés (Convertis en Vert, À convertir en Orange)
+    - Déploiement des commerciaux
+    - Flux temps réel des comptes-rendus de visite reçus depuis le mobile
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        from accounts.models import User
+
+        # 1. Plaques
+        plaques = ListPlaquesUseCase().execute()
+        plaques_data = PlaqueSerializer(plaques, many=True).data
+
+        # 2. Leads géolocalisés
+        enterprises = Enterprise.objects.all().order_by('-created_at')
+        enterprises_data = EnterpriseSerializer(enterprises, many=True).data
+
+        # 3. Commerciaux
+        salespersons = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques')
+        salespersons_data = SalespersonUserSerializer(salespersons, many=True).data
+
+        # 4. Comptes-rendus de visite reçus
+        reports = VisitReport.objects.select_related('preparation__enterprise', 'preparation__salesperson').order_by('-created_at')[:25]
+        reports_feed = []
+        for r in reports:
+            salesperson_name = "Commercial Terrain"
+            ent_name = "Entreprise"
+            if hasattr(r, 'preparation') and r.preparation:
+                if r.preparation.salesperson:
+                    salesperson_name = f"{r.preparation.salesperson.first_name} {r.preparation.salesperson.last_name}".strip() or r.preparation.salesperson.username
+                if r.preparation.enterprise:
+                    ent_name = r.preparation.enterprise.name
+
+            reports_feed.append({
+                "id": r.id,
+                "enterprise_name": ent_name,
+                "salesperson_name": salesperson_name,
+                "executive_summary": r.executive_summary,
+                "confirmed_needs": r.confirmed_needs,
+                "objections_raised": r.objections_raised,
+                "actions_todo": r.actions_todo,
+                "ai_feedback_rating": r.ai_feedback_rating,
+                "ai_feedback_comments": r.ai_feedback_comments,
+                "created_at": r.created_at.isoformat() if hasattr(r.created_at, 'isoformat') else str(r.created_at),
+            })
+
+        return Response({
+            "total_plaques": len(plaques_data),
+            "total_enterprises": enterprises.count(),
+            "ready_enterprises_count": enterprises.filter(is_ready_for_conversion=True).count(),
+            "total_salespersons": salespersons.count(),
+            "total_reports": VisitReport.objects.count(),
+            "plaques": plaques_data,
+            "enterprises": enterprises_data,
+            "salespersons": salespersons_data,
+            "recent_reports_feed": reports_feed
+        }, status=status.HTTP_200_OK)
 
 
 class EnterpriseEnrichView(APIView):

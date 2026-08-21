@@ -7,7 +7,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  role: 'CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'ADMIN';
+  role: 'CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'ADMIN';
   phone?: string;
   company_name?: string;
   first_name?: string;
@@ -65,11 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       case 'KAM':
         router.push('/kam');
         break;
+      case 'SUPERVISOR':
       case 'ADMIN':
         router.push('/admin');
         break;
       default:
-        router.push('/');
+        router.push('/admin');
     }
   };
 

@@ -2,6 +2,9 @@ from django.urls import path
 from .views import (
     PlaqueListCreateView,
     PlaqueDetailView,
+    SalespersonListView,
+    AssignSalespersonsToPlaqueView,
+    SupervisorDashboardView,
     EnterpriseSearchView,
     EnterpriseMapView,
     EnterpriseBriefView,
@@ -23,6 +26,10 @@ from .views import (
 )
 
 urlpatterns = [
+    # Console Superviseur & Découpage Territorial
+    path('supervisor-dashboard/', SupervisorDashboardView.as_view(), name='supervisor-dashboard'),
+    path('salespersons/', SalespersonListView.as_view(), name='salesperson-list'),
+    path('plaques/<int:pk>/assign/', AssignSalespersonsToPlaqueView.as_view(), name='plaque-assign-salespersons'),
     # Gestion des Plaques territoriales & Cartographie
     path('plaques/', PlaqueListCreateView.as_view(), name='plaque-list-create'),
     path('plaques/<int:pk>/', PlaqueDetailView.as_view(), name='plaque-detail'),
