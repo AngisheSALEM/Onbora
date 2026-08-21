@@ -483,36 +483,36 @@ export default function AdminDashboard() {
               </div>
 
               {/* Tab Switcher */}
-              <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl gap-1 border border-zinc-200 dark:border-zinc-800 shrink-0">
+              <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl gap-1.5 border border-zinc-200/80 dark:border-zinc-800 shrink-0">
                 <button
                   onClick={() => setActiveTab('territory')}
-                  className={`py-1.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'territory'
-                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      ? 'bg-orange-500 text-white shadow-sm'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
-                  🗺️ Découpage & Carte Plaques
+                  <Icons.Map size={14} /> Territoires & Plaques
                 </button>
                 <button
                   onClick={() => setActiveTab('supervision')}
-                  className={`py-1.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'supervision'
-                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      ? 'bg-orange-500 text-white shadow-sm'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
-                  📊 Supervision & Métriques
+                  <Icons.BarChart size={14} /> Supervision & Métriques
                 </button>
                 <button
                   onClick={() => setActiveTab('catalog')}
-                  className={`py-1.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'catalog'
-                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      ? 'bg-orange-500 text-white shadow-sm'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                   }`}
                 >
-                  💼 Catalogue & FAQ
+                  <Icons.Layers size={14} /> Catalogue MSP & FAQ
                 </button>
               </div>
             </div>
@@ -529,6 +529,7 @@ export default function AdminDashboard() {
                 recentReports={supervisorData.recent_reports_feed}
                 onPlaqueCreated={loadSupervisorData}
                 onSalespersonAssigned={loadSupervisorData}
+                onSalespersonChanged={loadSupervisorData}
               />
             ) : activeTab === 'supervision' ? (
               stats && (
@@ -830,7 +831,9 @@ export default function AdminDashboard() {
                           <span className="text-xs font-bold text-zinc-400">Aucun fichier en attente</span>
                           <p className="text-[10px] text-zinc-500 max-w-xs leading-relaxed">Téléversez un fichier de spécifications pour extraire et modéliser automatiquement vos offres MSP mensuelles.</p>
                           {ingestError && (
-                            <span className="text-[10px] text-red-500 font-semibold mt-2">⚠️ {ingestError}</span>
+                            <span className="text-[10px] text-red-500 font-semibold mt-2 flex items-center justify-center gap-1">
+                              <Icons.AlertCircle size={12} /> {ingestError}
+                            </span>
                           )}
                         </div>
                       )}
@@ -951,7 +954,10 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-xs font-black text-zinc-900 dark:text-zinc-50">❓ {faq.question}</h4>
+                            <h4 className="text-xs font-black text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
+                              <Icons.HelpCircle size={14} className="text-orange-500 shrink-0" />
+                              {faq.question}
+                            </h4>
                             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-2 bg-zinc-50/50 dark:bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-900/60 leading-relaxed font-medium">
                               {faq.answer}
                             </p>

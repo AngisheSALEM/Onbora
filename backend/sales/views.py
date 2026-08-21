@@ -99,6 +99,7 @@ class PlaqueDetailView(APIView):
 class SalespersonListView(APIView):
     """
     GET: Liste tous les commerciaux avec leur statut et plaques affectées.
+    POST: Création administrative d'un compte commercial par le superviseur.
     """
     permission_classes = [IsSalespersonOrAdmin]
 
@@ -107,6 +108,121 @@ class SalespersonListView(APIView):
         salespersons = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques')
         serializer = SalespersonUserSerializer(salespersons, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        from accounts.models import User
+        username = request.data.get('username', '').strip()
+        password = request.data.get('password', '').strip()
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
+        phone = request.data.get('phone', '').strip()
+        location = request.data.get('location', 'Kinshasa').strip()
+        initial_plaque_id = request.data.get('plaque_id')
+
+        if not username or not password:
+            return Response(
+                {"detail": "Le nom d'utilisateur et le mot de passe sont obligatoires."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"detail": f"Le nom d'utilisateur '{username}' est déjà utilisé."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        email = f"{username}@onbora.cg"
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            role=User.SALESPERSON,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            location=location,
+            is_available=True,
+            is_active=True
+        )
+        user.set_password(password)
+        user.save()
+
+        if initial_plaque_id:
+            try:
+                plaque = Plaque.objects.get(pk=initial_plaque_id)
+                plaque.assigned_salespersons.add(user)
+            except Plaque.DoesNotExist:
+                pass
+
+        log_demo_event(
+            'SALESPERSON_CREATED',
+            f"Création du compte commercial '{user.username}' ({user.first_name} {user.last_name}) par le superviseur",
+            user=request.user if request.user.is_authenticated else None,
+            metadata={"salesperson_id": user.id, "username": user.username}
+        )
+
+        return Response(
+            SalespersonUserSerializer(user).data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+class SalespersonDetailView(APIView):
+    """
+    DELETE: Révoque et supprime un compte commercial (interdiction d'accès immédiate à l'application mobile).
+    PATCH: Met à jour les informations ou le mot de passe du commercial.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def delete(self, request, pk):
+        from accounts.models import User
+        from rest_framework.authtoken.models import Token
+        try:
+            user = User.objects.get(pk=pk, role=User.SALESPERSON)
+        except User.DoesNotExist:
+            return Response({"detail": "Commercial introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        username = user.username
+        full_name = f"{user.first_name} {user.last_name}".strip()
+
+        # Invalidate any active auth tokens immediately
+        Token.objects.filter(user=user).delete()
+        user.is_active = False
+        user.delete()
+
+        log_demo_event(
+            'SALESPERSON_REMOVED',
+            f"Révocation et suppression du commercial '{username}' ({full_name}) par le superviseur",
+            user=request.user if request.user.is_authenticated else None,
+            metadata={"deleted_salesperson_id": pk, "username": username}
+        )
+
+        return Response(
+            {"message": f"Le compte commercial '{username}' a été révoqué et supprimé avec succès."},
+            status=status.HTTP_200_OK
+        )
+
+    def patch(self, request, pk):
+        from accounts.models import User
+        try:
+            user = User.objects.get(pk=pk, role=User.SALESPERSON)
+        except User.DoesNotExist:
+            return Response({"detail": "Commercial introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        if 'first_name' in request.data:
+            user.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            user.last_name = request.data['last_name']
+        if 'phone' in request.data:
+            user.phone = request.data['phone']
+        if 'location' in request.data:
+            user.location = request.data['location']
+        if 'is_available' in request.data:
+            user.is_available = bool(request.data['is_available'])
+        if 'password' in request.data and request.data['password']:
+            user.set_password(request.data['password'])
+
+        user.save()
+        return Response(SalespersonUserSerializer(user).data, status=status.HTTP_200_OK)
 
 
 class AssignSalespersonsToPlaqueView(APIView):

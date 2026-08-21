@@ -3,6 +3,7 @@ from .views import (
     PlaqueListCreateView,
     PlaqueDetailView,
     SalespersonListView,
+    SalespersonDetailView,
     AssignSalespersonsToPlaqueView,
     SupervisorDashboardView,
     EnterpriseSearchView,
@@ -29,6 +30,7 @@ urlpatterns = [
     # Console Superviseur & Découpage Territorial
     path('supervisor-dashboard/', SupervisorDashboardView.as_view(), name='supervisor-dashboard'),
     path('salespersons/', SalespersonListView.as_view(), name='salesperson-list'),
+    path('salespersons/<int:pk>/', SalespersonDetailView.as_view(), name='salesperson-detail'),
     path('plaques/<int:pk>/assign/', AssignSalespersonsToPlaqueView.as_view(), name='plaque-assign-salespersons'),
     # Gestion des Plaques territoriales & Cartographie
     path('plaques/', PlaqueListCreateView.as_view(), name='plaque-list-create'),
