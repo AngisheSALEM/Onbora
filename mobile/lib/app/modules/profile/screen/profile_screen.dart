@@ -241,7 +241,7 @@ class ProfileScreen extends StatelessWidget {
                               children: [
                                 Flexible(
                                   child: Text(
-                                    'Classement Dénicheurs',
+                                    'Performance Terrain & Primes',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -267,9 +267,9 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Obx(() {
-                              final pts = salesController.userTotalPoints.value > 0 ? salesController.userTotalPoints.value : 320;
+                              final pts = salesController.userTotalPoints.value > 0 ? salesController.userTotalPoints.value : 18;
                               return Text(
-                                '$pts points accumulés • Voir le barème des primes',
+                                '$pts points cumulés • Voir le barème & primes',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,

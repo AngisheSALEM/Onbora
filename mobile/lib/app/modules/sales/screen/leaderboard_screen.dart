@@ -175,8 +175,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   Obx(() {
                     final points = salesController.userTotalPoints.value > 0
                         ? salesController.userTotalPoints.value
-                        : 320;
-                    final estimatedBonus = (points * 0.4).toStringAsFixed(0);
+                        : 18;
+                    final estimatedBonus = (points * 5).toStringAsFixed(0);
 
                     return Container(
                       width: double.infinity,
@@ -283,8 +283,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         _buildIncentiveRow(
                           icon: LucideIcons.fileCheck2,
                           title: 'Pré-conversion réussie (RCCM / KYC)',
-                          points: '+100 pts',
-                          prime: '~ \$40',
+                          points: '+5 pts',
+                          prime: '~ \$25',
                           color: const Color(0xFF10B981),
                           isDark: isDark,
                         ),
@@ -292,8 +292,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         _buildIncentiveRow(
                           icon: LucideIcons.mapPin,
                           title: 'Lead voisin repéré (Lookalike 100m)',
-                          points: '+25 pts',
-                          prime: '~ \$10',
+                          points: '+1 pt',
+                          prime: '~ \$5',
                           color: const Color(0xFF2563EB),
                           isDark: isDark,
                         ),
@@ -301,8 +301,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         _buildIncentiveRow(
                           icon: LucideIcons.network,
                           title: 'Parrainage Fournisseur / Partenaire',
-                          points: '+15 pts',
-                          prime: '~ \$6',
+                          points: '+1 pt',
+                          prime: '~ \$5',
                           color: const Color(0xFF8B5CF6),
                           isDark: isDark,
                         ),
@@ -310,8 +310,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         _buildIncentiveRow(
                           icon: LucideIcons.alertTriangle,
                           title: 'Audit de friction concurrentielle (SQL)',
-                          points: '+10 pts',
-                          prime: '~ \$4',
+                          points: '+1 pt',
+                          prime: '~ \$5',
                           color: const Color(0xFFEC4899),
                           isDark: isDark,
                         ),

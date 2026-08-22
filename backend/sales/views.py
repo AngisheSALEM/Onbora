@@ -834,21 +834,25 @@ class FieldIntelligenceReportCreateListView(APIView):
             points_earned=0
         )
 
+        # Pipeline d'attribution normalisé & plafonné (Base 1 à 5 points)
+        # Action Utilisateur ──> Événement ──> Calcul (Base x Multiplicateur) ──> Vérification des plafonds ──> Crédit
         total_points = 0
 
-        # Points on conversion
+        # 1. Points on conversion (Base 5 pts, Multiplicateur 1x)
         if conversion_status == 'SUCCESS':
-            total_points += 100
+            conversion_pts = 5
+            total_points += conversion_pts
             SalesIncentivePoint.objects.create(
                 salesperson=request.user,
                 field_report=report,
                 action_type='PRE_CONVERSION',
-                points=100,
-                description=f"Pré-conversion réussie de {enterprise.name} (RCCM: {rccm_number})"
+                points=conversion_pts,
+                description=f"Pré-conversion validée: {enterprise.name} (RCCM: {rccm_number})"
             )
 
-        # 2. Process Nearby Leads (Lookalike 100m)
+        # 2. Process Nearby Leads (Lookalike 100m - Base 1 pt / voisin, max 2 par rapport)
         nearby_leads_data = data.get('nearby_leads', [])
+        nearby_credited = 0
         for item in nearby_leads_data:
             if item.get('name'):
                 lead = NearbyLead.objects.create(
@@ -864,17 +868,20 @@ class FieldIntelligenceReportCreateListView(APIView):
                     longitude=item.get('longitude', enterprise.longitude),
                     status='NEW'
                 )
-                total_points += 25
-                SalesIncentivePoint.objects.create(
-                    salesperson=request.user,
-                    field_report=report,
-                    action_type='NEARBY_LEAD',
-                    points=25,
-                    description=f"Lead voisin 100m identifié: {lead.name}"
-                )
+                if nearby_credited < 2:
+                    nearby_credited += 1
+                    total_points += 1
+                    SalesIncentivePoint.objects.create(
+                        salesperson=request.user,
+                        field_report=report,
+                        action_type='NEARBY_LEAD',
+                        points=1,
+                        description=f"Voisin 100m identifié: {lead.name}"
+                    )
 
-        # 3. Process Referral Leads (Supply-Chain)
+        # 3. Process Referral Leads (Supply-Chain - Base 1 pt / parrainage, max 2 par rapport)
         referrals_data = data.get('referrals', [])
+        ref_credited = 0
         for item in referrals_data:
             if item.get('company_name'):
                 ref = ReferralLead.objects.create(
@@ -887,17 +894,20 @@ class FieldIntelligenceReportCreateListView(APIView):
                     notes=item.get('notes', ''),
                     status='NEW'
                 )
-                total_points += 15
-                SalesIncentivePoint.objects.create(
-                    salesperson=request.user,
-                    field_report=report,
-                    action_type='REFERRAL',
-                    points=15,
-                    description=f"Parrainage collecté: {ref.company_name} ({ref.get_referral_type_display()})"
-                )
+                if ref_credited < 2:
+                    ref_credited += 1
+                    total_points += 1
+                    SalesIncentivePoint.objects.create(
+                        salesperson=request.user,
+                        field_report=report,
+                        action_type='REFERRAL',
+                        points=1,
+                        description=f"Partenaire/Parrainage collecté: {ref.company_name}"
+                    )
 
-        # 4. Process Trade Audit (Competitor Intelligence)
+        # 4. Process Trade Audit (Competitor Intelligence - Base 1 pt, max 1 par rapport)
         trade_audits_data = data.get('trade_audits', [])
+        trade_credited = 0
         for item in trade_audits_data:
             if item.get('competitor_name'):
                 audit = TradeAudit.objects.create(
@@ -909,21 +919,23 @@ class FieldIntelligenceReportCreateListView(APIView):
                     monthly_spend_estimated=item.get('monthly_spend_estimated') or None,
                     alert_notes=item.get('alert_notes', '')
                 )
-                total_points += 10
-                SalesIncentivePoint.objects.create(
-                    salesperson=request.user,
-                    field_report=report,
-                    action_type='TRADE_AUDIT',
-                    points=10,
-                    description=f"Audit concurrentiel {audit.competitor_name} ({audit.satisfaction_score}/5)"
-                )
+                if trade_credited < 1:
+                    trade_credited += 1
+                    total_points += 1
+                    SalesIncentivePoint.objects.create(
+                        salesperson=request.user,
+                        field_report=report,
+                        action_type='TRADE_AUDIT',
+                        points=1,
+                        description=f"Audit opérateur concurrent: {audit.competitor_name}"
+                    )
 
         report.points_earned = total_points
         report.save(update_fields=['points_earned'])
 
         log_demo_event(
             'FIELD_INTELLIGENCE_SUBMITTED',
-            f"Rapport Field Intelligence #{report.id} ({total_points} pts gagnés) pour {enterprise.name}",
+            f"Rapport Field Intelligence #{report.id} ({total_points} pts crédités) pour {enterprise.name}",
             user=request.user,
             metadata={
                 "report_id": report.id,
@@ -935,7 +947,7 @@ class FieldIntelligenceReportCreateListView(APIView):
 
         serializer = FieldIntelligenceReportSerializer(report)
         return Response({
-            "message": f"Rapport Field Intelligence enregistré avec succès ! Vous avez gagné +{total_points} points !",
+            "message": f"Rapport Field Intelligence enregistré avec succès ({total_points} pts de performance crédités).",
             "points_earned": total_points,
             "report": serializer.data
         }, status=status.HTTP_201_CREATED)

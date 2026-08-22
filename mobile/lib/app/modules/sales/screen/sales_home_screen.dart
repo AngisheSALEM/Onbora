@@ -426,7 +426,7 @@ class SalesHomeScreen extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      'Classement Dénicheurs',
+                                      'Performance Terrain',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -452,7 +452,7 @@ class SalesHomeScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Repérez 2 voisins & gagnez jusqu\'à +175 pts par visite',
+                                'Suivi des pré-conversions & sourcing de proximité',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

@@ -297,10 +297,10 @@ class SalesIncentivePoint(models.Model):
     Gamification & Rémunération des Dénicheurs de Leads
     """
     ACTION_CHOICES = [
-        ('PRE_CONVERSION', 'Pré-conversion réussie (KYC/RCCM) [+100 pts]'),
-        ('NEARBY_LEAD', 'Lead voisin 100m qualifié (photo + contact) [+25 pts]'),
-        ('REFERRAL', 'Parrainage / Fournisseur renseigné [+15 pts]'),
-        ('TRADE_AUDIT', 'Audit concurrentiel renseigné [+10 pts]'),
+        ('PRE_CONVERSION', 'Pré-conversion réussie (KYC/RCCM) [+5 pts]'),
+        ('NEARBY_LEAD', 'Lead voisin 100m qualifié (photo + contact) [+1 pt]'),
+        ('REFERRAL', 'Parrainage / Fournisseur renseigné [+1 pt]'),
+        ('TRADE_AUDIT', 'Audit concurrentiel renseigné [+1 pt]'),
     ]
 
     salesperson = models.ForeignKey(
@@ -310,7 +310,7 @@ class SalesIncentivePoint(models.Model):
     )
     field_report = models.ForeignKey(FieldIntelligenceReport, on_delete=models.SET_NULL, null=True, blank=True, related_name='incentive_points')
     action_type = models.CharField(max_length=30, choices=ACTION_CHOICES)
-    points = models.IntegerField(default=10)
+    points = models.IntegerField(default=1)
     description = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 

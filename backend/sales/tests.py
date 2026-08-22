@@ -402,8 +402,8 @@ class KaabuClientTestCase(APITestCase):
 
         response = self.client.post(fi_url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Expected points: 100 (conversion) + 2x25 (2 nearby) + 15 (1 referral) + 10 (1 audit) = 175 pts
-        self.assertEqual(response.data["points_earned"], 175)
+        # Expected points: 5 (conversion) + 2x1 (2 nearby) + 1 (1 referral) + 1 (1 audit) = 9 pts
+        self.assertEqual(response.data["points_earned"], 9)
         self.assertEqual(len(response.data["report"]["nearby_leads"]), 2)
         self.assertEqual(len(response.data["report"]["referrals"]), 1)
         self.assertEqual(len(response.data["report"]["trade_audits"]), 1)
@@ -423,7 +423,7 @@ class KaabuClientTestCase(APITestCase):
         self.assertGreaterEqual(len(leader_resp.data), 1)
         top_user = leader_resp.data[0]
         self.assertEqual(top_user["salesperson_name"], self.sales_user.username)
-        self.assertEqual(top_user["total_points"], 175)
+        self.assertEqual(top_user["total_points"], 9)
         self.assertEqual(top_user["rank"], 1)
         self.assertEqual(top_user["nearby_leads_count"], 2)
 

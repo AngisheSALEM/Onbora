@@ -77,11 +77,11 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
 
   int get _calculatedPoints {
     int pts = 0;
-    if (_conversionStatus == 'SUCCESS') pts += 100;
-    if (_nearby1NameController.text.trim().isNotEmpty) pts += 25;
-    if (_nearby2NameController.text.trim().isNotEmpty) pts += 25;
-    if (_ref1CompanyController.text.trim().isNotEmpty) pts += 15;
-    if (_competitorNameController.text.trim().isNotEmpty) pts += 10;
+    if (_conversionStatus == 'SUCCESS') pts += 5;
+    if (_nearby1NameController.text.trim().isNotEmpty) pts += 1;
+    if (_nearby2NameController.text.trim().isNotEmpty) pts += 1;
+    if (_ref1CompanyController.text.trim().isNotEmpty) pts += 1;
+    if (_competitorNameController.text.trim().isNotEmpty) pts += 1;
     return pts;
   }
 
@@ -147,15 +147,15 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
     if (ok) {
       Get.back();
       Get.snackbar(
-        '🏆 Bravo ! Intelligence Terrain Enregistrée',
-        'Vous avez remporté +$_calculatedPoints points pour votre tournée !',
+        'Rapport Terrain Enregistré',
+        'Dossier d\'intelligence commerciale validé avec succès.',
         backgroundColor: const Color(0xFF2563EB),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(16),
         borderRadius: 16,
-        icon: const Icon(LucideIcons.award, color: Colors.white),
+        icon: const Icon(LucideIcons.checkCircle2, color: Colors.white),
       );
     }
   }
@@ -205,32 +205,6 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
               ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 13),
-                const SizedBox(width: 4),
-                Text(
-                  '+$_calculatedPoints pts',
-                  style: const TextStyle(
-                    color: Color(0xFF2563EB),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
       body: AuroraBackground(
         child: SafeArea(
@@ -298,7 +272,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   _buildSectionHeader(
                     icon: LucideIcons.checkCheck,
                     title: '1. Résultat de la Pré-conversion',
-                    badge: _conversionStatus == 'SUCCESS' ? '+100 pts' : 'Nurturing',
+                    badge: _conversionStatus == 'SUCCESS' ? 'Pré-converti' : 'En Nurturing',
                     badgeColor: _conversionStatus == 'SUCCESS' ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
                     isDark: isDark,
                   ),
@@ -449,8 +423,8 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   // =========================================================
                   _buildSectionHeader(
                     icon: LucideIcons.mapPin,
-                    title: '2. Repérage Voisins (Lookalike 100m)',
-                    badge: '+25 pts / voisin',
+                    title: '2. Repérage Voisins (Lookalike)',
+                    badge: 'Rayon 100m',
                     badgeColor: const Color(0xFF2563EB),
                     isDark: isDark,
                   ),
@@ -579,7 +553,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   _buildSectionHeader(
                     icon: LucideIcons.network,
                     title: '3. Parrainages & Partenaires',
-                    badge: '+15 pts',
+                    badge: 'Supply-Chain',
                     badgeColor: const Color(0xFF8B5CF6),
                     isDark: isDark,
                   ),
@@ -674,7 +648,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   _buildSectionHeader(
                     icon: LucideIcons.alertTriangle,
                     title: '4. Radar Friction & Concurrent',
-                    badge: '+10 pts',
+                    badge: 'Audit FAI',
                     badgeColor: const Color(0xFFEC4899),
                     isDark: isDark,
                   ),
@@ -806,7 +780,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                           child: Text(
                             salesController.isSubmittingFieldIntelligence.value
                                 ? 'Transmission en cours...'
-                                : 'Valider le Rapport Field Intel (+$_calculatedPoints pts)',
+                                : 'Valider le Rapport Terrain',
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
                           ),
                         ),

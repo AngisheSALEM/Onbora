@@ -594,7 +594,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   color: Color(0xFF2563EB),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 16),
+                                child: const Icon(LucideIcons.radar, color: Colors.white, size: 16),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -602,7 +602,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Intelligence Terrain & Prime',
+                                      'Intelligence Terrain & Réseau',
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w800,
@@ -610,7 +610,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                       ),
                                     ),
                                     const Text(
-                                      'Lookalike 100m • Parrainages • Radar Friction',
+                                      'Lookalike 100m • Parrainages • Audit Concurrence',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -623,15 +623,15 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB),
+                                  color: const Color(0xFF2563EB).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Text(
-                                  '+175 pts',
+                                  'Sourcing',
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF2563EB),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               ),
@@ -639,7 +639,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'Enrichissez ce rapport en signalant les 2 commerces voisins et les partenaires du client pour débloquer vos primes de dénicheur de leads.',
+                            'Enrichissez ce dossier en renseignant les commerces voisins et les partenaires du client pour étendre la couverture de votre zone.',
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.35,

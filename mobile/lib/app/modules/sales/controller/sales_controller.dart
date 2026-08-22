@@ -632,18 +632,18 @@ class SalesController extends GetxController {
       fetchLeaderboard();
       return true;
     } catch (_) {
-      // Fallback local mock simulation
+      // Fallback local mock simulation (Base 1 à 5 pts)
       int simulatedPoints = 0;
-      if (report.conversionStatus == 'SUCCESS') simulatedPoints += 100;
-      simulatedPoints += report.nearbyLeads.length * 25;
-      simulatedPoints += report.referrals.length * 15;
-      simulatedPoints += report.tradeAudits.length * 10;
+      if (report.conversionStatus == 'SUCCESS') simulatedPoints += 5;
+      simulatedPoints += (report.nearbyLeads.length > 2 ? 2 : report.nearbyLeads.length) * 1;
+      simulatedPoints += (report.referrals.length > 2 ? 2 : report.referrals.length) * 1;
+      simulatedPoints += (report.tradeAudits.isNotEmpty ? 1 : 0);
 
       report.pointsEarned = simulatedPoints;
       userTotalPoints.value += simulatedPoints;
       lastFieldIntelligenceReport.value = report;
 
-      successMessage.value = "Rapport d'Intelligence Terrain validé (+ $simulatedPoints pts) !";
+      successMessage.value = "Rapport Terrain validé ($simulatedPoints pts crédités).";
       isSubmittingFieldIntelligence.value = false;
       return true;
     }
@@ -661,9 +661,9 @@ class SalesController extends GetxController {
     } catch (_) {
       // Fallback mock leaderboard if server offline
       leaderboardList.value = [
-        LeaderboardEntryModel(salespersonId: 1, salespersonName: 'jean_kam', fullName: 'Jean-Marc Tshimanga', totalPoints: 485, successfulConversionsCount: 3, nearbyLeadsCount: 6, referralsCount: 4, tradeAuditsCount: 3, rank: 1),
-        LeaderboardEntryModel(salespersonId: 2, salespersonName: 'dieudonne_mukendi', fullName: 'Dieudonné Mukendi', totalPoints: userTotalPoints.value > 0 ? userTotalPoints.value : 320, successfulConversionsCount: 2, nearbyLeadsCount: 4, referralsCount: 3, tradeAuditsCount: 2, rank: 2),
-        LeaderboardEntryModel(salespersonId: 3, salespersonName: 'sarah_m', fullName: 'Sarah Mbiye', totalPoints: 240, successfulConversionsCount: 1, nearbyLeadsCount: 4, referralsCount: 2, tradeAuditsCount: 1, rank: 3),
+        LeaderboardEntryModel(salespersonId: 1, salespersonName: 'jean_kam', fullName: 'Jean-Marc Tshimanga', totalPoints: 24, successfulConversionsCount: 3, nearbyLeadsCount: 6, referralsCount: 4, tradeAuditsCount: 3, rank: 1),
+        LeaderboardEntryModel(salespersonId: 2, salespersonName: 'dieudonne_mukendi', fullName: 'Dieudonné Mukendi', totalPoints: userTotalPoints.value > 0 ? userTotalPoints.value : 18, successfulConversionsCount: 2, nearbyLeadsCount: 4, referralsCount: 3, tradeAuditsCount: 2, rank: 2),
+        LeaderboardEntryModel(salespersonId: 3, salespersonName: 'sarah_m', fullName: 'Sarah Mbiye', totalPoints: 12, successfulConversionsCount: 1, nearbyLeadsCount: 4, referralsCount: 2, tradeAuditsCount: 1, rank: 3),
       ];
     } finally {
       isLoadingLeaderboard.value = false;
