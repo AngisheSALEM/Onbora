@@ -200,12 +200,16 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                               children: [
                                 Icon(LucideIcons.activity, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 18),
                                 const SizedBox(width: 8),
-                                Text(
-                                  'Transcription Vocale Whisper AI',
-                                  style: TextStyle(
-                                    color: isDark ? Colors.white : AppConstants.textDark,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13,
+                                Expanded(
+                                  child: Text(
+                                    'Transcription Vocale Whisper AI',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ),
                               ],

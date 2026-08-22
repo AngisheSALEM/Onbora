@@ -179,19 +179,24 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Intelligence Terrain (Field Intel)',
+              'Intelligence Terrain',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isDark ? Colors.white : AppConstants.textDark,
                 fontWeight: FontWeight.w800,
-                fontSize: 16,
+                fontSize: 15,
                 letterSpacing: -0.3,
               ),
             ),
             if (enterprise != null)
               Text(
                 'Visite : ${enterprise.name}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Color(0xFF2563EB),
                   fontWeight: FontWeight.w600,
@@ -202,8 +207,8 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            margin: const EdgeInsets.only(right: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
               color: const Color(0xFF2563EB).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
@@ -212,14 +217,14 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 14),
+                const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 13),
                 const SizedBox(width: 4),
                 Text(
                   '+$_calculatedPoints pts',
                   style: const TextStyle(
                     color: Color(0xFF2563EB),
                     fontWeight: FontWeight.w900,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -232,6 +237,8 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,22 +700,27 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                         const SizedBox(height: 12),
 
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Satisfaction actuelle du prospect :',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppConstants.textDark),
+                            Expanded(
+                              child: Text(
+                                'Satisfaction actuelle du prospect :',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppConstants.textDark),
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: List.generate(5, (index) {
                                 final star = index + 1;
                                 return GestureDetector(
                                   onTap: () => setState(() => _satisfactionScore = star),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                                    padding: const EdgeInsets.symmetric(horizontal: 1.5),
                                     child: Icon(
                                       LucideIcons.star,
-                                      size: 20,
+                                      size: 18,
                                       color: star <= _satisfactionScore ? const Color(0xFFF59E0B) : (isDark ? Colors.white24 : Colors.black12),
                                     ),
                                   ),
@@ -789,11 +801,14 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                         icon: salesController.isSubmittingFieldIntelligence.value
                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                             : const Icon(LucideIcons.send, size: 20, color: Colors.white),
-                        label: Text(
-                          salesController.isSubmittingFieldIntelligence.value
-                              ? 'Transmission en cours...'
-                              : 'Valider le Rapport Field Intel (+$_calculatedPoints pts)',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            salesController.isSubmittingFieldIntelligence.value
+                                ? 'Transmission en cours...'
+                                : 'Valider le Rapport Field Intel (+$_calculatedPoints pts)',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2563EB),
@@ -823,15 +838,19 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
       children: [
         Icon(icon, size: 16, color: const Color(0xFF2563EB)),
         const SizedBox(width: 6),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: isDark ? Colors.white : AppConstants.textDark,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppConstants.textDark,
+            ),
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: 6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(

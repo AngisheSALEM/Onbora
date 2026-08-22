@@ -239,12 +239,16 @@ class ProfileScreen extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  'Classement Dénicheurs',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
-                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                Flexible(
+                                  child: Text(
+                                    'Classement Dénicheurs',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 6),

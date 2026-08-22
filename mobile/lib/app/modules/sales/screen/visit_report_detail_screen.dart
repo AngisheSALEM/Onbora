@@ -235,33 +235,39 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF222228) : const Color(0xFFE0E7FF),
-                                        borderRadius: BorderRadius.circular(8),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF222228) : const Color(0xFFE0E7FF),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(
+                                          LucideIcons.mic,
+                                          color: AppConstants.primaryBlue,
+                                          size: 18,
+                                        ),
                                       ),
-                                      child: const Icon(
-                                        LucideIcons.mic,
-                                        color: AppConstants.primaryBlue,
-                                        size: 18,
+                                      const SizedBox(width: 10),
+                                      Flexible(
+                                        child: Text(
+                                          'Transcription Brute Whisper AI',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Transcription Brute Whisper AI',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 15,
-                                        color: isDark ? Colors.white : AppConstants.textDark,
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
+                                const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(

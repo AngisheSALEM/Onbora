@@ -108,7 +108,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                             icon: const Icon(Icons.search_rounded, color: Colors.white),
                             label: const Text('Choisir une Entreprise', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppConstants.orangeOfficial,
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                             ),
                           ),

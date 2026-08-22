@@ -424,12 +424,16 @@ class SalesHomeScreen extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    'Classement Dénicheurs',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                  Flexible(
+                                    child: Text(
+                                      'Classement Dénicheurs',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -449,6 +453,8 @@ class SalesHomeScreen extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(
                                 'Repérez 2 voisins & gagnez jusqu\'à +175 pts par visite',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
