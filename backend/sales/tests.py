@@ -343,3 +343,87 @@ class KaabuClientTestCase(APITestCase):
             "password": "mobile_pass_2026"
         }, format='json')
         self.assertEqual(failed_login.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_field_intelligence_flow_and_leaderboard(self):
+        # 1. Prepare enterprise
+        enterprise = Enterprise.objects.create(
+            name="Supermarché Kin-Express",
+            sector="Grande Distribution",
+            latitude=-4.321,
+            longitude=15.312
+        )
+
+        # 2. Submit Field Intelligence Report with Lookalike 100m, Referrals and Trade Audit
+        fi_url = reverse('field-intelligence-list-create')
+        payload = {
+            "enterprise_id": enterprise.id,
+            "conversion_status": "SUCCESS",
+            "rccm_number": "CD/KIN/RCCM/26-B-00123",
+            "nurturing_reason": "NONE",
+            "nearby_leads": [
+                {
+                    "name": "Boulangerie Le Pain d'Or",
+                    "sector": "Alimentation",
+                    "manager_name": "Alain Dupont",
+                    "phone": "+243 89 111 2233",
+                    "proximity_notes": "Juste en face à 30 mètres",
+                    "latitude": -4.3212,
+                    "longitude": 15.3125
+                },
+                {
+                    "name": "Pharmacie du Centre Gombe",
+                    "sector": "Santé / Pharmacie",
+                    "manager_name": "Dr. Sarah",
+                    "phone": "+243 81 444 5566",
+                    "proximity_notes": "2 portes à gauche",
+                    "latitude": -4.3208,
+                    "longitude": 15.3119
+                }
+            ],
+            "referrals": [
+                {
+                    "referral_type": "SUPPLIER",
+                    "company_name": "Minoterie Centrale RDC",
+                    "contact_person": "M. Kabasele (Directeur Achats)",
+                    "phone": "+243 99 888 7766",
+                    "notes": "Fournisseur principal de farine, gros besoin d'interconnexion"
+                }
+            ],
+            "trade_audits": [
+                {
+                    "competitor_name": "FAI Historique X",
+                    "satisfaction_score": 1,
+                    "friction_reasons": ["Coupures récurrentes", "Support client injoignable"],
+                    "monthly_spend_estimated": 450.00,
+                    "alert_notes": "Le client veut résilier dès qu'une alternative fibre est dispo."
+                }
+            ]
+        }
+
+        response = self.client.post(fi_url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Expected points: 100 (conversion) + 2x25 (2 nearby) + 15 (1 referral) + 10 (1 audit) = 175 pts
+        self.assertEqual(response.data["points_earned"], 175)
+        self.assertEqual(len(response.data["report"]["nearby_leads"]), 2)
+        self.assertEqual(len(response.data["report"]["referrals"]), 1)
+        self.assertEqual(len(response.data["report"]["trade_audits"]), 1)
+
+        # 3. Verify Trade Audit auto-flagged priority friction (score 1 <= 2)
+        audit_url = reverse('field-intelligence-trade-audits')
+        audit_resp = self.client.get(f"{audit_url}?priority=true")
+        self.assertEqual(audit_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(audit_resp.data), 1)
+        self.assertEqual(audit_resp.data[0]["competitor_name"], "FAI Historique X")
+        self.assertTrue(audit_resp.data[0]["is_priority_friction_alert"])
+
+        # 4. Verify Leaderboard ranking
+        leaderboard_url = reverse('field-intelligence-leaderboard')
+        leader_resp = self.client.get(leaderboard_url)
+        self.assertEqual(leader_resp.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(leader_resp.data), 1)
+        top_user = leader_resp.data[0]
+        self.assertEqual(top_user["salesperson_name"], self.sales_user.username)
+        self.assertEqual(top_user["total_points"], 175)
+        self.assertEqual(top_user["rank"], 1)
+        self.assertEqual(top_user["nearby_leads_count"], 2)
+

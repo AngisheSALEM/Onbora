@@ -175,3 +175,86 @@ class ScraperCredentialSerializer(serializers.ModelSerializer):
         model = ScraperCredential
         fields = ['id', 'platform', 'cookies_value', 'updated_at']
         read_only_fields = ['id', 'updated_at']
+
+
+# ============================================================================
+# FIELD INTELLIGENCE SERIALIZERS
+# ============================================================================
+
+from .models import NearbyLead, ReferralLead, TradeAudit, FieldIntelligenceReport, SalesIncentivePoint
+
+
+class NearbyLeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NearbyLead
+        fields = [
+            'id', 'field_report', 'source_enterprise', 'name', 'sector',
+            'manager_name', 'phone', 'proximity_notes', 'photo_url',
+            'latitude', 'longitude', 'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'field_report', 'source_enterprise', 'created_at']
+
+
+class ReferralLeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReferralLead
+        fields = [
+            'id', 'field_report', 'source_enterprise', 'referral_type',
+            'company_name', 'contact_person', 'phone', 'notes',
+            'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'field_report', 'source_enterprise', 'created_at']
+
+
+class TradeAuditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TradeAudit
+        fields = [
+            'id', 'field_report', 'enterprise', 'competitor_name',
+            'satisfaction_score', 'friction_reasons', 'monthly_spend_estimated',
+            'is_priority_friction_alert', 'alert_notes', 'created_at'
+        ]
+        read_only_fields = ['id', 'field_report', 'enterprise', 'is_priority_friction_alert', 'created_at']
+
+
+class FieldIntelligenceReportSerializer(serializers.ModelSerializer):
+    nearby_leads = NearbyLeadSerializer(many=True, required=False)
+    referrals = ReferralLeadSerializer(many=True, required=False)
+    trade_audits = TradeAuditSerializer(many=True, required=False)
+    enterprise_name = serializers.CharField(source='enterprise.name', read_only=True)
+    salesperson_name = serializers.CharField(source='salesperson.username', read_only=True)
+
+    class Meta:
+        model = FieldIntelligenceReport
+        fields = [
+            'id', 'visit_report', 'enterprise', 'enterprise_name', 'salesperson', 'salesperson_name',
+            'conversion_status', 'rccm_number', 'nurturing_reason', 'contract_expiry_date',
+            'scheduled_follow_up', 'nurturing_notes', 'points_earned',
+            'nearby_leads', 'referrals', 'trade_audits', 'created_at'
+        ]
+        read_only_fields = ['id', 'salesperson', 'points_earned', 'created_at']
+
+
+class SalesIncentivePointSerializer(serializers.ModelSerializer):
+    salesperson_name = serializers.CharField(source='salesperson.username', read_only=True)
+
+    class Meta:
+        model = SalesIncentivePoint
+        fields = [
+            'id', 'salesperson', 'salesperson_name', 'field_report',
+            'action_type', 'points', 'description', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    salesperson_id = serializers.IntegerField()
+    salesperson_name = serializers.CharField()
+    full_name = serializers.CharField()
+    total_points = serializers.IntegerField()
+    successful_conversions_count = serializers.IntegerField()
+    nearby_leads_count = serializers.IntegerField()
+    referrals_count = serializers.IntegerField()
+    trade_audits_count = serializers.IntegerField()
+    rank = serializers.IntegerField()
+

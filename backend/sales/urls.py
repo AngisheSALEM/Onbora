@@ -24,6 +24,10 @@ from .views import (
     ScraperCredentialDetailView,
     KaabuDeduplicateView,
     ArrowSphereWebhookView,
+    FieldIntelligenceReportCreateListView,
+    FieldIntelligenceNearbyLeadsView,
+    FieldIntelligenceTradeAuditsView,
+    FieldIntelligenceLeaderboardView,
 )
 
 urlpatterns = [
@@ -55,9 +59,16 @@ urlpatterns = [
     path('visit-reports/<int:pk>/export/', VisitReportExportView.as_view(), name='visit-report-export'),
     path('voice-upload/', VoiceUploadView.as_view(), name='voice-upload'),
 
+    # Field Intelligence & Lead Sourcing (Proximité, Parrainages, Trade Audit, Nurturing & Leaderboard)
+    path('field-intelligence/', FieldIntelligenceReportCreateListView.as_view(), name='field-intelligence-list-create'),
+    path('field-intelligence/nearby-leads/', FieldIntelligenceNearbyLeadsView.as_view(), name='field-intelligence-nearby-leads'),
+    path('field-intelligence/trade-audits/', FieldIntelligenceTradeAuditsView.as_view(), name='field-intelligence-trade-audits'),
+    path('field-intelligence/leaderboard/', FieldIntelligenceLeaderboardView.as_view(), name='field-intelligence-leaderboard'),
+
     # Identifiants de scraping & Intégrations externes
     path('credentials/', ScraperCredentialListCreateView.as_view(), name='scraper-credential-list-create'),
     path('credentials/<str:platform>/', ScraperCredentialDetailView.as_view(), name='scraper-credential-detail'),
     path('integrations/kaabu/deduplicate/', KaabuDeduplicateView.as_view(), name='kaabu-deduplicate'),
     path('integrations/arrowsphere/webhook/', ArrowSphereWebhookView.as_view(), name='arrowsphere-webhook'),
 ]
+

@@ -9,6 +9,7 @@ import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
 import '../../../common/screen/widget/aurora_background.dart';
 import '../../../common/screen/widget/glass_card.dart';
+import 'field_intelligence_screen.dart';
 
 class VisitReportDetailScreen extends StatefulWidget {
   const VisitReportDetailScreen({super.key});
@@ -562,7 +563,106 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+
+                    // Field Intelligence Lead Generation Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF2563EB),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 16),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Intelligence Terrain & Prime',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                      ),
+                                    ),
+                                    const Text(
+                                      'Lookalike 100m • Parrainages • Radar Friction',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2563EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  '+175 pts',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Enrichissez ce rapport en signalant les 2 commerces voisins et les partenaires du client pour débloquer vos primes de dénicheur de leads.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              height: 1.35,
+                              color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: ScaleTap(
+                              child: ElevatedButton.icon(
+                                onPressed: () => Get.to(() => const FieldIntelligenceScreen()),
+                                icon: const Icon(LucideIcons.mapPin, size: 16, color: Colors.white),
+                                label: const Text(
+                                  'Compléter l\'Intelligence Terrain',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2563EB),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
                     // Transmit to KAM Button
                     SizedBox(

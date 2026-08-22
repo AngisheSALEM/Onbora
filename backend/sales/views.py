@@ -1,9 +1,11 @@
 import os
+from django.db import models
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
+from accounts.models import User
 from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
 from .serializers import (
     PlaqueSerializer,
@@ -762,3 +764,242 @@ class ArrowSphereWebhookView(APIView):
             "tenant_id": tenant_id,
             "unlocked_services": activated_services
         }, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# FIELD INTELLIGENCE & LEADERBOARD VIEWS
+# ============================================================================
+
+from .models import FieldIntelligenceReport, NearbyLead, ReferralLead, TradeAudit, SalesIncentivePoint
+from .serializers import (
+    FieldIntelligenceReportSerializer,
+    NearbyLeadSerializer,
+    ReferralLeadSerializer,
+    TradeAuditSerializer,
+    SalesIncentivePointSerializer,
+    LeaderboardEntrySerializer
+)
+
+
+class FieldIntelligenceReportCreateListView(APIView):
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        reports = FieldIntelligenceReport.objects.all().order_by('-created_at')
+        enterprise_id = request.GET.get('enterprise_id')
+        if enterprise_id:
+            reports = reports.filter(enterprise_id=enterprise_id)
+        
+        conversion_status = request.GET.get('conversion_status')
+        if conversion_status:
+            reports = reports.filter(conversion_status=conversion_status)
+
+        serializer = FieldIntelligenceReportSerializer(reports, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        data = request.data
+        enterprise_id = data.get('enterprise_id') or data.get('enterprise')
+        if not enterprise_id:
+            return Response({"detail": "Le champ enterprise_id est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            enterprise = Enterprise.objects.get(pk=enterprise_id)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        visit_report_id = data.get('visit_report_id') or data.get('visit_report')
+        visit_report = None
+        if visit_report_id:
+            visit_report = VisitReport.objects.filter(pk=visit_report_id).first()
+
+        conversion_status = data.get('conversion_status', 'SUCCESS')
+        rccm_number = data.get('rccm_number', '')
+        nurturing_reason = data.get('nurturing_reason', 'NONE')
+        contract_expiry_date = data.get('contract_expiry_date') or None
+        scheduled_follow_up = data.get('scheduled_follow_up') or None
+        nurturing_notes = data.get('nurturing_notes', '')
+
+        # 1. Create Main Field Intelligence Report
+        report = FieldIntelligenceReport.objects.create(
+            visit_report=visit_report,
+            enterprise=enterprise,
+            salesperson=request.user,
+            conversion_status=conversion_status,
+            rccm_number=rccm_number,
+            nurturing_reason=nurturing_reason,
+            contract_expiry_date=contract_expiry_date,
+            scheduled_follow_up=scheduled_follow_up,
+            nurturing_notes=nurturing_notes,
+            points_earned=0
+        )
+
+        total_points = 0
+
+        # Points on conversion
+        if conversion_status == 'SUCCESS':
+            total_points += 100
+            SalesIncentivePoint.objects.create(
+                salesperson=request.user,
+                field_report=report,
+                action_type='PRE_CONVERSION',
+                points=100,
+                description=f"Pré-conversion réussie de {enterprise.name} (RCCM: {rccm_number})"
+            )
+
+        # 2. Process Nearby Leads (Lookalike 100m)
+        nearby_leads_data = data.get('nearby_leads', [])
+        for item in nearby_leads_data:
+            if item.get('name'):
+                lead = NearbyLead.objects.create(
+                    field_report=report,
+                    source_enterprise=enterprise,
+                    name=item.get('name'),
+                    sector=item.get('sector', 'Commerce / PME'),
+                    manager_name=item.get('manager_name', ''),
+                    phone=item.get('phone', ''),
+                    proximity_notes=item.get('proximity_notes', ''),
+                    photo_url=item.get('photo_url', ''),
+                    latitude=item.get('latitude', enterprise.latitude),
+                    longitude=item.get('longitude', enterprise.longitude),
+                    status='NEW'
+                )
+                total_points += 25
+                SalesIncentivePoint.objects.create(
+                    salesperson=request.user,
+                    field_report=report,
+                    action_type='NEARBY_LEAD',
+                    points=25,
+                    description=f"Lead voisin 100m identifié: {lead.name}"
+                )
+
+        # 3. Process Referral Leads (Supply-Chain)
+        referrals_data = data.get('referrals', [])
+        for item in referrals_data:
+            if item.get('company_name'):
+                ref = ReferralLead.objects.create(
+                    field_report=report,
+                    source_enterprise=enterprise,
+                    referral_type=item.get('referral_type', 'SUPPLIER'),
+                    company_name=item.get('company_name'),
+                    contact_person=item.get('contact_person', ''),
+                    phone=item.get('phone', ''),
+                    notes=item.get('notes', ''),
+                    status='NEW'
+                )
+                total_points += 15
+                SalesIncentivePoint.objects.create(
+                    salesperson=request.user,
+                    field_report=report,
+                    action_type='REFERRAL',
+                    points=15,
+                    description=f"Parrainage collecté: {ref.company_name} ({ref.get_referral_type_display()})"
+                )
+
+        # 4. Process Trade Audit (Competitor Intelligence)
+        trade_audits_data = data.get('trade_audits', [])
+        for item in trade_audits_data:
+            if item.get('competitor_name'):
+                audit = TradeAudit.objects.create(
+                    field_report=report,
+                    enterprise=enterprise,
+                    competitor_name=item.get('competitor_name'),
+                    satisfaction_score=int(item.get('satisfaction_score', 3)),
+                    friction_reasons=item.get('friction_reasons', []),
+                    monthly_spend_estimated=item.get('monthly_spend_estimated') or None,
+                    alert_notes=item.get('alert_notes', '')
+                )
+                total_points += 10
+                SalesIncentivePoint.objects.create(
+                    salesperson=request.user,
+                    field_report=report,
+                    action_type='TRADE_AUDIT',
+                    points=10,
+                    description=f"Audit concurrentiel {audit.competitor_name} ({audit.satisfaction_score}/5)"
+                )
+
+        report.points_earned = total_points
+        report.save(update_fields=['points_earned'])
+
+        log_demo_event(
+            'FIELD_INTELLIGENCE_SUBMITTED',
+            f"Rapport Field Intelligence #{report.id} ({total_points} pts gagnés) pour {enterprise.name}",
+            user=request.user,
+            metadata={
+                "report_id": report.id,
+                "points_earned": total_points,
+                "nearby_count": len(nearby_leads_data),
+                "referrals_count": len(referrals_data)
+            }
+        )
+
+        serializer = FieldIntelligenceReportSerializer(report)
+        return Response({
+            "message": f"Rapport Field Intelligence enregistré avec succès ! Vous avez gagné +{total_points} points !",
+            "points_earned": total_points,
+            "report": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+
+class FieldIntelligenceNearbyLeadsView(APIView):
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        leads = NearbyLead.objects.all().order_by('-created_at')
+        status_filter = request.GET.get('status')
+        if status_filter:
+            leads = leads.filter(status=status_filter)
+        
+        serializer = NearbyLeadSerializer(leads, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FieldIntelligenceTradeAuditsView(APIView):
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        audits = TradeAudit.objects.all().order_by('-created_at')
+        priority_only = request.GET.get('priority') == 'true'
+        if priority_only:
+            audits = audits.filter(is_priority_friction_alert=True)
+            
+        serializer = TradeAuditSerializer(audits, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FieldIntelligenceLeaderboardView(APIView):
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        salespeople = User.objects.filter(role=User.SALESPERSON)
+        leaderboard = []
+
+        for sp in salespeople:
+            points = SalesIncentivePoint.objects.filter(salesperson=sp)
+            total_points = points.aggregate(models.Sum('points'))['points__sum'] or 0
+            
+            conversions_count = points.filter(action_type='PRE_CONVERSION').count()
+            nearby_count = points.filter(action_type='NEARBY_LEAD').count()
+            referrals_count = points.filter(action_type='REFERRAL').count()
+            trade_count = points.filter(action_type='TRADE_AUDIT').count()
+
+            leaderboard.append({
+                "salesperson_id": sp.id,
+                "salesperson_name": sp.username,
+                "full_name": f"{sp.first_name} {sp.last_name}".strip() or sp.username,
+                "total_points": total_points,
+                "successful_conversions_count": conversions_count,
+                "nearby_leads_count": nearby_count,
+                "referrals_count": referrals_count,
+                "trade_audits_count": trade_count,
+                "rank": 0
+            })
+
+        # Sort descending by total points
+        leaderboard.sort(key=lambda x: x['total_points'], reverse=True)
+        for idx, entry in enumerate(leaderboard):
+            entry['rank'] = idx + 1
+
+        serializer = LeaderboardEntrySerializer(leaderboard, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

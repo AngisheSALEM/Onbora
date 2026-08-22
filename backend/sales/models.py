@@ -156,3 +156,164 @@ class ScraperCredential(models.Model):
 
     def __str__(self):
         return f"Identifiants de Scraping : {self.get_platform_display()}"
+
+
+# ============================================================================
+# FIELD INTELLIGENCE & LEAD SOURCING MODELS
+# ============================================================================
+
+class FieldIntelligenceReport(models.Model):
+    CONVERSION_CHOICES = [
+        ('SUCCESS', 'Pré-conversion réussie (Documents KYC / RCCM collectés)'),
+        ('HESITATION', 'En réflexion / Hésitation'),
+        ('REFUSAL', 'Refus / Non-converti'),
+    ]
+    NURTURING_CHOICES = [
+        ('NONE', 'Aucun (Converti)'),
+        ('DECIDER_ABSENT', 'Absence du décideur / gérant'),
+        ('COMPETITOR_CONTRACT', 'Contrat concurrent en cours'),
+        ('BUDGET_WAITING', 'Attente d\'arbitrage budgétaire'),
+        ('COMMITMENT_FEAR', 'Crainte d\'engagement long terme'),
+        ('TECHNICAL_DOUBT', 'Doutes sur l\'éligibilité technique / fibre'),
+        ('OTHER', 'Autre motif'),
+    ]
+
+    visit_report = models.OneToOneField(VisitReport, on_delete=models.SET_NULL, null=True, blank=True, related_name='field_intelligence')
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='field_intelligence_reports')
+    salesperson = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'SALESPERSON'},
+        related_name='field_intelligence_reports'
+    )
+    
+    # Résultat de la tentative de pré-conversion
+    conversion_status = models.CharField(max_length=20, choices=CONVERSION_CHOICES, default='SUCCESS')
+    rccm_number = models.CharField(max_length=100, blank=True, null=True, help_text="Numéro RCCM si succès")
+    
+    # Séquence de Nurturing / Recyclage des non-convertis
+    nurturing_reason = models.CharField(max_length=30, choices=NURTURING_CHOICES, default='NONE')
+    contract_expiry_date = models.DateField(null=True, blank=True, help_text="Date d'échéance du contrat concurrent actuel")
+    scheduled_follow_up = models.DateField(null=True, blank=True, help_text="Date de relance recommandée")
+    nurturing_notes = models.TextField(blank=True, default='', help_text="Notes contextuelles pour le rappel futur")
+    
+    # Points de gamification attribués pour ce rapport
+    points_earned = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Field Intelligence: {self.enterprise.name} ({self.get_conversion_status_display()})"
+
+
+class NearbyLead(models.Model):
+    """
+    Lookalike & Geofenced Lead Sourcing (100m autour du prospect visité)
+    """
+    STATUS_CHOICES = [
+        ('NEW', 'Nouveau repérage'),
+        ('ASSIGNED', 'Affecté à un commercial'),
+        ('VISITED', 'Visité'),
+        ('CONVERTED', 'Converti'),
+    ]
+
+    field_report = models.ForeignKey(FieldIntelligenceReport, on_delete=models.CASCADE, related_name='nearby_leads')
+    source_enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='nearby_lookalikes')
+    
+    name = models.CharField(max_length=150, help_text="Nom de l'enseigne ou commerce voisin")
+    sector = models.CharField(max_length=100, blank=True, default='Commerce / PME')
+    manager_name = models.CharField(max_length=100, blank=True, default='')
+    phone = models.CharField(max_length=50, blank=True, default='')
+    proximity_notes = models.CharField(max_length=255, blank=True, default='', help_text="Ex: 2 portes à gauche, en face...")
+    photo_url = models.TextField(blank=True, default='', help_text="Photo de la devanture (URL ou Data URI)")
+    
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Voisin 100m: {self.name} (Source: {self.source_enterprise.name})"
+
+
+class ReferralLead(models.Model):
+    """
+    Collecte Systématique de Parrainages (Supply-Chain & Recommandations Confrères)
+    """
+    TYPE_CHOICES = [
+        ('SUPPLIER', 'Fournisseur principal'),
+        ('PARTNER', 'Partenaire commercial'),
+        ('PEER', 'Confrère / Recommandation directe'),
+    ]
+    STATUS_CHOICES = [
+        ('NEW', 'Nouveau parrainage'),
+        ('CONTACTED', 'Contacté'),
+        ('CONVERTED', 'Converti'),
+    ]
+
+    field_report = models.ForeignKey(FieldIntelligenceReport, on_delete=models.CASCADE, related_name='referrals')
+    source_enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='generated_referrals')
+    
+    referral_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='SUPPLIER')
+    company_name = models.CharField(max_length=150)
+    contact_person = models.CharField(max_length=100, blank=True, default='')
+    phone = models.CharField(max_length=50, blank=True, default='')
+    notes = models.TextField(blank=True, default='', help_text="Pourquoi cette entreprise a besoin de nos solutions ?")
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Parrainage {self.get_referral_type_display()}: {self.company_name} (Par {self.source_enterprise.name})"
+
+
+class TradeAudit(models.Model):
+    """
+    Intelligence Concurrentielle et Signalement de Friction (Trade Audit Leads)
+    """
+    field_report = models.ForeignKey(FieldIntelligenceReport, on_delete=models.CASCADE, related_name='trade_audits')
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='trade_audits')
+    
+    competitor_name = models.CharField(max_length=100, help_text="Opérateur ou FAI actuel (ex: Canalbox, Vodacom, Airtel, etc.)")
+    satisfaction_score = models.IntegerField(default=3, help_text="Note de 1 (Très insatisfait) à 5 (Très satisfait)")
+    friction_reasons = models.JSONField(default=list, blank=True, help_text="Motifs de mécontentement (pannes, lenteurs, prix...)")
+    monthly_spend_estimated = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Facture mensuelle estimée")
+    
+    # Alerte SQL automatique si note <= 2
+    is_priority_friction_alert = models.BooleanField(default=False)
+    alert_notes = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.satisfaction_score <= 2:
+            self.is_priority_friction_alert = True
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Audit {self.competitor_name} - {self.enterprise.name} ({self.satisfaction_score}/5)"
+
+
+class SalesIncentivePoint(models.Model):
+    """
+    Gamification & Rémunération des Dénicheurs de Leads
+    """
+    ACTION_CHOICES = [
+        ('PRE_CONVERSION', 'Pré-conversion réussie (KYC/RCCM) [+100 pts]'),
+        ('NEARBY_LEAD', 'Lead voisin 100m qualifié (photo + contact) [+25 pts]'),
+        ('REFERRAL', 'Parrainage / Fournisseur renseigné [+15 pts]'),
+        ('TRADE_AUDIT', 'Audit concurrentiel renseigné [+10 pts]'),
+    ]
+
+    salesperson = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='incentive_points'
+    )
+    field_report = models.ForeignKey(FieldIntelligenceReport, on_delete=models.SET_NULL, null=True, blank=True, related_name='incentive_points')
+    action_type = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    points = models.IntegerField(default=10)
+    description = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"+{self.points} pts - {self.salesperson.username} ({self.get_action_type_display()})"
+
