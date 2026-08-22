@@ -389,7 +389,80 @@ class SalesHomeScreen extends StatelessWidget {
                     ),
                   );
                 }),
-                const SizedBox(height: 26),
+                const SizedBox(height: 20),
+
+                // Gamified Leaderboard & Field Intelligence Banner
+                ScaleTap(
+                  onTap: () => Get.toNamed(Routes.LEADERBOARD),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
+                      border: Border.all(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2563EB),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(LucideIcons.trophy, color: Colors.white, size: 20),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Classement Dénicheurs',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w900,
+                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'Rang #2',
+                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Repérez 2 voisins & gagnez jusqu\'à +175 pts par visite',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(LucideIcons.chevronRight, color: Color(0xFF2563EB), size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
 
                 // 4. Section Title: Historique Récent des Visites
                 Row(

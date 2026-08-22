@@ -11,4 +11,5 @@ abstract class Routes {
   static const VISITS_HISTORY = '/visits-history';
   static const CATALOG = '/catalog';
   static const PROFILE = '/profile';
+  static const LEADERBOARD = '/leaderboard';
 }

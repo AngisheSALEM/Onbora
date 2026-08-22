@@ -15,6 +15,7 @@ import 'package:onbora_sales/app/modules/sales/controller/sales_controller.dart'
 import 'package:onbora_sales/app/modules/sales/screen/plaque_map_home_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/sales_home_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/enterprise_search_screen.dart';
+import 'package:onbora_sales/app/modules/sales/screen/leaderboard_screen.dart';
 
 void main() {
   setUp(() {
@@ -110,5 +111,19 @@ void main() {
     expect(find.text('RAWBANK RDC'), findsOneWidget);
     expect(find.text('OK'), findsWidgets);
     expect(find.text('À convertir'), findsWidgets);
+  });
+
+  testWidgets('LeaderboardScreen renders podium, points and incentive guide', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const GetMaterialApp(
+        home: LeaderboardScreen(),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Classement des Dénicheurs'), findsOneWidget);
+    expect(find.text('Barème des Primes & Points'), findsOneWidget);
+    expect(find.text('Pré-conversion réussie (RCCM / KYC)'), findsOneWidget);
   });
 }

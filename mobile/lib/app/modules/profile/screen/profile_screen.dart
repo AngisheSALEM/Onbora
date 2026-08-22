@@ -169,7 +169,7 @@ class ProfileScreen extends StatelessWidget {
 
                 // Liste 2 : Visites enregistrées
                 GlassCard(
-                  margin: const EdgeInsets.only(bottom: 24),
+                  margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
                   onTap: () => Get.toNamed(Routes.VISITS_HISTORY),
@@ -216,6 +216,74 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
+                // Liste 3 : Classement & Primes Dénicheurs
+                GlassCard(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(16),
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
+                  onTap: () => Get.toNamed(Routes.LEADERBOARD),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(LucideIcons.trophy, color: Color(0xFF2563EB), size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Classement Dénicheurs',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Rang #2',
+                                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Obx(() {
+                              final pts = salesController.userTotalPoints.value > 0 ? salesController.userTotalPoints.value : 320;
+                              return Text(
+                                '$pts points accumulés • Voir le barème des primes',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+
                 // 3. Paramètres Thème Sombre
                 GlassCard(
                   padding: const EdgeInsets.all(12),
@@ -224,7 +292,8 @@ class ProfileScreen extends StatelessWidget {
                     final themeCtrl = controller.themeController;
                     return SwitchListTile(
                       value: themeCtrl.isDarkMode,
-                      activeThumbColor: AppConstants.orangeOfficial,
+                      activeThumbColor: const Color(0xFF2563EB),
+                      activeTrackColor: const Color(0xFF2563EB).withValues(alpha: 0.3),
                       onChanged: (_) => themeCtrl.toggleTheme(),
                       title: Text(
                         'Mode Sombre (OLED)',
