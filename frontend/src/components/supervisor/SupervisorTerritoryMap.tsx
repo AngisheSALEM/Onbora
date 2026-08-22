@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { Icons } from '@/components/shared/Icons';
 
-interface Plaque {
+export interface Plaque {
   id: number;
   code: string;
   name: string;
@@ -19,7 +19,7 @@ interface Plaque {
   assigned_salespersons_names?: string[];
 }
 
-interface Enterprise {
+export interface Enterprise {
   id: number;
   name: string;
   sector: string;
@@ -37,7 +37,7 @@ interface Enterprise {
   plaque?: string;
 }
 
-interface Salesperson {
+export interface Salesperson {
   id: number;
   username: string;
   full_name: string;
@@ -50,7 +50,7 @@ interface Salesperson {
   reports_count: number;
 }
 
-interface RecentReport {
+export interface RecentReport {
   id: number;
   enterprise_name: string;
   salesperson_name: string;
@@ -63,11 +63,54 @@ interface RecentReport {
   created_at: string;
 }
 
+export interface NearbyLead {
+  id: number;
+  name: string;
+  sector?: string;
+  manager_name?: string;
+  phone?: string;
+  proximity_notes?: string;
+  photo_url?: string;
+  latitude: number;
+  longitude: number;
+  status?: string;
+  source_enterprise_name?: string;
+  created_at: string;
+}
+
+export interface TradeAudit {
+  id: number;
+  enterprise_name: string;
+  competitor_name: string;
+  satisfaction_score: number;
+  friction_reasons?: string[];
+  contract_end_date?: string;
+  monthly_spend_estimated?: string;
+  is_priority_friction_alert: boolean;
+  alert_notes?: string;
+  created_at: string;
+}
+
+export interface LeaderboardEntry {
+  salesperson_id: number;
+  salesperson_name: string;
+  fullName: string;
+  total_points: number;
+  successful_conversions_count: number;
+  nearby_leads_count: number;
+  referrals_count: number;
+  trade_audits_count: number;
+  rank: number;
+}
+
 interface SupervisorTerritoryMapProps {
   plaques: Plaque[];
   enterprises: Enterprise[];
   salespersons: Salesperson[];
   recentReports: RecentReport[];
+  nearbyLeads?: NearbyLead[];
+  tradeAudits?: TradeAudit[];
+  leaderboard?: LeaderboardEntry[];
   onPlaqueCreated: () => void;
   onSalespersonAssigned: () => void;
   onSalespersonChanged: () => void;
@@ -78,6 +121,9 @@ export default function SupervisorTerritoryMap({
   enterprises,
   salespersons,
   recentReports,
+  nearbyLeads: initialNearbyLeads,
+  tradeAudits: initialTradeAudits,
+  leaderboard: initialLeaderboard,
   onPlaqueCreated,
   onSalespersonAssigned,
   onSalespersonChanged,
@@ -87,11 +133,22 @@ export default function SupervisorTerritoryMap({
   const markersRef = useRef<maplibregl.Marker[]>([]);
 
   // Navigation sub-tab
-  const [activeTab, setActiveTab] = useState<'map' | 'salespersons' | 'reports'>('map');
+  const [activeTab, setActiveTab] = useState<'map' | 'salespersons' | 'reports' | 'field_intel'>('map');
 
-  // Selected Lead / Plaque
+  // Marker Category Filter
+  const [markerFilter, setMarkerFilter] = useState<'ALL' | 'CONVERTED' | 'NEARBY' | 'FRICTION'>('ALL');
+
+  // Selected Entities
   const [selectedEnterprise, setSelectedEnterprise] = useState<Enterprise | null>(null);
   const [selectedPlaque, setSelectedPlaque] = useState<Plaque | null>(null);
+  const [selectedNearbyLead, setSelectedNearbyLead] = useState<NearbyLead | null>(null);
+  const [selectedTradeAudit, setSelectedTradeAudit] = useState<TradeAudit | null>(null);
+
+  // Field Intelligence State
+  const [nearbyLeads, setNearbyLeads] = useState<NearbyLead[]>(initialNearbyLeads || []);
+  const [tradeAudits, setTradeAudits] = useState<TradeAudit[]>(initialTradeAudits || []);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(initialLeaderboard || []);
+  const [loadingFieldIntel, setLoadingFieldIntel] = useState(false);
 
   // Plaque Delimitation Mode
   const [isDelimiting, setIsDelimiting] = useState(false);
@@ -125,7 +182,44 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  // Free high-performance OpenStreetMap / Carto Dark tile style (Zero API Key required)
+  // Fetch Field Intelligence Data from Django Backend
+  const loadFieldIntelligence = useCallback(async () => {
+    setLoadingFieldIntel(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Token ${token}` };
+
+      const [nearbyRes, auditsRes, boardRes] = await Promise.all([
+        fetch(`${API_URL}/api/sales/field-intelligence/nearby-leads/`, { headers }).catch(() => null),
+        fetch(`${API_URL}/api/sales/field-intelligence/trade-audits/`, { headers }).catch(() => null),
+        fetch(`${API_URL}/api/sales/field-intelligence/leaderboard/`, { headers }).catch(() => null),
+      ]);
+
+      if (nearbyRes && nearbyRes.ok) {
+        const data = await nearbyRes.json();
+        setNearbyLeads(Array.isArray(data) ? data : []);
+      }
+      if (auditsRes && auditsRes.ok) {
+        const data = await auditsRes.json();
+        setTradeAudits(Array.isArray(data) ? data : []);
+      }
+      if (boardRes && boardRes.ok) {
+        const data = await boardRes.json();
+        setLeaderboard(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Erreur chargement Field Intelligence:", err);
+    } finally {
+      setLoadingFieldIntel(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFieldIntelligence();
+  }, [loadFieldIntelligence]);
+
+  // OpenStreetMap tile style (zero key required)
   const getMapStyle = (isDark: boolean): maplibregl.StyleSpecification => {
     if (isDark) {
       return {
@@ -159,9 +253,7 @@ export default function SupervisorTerritoryMap({
         sources: {
           'osm-tiles': {
             type: 'raster',
-            tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ],
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution: '&copy; OpenStreetMap contributors',
           },
@@ -187,14 +279,13 @@ export default function SupervisorTerritoryMap({
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: getMapStyle(isDarkMode),
-      center: [15.3084, -4.3033], // Kinshasa Center
+      center: [15.3084, -4.3033], // Kinshasa
       zoom: 12.5,
     });
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
 
-    // Handle map click for delimitation
     map.on('click', (e) => {
       setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
       setNewPlaqueLng(parseFloat(e.lngLat.lng.toFixed(5)));
@@ -205,7 +296,7 @@ export default function SupervisorTerritoryMap({
     };
   }, []);
 
-  // Update Markers on Map
+  // Update Markers on Map with 3 Key Categories
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -214,34 +305,110 @@ export default function SupervisorTerritoryMap({
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    // 1. Enterprise Lead Markers (Green = Converted/Ready, Orange = To Prospect)
-    enterprises.forEach((ent) => {
-      if (!ent.latitude || !ent.longitude) return;
+    // 1. Enterprise Lead Markers (🟢 Green = Converted/Ready, ⚪ To Prospect)
+    if (markerFilter === 'ALL' || markerFilter === 'CONVERTED') {
+      enterprises.forEach((ent) => {
+        if (!ent.latitude || !ent.longitude) return;
 
-      const isReady = ent.is_ready_for_conversion;
-      const markerColor = isReady ? '#10B981' : '#F59E0B';
+        const isReady = ent.is_ready_for_conversion;
+        if (markerFilter === 'CONVERTED' && !isReady) return;
 
-      const el = document.createElement('div');
-      el.className = 'cursor-pointer transform hover:scale-125 transition-transform duration-150';
-      el.innerHTML = `
-        <div style="background-color: ${markerColor}; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-          <div style="background-color: #FFFFFF; width: 6px; height: 6px; border-radius: 50%;"></div>
-        </div>
-      `;
+        const markerColor = isReady ? '#10B981' : '#64748B';
 
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setSelectedEnterprise(ent);
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer transform hover:scale-125 transition-transform duration-150 group';
+        el.innerHTML = `
+          <div style="background-color: ${markerColor}; width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="background-color: #FFFFFF; width: 6px; height: 6px; border-radius: 50%;"></div>
+            ${isReady ? '<div style="position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; border: 1.5px solid white;"></div>' : ''}
+          </div>
+        `;
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setSelectedNearbyLead(null);
+          setSelectedTradeAudit(null);
+          setSelectedEnterprise(ent);
+        });
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([ent.longitude, ent.latitude])
+          .addTo(map);
+
+        markersRef.current.push(marker);
       });
+    }
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([ent.longitude, ent.latitude])
-        .addTo(map);
+    // 2. Lookalike 100m Nearby Leads (🔵 Electric Blue `#2563EB`)
+    if (markerFilter === 'ALL' || markerFilter === 'NEARBY') {
+      nearbyLeads.forEach((lead) => {
+        if (!lead.latitude || !lead.longitude) return;
 
-      markersRef.current.push(marker);
-    });
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer transform hover:scale-125 transition-transform duration-150';
+        el.innerHTML = `
+          <div style="background-color: #2563EB; width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 0 14px rgba(37,99,235,0.6); display: flex; align-items: center; justify-content: center; position: relative;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span style="position: absolute; top: -5px; right: -5px; background: #10B981; color: white; font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 6px; border: 1px solid white;">100m</span>
+          </div>
+        `;
 
-    // 2. Plaque Territorial Center Markers
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setSelectedEnterprise(null);
+          setSelectedTradeAudit(null);
+          setSelectedNearbyLead(lead);
+        });
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([lead.longitude, lead.latitude])
+          .addTo(map);
+
+        markersRef.current.push(marker);
+      });
+    }
+
+    // 3. Competitor Friction Alerts (🔴 Red `#EF4444` SQL Prioritaire KAM)
+    if (markerFilter === 'ALL' || markerFilter === 'FRICTION') {
+      tradeAudits
+        .filter((a) => a.is_priority_friction_alert)
+        .forEach((audit) => {
+          const matchedEnt = enterprises.find((e) => e.name.toLowerCase() === audit.enterprise_name.toLowerCase());
+          const lat = matchedEnt ? matchedEnt.latitude + 0.0008 : -4.3033;
+          const lng = matchedEnt ? matchedEnt.longitude + 0.0008 : 15.3084;
+
+          const el = document.createElement('div');
+          el.className = 'cursor-pointer transform hover:scale-125 transition-transform duration-150 animate-bounce';
+          el.innerHTML = `
+            <div style="background-color: #EF4444; width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 0 16px rgba(239,68,68,0.7); display: flex; align-items: center; justify-content: center; position: relative;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span style="position: absolute; top: -5px; right: -5px; background: #B91C1C; color: white; font-size: 8px; font-weight: 900; padding: 1px 3px; border-radius: 6px; border: 1px solid white;">KAM</span>
+            </div>
+          `;
+
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setSelectedEnterprise(null);
+            setSelectedNearbyLead(null);
+            setSelectedTradeAudit(audit);
+          });
+
+          const marker = new maplibregl.Marker({ element: el })
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+          markersRef.current.push(marker);
+        });
+    }
+
+    // 4. Plaque Territorial Center Markers
     plaques.forEach((p) => {
       if (!p.latitude || !p.longitude) return;
 
@@ -266,9 +433,9 @@ export default function SupervisorTerritoryMap({
 
       markersRef.current.push(marker);
     });
-  }, [enterprises, plaques]);
+  }, [enterprises, plaques, nearbyLeads, tradeAudits, markerFilter]);
 
-  // Create Plaque Handler
+  // Handlers for Plaque Creation, Assignment, and Sales Creation
   const handleCreatePlaque = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlaqueCode || !newPlaqueName) {
@@ -319,7 +486,6 @@ export default function SupervisorTerritoryMap({
     }
   };
 
-  // Re-assign Salespersons to Plaque
   const handleAssignSalespersons = async () => {
     if (!assigningPlaque) return;
     setIsSubmittingAssign(true);
@@ -351,15 +517,15 @@ export default function SupervisorTerritoryMap({
     }
   };
 
-  // Create New Commercial (Supervisor Action)
   const handleCreateSalesperson = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSalesUsername || !newSalesPassword) {
-      setStatusMessage({ text: "L'identifiant et le mot de passe sont obligatoires.", type: 'error' });
+    if (!newSalesUsername || !newSalesPassword || !newSalesFirstName || !newSalesLastName) {
+      setStatusMessage({ text: "Veuillez renseigner tous les champs obligatoires (*)", type: 'error' });
       return;
     }
 
     setIsSubmittingNewSales(true);
+    setStatusMessage(null);
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -372,8 +538,8 @@ export default function SupervisorTerritoryMap({
           'Authorization': `Token ${token}`,
         },
         body: JSON.stringify({
-          username: newSalesUsername.trim().toLowerCase(),
-          password: newSalesPassword.trim(),
+          username: newSalesUsername.trim(),
+          password: newSalesPassword,
           first_name: newSalesFirstName.trim(),
           last_name: newSalesLastName.trim(),
           phone: newSalesPhone.trim(),
@@ -402,7 +568,6 @@ export default function SupervisorTerritoryMap({
     }
   };
 
-  // Revoke Commercial Account (Supervisor Action)
   const handleRevokeSalesperson = async () => {
     if (!revokingSalesperson) return;
     setIsRevoking(true);
@@ -434,14 +599,15 @@ export default function SupervisorTerritoryMap({
     mapRef.current?.flyTo({ center: [lng, lat], zoom, essential: true });
   };
 
+  const readyEnterprisesCount = enterprises.filter((e) => e.is_ready_for_conversion).length;
+  const priorityFrictionsCount = tradeAudits.filter((a) => a.is_priority_friction_alert).length;
+
   return (
     <div className="flex flex-col gap-6 w-full animate-fade-in font-sans">
-      {/* Status Notification Toast */}
+      {/* Toast Notification */}
       {statusMessage && (
         <div className={`p-4 rounded-2xl flex items-center justify-between text-xs font-bold ${
-          statusMessage.type === 'success'
-            ? 'badge-success border-none'
-            : 'badge-error border-none'
+          statusMessage.type === 'success' ? 'badge-success border-none' : 'badge-error border-none'
         }`}>
           <div className="flex items-center gap-2">
             {statusMessage.type === 'success' ? <Icons.CheckCircle size={16} /> : <Icons.AlertCircle size={16} />}
@@ -456,7 +622,7 @@ export default function SupervisorTerritoryMap({
         </div>
       )}
 
-      {/* Top Metric Strip (Studio Solid Cards 22px, Zero Borders) */}
+      {/* Top Metric Strip with Field Intelligence KPI */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
@@ -469,37 +635,39 @@ export default function SupervisorTerritoryMap({
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Leads Géolocalisés</span>
-            <Icons.MapPin size={18} className="text-emerald-500" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Pré-conversions 🟢</span>
+            <Icons.CheckCircle size={18} className="text-emerald-500" />
           </div>
           <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-            {enterprises.length}
+            {readyEnterprisesCount}
           </span>
-          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">
-            {enterprises.filter((e) => e.is_ready_for_conversion).length} prêts à convertir (Verts)
-          </p>
+          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Dossiers signés & prêts pour l'ADV</p>
         </div>
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Forces Commerciales</span>
-            <Icons.Users size={18} className="text-blue-600 dark:text-blue-400" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Lookalike 100m 🔵</span>
+            <Icons.MapPin size={18} className="text-blue-600 dark:text-blue-400" />
           </div>
-          <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{salespersons.length}</span>
-          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Comptes terrain créés par le superviseur</p>
+          <span className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">
+            {nearbyLeads.length}
+          </span>
+          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Voisins repérés par la force de vente</p>
         </div>
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Visites Effectuées</span>
-            <Icons.FileText size={18} className="text-blue-600 dark:text-blue-400" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Radar Frictions 🔴</span>
+            <Icons.AlertTriangle size={18} className="text-red-500" />
           </div>
-          <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{recentReports.length}</span>
-          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Comptes-rendus transmis depuis l'app</p>
+          <span className="text-3xl font-black text-red-600 dark:text-red-400 mt-1">
+            {priorityFrictionsCount}
+          </span>
+          <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Alertes SQL prioritaires pour les KAMs</p>
         </div>
       </div>
 
-      {/* Segmented Navigation Bar (Studio Subcard without border) */}
+      {/* Segmented Navigation Bar */}
       <div className="studio-subcard p-2 rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
@@ -510,7 +678,7 @@ export default function SupervisorTerritoryMap({
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <Icons.Map size={14} /> Territoires & Carte des Plaques
+            <Icons.Map size={14} /> Territoires & Carte Vectorielle
           </button>
           <button
             onClick={() => setActiveTab('salespersons')}
@@ -530,7 +698,17 @@ export default function SupervisorTerritoryMap({
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <Icons.Activity size={14} /> Rapports Terrain Reçus ({recentReports.length})
+            <Icons.Activity size={14} /> Rapports Reçus ({recentReports.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('field_intel')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === 'field_intel'
+                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <Icons.Award size={14} /> Field Intelligence & Dénicheurs ({leaderboard.length})
           </button>
         </div>
 
@@ -557,6 +735,16 @@ export default function SupervisorTerritoryMap({
               <Icons.UserPlus size={14} /> Créer un Compte Commercial
             </button>
           )}
+
+          {activeTab === 'field_intel' && (
+            <button
+              onClick={loadFieldIntelligence}
+              disabled={loadingFieldIntel}
+              className="px-4 py-2.5 rounded-2xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer flex items-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+            >
+              <Icons.RefreshCw size={14} className={loadingFieldIntel ? 'animate-spin' : ''} /> Actualiser
+            </button>
+          )}
         </div>
       </div>
 
@@ -565,35 +753,72 @@ export default function SupervisorTerritoryMap({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Vector Map Frame */}
           <div className="lg:col-span-2 flex flex-col gap-3">
-            {/* Quick Sector Jumps */}
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Icons.Compass size={13} /> Centrer sur :
-              </span>
-              <button
-                onClick={() => flyTo(15.3084, -4.3033)}
-                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#E2E8F0] dark:bg-[#222228] text-zinc-800 dark:text-zinc-200 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-              >
-                Kinshasa (Gombe)
-              </button>
-              <button
-                onClick={() => flyTo(15.3400, -4.3450)}
-                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#E2E8F0] dark:bg-[#222228] text-zinc-800 dark:text-zinc-200 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-              >
-                Kinshasa (Limete)
-              </button>
-              <button
-                onClick={() => flyTo(15.2832, -4.2634)}
-                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#E2E8F0] dark:bg-[#222228] text-zinc-800 dark:text-zinc-200 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-              >
-                Brazzaville (Plateau)
-              </button>
-              <button
-                onClick={() => flyTo(27.4794, -11.6608)}
-                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#E2E8F0] dark:bg-[#222228] text-zinc-800 dark:text-zinc-200 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-              >
-                Lubumbashi (Centre)
-              </button>
+            {/* Quick Sector Jumps & Interactive Marker Filter Bar */}
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <div className="flex flex-wrap gap-1.5 items-center">
+                <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider flex items-center gap-1 mr-1">
+                  <Icons.Filter size={12} /> Marqueurs :
+                </span>
+                <button
+                  onClick={() => setMarkerFilter('ALL')}
+                  className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                    markerFilter === 'ALL'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300'
+                  }`}
+                >
+                  Tous ({enterprises.length + nearbyLeads.length + priorityFrictionsCount})
+                </button>
+                <button
+                  onClick={() => setMarkerFilter('CONVERTED')}
+                  className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                    markerFilter === 'CONVERTED'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Pré-convertis ({readyEnterprisesCount})
+                </button>
+                <button
+                  onClick={() => setMarkerFilter('NEARBY')}
+                  className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                    markerFilter === 'NEARBY'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                  Voisins 100m ({nearbyLeads.length})
+                </button>
+                <button
+                  onClick={() => setMarkerFilter('FRICTION')}
+                  className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                    markerFilter === 'FRICTION'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-red-600"></span>
+                  Frictions KAM ({priorityFrictionsCount})
+                </button>
+              </div>
+
+              {/* Quick Jump Buttons */}
+              <div className="flex gap-1.5 items-center">
+                <button
+                  onClick={() => flyTo(15.3084, -4.3033)}
+                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+                >
+                  Gombe
+                </button>
+                <button
+                  onClick={() => flyTo(15.3400, -4.3450)}
+                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+                >
+                  Limete
+                </button>
+              </div>
             </div>
 
             {/* Map Container */}
@@ -602,20 +827,20 @@ export default function SupervisorTerritoryMap({
 
               {/* Map Legend Overlay */}
               <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[18px] shadow-lg flex flex-col gap-2 z-10 text-[11px]">
-                <span className="font-black text-zinc-950 dark:text-white uppercase tracking-wider">
-                  Légende des Entités
+                <span className="font-black text-zinc-950 dark:text-white uppercase tracking-wider text-[10px]">
+                  Légende Onbora Map
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#1C1C22]" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Lead Prêt / Converti</span>
+                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Client Pré-converti (ADV)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-amber-500 border-2 border-white dark:border-[#1C1C22]" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Lead À Prospecter</span>
+                  <span className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white dark:border-[#1C1C22]" />
+                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Lead Voisin 100m (Lookalike)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full border-2 border-dashed border-blue-600" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Centre & Périmètre de Plaque</span>
+                  <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-white dark:border-[#1C1C22]" />
+                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Alerte Friction Concurrent (SQL KAM)</span>
                 </div>
               </div>
 
@@ -721,7 +946,7 @@ export default function SupervisorTerritoryMap({
                               }}
                               className="accent-blue-600 rounded"
                             />
-                            <span className="font-bold text-zinc-900 dark:text-zinc-100">{s.full_name}</span>
+                            <span className="font-bold text-zinc-950 dark:text-white">{s.full_name}</span>
                             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">(@{s.username})</span>
                           </label>
                         ))
@@ -739,8 +964,119 @@ export default function SupervisorTerritoryMap({
                   </button>
                 </form>
               </div>
+            ) : selectedNearbyLead ? (
+              /* 2. Selected Lookalike 100m Lead Inspector */
+              <div className="studio-card p-6 flex flex-col gap-4 shadow-sm animate-fade-in border-2 border-blue-600/30">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
+                      <Icons.MapPin size={12} /> Lead Lookalike 100m
+                    </span>
+                    <h3 className="text-base font-black text-zinc-950 dark:text-white">{selectedNearbyLead.name}</h3>
+                    <p className="text-xs text-zinc-600 dark:text-gray-300">{selectedNearbyLead.sector || 'Commerce / PME'}</p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-blue-600/15 text-blue-600 dark:text-blue-400">
+                    Nouveau
+                  </span>
+                </div>
+
+                <div className="studio-subcard p-3 rounded-2xl flex flex-col gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Gérant / Contact :</span>
+                    <span className="font-extrabold text-zinc-950 dark:text-white">{selectedNearbyLead.manager_name || 'Non précisé'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Téléphone Direct :</span>
+                    <span className="font-extrabold text-blue-600 dark:text-blue-400">{selectedNearbyLead.phone || 'Non renseigné'}</span>
+                  </div>
+                  {selectedNearbyLead.proximity_notes && (
+                    <div className="mt-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                      <span className="text-zinc-500 font-bold text-[10px] uppercase block mb-0.5">Repères géographiques :</span>
+                      <p className="italic text-zinc-700 dark:text-zinc-300 text-[11px] leading-relaxed">
+                        "{selectedNearbyLead.proximity_notes}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      alert(`Le lead voisin '${selectedNearbyLead.name}' a été affecté à la prochaine tournée commerciale.`);
+                      setSelectedNearbyLead(null);
+                    }}
+                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                  >
+                    Affecter au Commercial
+                  </button>
+                  <button
+                    onClick={() => setSelectedNearbyLead(null)}
+                    className="py-2.5 px-4 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            ) : selectedTradeAudit ? (
+              /* 3. Selected Friction Alert Inspector */
+              <div className="studio-card p-6 flex flex-col gap-4 shadow-sm animate-fade-in border-2 border-red-500/40">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-red-600 dark:text-red-400 tracking-wider flex items-center gap-1">
+                      <Icons.AlertTriangle size={12} /> Alerte Friction Concurrent
+                    </span>
+                    <h3 className="text-base font-black text-zinc-950 dark:text-white">{selectedTradeAudit.enterprise_name}</h3>
+                    <p className="text-xs text-zinc-600 dark:text-gray-300">Concurrent en place : <strong>{selectedTradeAudit.competitor_name}</strong></p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-red-500/15 text-red-600 dark:text-red-400">
+                    {selectedTradeAudit.satisfaction_score}/5 Déçu
+                  </span>
+                </div>
+
+                <div className="studio-subcard p-3 rounded-2xl flex flex-col gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Budget Mensuel Estimé :</span>
+                    <span className="font-extrabold text-zinc-950 dark:text-white">{selectedTradeAudit.monthly_spend_estimated || '500 - 1500 $'}</span>
+                  </div>
+                  {selectedTradeAudit.friction_reasons && (
+                    <div className="mt-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                      <span className="text-zinc-500 font-bold text-[10px] uppercase block mb-1">Motifs de friction signalés :</span>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedTradeAudit.friction_reasons.map((r, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {selectedTradeAudit.alert_notes && (
+                    <p className="text-zinc-700 dark:text-zinc-300 italic text-[11px] mt-1">
+                      "{selectedTradeAudit.alert_notes}"
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      alert(`L'alerte prioritaire pour '${selectedTradeAudit.enterprise_name}' a été transmise au Responsable Grand Compte (KAM).`);
+                      setSelectedTradeAudit(null);
+                    }}
+                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.25)]"
+                  >
+                    Transmettre au KAM
+                  </button>
+                  <button
+                    onClick={() => setSelectedTradeAudit(null)}
+                    className="py-2.5 px-4 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
             ) : selectedEnterprise ? (
-              /* 2. Selected Lead Dossier */
+              /* 4. Selected Enterprise Inspector */
               <div className="studio-card p-6 flex flex-col gap-4 shadow-sm animate-fade-in">
                 <div className="flex justify-between items-start">
                   <div>
@@ -755,7 +1091,7 @@ export default function SupervisorTerritoryMap({
                       ? 'badge-success'
                       : 'badge-warning'
                   }`}>
-                    {selectedEnterprise.is_ready_for_conversion ? 'Converti' : 'À Prospecter'}
+                    {selectedEnterprise.is_ready_for_conversion ? 'Converti 🟢' : 'À Prospecter'}
                   </span>
                 </div>
 
@@ -770,17 +1106,6 @@ export default function SupervisorTerritoryMap({
                   </div>
                 )}
 
-                {selectedEnterprise.key_needs && selectedEnterprise.key_needs.length > 0 && (
-                  <div className="flex flex-col gap-1.5 text-xs">
-                    <span className="font-bold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase">Besoins identifiés :</span>
-                    <ul className="list-disc pl-4 text-zinc-800 dark:text-zinc-200 text-[11px] space-y-0.5">
-                      {selectedEnterprise.key_needs.map((need, idx) => (
-                        <li key={idx}>{need}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 <button
                   onClick={() => setSelectedEnterprise(null)}
                   className="w-full py-2.5 studio-subcard text-zinc-900 dark:text-white rounded-2xl font-bold text-xs transition-all cursor-pointer hover:opacity-80"
@@ -789,7 +1114,7 @@ export default function SupervisorTerritoryMap({
                 </button>
               </div>
             ) : (
-              /* 3. Plaques List */
+              /* 5. Plaques List */
               <div className="studio-card p-6 flex flex-col gap-3 shadow-sm">
                 <div className="flex justify-between items-center border-b border-zinc-200/60 dark:border-zinc-800 pb-3">
                   <div className="flex items-center gap-2">
@@ -948,30 +1273,24 @@ export default function SupervisorTerritoryMap({
               </div>
             ) : (
               recentReports.map((rep) => (
-                <div key={rep.id} className="p-5 rounded-[20px] studio-subcard flex flex-col gap-3">
+                <div key={rep.id} className="p-5 studio-subcard rounded-2xl flex flex-col gap-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-black text-sm text-zinc-950 dark:text-white">{rep.enterprise_name}</h4>
-                      <p className="text-[11px] text-zinc-600 dark:text-gray-300">Par <strong>{rep.salesperson_name}</strong> • {new Date(rep.created_at).toLocaleDateString('fr-FR')}</p>
+                      <h4 className="font-extrabold text-sm text-zinc-950 dark:text-white">{rep.enterprise_name}</h4>
+                      <span className="text-[11px] text-blue-600 dark:text-blue-400 font-bold">Par {rep.salesperson_name}</span>
                     </div>
-                    {rep.ai_feedback_rating && (
-                      <span className="px-3 py-1 rounded-full badge-warning text-[10px] font-black flex items-center gap-1">
-                        <Icons.Star size={12} /> {rep.ai_feedback_rating}/5 IA
-                      </span>
-                    )}
+                    <span className="text-[10px] text-zinc-500">
+                      {new Date(rep.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
 
-                  <p className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed bg-white/70 dark:bg-zinc-900/60 p-3.5 rounded-xl border-none">
-                    {rep.executive_summary}
+                  <p className="text-xs text-zinc-700 dark:text-gray-300 italic line-clamp-3">
+                    "{rep.executive_summary || 'Synthèse non renseignée.'}"
                   </p>
 
-                  {rep.confirmed_needs && rep.confirmed_needs.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {rep.confirmed_needs.map((n, i) => (
-                        <span key={i} className="px-2.5 py-0.5 rounded-full badge-success text-[9px] font-bold">
-                          {n}
-                        </span>
-                      ))}
+                  {rep.actions_todo && rep.actions_todo.length > 0 && (
+                    <div className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      <strong>Actions suivantes :</strong> {rep.actions_todo.join(', ')}
                     </div>
                   )}
                 </div>
@@ -981,32 +1300,271 @@ export default function SupervisorTerritoryMap({
         </div>
       )}
 
-      {/* MODAL: Create New Commercial Account */}
-      {isCreateSalesModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="studio-card max-w-md w-full p-6 md:p-8 flex flex-col gap-4 animate-fade-in shadow-2xl">
-            <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Icons.UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase">
-                  Créer un Compte Commercial
+      {/* TAB 4: Field Intelligence & Dénicheurs (Leaderboard + Lookalike + Friction) */}
+      {activeTab === 'field_intel' && (
+        <div className="flex flex-col gap-6 animate-fade-in">
+          {/* Top Leaderboard Table */}
+          <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h3 className="text-base font-black text-zinc-950 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                  <Icons.Award size={18} className="text-blue-600 dark:text-blue-400" />
+                  Classement des Dénicheurs de Leads (Field Intelligence)
                 </h3>
+                <p className="text-xs text-zinc-600 dark:text-gray-300 mt-0.5">
+                  Points et primes débloqués par les commerciaux grâce aux repérages 100m, parrainages et conversions RCCM.
+                </p>
               </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 font-bold">
+                    <th className="py-3 px-3">Rang</th>
+                    <th className="py-3 px-3">Commercial</th>
+                    <th className="py-3 px-3 text-center">Conversions RCCM (+100 pts)</th>
+                    <th className="py-3 px-3 text-center">Voisins 100m (+25 pts)</th>
+                    <th className="py-3 px-3 text-center">Parrainages (+15 pts)</th>
+                    <th className="py-3 px-3 text-center">Frictions (+10 pts)</th>
+                    <th className="py-3 px-3 text-right">Score Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-zinc-500">
+                        Aucun rapport Field Intelligence soumis pour le moment.
+                      </td>
+                    </tr>
+                  ) : (
+                    leaderboard.map((row) => (
+                      <tr key={row.salesperson_id} className="border-b border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/40 dark:hover:bg-zinc-800/40">
+                        <td className="py-3.5 px-3">
+                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-black text-xs ${
+                            row.rank === 1
+                              ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]'
+                              : row.rank === 2
+                              ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white font-black'
+                              : row.rank === 3
+                              ? 'bg-amber-700 text-white font-black'
+                              : 'text-zinc-500'
+                          }`}>
+                            #{row.rank}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 font-extrabold text-zinc-950 dark:text-white">
+                          {row.fullName}
+                          <span className="block text-[10px] text-zinc-500 font-normal">@{row.salesperson_name}</span>
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-bold text-emerald-600 dark:text-emerald-400">
+                          {row.successful_conversions_count}
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-bold text-blue-600 dark:text-blue-400">
+                          {row.nearby_leads_count}
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-bold text-purple-600 dark:text-purple-400">
+                          {row.referrals_count}
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-bold text-red-500">
+                          {row.trade_audits_count}
+                        </td>
+                        <td className="py-3.5 px-3 text-right font-black text-sm text-blue-600 dark:text-blue-400">
+                          {row.total_points} pts
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bottom Dual Grid: Lookalike Feed & Priority Friction Feed */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Lookalike 100m Leads */}
+            <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Icons.MapPin size={18} className="text-blue-600 dark:text-blue-400" />
+                  <h4 className="text-xs font-black uppercase text-zinc-950 dark:text-white">
+                    Flux des Voisins Repérés (Lookalike 100m)
+                  </h4>
+                </div>
+                <span className="text-[10px] bg-blue-600/15 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-full font-black">
+                  {nearbyLeads.length} leads
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2.5 max-h-[340px] overflow-y-auto pr-1 text-xs">
+                {nearbyLeads.length === 0 ? (
+                  <div className="py-8 text-center text-zinc-500">Aucun voisin 100m répertorié.</div>
+                ) : (
+                  nearbyLeads.map((nl) => (
+                    <div key={nl.id} className="p-3.5 studio-subcard rounded-xl flex justify-between items-start">
+                      <div>
+                        <span className="font-black text-zinc-950 dark:text-white">{nl.name}</span>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">
+                          {nl.manager_name ? `Gérant : ${nl.manager_name} • ` : ''}
+                          {nl.phone || 'Pas de tél'}
+                        </p>
+                        {nl.proximity_notes && (
+                          <p className="text-[10px] text-zinc-600 dark:text-zinc-400 italic mt-1">
+                            "{nl.proximity_notes}"
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => flyTo(nl.longitude, nl.latitude, 14)}
+                        className="px-2.5 py-1 rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 font-extrabold text-[10px] hover:bg-blue-600 hover:text-white transition-all"
+                      >
+                        Voir Carte
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Friction Radar KAM */}
+            <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Icons.AlertTriangle size={18} className="text-red-500" />
+                  <h4 className="text-xs font-black uppercase text-zinc-950 dark:text-white">
+                    Radar Frictions Concurrentes (Alertes KAM)
+                  </h4>
+                </div>
+                <span className="text-[10px] bg-red-500/15 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-full font-black">
+                  {priorityFrictionsCount} alertes
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2.5 max-h-[340px] overflow-y-auto pr-1 text-xs">
+                {tradeAudits.filter((a) => a.is_priority_friction_alert).length === 0 ? (
+                  <div className="py-8 text-center text-zinc-500">Aucune alerte de friction prioritaire.</div>
+                ) : (
+                  tradeAudits
+                    .filter((a) => a.is_priority_friction_alert)
+                    .map((ta) => (
+                      <div key={ta.id} className="p-3.5 studio-subcard rounded-xl flex justify-between items-start border-l-2 border-red-500">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-zinc-950 dark:text-white">{ta.enterprise_name}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 text-[9px] font-black">
+                              {ta.satisfaction_score}/5 Déçu
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-zinc-600 dark:text-gray-300 mt-0.5">
+                            Concurrent : <strong>{ta.competitor_name}</strong>
+                          </p>
+                          {ta.friction_reasons && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {ta.friction_reasons.map((r, i) => (
+                                <span key={i} className="px-1.5 py-0.2 bg-black/10 dark:bg-white/10 rounded text-[9px] font-bold">
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Affecter Commerciaux à Plaque */}
+      {assigningPlaque && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="studio-card p-6 md:p-8 max-w-md w-full flex flex-col gap-4 shadow-2xl">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-tight">
+                  Affecter les Commerciaux
+                </h3>
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mt-0.5">
+                  Plaque : {assigningPlaque.code} - {assigningPlaque.name}
+                </p>
+              </div>
+              <button onClick={() => setAssigningPlaque(null)} className="text-zinc-400 hover:text-zinc-600">
+                <Icons.Close size={18} />
+              </button>
+            </div>
+
+            <div className="max-h-60 overflow-y-auto flex flex-col gap-2 studio-subcard p-3 rounded-2xl text-xs">
+              {salespersons.length === 0 ? (
+                <span className="text-zinc-500">Aucun commercial actif</span>
+              ) : (
+                salespersons.map((s) => (
+                  <label key={s.id} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-zinc-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={assigningSalespersonIds.includes(s.id)}
+                      onChange={() => {
+                        setAssigningSalespersonIds((prev) =>
+                          prev.includes(s.id) ? prev.filter((id) => id !== s.id) : [...prev, s.id]
+                        );
+                      }}
+                      className="accent-blue-600 rounded w-4 h-4"
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-zinc-950 dark:text-white">{s.full_name}</span>
+                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">@{s.username} • {s.location || 'Kinshasa'}</span>
+                    </div>
+                  </label>
+                ))
+              )}
+            </div>
+
+            <div className="flex gap-2">
               <button
-                onClick={() => setIsCreateSalesModalOpen(false)}
-                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
+                onClick={handleAssignSalespersons}
+                disabled={isSubmittingAssign}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
               >
-                <Icons.Close size={16} />
+                {isSubmittingAssign ? 'Mise à jour...' : 'Confirmer l\'Affectation'}
+              </button>
+              <button
+                onClick={() => setAssigningPlaque(null)}
+                className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Créer un Compte Commercial */}
+      {isCreateSalesModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="studio-card p-6 md:p-8 max-w-lg w-full flex flex-col gap-4 shadow-2xl">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-base font-black text-zinc-950 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                  <Icons.UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
+                  Créer un Compte Commercial Mobile
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-gray-300 mt-0.5">
+                  Ce commercial pourra se connecter sur l'app mobile Onbora avec ces identifiants.
+                </p>
+              </div>
+              <button onClick={() => setIsCreateSalesModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                <Icons.Close size={18} />
               </button>
             </div>
 
             <form onSubmit={handleCreateSalesperson} className="flex flex-col gap-3 text-xs">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-zinc-700 dark:text-gray-300">Prénom *</label>
                   <input
                     type="text"
-                    placeholder="Dieudonné"
+                    placeholder="Ex: Dieudonné"
                     value={newSalesFirstName}
                     onChange={(e) => setNewSalesFirstName(e.target.value)}
                     className="px-3.5 py-2.5"
@@ -1014,10 +1572,10 @@ export default function SupervisorTerritoryMap({
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="font-bold text-zinc-700 dark:text-gray-300">Nom *</label>
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Nom de famille *</label>
                   <input
                     type="text"
-                    placeholder="Mukendi"
+                    placeholder="Ex: Mukendi"
                     value={newSalesLastName}
                     onChange={(e) => setNewSalesLastName(e.target.value)}
                     className="px-3.5 py-2.5"
@@ -1026,33 +1584,34 @@ export default function SupervisorTerritoryMap({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="font-bold text-zinc-700 dark:text-gray-300">Identifiant de connexion mobile *</label>
-                <input
-                  type="text"
-                  placeholder="Ex: sales_mukendi"
-                  value={newSalesUsername}
-                  onChange={(e) => setNewSalesUsername(e.target.value)}
-                  className="px-3.5 py-2.5 font-bold"
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="font-bold text-zinc-700 dark:text-gray-300">Mot de passe provisoire *</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={newSalesPassword}
-                  onChange={(e) => setNewSalesPassword(e.target.value)}
-                  className="px-3.5 py-2.5"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="font-bold text-zinc-700 dark:text-gray-300">Téléphone</label>
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Identifiant Mobile (Username) *</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: dieudonne_m"
+                    value={newSalesUsername}
+                    onChange={(e) => setNewSalesUsername(e.target.value)}
+                    className="px-3.5 py-2.5 font-bold"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Mot de passe temporaire *</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={newSalesPassword}
+                    onChange={(e) => setNewSalesPassword(e.target.value)}
+                    className="px-3.5 py-2.5"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Téléphone Mobile</label>
                   <input
                     type="text"
                     value={newSalesPhone}
@@ -1061,7 +1620,7 @@ export default function SupervisorTerritoryMap({
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="font-bold text-zinc-700 dark:text-gray-300">Ville</label>
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Secteur / Ville</label>
                   <input
                     type="text"
                     value={newSalesLocation}
@@ -1076,12 +1635,12 @@ export default function SupervisorTerritoryMap({
                 <select
                   value={newSalesPlaqueId}
                   onChange={(e) => setNewSalesPlaqueId(e.target.value ? Number(e.target.value) : '')}
-                  className="px-3.5 py-2.5 cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs font-bold"
                 >
-                  <option value="">-- Aucune affectation immédiate --</option>
+                  <option value="">-- Aucune plaque (Affectation ultérieure) --</option>
                   {plaques.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.code} - {p.name}
+                      {p.code} - {p.name} ({p.city})
                     </option>
                   ))}
                 </select>
@@ -1089,18 +1648,18 @@ export default function SupervisorTerritoryMap({
 
               <div className="flex gap-2 mt-2">
                 <button
-                  type="button"
-                  onClick={() => setIsCreateSalesModalOpen(false)}
-                  className="flex-1 py-3 rounded-2xl studio-subcard text-xs font-bold text-zinc-800 dark:text-zinc-200 hover:opacity-80 cursor-pointer border-none"
-                >
-                  Annuler
-                </button>
-                <button
                   type="submit"
                   disabled={isSubmittingNewSales}
-                  className="flex-1 py-3 rounded-2xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 cursor-pointer disabled:opacity-50 border-none shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                 >
-                  {isSubmittingNewSales ? 'Création...' : 'Créer le Compte'}
+                  {isSubmittingNewSales ? 'Création...' : 'Créer le Compte Commercial'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCreateSalesModalOpen(false)}
+                  className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                >
+                  Annuler
                 </button>
               </div>
             </form>
@@ -1108,102 +1667,34 @@ export default function SupervisorTerritoryMap({
         </div>
       )}
 
-      {/* MODAL: Revoke Commercial Confirmation */}
+      {/* MODAL: Confirmation Révocation Compte Commercial */}
       {revokingSalesperson && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="studio-card max-w-md w-full p-6 md:p-8 flex flex-col gap-4 animate-fade-in shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="studio-card p-6 md:p-8 max-w-md w-full flex flex-col gap-4 shadow-2xl border-2 border-red-500/30">
             <div className="flex items-center gap-3 text-red-500">
-              <div className="p-3 badge-error">
-                <Icons.Trash2 size={22} />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase">
-                  Révoquer ce Commercial ?
-                </h3>
-                <p className="text-xs text-zinc-600 dark:text-gray-300">
-                  {revokingSalesperson.full_name} (@{revokingSalesperson.username})
-                </p>
-              </div>
+              <Icons.AlertTriangle size={24} />
+              <h3 className="text-base font-black uppercase text-zinc-950 dark:text-white">
+                Révoquer ce commercial ?
+              </h3>
             </div>
 
-            <p className="text-xs text-zinc-700 dark:text-gray-300 leading-relaxed studio-subcard p-4 rounded-2xl border-none">
-              Cette action supprimera le compte et révoquera immédiatement tous les jetons de session. Ce commercial <strong>ne pourra plus se connecter ni accéder aux données de l'application mobile Onbora</strong>.
+            <p className="text-xs text-zinc-600 dark:text-gray-300 leading-relaxed">
+              Êtes-vous sûr de vouloir révoquer le compte de <strong>{revokingSalesperson.full_name}</strong> (@{revokingSalesperson.username}) ? Son accès à l'application mobile Onbora sera immédiatement coupé.
             </p>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => setRevokingSalesperson(null)}
-                className="flex-1 py-3 rounded-2xl studio-subcard text-xs font-bold text-zinc-800 dark:text-zinc-200 hover:opacity-80 cursor-pointer border-none"
-              >
-                Annuler
-              </button>
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={handleRevokeSalesperson}
                 disabled={isRevoking}
-                className="flex-1 py-3 rounded-2xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 cursor-pointer disabled:opacity-50 border-none"
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
               >
-                {isRevoking ? 'Révocation...' : 'Confirmer la Révocation'}
+                {isRevoking ? 'Révocation...' : 'Oui, Révoquer l\'Accès'}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Re-assign Commercials to Plaque */}
-      {assigningPlaque && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="studio-card max-w-md w-full p-6 md:p-8 flex flex-col gap-4 animate-fade-in shadow-2xl">
-            <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
-              <div>
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase">
-                  Affecter les Commerciaux
-                </h3>
-                <p className="text-xs text-zinc-600 dark:text-gray-300">
-                  Plaque : <strong>{assigningPlaque.name} ({assigningPlaque.code})</strong>
-                </p>
-              </div>
               <button
-                onClick={() => setAssigningPlaque(null)}
-                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
-              >
-                <Icons.Close size={16} />
-              </button>
-            </div>
-
-            <div className="max-h-60 overflow-y-auto flex flex-col gap-1.5 studio-subcard p-3 rounded-2xl">
-              {salespersons.map((s) => (
-                <label key={s.id} className="flex items-center gap-2.5 cursor-pointer text-xs p-2 hover:bg-white/40 dark:hover:bg-zinc-800 rounded-xl">
-                  <input
-                    type="checkbox"
-                    checked={assigningSalespersonIds.includes(s.id)}
-                    onChange={() => {
-                      setAssigningSalespersonIds((prev) =>
-                        prev.includes(s.id) ? prev.filter((id) => id !== s.id) : [...prev, s.id]
-                      );
-                    }}
-                    className="accent-blue-600 rounded"
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-bold text-zinc-950 dark:text-white">{s.full_name}</span>
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Plaques actuelles : {s.assigned_plaques.join(', ') || 'Aucune'}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setAssigningPlaque(null)}
-                className="flex-1 py-3 rounded-2xl studio-subcard text-xs font-bold text-zinc-800 dark:text-zinc-200 hover:opacity-80 cursor-pointer border-none"
+                onClick={() => setRevokingSalesperson(null)}
+                className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
               >
                 Annuler
-              </button>
-              <button
-                onClick={handleAssignSalespersons}
-                disabled={isSubmittingAssign}
-                className="flex-1 py-3 rounded-2xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 cursor-pointer disabled:opacity-50 border-none shadow-[0_0_20px_rgba(37,99,235,0.20)]"
-              >
-                {isSubmittingAssign ? 'Affectation...' : 'Confirmer Affectation'}
               </button>
             </div>
           </div>
