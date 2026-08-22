@@ -28,9 +28,15 @@ from .views import (
     FieldIntelligenceNearbyLeadsView,
     FieldIntelligenceTradeAuditsView,
     FieldIntelligenceLeaderboardView,
+    AdvProvisioningQueueView,
+    AdvTriggerProvisioningStpView,
 )
 
 urlpatterns = [
+    # ADV & Provisioning STP Engine (ZTE ZSmart + Microsoft CSP + TOM Fibre)
+    path('provisioning/queue/', AdvProvisioningQueueView.as_view(), name='adv-provisioning-queue'),
+    path('provisioning/trigger-stp/', AdvTriggerProvisioningStpView.as_view(), name='adv-provisioning-trigger-stp'),
+
     # Console Superviseur & Découpage Territorial
     path('supervisor-dashboard/', SupervisorDashboardView.as_view(), name='supervisor-dashboard'),
     path('salespersons/', SalespersonListView.as_view(), name='salesperson-list'),

@@ -8,6 +8,7 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+import AdvProvisioningConsole from '@/components/adv/AdvProvisioningConsole';
 
 const SupervisorTerritoryMap = dynamic(
   () => import('@/components/supervisor/SupervisorTerritoryMap'),
@@ -52,7 +53,7 @@ export default function AdminDashboard() {
   const [filterType, setFilterType] = useState<string>('ALL');
 
   // Tabs and CRUD States
-  const [activeTab, setActiveTab] = useState<'territory' | 'supervision' | 'catalog'>('territory');
+  const [activeTab, setActiveTab] = useState<'territory' | 'supervision' | 'catalog' | 'adv'>('territory');
   const [supervisorData, setSupervisorData] = useState<{
     plaques: any[];
     enterprises: any[];
@@ -505,6 +506,16 @@ export default function AdminDashboard() {
                   <Icons.BarChart size={14} /> Supervision & Métriques
                 </button>
                 <button
+                  onClick={() => setActiveTab('adv')}
+                  className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                    activeTab === 'adv'
+                      ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
+                      : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                  }`}
+                >
+                  <Icons.Zap size={14} /> File ADV & Provisioning STP
+                </button>
+                <button
                   onClick={() => setActiveTab('catalog')}
                   className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                     activeTab === 'catalog'
@@ -531,6 +542,8 @@ export default function AdminDashboard() {
                 onSalespersonAssigned={loadSupervisorData}
                 onSalespersonChanged={loadSupervisorData}
               />
+            ) : activeTab === 'adv' ? (
+              <AdvProvisioningConsole />
             ) : activeTab === 'supervision' ? (
               stats && (
                 <div className="flex flex-col gap-6 animate-fadeIn">

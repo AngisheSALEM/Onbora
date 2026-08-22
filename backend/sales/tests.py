@@ -427,3 +427,52 @@ class KaabuClientTestCase(APITestCase):
         self.assertEqual(top_user["rank"], 1)
         self.assertEqual(top_user["nearby_leads_count"], 2)
 
+    def test_adv_provisioning_queue_and_stp_trigger(self):
+        """Test ADV Straight-Through Processing (STP) Queue and 1-Click Trigger"""
+        from kam.models import ProspectDossier
+
+        # 1. Create a validated dossier ready for ADV
+        dossier = ProspectDossier.objects.create(
+            contact_name="M. Directeur Informatique",
+            phone="+243 81 999 0000",
+            rccm="CD/KNG/RCCM/2026-B-1122",
+            status="ACCEPTED",
+            source="OUTBOUND_VISIT",
+            raw_conversation_data={
+                "company_name": "Rawbank RDC Siege",
+                "email": "dsi@rawbank.cd"
+            }
+        )
+
+        # 2. Check ADV Queue
+        queue_url = reverse('adv-provisioning-queue')
+        queue_resp = self.client.get(queue_url)
+        self.assertEqual(queue_resp.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(queue_resp.data), 1)
+        item = next(d for d in queue_resp.data if d["id"] == dossier.id)
+        self.assertEqual(item["company_name"], "Rawbank RDC Siege")
+        self.assertEqual(item["provisioning_status"], "READY_FOR_PROVISIONING")
+
+        # 3. Trigger 1-Click STP Provisioning
+        stp_url = reverse('adv-provisioning-trigger-stp')
+        payload = {
+            "dossier_id": dossier.id,
+            "company_name": "Rawbank RDC Siege",
+            "admin_email": "dsi@rawbank.cd",
+            "location": "Kinshasa (Boulevard du 30 Juin)"
+        }
+        stp_resp = self.client.post(stp_url, payload, format='json')
+        self.assertEqual(stp_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(stp_resp.data["orchestration_status"], "ALL_SERVICES_ACTIVE")
+        self.assertEqual(stp_resp.data["zte_zsmart"]["status"], "SUCCESS")
+        self.assertEqual(stp_resp.data["microsoft_csp"]["status"], "SUCCESS")
+        self.assertEqual(stp_resp.data["tom_fibre"]["status"], "SUCCESS")
+        self.assertTrue(stp_resp.data["sms_notification_sent"])
+
+        # 4. Verify Dossier status updated to COMPLETED / ACTIVE
+        dossier.refresh_from_db()
+        self.assertEqual(dossier.status, "COMPLETED")
+        self.assertEqual(dossier.raw_conversation_data['provisioning']['fibre'], 'COMPLETED')
+        self.assertEqual(dossier.raw_conversation_data['provisioning']['m365'], 'COMPLETED')
+
+

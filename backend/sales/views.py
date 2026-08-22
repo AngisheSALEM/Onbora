@@ -1003,3 +1003,111 @@ class FieldIntelligenceLeaderboardView(APIView):
         serializer = LeaderboardEntrySerializer(leaderboard, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class AdvProvisioningQueueView(APIView):
+    """
+    GET: Liste des dossiers pré-convertis en file d'attente ADV pour contractualisation et provisioning STP.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from kam.models import ProspectDossier
+        dossiers = ProspectDossier.objects.all().order_by('-updated_at')
+
+        queue = []
+        for d in dossiers:
+            company_name = (d.raw_conversation_data or {}).get('company_name')
+            email = (d.raw_conversation_data or {}).get('email')
+            if not company_name and d.visit_report:
+                company_name = d.visit_report.preparation.enterprise.name
+            if not company_name and d.conversation and d.conversation.extracted_profile:
+                company_name = d.conversation.extracted_profile.get('company_name')
+            
+            raw_prov = (d.raw_conversation_data or {}).get('provisioning', {})
+            is_active = all(raw_prov.get(k) == 'COMPLETED' for k in ['fibre', 'm365', 'firewall']) if raw_prov else False
+            is_in_progress = any(raw_prov.get(k) == 'PROVISIONING' for k in ['fibre', 'm365', 'firewall']) if raw_prov else False
+
+            prov_status = 'ACTIVE' if is_active else ('PROVISIONING' if is_in_progress else 'READY_FOR_PROVISIONING')
+
+            queue.append({
+                "id": d.id,
+                "company_name": company_name or "Entreprise B2B",
+                "contact_name": d.contact_name or "Direction Générale",
+                "email": email or "direction@entreprise.cd",
+                "phone": d.phone or "+243 81 000 0000",
+                "rccm": d.rccm or "CD/KNG/RCCM/2026-B-0941",
+                "status": d.status,
+                "provisioning_status": prov_status,
+                "provisioning_details": raw_prov,
+                "has_twin": bool(getattr(d, 'twin', None) or getattr(d, 'has_twin', False)),
+                "source": d.source,
+                "created_at": d.created_at,
+                "updated_at": d.updated_at,
+            })
+
+        return Response(queue, status=status.HTTP_200_OK)
+
+
+class AdvTriggerProvisioningStpView(APIView):
+    """
+    POST: Déclenchement orchestré 1-clic STP (Straight-Through Processing) :
+    ZTE ZSmart (Mobile 5G) + Microsoft Partner Center (M365) + TOM Fibre B2B (FTTO/IP Fixe).
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from .integrations.provisioning_gateway import ProvisioningGateway
+        from kam.models import ProspectDossier
+
+        dossier_id = request.data.get('dossier_id')
+        company_name = request.data.get('company_name', 'Entreprise B2B')
+        admin_email = request.data.get('admin_email', 'admin@entreprise.cd')
+        location = request.data.get('location', 'Kinshasa (Gombe)')
+
+        # If dossier_id is provided, update the dossier
+        if dossier_id:
+            try:
+                dossier = ProspectDossier.objects.get(pk=dossier_id)
+                d_comp = (dossier.raw_conversation_data or {}).get('company_name')
+                if not d_comp and dossier.visit_report:
+                    d_comp = dossier.visit_report.preparation.enterprise.name
+                if d_comp:
+                    company_name = d_comp
+                d_email = (dossier.raw_conversation_data or {}).get('email')
+                if d_email:
+                    admin_email = d_email
+            except ProspectDossier.DoesNotExist:
+                dossier = None
+        else:
+            dossier = None
+
+        # Execute Orchestration
+        result = ProvisioningGateway.orchestrate_stp_workflow(
+            dossier_id=dossier_id or 0,
+            company_name=company_name,
+            admin_email=admin_email,
+            location=location
+        )
+
+        if dossier:
+            if not isinstance(dossier.raw_conversation_data, dict):
+                dossier.raw_conversation_data = {}
+            dossier.raw_conversation_data['provisioning'] = {
+                'fibre': 'COMPLETED',
+                'm365': 'COMPLETED',
+                'firewall': 'COMPLETED'
+            }
+            dossier.raw_conversation_data['stp_activation'] = result
+            dossier.status = 'COMPLETED'
+            dossier.save()
+
+            log_demo_event(
+                'PROVISIONING_COMPLETED',
+                f"Activation STP 1-clic (ZTE + Microsoft + TOM) réussie pour {company_name}",
+                user=request.user if request.user.is_authenticated else None,
+                metadata={"dossier_id": dossier.id, "stp_result": result}
+            )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
