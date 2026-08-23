@@ -44,30 +44,41 @@ abstract class AppConstants {
 
   // --- Brand Accent Colors (Electric Blue #2563EB) ---
   static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color orangeOfficial = Color(0xFF2563EB); // Updated to electric blue #2563EB
+  static const Color orangeOfficial = Color(0xFF2563EB); // Electric Blue Signature #2563EB
   static const Color accentOrange = Color(0xFF2563EB);
   
-  /// Eco-Branding Digital Sombre : Noir Absolu & Gris Studio
+  // --- 4-Color Personality Palette (Maho Quartet avec Bleu Électrique) ---
+  static const Color accentBlue = Color(0xFF2563EB);      // Accent 1: Pure Electric Blue (CTA & Sélection)
+  static const Color accentAmber = Color(0xFFF59E0B);     // Accent 2: Warm Amber / Tangerine (Attention & Alertes)
+  static const Color accentGreen = Color(0xFF10B981);     // Accent 3: Emerald / Mint Green (Succès & Validation)
+  static const Color accentPurple = Color(0xFF8B5CF6);    // Accent 4: Velvet Berry / Purple (IA Copilot & Diagnostic Cible)
+  
+  /// Apple Semantic Surfaces - Dark Mode (Noir OLED #000000 & Cartes surélevées #1C1C1E)
   static const Color pureBlack = Color(0xFF000000);
   static const Color primaryNavy = Color(0xFF000000);
-  static const Color primaryDark = Color(0xFF141416);
-  static const Color cardDarkGrey = Color(0xFF1C1C22); // Solid Grey Dark Card
-  static const Color cardLightGrey = Color(0xFFF1F2F6); // Solid Grey Light Card
-  static const Color cardDarkSurface = Color(0xFF1C1C22);
+  static const Color backgroundDark = Color(0xFF000000);
+  static const Color primaryDark = Color(0xFF1C1C1E);
+  static const Color cardDark = Color(0xFF1C1C1E);
+  static const Color cardDarkGrey = Color(0xFF1C1C1E);
+  static const Color cardDarkSurface = Color(0xFF1C1C1E);
+  static const Color subcardDark = Color(0xFF2C2C2E);
+  static const Color surfaceTertiaryDark = Color(0xFF3A3A3C);
   static const Color cardDarkBorder = Colors.transparent;
 
-  /// Eco-Branding Lumineux : Blanc Pur & Gris Clair Studio
+  /// Apple Semantic Surfaces - Light Mode (Canvas Gris Clair #F2F2F7 & Cartes Blanc Pur #FFFFFF)
   static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color backgroundLight = Color(0xFFF8F9FA);
-  static const Color cardLight = Color(0xFFF1F2F6);
-  static const Color borderLight = Colors.transparent;
+  static const Color backgroundLight = Color(0xFFF2F2F7);  // Gris clair système Apple (Grouped background)
+  static const Color cardLight = Color(0xFFFFFFFF);        // Blanc pur pour les cartes (Détachement net du fond)
+  static const Color cardLightGrey = Color(0xFFF2F2F7);    // Sous-cartes / Chips gris doux
+  static const Color subcardLight = Color(0xFFF2F2F7);
+  static const Color surfaceTertiaryLight = Color(0xFFE5E5EA);
+  static const Color borderLight = Color(0x0A000000);      // Bordure subtile de séparation
 
-  /// Card Surface Tokens (Clean Grey without Glass or Borders)
-  static const Color cardDark = Color(0xFF1C1C22);
-  static const Color glassDarkSurface = Color(0xFF1C1C22);
-  static const Color glassLightSurface = Color(0xFFF1F2F6);
-  static const Color glassDarkBorder = Colors.transparent;
-  static const Color glassLightBorder = Colors.transparent;
+  /// Card Surface Tokens
+  static const Color glassDarkSurface = Color(0xFF1C1C1E);
+  static const Color glassLightSurface = Color(0xFFFFFFFF);
+  static const Color glassDarkBorder = Color(0x1AFFFFFF);
+  static const Color glassLightBorder = Color(0x0F000000);
 
   /// Status & Secondary Colors
   static const Color successGreen = Color(0xFF10B981); // Emerald 500
@@ -80,12 +91,14 @@ abstract class AppConstants {
   static const Color glowOrangeDark = Color(0x282563EB);
   static const Color glowOrangeLight = Color(0x162563EB);
 
-  // --- High-Contrast Typography (Passe-Passe Noir d'encre & Blanc Pur) ---
-  static const Color textDark = Color(0xFF000000); // Noir pur
-  static const Color textLight = Color(0xFFFFFFFF); // Blanc pur
-  static const Color textMuted = Color(0xFF6B7280); // Gray 500
-  static const Color textSecondaryDark = Color(0xFFD1D5DB); // Gray 300
-  static const Color textSecondaryLight = Color(0xFF4B5563); // Gray 600
+  // --- High-Contrast Typography (Semantic Labels Hierarchy) ---
+  static const Color textDark = Color(0xFF000000);           // Primary Label Light: 100% Noir
+  static const Color textLight = Color(0xFFFFFFFF);          // Primary Label Dark: 100% Blanc
+  static const Color textSecondaryLight = Color(0xFF6E6E73); // Secondary Label Light: 60% Gris moyen
+  static const Color textSecondaryDark = Color(0xFF8E8E93);  // Secondary Label Dark: 60% Gris clair
+  static const Color textMuted = Color(0xFFAEAEB2);          // Tertiary Label
+  static const Color textTertiaryLight = Color(0xFFAEAEB2);  // Tertiary Label Light
+  static const Color textTertiaryDark = Color(0xFF636366);   // Tertiary Label Dark
 
   static Color getTextSecondary(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark

@@ -13,8 +13,9 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      primaryColor: AppConstants.orangeOfficial,
+      primaryColor: AppConstants.primaryBlue,
       scaffoldBackgroundColor: AppConstants.backgroundLight,
+      cardColor: AppConstants.cardLight,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
@@ -22,10 +23,10 @@ class AppTheme {
         },
       ),
       colorScheme: const ColorScheme.light(
-        primary: AppConstants.orangeOfficial,
+        primary: AppConstants.primaryBlue,
         secondary: AppConstants.pureBlack,
-        tertiary: AppConstants.accentYellowLight,
-        surface: AppConstants.pureWhite,
+        tertiary: AppConstants.accentAmber,
+        surface: AppConstants.cardLight,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: AppConstants.textDark,
@@ -46,9 +47,9 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppConstants.orangeOfficial,
+          backgroundColor: AppConstants.primaryBlue,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppConstants.orangeOfficial.withValues(alpha: 0.4),
+          disabledBackgroundColor: AppConstants.primaryBlue.withValues(alpha: 0.4),
           disabledForegroundColor: Colors.white70,
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
@@ -67,7 +68,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppConstants.pureWhite,
+        color: AppConstants.cardLight,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
@@ -88,7 +89,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
-          borderSide: const BorderSide(color: AppConstants.orangeOfficial, width: 2),
+          borderSide: const BorderSide(color: AppConstants.primaryBlue, width: 2),
         ),
       ),
     );
@@ -98,8 +99,9 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: AppConstants.orangeOfficial,
-      scaffoldBackgroundColor: AppConstants.pureBlack,
+      primaryColor: AppConstants.primaryBlue,
+      scaffoldBackgroundColor: AppConstants.backgroundDark,
+      cardColor: AppConstants.cardDark,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
@@ -107,9 +109,9 @@ class AppTheme {
         },
       ),
       colorScheme: const ColorScheme.dark(
-        primary: AppConstants.orangeOfficial,
+        primary: AppConstants.primaryBlue,
         secondary: AppConstants.pureWhite,
-        surface: AppConstants.primaryDark,
+        surface: AppConstants.cardDark,
         onPrimary: Colors.white,
         onSecondary: AppConstants.pureBlack,
         onSurface: Colors.white,
