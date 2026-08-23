@@ -23,6 +23,8 @@ import '../modules/profile/binding/profile_binding.dart';
 import '../modules/profile/screen/profile_screen.dart';
 
 import '../modules/sales/screen/leaderboard_screen.dart';
+import '../modules/sales/screen/field_intelligence_screen.dart';
+import '../modules/sales/screen/document_scan_screen.dart';
 
 class AppPages {
   static const INITIAL = Routes.LOGIN;
@@ -81,6 +83,20 @@ class AppPages {
     GetPage(
       name: Routes.LEADERBOARD,
       page: () => const LeaderboardScreen(),
+      binding: SalesBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.FIELD_INTELLIGENCE,
+      page: () => const FieldIntelligenceScreen(),
+      binding: SalesBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.DOCUMENT_SCAN,
+      page: () => const DocumentScanScreen(),
       binding: SalesBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),

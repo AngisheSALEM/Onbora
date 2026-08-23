@@ -30,9 +30,13 @@ from .views import (
     FieldIntelligenceLeaderboardView,
     AdvProvisioningQueueView,
     AdvTriggerProvisioningStpView,
+    DocumentOcrScanView,
 )
 
 urlpatterns = [
+    # Numérisation OCR de Documents (RCCM, Carte de visite, Facture Télécom)
+    path('ocr/scan/', DocumentOcrScanView.as_view(), name='sales-ocr-scan'),
+
     # ADV & Provisioning STP Engine (ZTE ZSmart + Microsoft CSP + TOM Fibre)
     path('provisioning/queue/', AdvProvisioningQueueView.as_view(), name='adv-provisioning-queue'),
     path('provisioning/trigger-stp/', AdvTriggerProvisioningStpView.as_view(), name='adv-provisioning-trigger-stp'),

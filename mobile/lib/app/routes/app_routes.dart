@@ -12,4 +12,6 @@ abstract class Routes {
   static const CATALOG = '/catalog';
   static const PROFILE = '/profile';
   static const LEADERBOARD = '/leaderboard';
+  static const FIELD_INTELLIGENCE = '/field-intelligence';
+  static const DOCUMENT_SCAN = '/document-scan';
 }

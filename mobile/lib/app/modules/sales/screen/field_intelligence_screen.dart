@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/sales_controller.dart';
 import '../model/field_intelligence_model.dart';
+import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
 import '../../../common/screen/widget/aurora_background.dart';
@@ -51,6 +52,28 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
   int _satisfactionScore = 2;
   final Set<String> _selectedFrictions = {'Coupures récurrentes', 'Support client injoignable'};
   final TextEditingController _monthlySpendController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final salesController = Get.find<SalesController>();
+    final ocr = salesController.lastOcrResult.value;
+    if (ocr != null) {
+      if (ocr.rccm.isNotEmpty) {
+        _rccmController.text = ocr.rccm;
+      }
+      if (ocr.currentProvider.isNotEmpty) {
+        _competitorNameController.text = ocr.currentProvider;
+      }
+      if (ocr.monthlySpendEstimated != null) {
+        _monthlySpendController.text = ocr.monthlySpendEstimated!.toStringAsFixed(0);
+      }
+      if (ocr.contactName.isNotEmpty) {
+        _ref1ContactController.text = ocr.contactName;
+        _ref1PhoneController.text = ocr.phone;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -262,6 +285,59 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Quick OCR Scanner Shortcut
+                  ScaleTap(
+                    onTap: () => Get.toNamed(Routes.DOCUMENT_SCAN),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.scanLine, color: Color(0xFF2563EB), size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Scanner un document (RCCM / Facture)',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                  ),
+                                ),
+                                Text(
+                                  'Pré-remplissage automatique des champs par photo',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: isDark ? Colors.white60 : AppConstants.textSecondaryLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2563EB),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Scanner',
+                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

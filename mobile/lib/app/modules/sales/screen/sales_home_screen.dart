@@ -314,7 +314,7 @@ class SalesHomeScreen extends StatelessWidget {
                               child: ScaleTap(
                                 onTap: () => Get.toNamed(Routes.VISIT_PREPARATION),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                                   decoration: BoxDecoration(
                                     color: salesController.currentPrep.value != null
                                         ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
@@ -326,19 +326,19 @@ class SalesHomeScreen extends StatelessWidget {
                                     children: [
                                       Icon(
                                         LucideIcons.fileCheck,
-                                        size: 16,
+                                        size: 15,
                                         color: salesController.currentPrep.value != null
                                             ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB))
                                             : (isDark ? Colors.white70 : AppConstants.textDark),
                                       ),
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: 4),
                                       Flexible(
                                         child: Text(
-                                          salesController.currentPrep.value != null ? 'Brief Prêt' : 'Préparer Brief',
+                                          salesController.currentPrep.value != null ? 'Brief' : 'Brief',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w800,
                                             color: salesController.currentPrep.value != null
                                                 ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8))
@@ -351,31 +351,67 @@ class SalesHomeScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ScaleTap(
+                                onTap: () => Get.toNamed(Routes.DOCUMENT_SCAN),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                                    border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        LucideIcons.scanLine,
+                                        size: 15,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          'Scanner',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: ScaleTap(
                                 child: ElevatedButton.icon(
                                   onPressed: () => Get.toNamed(Routes.DICTAPHONE),
                                   icon: Icon(
                                     LucideIcons.mic,
-                                    size: 16,
+                                    size: 15,
                                     color: isDark ? const Color(0xFF121214) : Colors.white,
                                   ),
-                                  label: FittedBox(
+                                  label: const FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      'Dictaphone',
+                                      'Audio',
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w900,
-                                        color: isDark ? const Color(0xFF121214) : Colors.white,
                                       ),
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
                                     foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                                     ),
@@ -389,85 +425,6 @@ class SalesHomeScreen extends StatelessWidget {
                     ),
                   );
                 }),
-                const SizedBox(height: 20),
-
-                // Gamified Leaderboard & Field Intelligence Banner
-                ScaleTap(
-                  onTap: () => Get.toNamed(Routes.LEADERBOARD),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
-                      border: Border.all(
-                        color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2563EB),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Icon(LucideIcons.trophy, color: Colors.white, size: 20),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Performance Terrain',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        color: isDark ? Colors.white : AppConstants.textDark,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF10B981),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'Rang #2',
-                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Suivi des pré-conversions & sourcing de proximité',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(LucideIcons.chevronRight, color: Color(0xFF2563EB), size: 20),
-                      ],
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 24),
 
                 // 4. Section Title: Historique Récent des Visites
