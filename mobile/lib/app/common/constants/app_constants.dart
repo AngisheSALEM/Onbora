@@ -33,7 +33,7 @@ abstract class AppConstants {
   static const double marginXl = 20.0;
   static const double marginXxL = 24.0;
 
-  // --- Apple-Grade Rounded Radii ---
+  // --- Apple Liquid Glass Concentric Geometry (Concentricity Rule) ---
   static const double borderRadiusSm = 8.0;
   static const double borderRadiusMd = 14.0;
   static const double borderRadiusLg = 20.0;
@@ -41,6 +41,17 @@ abstract class AppConstants {
   static const double borderRadiusAppleCard = 22.0;
   static const double borderRadiusAppleButton = 16.0;
   static const double borderRadiusPill = 999.0;
+
+  /// Calculates nested inner radius by subtracting parent padding to prevent pinched or distorted corners:
+  /// r_inner = max(fallback, parentRadius - padding)
+  static double concentricRadius(double parentRadius, double padding, {double fallback = 12.0}) {
+    final computed = parentRadius - padding;
+    return computed > 4.0 ? computed : fallback;
+  }
+
+  static BorderRadius concentricBorderRadius(double parentRadius, double padding, {double fallback = 12.0}) {
+    return BorderRadius.circular(concentricRadius(parentRadius, padding, fallback: fallback));
+  }
 
   // --- Brand Accent Colors (Electric Blue #2563EB) ---
   static const Color primaryBlue = Color(0xFF2563EB);
