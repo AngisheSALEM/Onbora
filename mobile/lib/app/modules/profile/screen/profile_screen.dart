@@ -118,7 +118,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // Liste 1 : Rapports faits avec l'IA
+                // Liste 1 : Comptes-rendus de visite
                 GlassCard(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
@@ -140,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Rapports faits avec l\'IA',
+                              'Comptes-rendus de visite',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
@@ -149,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Obx(() => Text(
-                                  '${salesController.kpiReportsCount.value} rapports et comptes-rendus générés',
+                                  '${salesController.kpiReportsCount.value} comptes-rendus rédigés',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
@@ -167,7 +167,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Liste 2 : Visites enregistrées
+                // Liste 2 : Rendez-vous terrain
                 GlassCard(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
@@ -178,10 +178,10 @@ class ProfileScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF0FDF4),
+                          color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(LucideIcons.calendarCheck, color: AppConstants.successGreen, size: 22),
+                        child: Icon(LucideIcons.calendar, color: isDark ? Colors.white70 : AppConstants.textDark, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -189,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Visites enregistrées',
+                              'Rendez-vous terrain',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
@@ -198,7 +198,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Obx(() => Text(
-                                  '${salesController.kpiVisitsCount.value} visites terrain enregistrées',
+                                  '${salesController.kpiVisitsCount.value} visites planifiées et effectuées',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,

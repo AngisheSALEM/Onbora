@@ -210,7 +210,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Qualifié Onbora AI • Prêt pour transmission KAM',
+                                    'Dossier qualifié • Prêt pour transmission KAM',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -227,7 +227,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // 0. Whisper AI Raw Transcript Block (Bloc Texte Brut Whisper pour vérification)
+                    // Enregistrement & Retranscription
                     RepaintBoundary(
                       child: GlassCard(
                         padding: const EdgeInsets.all(AppConstants.paddingLg),
@@ -254,7 +254,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                       const SizedBox(width: 10),
                                       Flexible(
                                         child: Text(
-                                          'Transcription Brute Whisper AI',
+                                          'Retranscription de l\'échange',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
@@ -275,7 +275,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: const Text(
-                                    'Audio STT',
+                                    'Audio',
                                     style: TextStyle(
                                       color: AppConstants.primaryBlue,
                                       fontSize: 10,
@@ -296,7 +296,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                               child: SelectableText(
                                 report.rawTranscript.isNotEmpty
                                     ? report.rawTranscript
-                                    : 'Aucune transcription brute reçue de Whisper AI.',
+                                    : 'Aucun enregistrement disponible pour cette visite.',
                                 style: TextStyle(
                                   fontSize: 13,
                                   height: 1.5,
@@ -331,7 +331,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    'Résumé Exécutif IA',
+                                    'Synthèse de la visite',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -498,7 +498,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: Text(
-                                          'Brouillon d\'Email de Relance',
+                                          'Proposition d\'email de suivi',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(

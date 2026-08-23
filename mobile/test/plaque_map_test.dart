@@ -93,8 +93,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Profil'), findsOneWidget);
-    expect(find.text('Rapports faits avec l\'IA'), findsOneWidget);
-    expect(find.text('Visites enregistrées'), findsOneWidget);
+    expect(find.text('Comptes-rendus de visite'), findsOneWidget);
+    expect(find.text('Rendez-vous terrain'), findsOneWidget);
     expect(find.text('Mode Sombre (OLED)'), findsOneWidget);
   });
 

@@ -344,10 +344,10 @@ export default function AdvProvisioningConsole() {
             <div className="flex justify-between items-start border-b border-zinc-200 dark:border-zinc-800 pb-3">
               <div>
                 <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
-                  <Icons.Zap size={12} /> Straight-Through Processing Orchestrator
+                  <Icons.Zap size={12} /> Activation des Services Télécom & Cloud
                 </span>
                 <h3 className="text-base font-black text-zinc-950 dark:text-white">
-                  Activation Télécom & Cloud : {selectedDossier.company_name}
+                  Dossier : {selectedDossier.company_name}
                 </h3>
               </div>
               {stpStep === 5 && (
@@ -387,9 +387,9 @@ export default function AdvProvisioningConsole() {
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
                   <Icons.CheckCircle size={24} />
                   <div>
-                    <span className="font-black text-xs block">Orchestration Complète Réussie !</span>
+                    <span className="font-black text-xs block">Activation des services réussie</span>
                     <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
-                      Les 3 services ont été immédiatement activés sans intervention manuelle (Zero-Touch STP).
+                      Les services 5G, Microsoft 365 et liaison Fibre sont désormais opérationnels.
                     </span>
                   </div>
                 </div>
@@ -439,10 +439,10 @@ export default function AdvProvisioningConsole() {
               <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
                 <Icons.RefreshCw size={32} className="text-blue-600 animate-spin" />
                 <span className="text-xs font-black text-zinc-950 dark:text-white">
-                  Orchestration STP en cours avec ZTE, Microsoft et TOM...
+                  Activation des services en cours...
                 </span>
                 <span className="text-[11px] text-zinc-500">
-                  Déploiement des accès réseau et création des identifiants cloud en temps réel.
+                  Déploiement des accès réseau et configuration des accès cloud en temps réel.
                 </span>
               </div>
             )}

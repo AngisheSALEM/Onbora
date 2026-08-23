@@ -113,40 +113,40 @@ abstract class AppConstants {
   // --- Brand & Solution Naming ---
   static const String brandServiceName = 'Orange B2B';
   static const String appName = 'ONBORA SALES';
-  static const String appSubtitle = 'Copilote Commercial & Dictaphone IA Terrain Orange B2B';
+  static const String appSubtitle = 'Suivi Commercial & Prospection B2B';
   
   // Login texts
   static const String loginTitle = 'Espace Commercial Orange B2B';
-  static const String loginButton = 'Se Connecter';
+  static const String loginButton = 'Se connecter';
   static const String loginIdLabel = 'Identifiant / Email *';
   static const String loginPasswordLabel = 'Mot de passe *';
   static const String loginDemoHint = 'Identifiant : sales1 / Mot de passe : sales1pass';
 
   // Map & Plaque Home texts
   static const String mapHomeTitle = 'Carte & Plaques Terrain';
-  static const String mapHomeSub = 'Plaques territoriales & Opportunités prêtes à être converties';
-  static const String readyToConvertTitle = 'Entreprises Prêtes à être Converties';
-  static const String viewAiBriefBtn = 'Voir le Brief IA';
-  static const String startVisitBtn = 'Démarrer Visite';
+  static const String mapHomeSub = 'Secteurs territoriaux & Opportunités à qualifier';
+  static const String readyToConvertTitle = 'Entreprises Prêtes pour Qualification';
+  static const String viewAiBriefBtn = 'Consulter le brief';
+  static const String startVisitBtn = 'Démarrer la visite';
 
   // Sales Home texts (Cleaned up, no redundant marketing slogan)
   static const String salesVisitsTitle = 'Visites & Rendez-vous';
   static const String homeSearchProspectBtn = 'Rechercher un prospect';
   static const String homeSearchPlaceholder = 'Rechercher un prospect, entreprise, secteur...';
   static const String homeActiveMeetingTitle = 'Rendez-vous Client en Cours';
-  static const String recentVisitsTitle = 'Historique Récent des Visites';
+  static const String recentVisitsTitle = 'Historique des Visites';
 
   // Search Prospect texts
   static const String searchProspectTitle = 'Recherche Prospects';
   static const String searchProspectHint = 'Rechercher parmi tous les prospects ou filtrer par plaque...';
 
   // Dictaphone texts
-  static const String dictaphoneTitle = 'Dictaphone Vocal Terrain';
-  static const String dictaphoneRecordingState = 'ENREGISTREMENT EN COURS...';
+  static const String dictaphoneTitle = 'Enregistrement de Visite';
+  static const String dictaphoneRecordingState = 'ENREGISTREMENT EN COURS';
   static const String dictaphoneStoppedState = 'ENREGISTREMENT TERMINÉ';
-  static const String dictaphoneAnalyzingState = 'ANALYSE WHISPER SPEECH-TO-TEXT...';
+  static const String dictaphoneAnalyzingState = 'TRANSCRIPTION DE L\'ÉCHANGE...';
   static const String dictaphoneIdleState = 'Appuyez pour démarrer l\'enregistrement';
-  static const String dictaphoneGenerateBtn = 'Générer le Rapport avec Onbora IA';
+  static const String dictaphoneGenerateBtn = 'Rédiger le compte-rendu';
 
   // Catalog texts (Orange B2B replacement)
   static const String catalogTitle = 'Catalogue Solutions Orange B2B';

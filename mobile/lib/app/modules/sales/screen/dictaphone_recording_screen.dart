@@ -202,7 +202,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Transcription Vocale Whisper AI',
+                                    'Retranscription en direct',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -218,7 +218,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                             Text(
                               text.isNotEmpty
                                   ? text
-                                  : 'Écoute en cours... Échangez avec le client sur les besoins Fibre / Teams.',
+                                  : 'Enregistrement en cours... Échangez avec votre interlocuteur.',
                               style: TextStyle(
                                 color: text.isNotEmpty
                                     ? (isDark ? Colors.white : AppConstants.textDark)
@@ -257,10 +257,10 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 const SizedBox(height: 12),
                                 Text(
                                   _processingStep == 1
-                                      ? 'Étape 1/3 : Transcription vocale Whisper AI en cours...'
+                                      ? 'Étape 1/3 : Retranscription de l\'échange...'
                                       : _processingStep == 2
-                                          ? 'Étape 2/3 : Analyse et extraction des besoins télécoms...'
-                                          : 'Étape 3/3 : Génération du compte-rendu et plan d\'actions...',
+                                          ? 'Étape 2/3 : Analyse des besoins identifiés...'
+                                          : 'Étape 3/3 : Rédaction du compte-rendu de visite...',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: isDark ? Colors.white : AppConstants.textDark,
@@ -314,7 +314,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                   )
                                 : Icon(LucideIcons.sparkles, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
                             label: Text(
-                              isProcessing ? 'Traitement IA...' : AppConstants.dictaphoneGenerateBtn,
+                              isProcessing ? 'Rédaction en cours...' : AppConstants.dictaphoneGenerateBtn,
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -326,7 +326,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                       );
                     } else if (st == RecordingState.idle) {
                       return Text(
-                        'Conseil : Parlez naturellement des besoins identifiés (Fibre, Sécurité, Microsoft 365).',
+                        'Conseil : Échangez librement sur les besoins de connectivité et de sécurité.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted, fontSize: 12),
                       );

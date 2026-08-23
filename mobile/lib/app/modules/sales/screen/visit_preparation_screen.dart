@@ -47,7 +47,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
             onPressed: () => Get.back(),
           ),
           title: Text(
-            'Brief & Pitch de Visite IA',
+            'Préparation de Visite',
             style: TextStyle(
               color: isDark ? Colors.white : AppConstants.textDark,
               fontWeight: FontWeight.w800,
@@ -57,7 +57,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
           actions: [
             IconButton(
               icon: Icon(LucideIcons.rotateCcw, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
-              tooltip: 'Régénérer le brief',
+              tooltip: 'Actualiser',
               onPressed: () {
                 final enterprise = salesController.selectedEnterprise.value;
                 if (enterprise != null) {
@@ -87,7 +87,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                         const Icon(Icons.assignment_late_rounded, size: 54, color: AppConstants.textMuted),
                         const SizedBox(height: 16),
                         Text(
-                          'Aucune préparation générée',
+                          'Aucune fiche de préparation',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -96,7 +96,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sélectionnez un prospect B2B pour que l\'IA génère un brief d\'entretien personnalisé.',
+                          'Sélectionnez une entreprise pour afficher les informations clés avant votre visite.',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted, fontSize: 13),
                         ),
@@ -191,7 +191,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     // Hypotheses to Verify
                     _buildSectionCard(
                       context,
-                      title: 'Hypothèses Terrain à Vérifier',
+                      title: 'Points clés à valider',
                       icon: LucideIcons.brain,
                       content: prep.hypothesisToVerify,
                     ),
@@ -220,7 +220,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      'Pitch Commercial Sur-Mesure',
+                                      'Argumentaire personnalisé',
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w800,
@@ -257,7 +257,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     // Key Questions
                     _buildSectionCard(
                       context,
-                      title: 'Questions Clés à Poser',
+                      title: 'Questions à poser',
                       icon: LucideIcons.helpCircle,
                       content: prep.keyQuestions,
                     ),
@@ -278,7 +278,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                           label: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              'Démarrer l\'Enregistrement Vocal (Dictaphone)',
+                              'Démarrer l\'enregistrement',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,

@@ -559,13 +559,13 @@ export default function AdminDashboard() {
                       <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
                         <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Qualifiés en Ligne (Inbound)</span>
                         <span className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">{stats.inbound_count}</span>
-                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Conversation IA autonome</p>
+                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés en ligne via le portail client</p>
                       </div>
 
                       <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
                         <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Visites Terrain (Outbound)</span>
                         <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.outbound_count}</span>
-                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés par les commerciaux via dictaphone</p>
+                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés sur le terrain par les commerciaux</p>
                       </div>
 
                       <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
@@ -621,7 +621,7 @@ export default function AdminDashboard() {
                               strokeLinecap="round"
                             />
                             
-                            {/* Inbound Trend (IA & Digital) */}
+                            {/* Inbound Trend (Portail Client) */}
                             <path
                               d="M 0 95 Q 50 85, 100 70 T 200 35 T 300 15"
                               fill="none"
@@ -658,7 +658,7 @@ export default function AdminDashboard() {
                         <div className="flex gap-4 justify-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
                           <div className="flex items-center gap-1.5">
                             <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" />
-                            <span>Inbound (IA & Portail)</span>
+                            <span>Inbound (Portail Client)</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <span className="w-3 h-1 bg-zinc-500 rounded-full inline-block" />
@@ -738,14 +738,14 @@ export default function AdminDashboard() {
                   {/* Catalog controls */}
                   <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/40 p-4 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                     <div>
-                      <h3 className="text-sm font-bold">Services du Catalogue MSP</h3>
-                      <p className="text-[10px] text-zinc-500">Ajoutez, modifiez ou supprimez les offres de services suggérées par l'IA lors des analyses.</p>
+                      <h3 className="text-sm font-bold">Catalogue des Solutions B2B</h3>
+                      <p className="text-[10px] text-zinc-500">Gérez le catalogue des forfaits et offres télécoms recommandés aux entreprises.</p>
                     </div>
                     <button
                       onClick={() => handleOpenModal()}
                       className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)] hover:bg-blue-700 cursor-pointer transition-all animate-pulse hover:animate-none"
                     >
-                      <Icons.Sparkles size={12} /> Ajouter un service
+                      <Icons.Sparkles size={12} /> Ajouter une offre
                     </button>
                   </div>
 
@@ -766,16 +766,16 @@ export default function AdminDashboard() {
                           <div className="p-3 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-xl group-hover:scale-105 transition-transform duration-200">
                             <Icons.Download size={24} className="rotate-180" />
                           </div>
-                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-250">Import Mensuel Intelligent</span>
-                          <span className="text-[10px] text-zinc-400 max-w-xs leading-relaxed">Glissez-déposez ou sélectionnez un fichier <strong>PDF, DOCX, Image (OCR) ou Vidéo (Transcription)</strong></span>
+                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-250">Importer une grille tarifaire</span>
+                          <span className="text-[10px] text-zinc-400 max-w-xs leading-relaxed">Glissez-déposez ou sélectionnez un fichier <strong>PDF, DOCX ou image de catalogue</strong></span>
                         </div>
                       ) : uploadStage === 'done' ? (
                         <div className="flex flex-col items-center gap-2 text-emerald-500">
                           <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
                             <Icons.CheckCircle size={24} />
                           </div>
-                          <span className="text-xs font-bold">Document analysé !</span>
-                          <span className="text-[10px] text-zinc-400">Importez les services extraits à droite ou importez un autre fichier.</span>
+                          <span className="text-xs font-bold">Document importé</span>
+                          <span className="text-[10px] text-zinc-400">Validez les offres extraites à droite ou importez un nouveau fichier.</span>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center gap-4 text-blue-600 py-3">
@@ -783,8 +783,8 @@ export default function AdminDashboard() {
                           <div className="flex flex-col gap-1">
                             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                               {uploadStage === 'uploading' && "Téléversement du fichier..."}
-                              {uploadStage === 'parsing' && "Extraction & Restauration du texte (OCR / STT)..."}
-                              {uploadStage === 'ai_structuring' && "Structuration intelligente des offres par l'IA..."}
+                              {uploadStage === 'parsing' && "Lecture et analyse du document..."}
+                              {uploadStage === 'ai_structuring' && "Structuration des offres du catalogue..."}
                             </span>
                             <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-black animate-pulse">
                               Traitement en cours
@@ -800,7 +800,7 @@ export default function AdminDashboard() {
                         <div className="flex flex-col gap-4 h-full justify-between">
                           <div>
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Offres détectées par l'IA ({proposedServices.length})</span>
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Offres extraites ({proposedServices.length})</span>
                               <button
                                 onClick={() => {
                                   if (selectedProposedIndices.length === proposedServices.length) {

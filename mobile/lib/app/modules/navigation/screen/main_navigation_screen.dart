@@ -37,7 +37,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _NavItem(icon: LucideIcons.mapPin, label: 'Carte & Plaques'),
     _NavItem(icon: LucideIcons.footprints, label: 'Visites Terrain'),
     _NavItem(icon: LucideIcons.layers, label: 'Offres B2B'),
-    _NavItem(icon: LucideIcons.user, label: 'Profil & IA'),
+    _NavItem(icon: LucideIcons.user, label: 'Profil'),
   ];
 
   @override
