@@ -77,7 +77,9 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     try {
       final image = await _picker.pickImage(
         source: source,
-        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
       );
       if (image != null) {
         setState(() {
@@ -116,7 +118,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
       _isProcessing = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 400));
 
     final result = await salesController.scanDocument(
       docType: docType,
@@ -163,7 +165,13 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     );
 
     salesController.lastOcrResult.value = updated;
-    Get.toNamed(Routes.FIELD_INTELLIGENCE);
+
+    // Pop cleanly back without pushing duplicate routes
+    if (Get.previousRoute == Routes.FIELD_INTELLIGENCE || Get.previousRoute.isNotEmpty) {
+      Get.back();
+    } else {
+      Get.offNamed(Routes.FIELD_INTELLIGENCE);
+    }
   }
 
   @override
@@ -193,351 +201,356 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
       ),
       body: AuroraBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.all(AppConstants.paddingLg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. Info Card
-                GlassCard(
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
-                          borderRadius: BorderRadius.circular(10),
+          child: RepaintBoundary(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.all(AppConstants.paddingLg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Info Card
+                  GlassCard(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(LucideIcons.scanLine, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
                         ),
-                        child: Icon(LucideIcons.scanLine, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Récupération rapide des données',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 13,
-                                color: isDark ? Colors.white : AppConstants.textDark,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Scannez le RCCM, la carte de visite ou la facture du client pour pré-remplir automatiquement le dossier.',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // 2. Type Selector Pills
-                Text(
-                  'Type de Document',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : AppConstants.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildTypePill('RCCM', 'Extrait RCCM / NIF', LucideIcons.fileCheck2, isDark),
-                      const SizedBox(width: 8),
-                      _buildTypePill('BUSINESS_CARD', 'Carte de Visite', LucideIcons.contact, isDark),
-                      const SizedBox(width: 8),
-                      _buildTypePill('INVOICE', 'Facture / Contrat FAI', LucideIcons.receipt, isDark),
-                      const SizedBox(width: 8),
-                      _buildTypePill('GENERAL', 'Autre document', LucideIcons.file, isDark),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // 3. Document Camera & Upload Card
-                GlassCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      if (_capturedImage != null && !_isProcessing)
-                        Container(
-                          height: 140,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(_capturedImage!.path),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      else if (_isProcessing)
-                        Container(
-                          height: 120,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 28,
-                                  height: 28,
-                                  child: CircularProgressIndicator(
-                                    color: isDark ? Colors.white : const Color(0xFF18181B),
-                                    strokeWidth: 2.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  'Lecture et extraction des données...',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF18181B) : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0),
-                            ),
-                          ),
+                        const SizedBox(width: 12),
+                        Expanded(
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                LucideIcons.camera,
-                                size: 36,
-                                color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
-                              ),
-                              const SizedBox(height: 10),
                               Text(
-                                'Cadrez le document dans le viseur',
+                                'Récupération rapide des données',
                                 style: TextStyle(
-                                  fontSize: 13,
                                   fontWeight: FontWeight.w800,
+                                  fontSize: 13,
                                   color: isDark ? Colors.white : AppConstants.textDark,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
-                                'Assurez-vous d\'un bon éclairage pour lire le texte.',
+                                'Scannez le RCCM, la carte de visite ou la facture du client pour pré-remplir automatiquement le dossier.',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
+                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                  height: 1.3,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      const SizedBox(height: 14),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
-                      // Capture Buttons (Strict Monochrome)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ScaleTap(
-                              child: ElevatedButton.icon(
-                                onPressed: _isProcessing ? null : () => _pickImage(ImageSource.camera),
-                                icon: Icon(
-                                  LucideIcons.camera,
-                                  size: 16,
-                                  color: isDark ? const Color(0xFF121214) : Colors.white,
-                                ),
-                                label: Text(
-                                  'Prendre une photo',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: isDark ? const Color(0xFF121214) : Colors.white,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                                  foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
+                  // 2. Type Selector Pills
+                  Text(
+                    'Type de Document',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppConstants.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _buildTypePill('RCCM', 'Extrait RCCM / NIF', LucideIcons.fileCheck2, isDark),
+                        const SizedBox(width: 8),
+                        _buildTypePill('BUSINESS_CARD', 'Carte de Visite', LucideIcons.contact, isDark),
+                        const SizedBox(width: 8),
+                        _buildTypePill('INVOICE', 'Facture / Contrat FAI', LucideIcons.receipt, isDark),
+                        const SizedBox(width: 8),
+                        _buildTypePill('GENERAL', 'Autre document', LucideIcons.file, isDark),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Document Camera & Upload Card
+                  GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        if (_capturedImage != null && !_isProcessing)
+                          Container(
+                            height: 140,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(_capturedImage!.path),
+                                fit: BoxFit.cover,
+                                cacheWidth: 600,
+                                filterQuality: FilterQuality.low,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ScaleTap(
-                              child: OutlinedButton.icon(
-                                onPressed: _isProcessing ? null : () => _pickImage(ImageSource.gallery),
-                                icon: Icon(LucideIcons.image, size: 16, color: isDark ? Colors.white : AppConstants.textDark),
-                                label: Text(
-                                  'Galerie',
+                          )
+                        else if (_isProcessing)
+                          Container(
+                            height: 120,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: CircularProgressIndicator(
+                                      color: isDark ? Colors.white : const Color(0xFF18181B),
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    'Lecture et extraction des données...',
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF18181B) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  LucideIcons.camera,
+                                  size: 36,
+                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Cadrez le document dans le viseur',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w800,
                                     color: isDark ? Colors.white : AppConstants.textDark,
                                   ),
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Assurez-vous d\'un bon éclairage pour lire le texte.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 14),
+
+                        // Capture Buttons (Strict Monochrome)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ScaleTap(
+                                child: ElevatedButton.icon(
+                                  onPressed: _isProcessing ? null : () => _pickImage(ImageSource.camera),
+                                  icon: Icon(
+                                    LucideIcons.camera,
+                                    size: 16,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
+                                  label: Text(
+                                    'Prendre une photo',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark ? const Color(0xFF121214) : Colors.white,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                    foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Fast Demo Trigger
-                      TextButton.icon(
-                        onPressed: _isProcessing ? null : () => _runDemoScan(_selectedDocType),
-                        icon: Icon(LucideIcons.sparkles, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
-                        label: Text(
-                          'Tester avec un modèle de document type',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? Colors.white70 : AppConstants.textDark),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ScaleTap(
+                                child: OutlinedButton.icon(
+                                  onPressed: _isProcessing ? null : () => _pickImage(ImageSource.gallery),
+                                  icon: Icon(LucideIcons.image, size: 16, color: isDark ? Colors.white : AppConstants.textDark),
+                                  label: Text(
+                                    'Galerie',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
+                        const SizedBox(height: 8),
 
-                // 4. Extracted Data Fields (Editable)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Données Extraites',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : AppConstants.textDark,
-                      ),
+                        // Fast Demo Trigger
+                        TextButton.icon(
+                          onPressed: _isProcessing ? null : () => _runDemoScan(_selectedDocType),
+                          icon: Icon(LucideIcons.sparkles, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
+                          label: Text(
+                            'Tester avec un modèle de document type',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? Colors.white70 : AppConstants.textDark),
+                          ),
+                        ),
+                      ],
                     ),
-                    if (_rccmController.text.isNotEmpty || _contactController.text.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'Prêt à valider',
-                          style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                GlassCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTextField('Raison Sociale / Entreprise', _companyController, LucideIcons.building2, isDark),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField('Numéro RCCM', _rccmController, LucideIcons.fileText, isDark, hint: 'CD/KIN/RCCM/...'),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildTextField('Numéro NIF', _nifController, LucideIcons.hash, isDark, hint: 'A0812345Z'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField('Nom du Contact', _contactController, LucideIcons.user, isDark),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildTextField('Fonction', _titleController, LucideIcons.briefcase, isDark, hint: 'DG, DAF, DSI...'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField('Téléphone', _phoneController, LucideIcons.phone, isDark),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildTextField('Email', _emailController, LucideIcons.mail, isDark),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField('Opérateur Actuel', _providerController, LucideIcons.radio, isDark, hint: 'Vodacom, Canalbox...'),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildTextField(r'Budget Est. ($/mois)', _spendController, LucideIcons.dollarSign, isDark, hint: 'Ex: 450'),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                // 5. Main Action Button: Apply to Field Report (Strict Monochrome)
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ScaleTap(
-                    child: ElevatedButton.icon(
-                      onPressed: _applyToFieldReport,
-                      icon: Icon(LucideIcons.check, size: 18, color: isDark ? const Color(0xFF121214) : Colors.white),
-                      label: Text(
-                        'Valider et Insérer dans le Dossier',
+                  // 4. Extracted Data Fields (Editable)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Données Extraites',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
-                          color: isDark ? const Color(0xFF121214) : Colors.white,
+                          color: isDark ? Colors.white : AppConstants.textDark,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                        foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      if (_rccmController.text.isNotEmpty || _contactController.text.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Prêt à valider',
+                            style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTextField('Raison Sociale / Entreprise', _companyController, LucideIcons.building2, isDark),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField('Numéro RCCM', _rccmController, LucideIcons.fileText, isDark, hint: 'CD/KIN/RCCM/...'),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildTextField('Numéro NIF', _nifController, LucideIcons.hash, isDark, hint: 'A0812345Z'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField('Nom du Contact', _contactController, LucideIcons.user, isDark),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildTextField('Fonction', _titleController, LucideIcons.briefcase, isDark, hint: 'DG, DAF, DSI...'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField('Téléphone', _phoneController, LucideIcons.phone, isDark),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildTextField('Email', _emailController, LucideIcons.mail, isDark),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField('Opérateur Actuel', _providerController, LucideIcons.radio, isDark, hint: 'Vodacom, Canalbox...'),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildTextField(r'Budget Est. ($/mois)', _spendController, LucideIcons.dollarSign, isDark, hint: 'Ex: 450'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 5. Main Action Button: Apply to Field Report (Strict Monochrome)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ScaleTap(
+                      child: ElevatedButton.icon(
+                        onPressed: _applyToFieldReport,
+                        icon: Icon(LucideIcons.check, size: 18, color: isDark ? const Color(0xFF121214) : Colors.white),
+                        label: Text(
+                          'Valider et Insérer dans le Dossier',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? const Color(0xFF121214) : Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                          foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),
