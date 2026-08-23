@@ -17,6 +17,9 @@ export interface Plaque {
   ready_count?: number;
   assigned_salespersons?: number[];
   assigned_salespersons_names?: string[];
+  boundary_geojson?: any;
+  kml_data?: string;
+  kml_url?: string;
 }
 
 export interface Enterprise {
@@ -182,6 +185,17 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
+  // Interactive Polygon / KML Drawing Mode
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const isDrawingModeRef = useRef(false);
+  const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
+  const [isSaveDrawnModalOpen, setIsSaveDrawnModalOpen] = useState(false);
+  const [drawnPlaqueCode, setDrawnPlaqueCode] = useState('');
+  const [drawnPlaqueName, setDrawnPlaqueName] = useState('');
+  const [drawnPlaqueCity, setDrawnPlaqueCity] = useState('Kinshasa');
+  const [drawnSalespersonIds, setDrawnSalespersonIds] = useState<number[]>([]);
+  const [isSavingDrawnPlaque, setIsSavingDrawnPlaque] = useState(false);
+
   // Fetch Field Intelligence Data from Django Backend
   const loadFieldIntelligence = useCallback(async () => {
     setLoadingFieldIntel(true);
@@ -287,14 +301,30 @@ export default function SupervisorTerritoryMap({
     mapRef.current = map;
 
     map.on('click', (e) => {
-      setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
-      setNewPlaqueLng(parseFloat(e.lngLat.lng.toFixed(5)));
+      if (isDrawingModeRef.current) {
+        const newPt: [number, number] = [
+          parseFloat(e.lngLat.lng.toFixed(5)),
+          parseFloat(e.lngLat.lat.toFixed(5))
+        ];
+        setDrawingPoints((prev) => [...prev, newPt]);
+      } else {
+        setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
+        setNewPlaqueLng(parseFloat(e.lngLat.lng.toFixed(5)));
+      }
     });
 
     return () => {
       map.remove();
     };
   }, []);
+
+  // Update cursor and ref on drawing mode toggle
+  useEffect(() => {
+    isDrawingModeRef.current = isDrawingMode;
+    if (mapRef.current) {
+      mapRef.current.getCanvas().style.cursor = isDrawingMode ? 'crosshair' : '';
+    }
+  }, [isDrawingMode]);
 
   // Update Markers on Map with 3 Key Categories
   useEffect(() => {
@@ -434,6 +464,270 @@ export default function SupervisorTerritoryMap({
       markersRef.current.push(marker);
     });
   }, [enterprises, plaques, nearbyLeads, tradeAudits, markerFilter]);
+
+  // Render Drawn Polygon & Saved Plaque Polygons on MapLibre
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const updateDrawingLayers = () => {
+      // 1. Update actively drawn polygon source
+      const closedPoints = [...drawingPoints];
+      if (closedPoints.length >= 3 && (closedPoints[0][0] !== closedPoints[closedPoints.length - 1][0] || closedPoints[0][1] !== closedPoints[closedPoints.length - 1][1])) {
+        closedPoints.push(closedPoints[0]);
+      }
+
+      const drawingGeojson: GeoJSON.FeatureCollection = {
+        type: 'FeatureCollection',
+        features: [
+          ...(closedPoints.length >= 4 ? [{
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'Polygon' as const,
+              coordinates: [closedPoints],
+            },
+          }] : []),
+          ...(drawingPoints.length >= 2 ? [{
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'LineString' as const,
+              coordinates: drawingPoints,
+            },
+          }] : []),
+          ...drawingPoints.map((pt, idx) => ({
+            type: 'Feature' as const,
+            properties: { index: idx + 1 },
+            geometry: {
+              type: 'Point' as const,
+              coordinates: pt,
+            },
+          })),
+        ],
+      };
+
+      const drawingSource = map.getSource('drawing-source') as maplibregl.GeoJSONSource | undefined;
+      if (drawingSource) {
+        drawingSource.setData(drawingGeojson);
+      } else if (map.isStyleLoaded()) {
+        map.addSource('drawing-source', {
+          type: 'geojson',
+          data: drawingGeojson,
+        });
+
+        map.addLayer({
+          id: 'drawing-fill',
+          type: 'fill',
+          source: 'drawing-source',
+          filter: ['==', '$type', 'Polygon'],
+          paint: {
+            'fill-color': '#2563EB',
+            'fill-opacity': 0.25,
+          },
+        });
+
+        map.addLayer({
+          id: 'drawing-line',
+          type: 'line',
+          source: 'drawing-source',
+          paint: {
+            'line-color': '#2563EB',
+            'line-width': 2.5,
+            'line-dasharray': [2, 1],
+          },
+        });
+
+        map.addLayer({
+          id: 'drawing-points',
+          type: 'circle',
+          source: 'drawing-source',
+          filter: ['==', '$type', 'Point'],
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#2563EB',
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#FFFFFF',
+          },
+        });
+      }
+
+      // 2. Update Saved Plaque Polygons
+      const plaqueFeatures = plaques
+        .filter((p) => p.boundary_geojson && p.boundary_geojson.coordinates)
+        .map((p) => ({
+          type: 'Feature' as const,
+          properties: { id: p.id, code: p.code, name: p.name },
+          geometry: p.boundary_geojson,
+        }));
+
+      const plaquesGeojson: GeoJSON.FeatureCollection = {
+        type: 'FeatureCollection',
+        features: plaqueFeatures,
+      };
+
+      const savedSource = map.getSource('saved-plaques-source') as maplibregl.GeoJSONSource | undefined;
+      if (savedSource) {
+        savedSource.setData(plaquesGeojson);
+      } else if (map.isStyleLoaded() && plaqueFeatures.length > 0) {
+        map.addSource('saved-plaques-source', {
+          type: 'geojson',
+          data: plaquesGeojson,
+        });
+
+        map.addLayer({
+          id: 'saved-plaques-fill',
+          type: 'fill',
+          source: 'saved-plaques-source',
+          paint: {
+            'fill-color': '#2563EB',
+            'fill-opacity': 0.12,
+          },
+        });
+
+        map.addLayer({
+          id: 'saved-plaques-line',
+          type: 'line',
+          source: 'saved-plaques-source',
+          paint: {
+            'line-color': '#2563EB',
+            'line-width': 2,
+          },
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      updateDrawingLayers();
+    } else {
+      map.once('load', updateDrawingLayers);
+    }
+  }, [drawingPoints, plaques]);
+
+  // KML Generation and Export
+  const generateKmlString = (points: [number, number][], name: string, code: string) => {
+    const closed = [...points];
+    if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
+      closed.push(closed[0]);
+    }
+    const coordsStr = closed.map((p) => `${p[0]},${p[1]},0`).join(' ');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${name || 'Plaque'} (${code || 'ZONE'})</name>
+    <description>Périmètre commercial Onbora pour ${name} - Tracé vectoriel</description>
+    <Style id="plaqueStyle">
+      <LineStyle><color>ffeb6325</color><width>3</width></LineStyle>
+      <PolyStyle><color>40eb6325</color><fill>1</fill><outline>1</outline></PolyStyle>
+    </Style>
+    <Placemark>
+      <name>${code || 'ZONE'}</name>
+      <styleUrl>#plaqueStyle</styleUrl>
+      <Polygon>
+        <extrude>1</extrude>
+        <altitudeMode>clampToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>${coordsStr}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>`;
+  };
+
+  const handleDownloadKml = (points: [number, number][], name: string, code: string) => {
+    if (points.length < 3) {
+      setStatusMessage({ text: "Tracez au moins 3 points sur la carte pour exporter le fichier KML.", type: 'error' });
+      return;
+    }
+    const kml = generateKmlString(points, name, code);
+    const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${code || 'zone_plaque'}.kml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatusMessage({ text: `Fichier KML (${code || 'zone'}.kml) téléchargé avec succès.`, type: 'success' });
+  };
+
+  const handleSaveDrawnPlaque = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!drawnPlaqueCode || !drawnPlaqueName || drawingPoints.length < 3) {
+      setStatusMessage({ text: "Veuillez tracer au moins 3 points et renseigner le code et le nom.", type: 'error' });
+      return;
+    }
+
+    setIsSavingDrawnPlaque(true);
+    setStatusMessage(null);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('token');
+
+      // Calculate centroid
+      const avgLng = drawingPoints.reduce((sum, p) => sum + p[0], 0) / drawingPoints.length;
+      const avgLat = drawingPoints.reduce((sum, p) => sum + p[1], 0) / drawingPoints.length;
+
+      const closed = [...drawingPoints];
+      if (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1]) {
+        closed.push(closed[0]);
+      }
+
+      const boundaryGeojson = {
+        type: 'Polygon',
+        coordinates: [closed],
+      };
+
+      const kmlData = generateKmlString(drawingPoints, drawnPlaqueName, drawnPlaqueCode);
+
+      const res = await fetch(`${API_URL}/api/sales/plaques/draw-zone/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify({
+          code: drawnPlaqueCode.trim().toUpperCase(),
+          name: drawnPlaqueName.trim(),
+          city: drawnPlaqueCity.trim(),
+          latitude: parseFloat(avgLat.toFixed(5)),
+          longitude: parseFloat(avgLng.toFixed(5)),
+          radius_km: 5.0,
+          boundary_geojson: boundaryGeojson,
+          kml_data: kmlData,
+          salesperson_ids: drawnSalespersonIds,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Erreur lors de l'enregistrement de la zone");
+      }
+
+      setStatusMessage({
+        text: `Zone tracée '${drawnPlaqueCode}' enregistrée avec succès. KML généré et ${drawnSalespersonIds.length} commercial(aux) notifié(s) dans leur application mobile !`,
+        type: 'success',
+      });
+
+      setIsSaveDrawnModalOpen(false);
+      setIsDrawingMode(false);
+      setDrawingPoints([]);
+      setDrawnPlaqueCode('');
+      setDrawnPlaqueName('');
+      setDrawnSalespersonIds([]);
+      onPlaqueCreated();
+      if (drawnSalespersonIds.length > 0) onSalespersonAssigned();
+    } catch (err: any) {
+      setStatusMessage({ text: `Erreur: ${err.message}`, type: 'error' });
+    } finally {
+      setIsSavingDrawnPlaque(false);
+    }
+  };
 
   // Handlers for Plaque Creation, Assignment, and Sales Creation
   const handleCreatePlaque = async (e: React.FormEvent) => {
@@ -714,17 +1008,37 @@ export default function SupervisorTerritoryMap({
 
         <div className="flex items-center gap-2">
           {activeTab === 'map' && (
-            <button
-              onClick={() => setIsDelimiting(!isDelimiting)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border-none ${
-                isDelimiting
-                  ? 'bg-red-500/15 text-red-500'
-                  : 'btn-primary-cta shadow-sm'
-              }`}
-            >
-              <Icons.Crosshair size={14} />
-              {isDelimiting ? 'Fermer Délimitation' : 'Délimiter une Plaque'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsDrawingMode(!isDrawingMode);
+                  if (isDelimiting) setIsDelimiting(false);
+                }}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+                  isDrawingMode
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
+                    : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-blue-600 hover:text-white'
+                }`}
+              >
+                <Icons.Edit size={14} />
+                {isDrawingMode ? 'Mode Tracé Actif' : 'Tracer une Zone (KML)'}
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsDelimiting(!isDelimiting);
+                  if (isDrawingMode) setIsDrawingMode(false);
+                }}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border-none ${
+                  isDelimiting
+                    ? 'bg-red-500/15 text-red-500'
+                    : 'btn-primary-cta shadow-sm'
+                }`}
+              >
+                <Icons.Crosshair size={14} />
+                {isDelimiting ? 'Fermer Délimitation' : 'Délimiter une Plaque'}
+              </button>
+            </div>
           )}
 
           {activeTab === 'salespersons' && (
@@ -843,6 +1157,57 @@ export default function SupervisorTerritoryMap({
                   <span className="font-semibold text-zinc-800 dark:text-gray-300">Alerte Friction Concurrent (SQL KAM)</span>
                 </div>
               </div>
+
+              {/* Floating Drawing Toolbar */}
+              {isDrawingMode && (
+                <div className="absolute top-4 right-14 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center gap-3 z-10 border border-blue-600/30 animate-fade-in">
+                  <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span>Tracé KML ({drawingPoints.length} pt{drawingPoints.length > 1 ? 's' : ''})</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setDrawingPoints((prev) => prev.slice(0, -1))}
+                      disabled={drawingPoints.length === 0}
+                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer"
+                    >
+                      Annuler pt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDrawingPoints([])}
+                      disabled={drawingPoints.length === 0}
+                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer"
+                    >
+                      Effacer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadKml(drawingPoints, 'Zone_Tracée', 'ZONE')}
+                      disabled={drawingPoints.length < 3}
+                      className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                    >
+                      <Icons.Download size={12} />
+                      Export KML
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDrawnPlaqueCode(`KIN-ZONE-${Math.floor(100 + Math.random() * 900)}`);
+                        setDrawnPlaqueName('Nouvelle Zone Délimitée');
+                        setIsSaveDrawnModalOpen(true);
+                      }}
+                      disabled={drawingPoints.length < 3}
+                      className="px-3.5 py-1.5 rounded-xl text-[10px] font-black text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 cursor-pointer flex items-center gap-1 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                    >
+                      <Icons.CheckCircle size={12} />
+                      Affecter & Notifier
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Delimitation Banner */}
               {isDelimiting && (
@@ -1151,16 +1516,28 @@ export default function SupervisorTerritoryMap({
                         <span>Commerciaux : <strong>{p.assigned_salespersons_names?.length || 0}</strong></span>
                       </div>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAssigningPlaque(p);
-                          setAssigningSalespersonIds(p.assigned_salespersons || []);
-                        }}
-                        className="w-full py-2 rounded-xl bg-white/70 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white text-[10px] font-bold text-zinc-800 dark:text-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Icons.Users size={12} /> Affecter Commerciaux
-                      </button>
+                      <div className="flex gap-1.5 mt-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAssigningPlaque(p);
+                            setAssigningSalespersonIds(p.assigned_salespersons || []);
+                          }}
+                          className="flex-1 py-2 rounded-xl bg-white/70 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white text-[10px] font-bold text-zinc-800 dark:text-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Icons.Users size={12} /> Affecter
+                        </button>
+                        <a
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/plaques/${p.id}/kml/?download=true`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-3 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600 hover:text-white text-blue-600 dark:text-blue-400 text-[10px] font-black transition-all flex items-center justify-center gap-1"
+                          title="Télécharger le fichier KML pour Google Earth / SIG"
+                        >
+                          <Icons.Download size={12} /> KML
+                        </a>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1697,6 +2074,142 @@ export default function SupervisorTerritoryMap({
                 Annuler
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Enregistrer la Zone Tracée (KML) & Affecter les Commerciaux */}
+      {isSaveDrawnModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="studio-card p-6 md:p-8 max-w-lg w-full flex flex-col gap-4 shadow-2xl border-2 border-blue-600/30">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Icons.Target size={20} className="text-blue-600 dark:text-blue-400" />
+                <h3 className="text-sm font-black uppercase text-zinc-950 dark:text-white">
+                  Valider la Zone KML & Notifier l'App Mobile
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsSaveDrawnModalOpen(false)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+              >
+                <Icons.Close size={16} />
+              </button>
+            </div>
+
+            <div className="bg-blue-600/10 border border-blue-600/20 p-3.5 rounded-2xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold">
+                <Icons.MapPin size={16} />
+                <span>Polygone tracé : {drawingPoints.length} coordonnées GPS</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDownloadKml(drawingPoints, drawnPlaqueName, drawnPlaqueCode)}
+                className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 cursor-pointer flex items-center gap-1"
+              >
+                <Icons.Download size={12} />
+                Télécharger .kml
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDrawnPlaque} className="flex flex-col gap-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Code Plaque *</label>
+                  <input
+                    type="text"
+                    value={drawnPlaqueCode}
+                    onChange={(e) => setDrawnPlaqueCode(e.target.value.toUpperCase())}
+                    placeholder="Ex: KIN-GOMBE-EST"
+                    className="px-3.5 py-2.5 font-black uppercase"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">Ville</label>
+                  <input
+                    type="text"
+                    value={drawnPlaqueCity}
+                    onChange={(e) => setDrawnPlaqueCity(e.target.value)}
+                    className="px-3.5 py-2.5"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="font-bold text-zinc-700 dark:text-gray-300">Nom du secteur géographique *</label>
+                <input
+                  type="text"
+                  value={drawnPlaqueName}
+                  onChange={(e) => setDrawnPlaqueName(e.target.value)}
+                  placeholder="Ex: Gombe Centre & Quartier Ambassades"
+                  className="px-3.5 py-2.5"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="font-bold text-zinc-700 dark:text-gray-300">
+                    Commerciaux à affecter & notifier immédiatement
+                  </label>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold">
+                    {drawnSalespersonIds.length} sélectionné(s)
+                  </span>
+                </div>
+
+                <div className="max-h-36 overflow-y-auto flex flex-col gap-1.5 studio-subcard p-2.5 rounded-2xl">
+                  {salespersons.length === 0 ? (
+                    <span className="text-[10px] text-zinc-500">Aucun commercial actif</span>
+                  ) : (
+                    salespersons.map((s) => (
+                      <label key={s.id} className="flex items-center justify-between p-2 hover:bg-white/50 dark:hover:bg-zinc-800/50 rounded-xl cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <input
+                            type="checkbox"
+                            checked={drawnSalespersonIds.includes(s.id)}
+                            onChange={() => {
+                              setDrawnSalespersonIds((prev) =>
+                                prev.includes(s.id) ? prev.filter((id) => id !== s.id) : [...prev, s.id]
+                              );
+                            }}
+                            className="accent-blue-600 rounded"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-zinc-950 dark:text-white">{s.full_name}</span>
+                            <span className="text-[10px] text-zinc-500">@{s.username} • {s.location}</span>
+                          </div>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          s.is_available ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'
+                        }`}>
+                          {s.is_available ? 'Sur le terrain' : 'Occupé'}
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="submit"
+                  disabled={isSavingDrawnPlaque}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.30)] flex items-center justify-center gap-2"
+                >
+                  <Icons.CheckCircle size={14} />
+                  {isSavingDrawnPlaque ? 'Enregistrement & Push...' : 'Créer, Générer KML & Notifier'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSaveDrawnModalOpen(false)}
+                  className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

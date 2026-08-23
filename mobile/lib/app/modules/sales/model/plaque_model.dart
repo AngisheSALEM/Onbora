@@ -10,6 +10,9 @@ class PlaqueModel {
   final int readyCount;
   final List<String> assignedSalespersonsNames;
   final bool isActive;
+  final Map<String, dynamic>? boundaryGeojson;
+  final String? kmlData;
+  final String? kmlUrl;
 
   PlaqueModel({
     required this.id,
@@ -23,6 +26,9 @@ class PlaqueModel {
     this.readyCount = 0,
     this.assignedSalespersonsNames = const [],
     this.isActive = true,
+    this.boundaryGeojson,
+    this.kmlData,
+    this.kmlUrl,
   });
 
   factory PlaqueModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +44,9 @@ class PlaqueModel {
       readyCount: json['ready_count'] ?? 0,
       assignedSalespersonsNames: (json['assigned_salespersons_names'] as List?)?.map((e) => e.toString()).toList() ?? [],
       isActive: json['is_active'] ?? true,
+      boundaryGeojson: json['boundary_geojson'] is Map<String, dynamic> ? json['boundary_geojson'] : null,
+      kmlData: json['kml_data'],
+      kmlUrl: json['kml_url'],
     );
   }
 
@@ -54,6 +63,9 @@ class PlaqueModel {
       'ready_count': readyCount,
       'assigned_salespersons_names': assignedSalespersonsNames,
       'is_active': isActive,
+      'boundary_geojson': boundaryGeojson,
+      'kml_data': kmlData,
+      'kml_url': kmlUrl,
     };
   }
 }

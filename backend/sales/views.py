@@ -1,12 +1,13 @@
 import os
 from django.db import models
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.models import User
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification
 from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     VisitReportSerializer,
     CoreAIFeedbackSerializer,
     ScraperCredentialSerializer,
+    SalesNotificationSerializer,
 )
 from .application.use_cases import (
     ListPlaquesUseCase,
@@ -235,7 +237,7 @@ class SalespersonDetailView(APIView):
 
 class AssignSalespersonsToPlaqueView(APIView):
     """
-    POST: Assigne une liste de commerciaux à une plaque donnée.
+    POST: Assigne une liste de commerciaux à une plaque donnée et émet des notifications push.
     """
     permission_classes = [IsSalespersonOrAdmin]
 
@@ -251,6 +253,27 @@ class AssignSalespersonsToPlaqueView(APIView):
         plaque.assigned_salespersons.set(salespersons)
         plaque.save()
 
+        # Émission automatique de notifications dans l'application mobile de chaque commercial
+        for sp in salespersons:
+            SalesNotification.objects.create(
+                recipient=sp,
+                title=f"🎯 Nouvelle Plaque Assignée : {plaque.code}",
+                message=f"Le Back-Office vous a affecté au territoire '{plaque.name}' ({plaque.city}). Le périmètre cartographique et le fichier KML sont prêts dans votre application.",
+                notification_type='PLAQUE_ASSIGNED',
+                plaque=plaque,
+                payload={
+                    "plaque_id": plaque.id,
+                    "plaque_code": plaque.code,
+                    "plaque_name": plaque.name,
+                    "city": plaque.city,
+                    "latitude": plaque.latitude,
+                    "longitude": plaque.longitude,
+                    "radius_km": plaque.radius_km,
+                    "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
+                    "assigned_by": request.user.username if request.user.is_authenticated else "Superviseur Back-Office"
+                }
+            )
+
         log_demo_event(
             'SALESPERSON_ASSIGNED_PLAQUE',
             f"{len(salespersons)} commercial(aux) assigné(s) à la plaque {plaque.name}",
@@ -259,9 +282,164 @@ class AssignSalespersonsToPlaqueView(APIView):
         )
 
         return Response({
-            "message": f"Commerciaux affectés à la plaque {plaque.code} avec succès.",
+            "message": f"Commerciaux affectés à la plaque {plaque.code} avec succès. Notifications transmises.",
             "plaque": PlaqueDetailSerializer(plaque).data
         }, status=status.HTTP_200_OK)
+
+
+class PlaqueKMLDownloadView(APIView):
+    """
+    GET: Fournit le fichier KML standard pour une plaque donnée.
+    Peut être téléchargé au format .kml ou consommé en JSON pour MapLibre/mobile.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            plaque = Plaque.objects.get(pk=pk)
+        except Plaque.DoesNotExist:
+            return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        kml_content = plaque.kml_data or plaque.generate_kml()
+
+        # Téléchargement direct du fichier KML physique
+        if request.query_params.get('download') == 'true':
+            response = HttpResponse(kml_content, content_type='application/vnd.google-earth.kml+xml')
+            response['Content-Disposition'] = f'attachment; filename="{plaque.code}.kml"'
+            return response
+
+        return Response({
+            "id": plaque.id,
+            "code": plaque.code,
+            "name": plaque.name,
+            "city": plaque.city,
+            "latitude": plaque.latitude,
+            "longitude": plaque.longitude,
+            "radius_km": plaque.radius_km,
+            "boundary_geojson": plaque.boundary_geojson,
+            "kml_data": kml_content,
+            "download_url": f"/api/sales/plaques/{plaque.id}/kml/?download=true"
+        }, status=status.HTTP_200_OK)
+
+
+class PlaqueDrawAndSaveView(APIView):
+    """
+    POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
+    génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        code = request.data.get('code')
+        name = request.data.get('name')
+        city = request.data.get('city', 'Kinshasa')
+        latitude = request.data.get('latitude', -4.3033)
+        longitude = request.data.get('longitude', 15.3083)
+        radius_km = request.data.get('radius_km', 5.0)
+        boundary_geojson = request.data.get('boundary_geojson', {})
+        kml_data = request.data.get('kml_data', '')
+        salesperson_ids = request.data.get('salesperson_ids', [])
+        plaque_id = request.data.get('plaque_id')
+
+        if not name or not code:
+            return Response({"detail": "Le code et le nom de la plaque sont requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if plaque_id:
+            try:
+                plaque = Plaque.objects.get(pk=plaque_id)
+                plaque.code = code
+                plaque.name = name
+                plaque.city = city
+                plaque.latitude = float(latitude)
+                plaque.longitude = float(longitude)
+                plaque.radius_km = float(radius_km)
+                if boundary_geojson:
+                    plaque.boundary_geojson = boundary_geojson
+                if kml_data:
+                    plaque.kml_data = kml_data
+                else:
+                    plaque.kml_data = plaque.generate_kml()
+                plaque.save()
+            except Plaque.DoesNotExist:
+                return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            plaque = Plaque(
+                code=code,
+                name=name,
+                city=city,
+                latitude=float(latitude),
+                longitude=float(longitude),
+                radius_km=float(radius_km),
+                boundary_geojson=boundary_geojson,
+                kml_data=kml_data or ''
+            )
+            plaque.kml_data = plaque.generate_kml()
+            plaque.save()
+
+        # Affectation des commerciaux
+        salespersons = User.objects.filter(id__in=salesperson_ids, role=User.SALESPERSON)
+        plaque.assigned_salespersons.set(salespersons)
+
+        # Envoi de notification push in-app aux commerciaux
+        for sp in salespersons:
+            SalesNotification.objects.create(
+                recipient=sp,
+                title=f"🎯 Nouveau Périmètre KML : {plaque.code}",
+                message=f"La zone '{plaque.name}' ({plaque.city}) a été tracée par le Back-Office. Les contours KML sont synchronisés avec votre application.",
+                notification_type='TERRITORY_UPDATE',
+                plaque=plaque,
+                payload={
+                    "plaque_id": plaque.id,
+                    "plaque_code": plaque.code,
+                    "plaque_name": plaque.name,
+                    "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
+                    "boundary_geojson": plaque.boundary_geojson,
+                    "center": {"lat": plaque.latitude, "lon": plaque.longitude}
+                }
+            )
+
+        log_demo_event(
+            'PLAQUE_DRAWN_AND_ASSIGNED',
+            f"Plaque {plaque.code} dessinée (KML) et assignée à {len(salespersons)} commercial(aux)",
+            user=request.user if request.user.is_authenticated else None,
+            metadata={"plaque_id": plaque.id, "salesperson_ids": list(salesperson_ids)}
+        )
+
+        return Response({
+            "message": f"Plaque {plaque.code} enregistrée avec succès. KML généré et notifications transmises.",
+            "plaque": PlaqueDetailSerializer(plaque).data
+        }, status=status.HTTP_201_CREATED if not plaque_id else status.HTTP_200_OK)
+
+
+class SalesNotificationListView(APIView):
+    """
+    GET: Liste les notifications pour l'utilisateur commercial connecté.
+    POST: Marque des notifications comme lues.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        notifications = SalesNotification.objects.filter(recipient=request.user)[:50]
+        unread_count = SalesNotification.objects.filter(recipient=request.user, is_read=False).count()
+        serializer = SalesNotificationSerializer(notifications, many=True)
+        return Response({
+            "unread_count": unread_count,
+            "notifications": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, pk=None):
+        if pk:
+            try:
+                notif = SalesNotification.objects.get(pk=pk, recipient=request.user)
+                notif.is_read = True
+                notif.save()
+                return Response({"message": "Notification marquée comme lue."}, status=status.HTTP_200_OK)
+            except SalesNotification.DoesNotExist:
+                return Response({"detail": "Notification introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Marquer toutes comme lues
+        SalesNotification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        return Response({"message": "Toutes les notifications ont été marquées comme lues."}, status=status.HTTP_200_OK)
 
 
 class SupervisorDashboardView(APIView):

@@ -2,6 +2,9 @@ from django.urls import path
 from .views import (
     PlaqueListCreateView,
     PlaqueDetailView,
+    PlaqueKMLDownloadView,
+    PlaqueDrawAndSaveView,
+    SalesNotificationListView,
     SalespersonListView,
     SalespersonDetailView,
     AssignSalespersonsToPlaqueView,
@@ -34,6 +37,11 @@ from .views import (
 )
 
 urlpatterns = [
+    # Notifications Push & In-App Commerciaux
+    path('notifications/', SalesNotificationListView.as_view(), name='sales-notifications-list'),
+    path('notifications/<int:pk>/mark-read/', SalesNotificationListView.as_view(), name='sales-notification-mark-read'),
+    path('notifications/mark-all-read/', SalesNotificationListView.as_view(), name='sales-notifications-mark-all-read'),
+
     # Numérisation OCR de Documents (RCCM, Carte de visite, Facture Télécom)
     path('ocr/scan/', DocumentOcrScanView.as_view(), name='sales-ocr-scan'),
 
@@ -46,6 +54,8 @@ urlpatterns = [
     path('salespersons/', SalespersonListView.as_view(), name='salesperson-list'),
     path('salespersons/<int:pk>/', SalespersonDetailView.as_view(), name='salesperson-detail'),
     path('plaques/<int:pk>/assign/', AssignSalespersonsToPlaqueView.as_view(), name='plaque-assign-salespersons'),
+    path('plaques/<int:pk>/kml/', PlaqueKMLDownloadView.as_view(), name='plaque-kml-download'),
+    path('plaques/draw-zone/', PlaqueDrawAndSaveView.as_view(), name='plaque-draw-save-kml'),
     # Gestion des Plaques territoriales & Cartographie
     path('plaques/', PlaqueListCreateView.as_view(), name='plaque-list-create'),
     path('plaques/<int:pk>/', PlaqueDetailView.as_view(), name='plaque-detail'),

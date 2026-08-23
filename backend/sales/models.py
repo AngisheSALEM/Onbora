@@ -9,6 +9,8 @@ class Plaque(models.Model):
     latitude = models.FloatField(default=-4.3033)
     longitude = models.FloatField(default=15.3083)
     radius_km = models.FloatField(default=5.0)
+    boundary_geojson = models.JSONField(default=dict, blank=True, help_text="GeoJSON Polygon / MultiPolygon de la zone délimitée")
+    kml_data = models.TextField(blank=True, default='', help_text="Fichier KML standard décrivant le tracé géographique")
     assigned_salespersons = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -17,6 +19,81 @@ class Plaque(models.Model):
     )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_kml(self) -> str:
+        """
+        Génère une chaîne XML au format OGC KML standard pour la plaque.
+        Prend en charge les polygones GeoJSON dessinés ou génère un polygone circulaire par défaut.
+        """
+        import math
+
+        coordinates_str = ""
+        # 1. Utilisation du polygone GeoJSON s'il existe
+        if self.boundary_geojson and isinstance(self.boundary_geojson, dict):
+            coords = self.boundary_geojson.get('coordinates', [])
+            if coords and isinstance(coords, list):
+                # Si format Polygon: [[ [lon, lat], [lon, lat], ... ]]
+                ring = coords[0] if isinstance(coords[0], list) and isinstance(coords[0][0], list) else coords
+                coord_pairs = []
+                for pt in ring:
+                    if isinstance(pt, (list, tuple)) and len(pt) >= 2:
+                        coord_pairs.append(f"{pt[0]},{pt[1]},0")
+                coordinates_str = " ".join(coord_pairs)
+
+        # 2. Fallback: approximation d'un cercle autour du centre
+        if not coordinates_str:
+            points = []
+            num_points = 32
+            # 1 deg lat ~ 111.32 km, 1 deg lon ~ 111.32 * cos(lat)
+            lat_rad = math.radians(self.latitude)
+            d_lat = (self.radius_km / 111.32)
+            d_lon = (self.radius_km / (111.32 * math.cos(lat_rad) if math.cos(lat_rad) != 0 else 111.32))
+            for i in range(num_points + 1):
+                angle = 2 * math.pi * (i / num_points)
+                p_lat = self.latitude + d_lat * math.sin(angle)
+                p_lon = self.longitude + d_lon * math.cos(angle)
+                points.append(f"{p_lon:.6f},{p_lat:.6f},0")
+            coordinates_str = " ".join(points)
+
+        kml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>{self.name} ({self.code})</name>
+    <description>Périmètre commercial Onbora pour {self.name} - Ville: {self.city}</description>
+    <Style id="plaqueStyle">
+      <LineStyle>
+        <color>ffeb6325</color>
+        <width>3</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>40eb6325</color>
+        <fill>1</fill>
+        <outline>1</outline>
+      </PolyStyle>
+    </Style>
+    <Placemark>
+      <name>{self.code}</name>
+      <styleUrl>#plaqueStyle</styleUrl>
+      <Polygon>
+        <extrude>1</extrude>
+        <altitudeMode>clampToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              {coordinates_str}
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>"""
+        return kml
+
+    def save(self, *args, **kwargs):
+        if not self.kml_data or kwargs.get('update_fields') is None or 'kml_data' in kwargs.get('update_fields', []):
+            self.kml_data = self.generate_kml()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -316,4 +393,38 @@ class SalesIncentivePoint(models.Model):
 
     def __str__(self):
         return f"+{self.points} pts - {self.salesperson.username} ({self.get_action_type_display()})"
+
+
+class SalesNotification(models.Model):
+    """
+    Système de Notifications Push & In-App pour les Commerciaux Terrain.
+    Déclenché lors de l'assignation d'une plaque, mise à jour territoriale ou nouveaux prospects.
+    """
+    NOTIFICATION_TYPES = [
+        ('PLAQUE_ASSIGNED', 'Plaque Assignée'),
+        ('TERRITORY_UPDATE', 'Mise à jour Territoire & KML'),
+        ('NEW_LEAD', 'Nouveau Prospect Détecté'),
+        ('ALERT', 'Alerte Système'),
+    ]
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'SALESPERSON'},
+        related_name='sales_notifications'
+    )
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='PLAQUE_ASSIGNED')
+    plaque = models.ForeignKey(Plaque, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
+    payload = models.JSONField(default=dict, blank=True, help_text="Données supplémentaires (kml_url, coordonnées, ids)")
+    is_read = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification [{self.get_notification_type_display()}]: {self.title} -> {self.recipient.username}"
+
 

@@ -250,6 +250,51 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                               ),
                             ),
                           ),
+                          Obx(() {
+                            final unread = salesController.unreadNotificationsCount.value;
+                            return ScaleTap(
+                              onTap: () => _showNotificationsModal(context, isDark),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.bell,
+                                      size: 18,
+                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                    ),
+                                  ),
+                                  if (unread > 0)
+                                    Positioned(
+                                      top: -2,
+                                      right: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2563EB),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: isDark ? const Color(0xFF1C1C1E) : Colors.white, width: 1.5),
+                                        ),
+                                        child: Text(
+                                          unread > 9 ? '9+' : '$unread',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }),
+                          const SizedBox(width: 6),
                           ScaleTap(
                             onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
                             child: Container(
@@ -507,6 +552,247 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showNotificationsModal(BuildContext context, bool isDark) {
+    final salesController = Get.find<SalesController>();
+    salesController.fetchNotifications();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Poignée
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // En-tête modal
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(LucideIcons.bell, color: const Color(0xFF2563EB), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Notifications Territoriales',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : AppConstants.textDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () => salesController.markAllNotificationsAsRead(),
+                      child: const Text(
+                        'Tout marquer lu',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+
+              // Liste des notifications
+              Expanded(
+                child: Obx(() {
+                  if (salesController.isLoadingNotifications.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final notifs = salesController.notifications;
+                  if (notifs.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.bellOff, size: 40, color: Colors.grey.shade400),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Aucune notification pour le moment',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white60 : Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Les assignations de plaques et tracés KML apparaîtront ici.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: notifs.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (context, idx) {
+                      final item = notifs[idx];
+                      return ScaleTap(
+                        onTap: () {
+                          salesController.markNotificationAsRead(item.id);
+                          if (item.plaqueCode.isNotEmpty) {
+                            salesController.setFilterPlaque(item.plaqueCode);
+                            // Centrer la carte si coordonnées disponibles
+                            final center = item.payload['center'];
+                            if (center != null && center['lon'] != null && center['lat'] != null) {
+                              _mapController?.animateCamera(
+                                CameraUpdate.newLatLng(
+                                  LatLng((center['lat'] as num).toDouble(), (center['lon'] as num).toDouble()),
+                                ),
+                              );
+                            }
+                            Navigator.pop(ctx);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: item.isRead
+                                ? (isDark ? const Color(0xFF222226) : const Color(0xFFF8FAFC))
+                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF)),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: item.isRead
+                                  ? (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05))
+                                  : const Color(0xFF2563EB).withValues(alpha: 0.4),
+                              width: item.isRead ? 1 : 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2563EB),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          item.plaqueCode.isNotEmpty ? item.plaqueCode : 'ONBORA',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                      if (!item.isRead) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF2563EB),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  if (item.createdAt != null)
+                                    Text(
+                                      '${item.createdAt!.hour.toString().padLeft(2, '0')}:${item.createdAt!.minute.toString().padLeft(2, '0')}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark ? Colors.white38 : Colors.black38,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.title,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : AppConstants.textDark,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.message,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  height: 1.4,
+                                ),
+                              ),
+                              if (item.payload.containsKey('kml_url')) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(LucideIcons.fileCode, size: 12, color: const Color(0xFF2563EB)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Fichier KML & Tracé synchronisés sur votre carte',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

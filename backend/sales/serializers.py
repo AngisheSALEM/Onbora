@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification
 
 
 class SalespersonUserSerializer(serializers.ModelSerializer):
@@ -29,13 +29,18 @@ class PlaqueSerializer(serializers.ModelSerializer):
     assigned_salespersons = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.filter(role=User.SALESPERSON), required=False
     )
+    kml_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Plaque
         fields = [
             'id', 'code', 'name', 'city', 'latitude', 'longitude', 'radius_km',
+            'boundary_geojson', 'kml_data', 'kml_url',
             'is_active', 'total_enterprises', 'ready_count', 'assigned_salespersons', 'assigned_salespersons_names', 'created_at'
         ]
+
+    def get_kml_url(self, obj):
+        return f"/api/sales/plaques/{obj.id}/kml/"
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
@@ -54,18 +59,36 @@ class EnterpriseSerializer(serializers.ModelSerializer):
 class PlaqueDetailSerializer(serializers.ModelSerializer):
     enterprises = EnterpriseSerializer(many=True, read_only=True)
     assigned_salespersons_details = serializers.SerializerMethodField()
+    kml_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Plaque
         fields = [
             'id', 'code', 'name', 'city', 'latitude', 'longitude', 'radius_km',
+            'boundary_geojson', 'kml_data', 'kml_url',
             'is_active', 'assigned_salespersons_details', 'enterprises', 'created_at'
         ]
+
+    def get_kml_url(self, obj):
+        return f"/api/sales/plaques/{obj.id}/kml/"
 
     def get_assigned_salespersons_details(self, obj):
         return [
             {"id": u.id, "username": u.username, "full_name": f"{u.first_name} {u.last_name}".strip() or u.username}
             for u in obj.assigned_salespersons.all()
+        ]
+
+
+class SalesNotificationSerializer(serializers.ModelSerializer):
+    plaque_code = serializers.CharField(source='plaque.code', read_only=True, default='')
+    plaque_name = serializers.CharField(source='plaque.name', read_only=True, default='')
+
+    class Meta:
+        model = SalesNotification
+        fields = [
+            'id', 'title', 'message', 'notification_type',
+            'plaque', 'plaque_code', 'plaque_name',
+            'payload', 'is_read', 'created_at'
         ]
 
 

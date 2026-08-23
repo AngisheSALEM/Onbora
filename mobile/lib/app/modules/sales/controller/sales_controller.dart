@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/enterprise_model.dart';
 import '../model/visit_prep_model.dart';
@@ -7,6 +8,7 @@ import '../model/plaque_model.dart';
 import '../model/live_copilot_model.dart';
 import '../model/field_intelligence_model.dart';
 import '../model/ocr_document_model.dart';
+import '../model/sales_notification_model.dart';
 import '../../../core/api/api_client.dart';
 
 class SalesController extends GetxController {
@@ -26,6 +28,11 @@ class SalesController extends GetxController {
   final RxList<PlaqueModel> plaquesList = <PlaqueModel>[].obs;
   final RxBool isLoadingVisits = false.obs;
   final RxBool isLoadingPlaques = false.obs;
+
+  // Real-time Push & In-App Notifications
+  final RxList<SalesNotificationModel> notifications = <SalesNotificationModel>[].obs;
+  final RxInt unreadNotificationsCount = 0.obs;
+  final RxBool isLoadingNotifications = false.obs;
 
   // Plaque Portfolio Filter & State
   final RxBool isPlaqueUnlocked = true.obs;
@@ -188,8 +195,103 @@ class SalesController extends GetxController {
       selectedMapEnterprise.value = _allEnterprises.first;
     }
     fetchPlaques();
+    fetchNotifications(showBannerOnNew: true);
     fetchDashboardStats();
     fetchVisitsHistory();
+  }
+
+  /// Fetch Push / In-App Notifications for the Salesperson
+  Future<void> fetchNotifications({bool showBannerOnNew = false}) async {
+    isLoadingNotifications.value = true;
+    try {
+      final response = await _apiClient.get('/api/sales/notifications/');
+      if (response is Map<String, dynamic>) {
+        final List notifsData = response['notifications'] ?? [];
+        final int unread = response['unread_count'] ?? 0;
+        final newNotifs = notifsData.map((e) => SalesNotificationModel.fromJson(e as Map<String, dynamic>)).toList();
+
+        // In-App banner if a new plaque assignment notification arrived
+        if (showBannerOnNew && unread > 0 && newNotifs.isNotEmpty) {
+          final unreadItems = newNotifs.where((n) => !n.isRead).toList();
+          if (unreadItems.isNotEmpty) {
+            final latest = unreadItems.first;
+            Get.snackbar(
+              latest.title,
+              latest.message,
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: const Color(0xFF2563EB),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 6),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 16,
+              icon: const Icon(Icons.notifications_active, color: Colors.white),
+            );
+          }
+        }
+
+        notifications.value = newNotifs;
+        unreadNotificationsCount.value = unread;
+      }
+    } catch (_) {
+      // Offline fallback
+    } finally {
+      isLoadingNotifications.value = false;
+    }
+  }
+
+  Future<void> markNotificationAsRead(int id) async {
+    try {
+      await _apiClient.post('/api/sales/notifications/$id/mark-read/', body: {});
+      final index = notifications.indexWhere((n) => n.id == id);
+      if (index != -1) {
+        final current = notifications[index];
+        final updated = SalesNotificationModel(
+          id: current.id,
+          title: current.title,
+          message: current.message,
+          notificationType: current.notificationType,
+          plaqueId: current.plaqueId,
+          plaqueCode: current.plaqueCode,
+          plaqueName: current.plaqueName,
+          payload: current.payload,
+          isRead: true,
+          createdAt: current.createdAt,
+        );
+        notifications[index] = updated;
+        if (unreadNotificationsCount.value > 0) {
+          unreadNotificationsCount.value--;
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    try {
+      await _apiClient.post('/api/sales/notifications/mark-all-read/', body: {});
+      notifications.value = notifications.map((n) => SalesNotificationModel(
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        notificationType: n.notificationType,
+        plaqueId: n.plaqueId,
+        plaqueCode: n.plaqueCode,
+        plaqueName: n.plaqueName,
+        payload: n.payload,
+        isRead: true,
+        createdAt: n.createdAt,
+      )).toList();
+      unreadNotificationsCount.value = 0;
+    } catch (_) {}
+  }
+
+  void setFilterPlaque(String code) {
+    selectedPlaqueFilter.value = code;
+    activePlaqueCode.value = code;
+    if (code == 'Toutes') {
+      searchResults.value = List.from(_allEnterprises);
+    } else {
+      searchResults.value = _allEnterprises.where((e) => e.plaqueCode == code).toList();
+    }
   }
 
   /// 1. Fetch Plaque list from Backend API
