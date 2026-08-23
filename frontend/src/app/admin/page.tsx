@@ -9,6 +9,7 @@ import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
 import AdvProvisioningConsole from '@/components/adv/AdvProvisioningConsole';
+import BackOfficeDashboard, { BackOfficeData } from '@/components/analytics/BackOfficeDashboard';
 
 const SupervisorTerritoryMap = dynamic(
   () => import('@/components/supervisor/SupervisorTerritoryMap'),
@@ -47,7 +48,7 @@ interface Stats {
 
 export default function AdminDashboard() {
   const { user, logout, loading: authLoading } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<BackOfficeData | null>(null);
   const [logs, setLogs] = useState<Log[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>('ALL');
@@ -545,194 +546,14 @@ export default function AdminDashboard() {
             ) : activeTab === 'adv' ? (
               <AdvProvisioningConsole />
             ) : activeTab === 'supervision' ? (
-              stats && (
-                <div className="flex flex-col gap-6 animate-fadeIn">
-                    
-                    {/* Stats cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
-                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
-                        <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{stats.total_dossiers}</span>
-                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Dossiers créés dans le pipe commercial</p>
-                      </div>
-
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
-                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Qualifiés en Ligne (Inbound)</span>
-                        <span className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">{stats.inbound_count}</span>
-                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés en ligne via le portail client</p>
-                      </div>
-
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
-                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Visites Terrain (Outbound)</span>
-                        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.outbound_count}</span>
-                        <p className="text-[11px] text-zinc-600 dark:text-gray-300 font-medium">Qualifiés sur le terrain par les commerciaux</p>
-                      </div>
-
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-1.5">
-                        <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Taux de Conversion KAM</span>
-                        <span className="text-3xl font-black text-zinc-950 dark:text-white mt-1">{stats.conversion_rate}%</span>
-                        <div className="w-full bg-[#E2E8F0] dark:bg-[#222228] h-1.5 rounded-full overflow-hidden mt-2">
-                          <div className="bg-blue-600 h-full rounded-full" style={{ width: `${stats.conversion_rate}%` }} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pipeline breakdown & Trend Chart */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left: Counts */}
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
-                        <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">Répartition du Pipeline Commercial</h3>
-                        <div className="grid grid-cols-3 gap-3 text-center my-auto text-zinc-950 dark:text-white">
-                          <div className="p-4 studio-subcard rounded-[18px]">
-                            <span className="text-[10px] font-extrabold text-zinc-500 uppercase">Nouveau</span>
-                            <p className="text-xl font-black text-zinc-800 dark:text-zinc-200 mt-1">{stats.status_counts.NEW}</p>
-                          </div>
-                          <div className="p-4 studio-subcard rounded-[18px]">
-                            <span className="text-[10px] font-extrabold text-zinc-500 uppercase">En revue</span>
-                            <p className="text-xl font-black text-zinc-800 dark:text-zinc-200 mt-1">{stats.status_counts.IN_REVIEW}</p>
-                          </div>
-                          <div className="p-4 studio-subcard rounded-[18px]">
-                            <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase">Pris en charge</span>
-                            <p className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1">{stats.status_counts.ACCEPTED}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right: SVG Trend Line Chart */}
-                      <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">Courbe d'Adoption Hebdomadaire</h3>
-                          <span className="text-[10px] bg-blue-600/10 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full font-extrabold">
-                            Dynamique 7 jours
-                          </span>
-                        </div>
-                        <div className="relative h-32 w-full flex items-end">
-                          <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
-                            <line x1="0" y1="20" x2="300" y2="20" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
-                            <line x1="0" y1="50" x2="300" y2="50" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
-                            <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(0,0,0,0.04)" strokeWidth="1" className="dark:stroke-white/5" />
-                            
-                            {/* Outbound Trend (Terrain) */}
-                            <path
-                              d="M 0 90 Q 50 80, 100 65 T 200 45 T 300 25"
-                              fill="none"
-                              stroke="#71717A"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                            />
-                            
-                            {/* Inbound Trend (Portail Client) */}
-                            <path
-                              d="M 0 95 Q 50 85, 100 70 T 200 35 T 300 15"
-                              fill="none"
-                              stroke="#2563EB"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                            />
-
-                            <path
-                              d="M 0 95 Q 50 85, 100 70 T 200 35 T 300 15 L 300 100 L 0 100 Z"
-                              fill="url(#gradient-blue)"
-                              opacity="0.12"
-                            />
-
-                            <defs>
-                              <linearGradient id="gradient-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#2563EB" />
-                                <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                          
-                          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[9px] text-zinc-500 dark:text-zinc-400 font-bold px-1">
-                            <span>Lun</span>
-                            <span>Mar</span>
-                            <span>Mer</span>
-                            <span>Jeu</span>
-                            <span>Ven</span>
-                            <span>Sam</span>
-                            <span>Dim</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-4 justify-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" />
-                            <span>Inbound (Portail Client)</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-3 h-1 bg-zinc-500 rounded-full inline-block" />
-                            <span>Outbound (Visites Terrain)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Logs section */}
-                    <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Logs d'Activité Récents</h3>
-                        <div className="flex flex-wrap gap-1.5">
-                          {['ALL', 'CONVERSATION_STARTED', 'CONVERSATION_SUCCESS', 'DOSSIER_TRANSMITTED', 'REPORT_GENERATED', 'PDF_EXPORTED'].map(type => (
-                            <button
-                              key={type}
-                              onClick={() => setFilterType(type)}
-                              className={`px-2 py-1 rounded text-[9px] font-bold transition-all border cursor-pointer ${
-                                filterType === type
-                                  ? 'bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-950 border-transparent'
-                                  : 'bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 dark:hover:bg-zinc-900 text-zinc-500 border-zinc-200 dark:border-zinc-800'
-                              }`}
-                            >
-                              {type === 'ALL' ? 'Tous' : type}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 font-bold">
-                              <th className="py-2.5">Date</th>
-                              <th className="py-2.5">Type</th>
-                              <th className="py-2.5">Description</th>
-                              <th className="py-2.5">Auteur</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredLogs.length === 0 ? (
-                              <tr>
-                                <td colSpan={4} className="py-8 text-center text-zinc-400">
-                                  Aucun log d'événement trouvé pour ce filtre.
-                                </td>
-                              </tr>
-                            ) : (
-                              filteredLogs.map(log => (
-                                <tr key={log.id} className="border-b border-zinc-100 dark:border-zinc-800/55 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/20">
-                                  <td className="py-3 text-zinc-500 whitespace-nowrap">{log.created_at}</td>
-                                  <td className="py-3 font-bold whitespace-nowrap">
-                                    <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase ${
-                                      log.event_type === 'CONVERSATION_SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
-                                      log.event_type === 'DOSSIER_TRANSMITTED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' :
-                                      log.event_type === 'PDF_EXPORTED' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400' :
-                                      'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
-                                    }`}>
-                                      {log.event_type}
-                                    </span>
-                                  </td>
-                                  <td className="py-3 text-zinc-700 dark:text-zinc-300">{log.description}</td>
-                                  <td className="py-3 text-zinc-500">{log.user}</td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                  </div>
-                )
-              ) : (
+              <BackOfficeDashboard
+                initialData={stats}
+                onRefresh={async () => {
+                  const statsData = await fetchAPI('/api/reporting/demo-stats/');
+                  setStats(statsData);
+                }}
+              />
+            ) : (
                 /* Catalogue MSP Tab Content */
                 <div className="flex flex-col gap-8 animate-fadeIn text-zinc-800 dark:text-zinc-100">
                   {/* Catalog controls */}

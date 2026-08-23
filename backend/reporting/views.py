@@ -18,6 +18,13 @@ class DemoStatsView(APIView):
             "status_counts": stats.status_counts,
             "conversion_rate": stats.conversion_rate,
             "recent_logs": stats.recent_logs,
+            "funnel_stages": stats.funnel_stages,
+            "drop_off_metrics": stats.drop_off_metrics,
+            "unconverted_clients": stats.unconverted_clients,
+            "activity_timeline": stats.activity_timeline,
+            "zone_distribution": stats.zone_distribution,
+            "sector_distribution": stats.sector_distribution,
+            "kpis": stats.kpis,
         }, status=status.HTTP_200_OK)
 
 
