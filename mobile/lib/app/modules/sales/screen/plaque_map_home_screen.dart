@@ -10,6 +10,7 @@ import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/glass_card.dart';
 import '../../../common/screen/widget/scale_tap.dart';
+import '../../../core/services/notification_service.dart';
 
 /// Premier Onglet : Carte Vectorielle MapLibre GL + MapTiler
 /// Télécharge uniquement les coordonnées géométriques (.pbf) compressées via CDN mondial,
@@ -372,6 +373,61 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                         );
                       }),
                     ),
+
+                    // Bannière d'accès aux notifications push
+                    if (Get.isRegistered<NotificationService>())
+                      Obx(() {
+                        final notifService = NotificationService.to;
+                        if (notifService.hasPermission.value) {
+                          return const SizedBox.shrink();
+                        }
+                        return Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(LucideIcons.bellRing, color: Color(0xFF2563EB), size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Activer les notifications push pour recevoir les plaques en temps réel',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? Colors.white : const Color(0xFF1E3A8A),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ScaleTap(
+                                onTap: () => notifService.requestNotificationPermission(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2563EB),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Autoriser',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                   ],
                 ),
               ),

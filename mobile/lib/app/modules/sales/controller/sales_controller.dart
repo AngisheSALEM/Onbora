@@ -10,6 +10,7 @@ import '../model/field_intelligence_model.dart';
 import '../model/ocr_document_model.dart';
 import '../model/sales_notification_model.dart';
 import '../../../core/api/api_client.dart';
+import '../../../core/services/notification_service.dart';
 
 class SalesController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -89,51 +90,51 @@ class SalesController extends GetxController {
     ),
     EnterpriseModel(
       id: 2,
-      name: 'Vodacom Congo',
-      sector: 'Télécommunications',
-      approximateSize: '500-999 employés',
-      location: 'Kinshasa (Gombe)',
-      address: 'Avenue Colonel Mondjiba, Gombe',
-      website: 'https://www.vodacom.cd',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 92,
-      isConverted: false,
-      keyNeeds: [
-        'Interconnexion Data Center Orange',
-        'Faisceau Hertzien Backup Haute Capacité',
-        'Microsoft 365 Enterprise E5',
-      ],
-      aiBriefSummary:
-          'Partenariat B2B stratégique pour interconnexion fibre directe vers le Hub Orange et offre groupée Data/Cloud.',
-      customPitch:
-          'Mettre en avant notre peering direct faible latence et les licences cloud Microsoft managées par Orange.',
-      latitude: -4.3090,
-      longitude: 15.2950,
-    ),
-    EnterpriseModel(
-      id: 3,
-      name: 'Tenke Fungurume Mining (TFM)',
-      sector: 'Mines & Industrie',
-      approximateSize: '2000+ employés',
-      location: 'Lubumbashi (Lualaba)',
-      address: 'Site Minier Tenke, Lualaba',
-      website: 'https://www.tfm.cd',
+      name: 'Brasserie Simba (Brasimba)',
+      sector: 'Industrie & Agroalimentaire',
+      approximateSize: '500+ employés',
+      location: 'Lubumbashi (Centre)',
+      address: 'Avenue Ndjamena, Lubumbashi',
+      website: 'https://www.brasimba.com',
       syncStatus: 'SYNCED',
       plaqueCode: 'LSH-CENTRE',
       conversionScore: 94,
       isConverted: true,
       keyNeeds: [
-        'Connectivité Satellite LEO + Fibre Minière',
-        'Réseau Privé 4G/5G Industriel (IoT)',
-        'Cybersécurité SCADA & Firewall Industriel',
+        'Interconnexion Usines & Dépôts MPLS 100M',
+        'Flotte Mobile B2B Forfaits Partagés',
+        'Solution Cybersécurité Endpoint',
       ],
       aiBriefSummary:
-          'Site minier cherchant à moderniser sa télémétrie engins lourds et sécuriser ses automates avec un réseau privé Orange.',
+          'Compte converti : Leader brassicole au Katanga avec 4 sites de production connectés au réseau national Orange.',
       customPitch:
-          'Démontrer la couverture privée Orange 4G/5G Mining avec garantie de débit et résistance aux conditions extrêmes.',
+          'Proposer l\'extension vers le cloud souverain Orange RDC et la redondance satellitaire pour les centres de distribution isolés.',
       latitude: -11.6608,
       longitude: 27.4794,
+    ),
+    EnterpriseModel(
+      id: 3,
+      name: 'Vodacom RDC (Siège Kinshasa)',
+      sector: 'Télécoms & Tech',
+      approximateSize: '1000+ employés',
+      location: 'Kinshasa (Gombe)',
+      address: 'Avenue de la Justice, Gombe',
+      website: 'https://www.vodacom.cd',
+      syncStatus: 'SYNCED',
+      plaqueCode: 'KIN-GOMBE',
+      conversionScore: 91,
+      isConverted: true,
+      keyNeeds: [
+        'Transit IP International & BGP Peering',
+        'Colocation Datacenter Tier III',
+        'Liaisons Noires Fibre Métropolitaine',
+      ],
+      aiBriefSummary:
+          'Compte converti : Partenariat d\'infrastructure télécom et peering direct sur le point d\'échange national KINIX.',
+      customPitch:
+          'Renforcer la connectivité sur le câble sous-marin 2Africa et proposer des capacités de colocation supplémentaires.',
+      latitude: -4.3080,
+      longitude: 15.3020,
     ),
     EnterpriseModel(
       id: 4,
@@ -194,10 +195,20 @@ class SalesController extends GetxController {
     if (_allEnterprises.isNotEmpty) {
       selectedMapEnterprise.value = _allEnterprises.first;
     }
+    // Demande d'autorisation pour les notifications push
+    _initPushPermissions();
     fetchPlaques();
     fetchNotifications(showBannerOnNew: true);
     fetchDashboardStats();
     fetchVisitsHistory();
+  }
+
+  Future<void> _initPushPermissions() async {
+    try {
+      if (Get.isRegistered<NotificationService>()) {
+        await NotificationService.to.requestNotificationPermission();
+      }
+    } catch (_) {}
   }
 
   /// Fetch Push / In-App Notifications for the Salesperson
@@ -210,9 +221,24 @@ class SalesController extends GetxController {
         final int unread = response['unread_count'] ?? 0;
         final newNotifs = notifsData.map((e) => SalesNotificationModel.fromJson(e as Map<String, dynamic>)).toList();
 
-        // In-App banner if a new plaque assignment notification arrived
+        // Déclenchement de la notification push native Android / iOS
         if (showBannerOnNew && unread > 0 && newNotifs.isNotEmpty) {
           final unreadItems = newNotifs.where((n) => !n.isRead).toList();
+          for (final item in unreadItems) {
+            if (Get.isRegistered<NotificationService>()) {
+              NotificationService.to.showPushNotification(
+                id: item.id,
+                title: item.title,
+                body: item.message,
+                payload: {
+                  'notification_id': item.id,
+                  'plaque_code': item.plaqueCode,
+                  'center': item.payload['center'],
+                },
+              );
+            }
+          }
+
           if (unreadItems.isNotEmpty) {
             final latest = unreadItems.first;
             Get.snackbar(

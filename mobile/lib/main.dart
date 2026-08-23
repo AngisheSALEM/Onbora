@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'app/common/binding/common_binding.dart';
 import 'app/common/constants/app_constants.dart';
+import 'app/core/services/notification_service.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/routes/app_pages.dart';
 
@@ -11,6 +12,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('fr_FR', null);
+
+  final notifService = Get.put(NotificationService(), permanent: true);
+  await notifService.init();
   
   runApp(const OnboraSalesApp());
 }
