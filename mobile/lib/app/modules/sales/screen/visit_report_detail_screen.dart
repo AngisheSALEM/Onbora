@@ -571,18 +571,9 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Field Intelligence Lead Generation Card
-                    Container(
-                      width: double.infinity,
+                    // Field Intelligence Lead Generation Card (Clean Monochrome)
+                    GlassCard(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -590,11 +581,11 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF2563EB),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(LucideIcons.radar, color: Colors.white, size: 16),
+                                child: Icon(LucideIcons.radar, color: isDark ? Colors.white : AppConstants.textDark, size: 16),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -609,12 +600,12 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                         color: isDark ? Colors.white : AppConstants.textDark,
                                       ),
                                     ),
-                                    const Text(
+                                    Text(
                                       'Lookalike 100m • Parrainages • Audit Concurrence',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF2563EB),
+                                        color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
                                       ),
                                     ),
                                   ],
@@ -623,13 +614,13 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
+                                  color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Sourcing',
                                   style: TextStyle(
-                                    color: Color(0xFF2563EB),
+                                    color: isDark ? Colors.white : AppConstants.textDark,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -643,7 +634,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.35,
-                              color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                              color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -653,13 +644,18 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                             child: ScaleTap(
                               child: ElevatedButton.icon(
                                 onPressed: () => Get.to(() => const FieldIntelligenceScreen()),
-                                icon: const Icon(LucideIcons.mapPin, size: 16, color: Colors.white),
-                                label: const Text(
+                                icon: Icon(LucideIcons.mapPin, size: 16, color: isDark ? const Color(0xFF121214) : Colors.white),
+                                label: Text(
                                   'Compléter l\'Intelligence Terrain',
-                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2563EB),
+                                  backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                  foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                               ),

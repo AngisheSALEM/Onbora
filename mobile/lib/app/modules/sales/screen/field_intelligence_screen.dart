@@ -172,12 +172,12 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
       Get.snackbar(
         'Rapport Terrain Enregistré',
         'Dossier d\'intelligence commerciale validé avec succès.',
-        backgroundColor: const Color(0xFF2563EB),
+        backgroundColor: Colors.black87,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(16),
-        borderRadius: 16,
+        borderRadius: 14,
         icon: const Icon(LucideIcons.checkCircle2, color: Colors.white),
       );
     }
@@ -220,8 +220,8 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                 'Visite : ${enterprise.name}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF2563EB),
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
                   fontWeight: FontWeight.w600,
                   fontSize: 11,
                 ),
@@ -240,24 +240,19 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Banner explanation
-                  Container(
-                    width: double.infinity,
+                  // Banner explanation (Clean, neutral)
+                  GlassCard(
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1C1C22) : const Color(0xFFF1F2F6),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                            color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(LucideIcons.radar, color: Color(0xFF2563EB), size: 18),
+                          child: Icon(LucideIcons.radar, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -277,7 +272,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                 'Chaque descente terrain génère des leads qualifiés pour optimiser vos tournées et accumuler des points de prime.',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
                                   height: 1.3,
                                 ),
                               ),
@@ -289,19 +284,14 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Quick OCR Scanner Shortcut
+                  // Quick OCR Scanner Shortcut (Clean Monochrome)
                   ScaleTap(
                     onTap: () => Get.toNamed(Routes.DOCUMENT_SCAN),
-                    child: Container(
+                    child: GlassCard(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
-                      ),
                       child: Row(
                         children: [
-                          const Icon(LucideIcons.scanLine, color: Color(0xFF2563EB), size: 18),
+                          Icon(LucideIcons.scanLine, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
@@ -319,21 +309,25 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   'Pré-remplissage automatique des champs par photo',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: isDark ? Colors.white60 : AppConstants.textSecondaryLight,
+                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2563EB),
+                              color: isDark ? Colors.white : const Color(0xFF18181B),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Scanner',
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF121214) : Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
                         ],
@@ -407,7 +401,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                             style: TextStyle(fontSize: 13, color: isDark ? Colors.white : AppConstants.textDark),
                             decoration: InputDecoration(
                               hintText: 'Ex: CD/KIN/RCCM/26-B-01234',
-                              prefixIcon: const Icon(LucideIcons.fileText, size: 16, color: Color(0xFF2563EB)),
+                              prefixIcon: Icon(LucideIcons.fileText, size: 16, color: isDark ? Colors.white54 : AppConstants.textSecondaryLight),
                               filled: true,
                               fillColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
@@ -422,6 +416,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
                             value: _nurturingReason,
+                            isExpanded: true,
                             dropdownColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                             style: TextStyle(fontSize: 12, color: isDark ? Colors.white : AppConstants.textDark, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
@@ -431,12 +426,12 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             items: const [
-                              DropdownMenuItem(value: 'DECIDER_ABSENT', child: Text('Absence du décideur / gérant')),
-                              DropdownMenuItem(value: 'COMPETITOR_CONTRACT', child: Text('Contrat concurrent en cours')),
-                              DropdownMenuItem(value: 'BUDGET_WAITING', child: Text('Attente d\'arbitrage budgétaire')),
-                              DropdownMenuItem(value: 'COMMITMENT_FEAR', child: Text('Crainte d\'engagement long terme')),
-                              DropdownMenuItem(value: 'TECHNICAL_DOUBT', child: Text('Doutes éligibilité technique')),
-                              DropdownMenuItem(value: 'OTHER', child: Text('Autre motif')),
+                              DropdownMenuItem(value: 'DECIDER_ABSENT', child: Text('Absence du décideur / gérant', overflow: TextOverflow.ellipsis)),
+                              DropdownMenuItem(value: 'COMPETITOR_CONTRACT', child: Text('Contrat concurrent en cours', overflow: TextOverflow.ellipsis)),
+                              DropdownMenuItem(value: 'BUDGET_WAITING', child: Text('Attente d\'arbitrage budgétaire', overflow: TextOverflow.ellipsis)),
+                              DropdownMenuItem(value: 'COMMITMENT_FEAR', child: Text('Crainte d\'engagement long terme', overflow: TextOverflow.ellipsis)),
+                              DropdownMenuItem(value: 'TECHNICAL_DOUBT', child: Text('Doutes éligibilité technique', overflow: TextOverflow.ellipsis)),
+                              DropdownMenuItem(value: 'OTHER', child: Text('Autre motif', overflow: TextOverflow.ellipsis)),
                             ],
                             onChanged: (val) => setState(() => _nurturingReason = val ?? 'DECIDER_ABSENT'),
                           ),
@@ -476,7 +471,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                       style: TextStyle(fontSize: 11, color: isDark ? Colors.white : AppConstants.textDark),
                                       decoration: InputDecoration(
                                         hintText: 'AAAA-MM-JJ',
-                                        prefixIcon: const Icon(LucideIcons.bellRing, size: 14, color: Color(0xFF2563EB)),
+                                        prefixIcon: Icon(LucideIcons.bellRing, size: 14, color: isDark ? Colors.white54 : AppConstants.textSecondaryLight),
                                         filled: true,
                                         fillColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
@@ -501,7 +496,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                     icon: LucideIcons.mapPin,
                     title: '2. Repérage Voisins (Lookalike)',
                     badge: 'Rayon 100m',
-                    badgeColor: const Color(0xFF2563EB),
+                    badgeColor: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
                     isDark: isDark,
                   ),
                   const SizedBox(height: 8),
@@ -630,7 +625,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                     icon: LucideIcons.network,
                     title: '3. Parrainages & Partenaires',
                     badge: 'Supply-Chain',
-                    badgeColor: const Color(0xFF8B5CF6),
+                    badgeColor: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
                     isDark: isDark,
                   ),
                   const SizedBox(height: 8),
@@ -641,9 +636,11 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                       children: [
                         Row(
                           children: [
-                            Expanded(
+                            SizedBox(
+                              width: 120,
                               child: DropdownButtonFormField<String>(
                                 value: _ref1Type,
+                                isExpanded: true,
                                 dropdownColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                                 style: TextStyle(fontSize: 11, color: isDark ? Colors.white : AppConstants.textDark, fontWeight: FontWeight.w600),
                                 decoration: InputDecoration(
@@ -653,22 +650,21 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                 ),
                                 items: const [
-                                  DropdownMenuItem(value: 'SUPPLIER', child: Text('Fournisseur')),
-                                  DropdownMenuItem(value: 'PARTNER', child: Text('Partenaire')),
-                                  DropdownMenuItem(value: 'PEER', child: Text('Confrère')),
+                                  DropdownMenuItem(value: 'SUPPLIER', child: Text('Fournisseur', overflow: TextOverflow.ellipsis)),
+                                  DropdownMenuItem(value: 'PARTNER', child: Text('Partenaire', overflow: TextOverflow.ellipsis)),
+                                  DropdownMenuItem(value: 'PEER', child: Text('Confrère', overflow: TextOverflow.ellipsis)),
                                 ],
                                 onChanged: (val) => setState(() => _ref1Type = val ?? 'SUPPLIER'),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              flex: 2,
                               child: TextFormField(
                                 controller: _ref1CompanyController,
                                 onChanged: (_) => setState(() {}),
                                 style: TextStyle(fontSize: 12, color: isDark ? Colors.white : AppConstants.textDark),
                                 decoration: InputDecoration(
-                                  hintText: 'Nom entreprise parrainée',
+                                  hintText: 'Nom entreprise',
                                   prefixIcon: const Icon(LucideIcons.building2, size: 14),
                                   filled: true,
                                   fillColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
@@ -722,10 +718,10 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   // SECTION 4 : Radar de Friction Concurrentielle
                   // =========================================================
                   _buildSectionHeader(
-                    icon: LucideIcons.alertTriangle,
+                    icon: LucideIcons.shieldAlert,
                     title: '4. Radar Friction & Concurrent',
                     badge: 'Audit FAI',
-                    badgeColor: const Color(0xFFEC4899),
+                    badgeColor: const Color(0xFFF59E0B),
                     isDark: isDark,
                   ),
                   const SizedBox(height: 8),
@@ -739,8 +735,8 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                           onChanged: (_) => setState(() {}),
                           style: TextStyle(fontSize: 12, color: isDark ? Colors.white : AppConstants.textDark),
                           decoration: InputDecoration(
-                            hintText: 'Opérateur / FAI en place (ex: FAI X, Canalbox, Airtel...)',
-                            prefixIcon: const Icon(LucideIcons.shieldAlert, size: 14, color: Color(0xFFEC4899)),
+                            hintText: 'Opérateur / FAI en place (ex: Canalbox, Airtel...)',
+                            prefixIcon: Icon(LucideIcons.shieldAlert, size: 14, color: isDark ? Colors.white54 : AppConstants.textSecondaryLight),
                             filled: true,
                             fillColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
@@ -795,7 +791,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                 SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'Alerte Friction Activée : Lead qualifié prioritaire (SQL) pour le KAM.',
+                                    'Alerte Friction : Lead qualifié prioritaire pour le KAM.',
                                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFFEF4444)),
                                   ),
                                 ),
@@ -817,11 +813,20 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                           ].map((friction) {
                             final isSelected = _selectedFrictions.contains(friction);
                             return FilterChip(
-                              label: Text(friction, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : (isDark ? Colors.white70 : AppConstants.textDark))),
+                              label: Text(
+                                friction,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? (isDark ? const Color(0xFF121214) : Colors.white)
+                                      : (isDark ? Colors.white70 : AppConstants.textDark),
+                                ),
+                              ),
                               selected: isSelected,
-                              selectedColor: const Color(0xFF2563EB),
+                              selectedColor: isDark ? Colors.white : const Color(0xFF18181B),
                               backgroundColor: isDark ? const Color(0xFF1C1C22) : const Color(0xFFF1F2F6),
-                              checkmarkColor: Colors.white,
+                              checkmarkColor: isDark ? const Color(0xFF121214) : Colors.white,
                               onSelected: (selected) {
                                 setState(() {
                                   if (selected) {
@@ -840,29 +845,41 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                   const SizedBox(height: 24),
 
                   // =========================================================
-                  // SUBMIT BUTTON
+                  // SUBMIT BUTTON (Pure Monochrome: White on Dark / Black on Light)
                   // =========================================================
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: 52,
                     child: ScaleTap(
                       child: ElevatedButton.icon(
                         onPressed: salesController.isSubmittingFieldIntelligence.value ? null : _submitReport,
                         icon: salesController.isSubmittingFieldIntelligence.value
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Icon(LucideIcons.send, size: 20, color: Colors.white),
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(LucideIcons.send, size: 18, color: isDark ? const Color(0xFF121214) : Colors.white),
                         label: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
                             salesController.isSubmittingFieldIntelligence.value
                                 ? 'Transmission en cours...'
                                 : 'Valider le Rapport Terrain',
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: isDark ? const Color(0xFF121214) : Colors.white,
+                            ),
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                          foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
                       ),
                     ),
@@ -886,7 +903,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF2563EB)),
+        Icon(icon, size: 16, color: isDark ? Colors.white : AppConstants.textDark),
         const SizedBox(width: 6),
         Expanded(
           child: Text(

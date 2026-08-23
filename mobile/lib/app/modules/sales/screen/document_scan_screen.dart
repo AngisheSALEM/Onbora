@@ -85,7 +85,6 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
           _isProcessing = true;
         });
 
-        // Trigger OCR scan on backend / fallback
         final result = await salesController.scanDocument(
           docType: _selectedDocType,
           imagePath: image.path,
@@ -149,7 +148,6 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
   }
 
   void _applyToFieldReport() {
-    // Save updated values in controller
     final updated = OcrDocumentResultModel(
       companyName: _companyController.text.trim(),
       rccm: _rccmController.text.trim(),
@@ -165,8 +163,6 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     );
 
     salesController.lastOcrResult.value = updated;
-
-    // Navigate to field intelligence / report screen with prefilled values
     Get.toNamed(Routes.FIELD_INTELLIGENCE);
   }
 
@@ -211,10 +207,10 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                          color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(LucideIcons.scanLine, color: Color(0xFF2563EB), size: 20),
+                        child: Icon(LucideIcons.scanLine, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -283,7 +279,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                            border: Border.all(color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
@@ -304,14 +300,17 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                           child: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 SizedBox(
                                   width: 28,
                                   height: 28,
-                                  child: CircularProgressIndicator(color: Color(0xFF2563EB), strokeWidth: 2.5),
+                                  child: CircularProgressIndicator(
+                                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                                    strokeWidth: 2.5,
+                                  ),
                                 ),
-                                SizedBox(height: 10),
-                                Text(
+                                const SizedBox(height: 10),
+                                const Text(
                                   'Lecture et extraction des données...',
                                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                                 ),
@@ -358,21 +357,29 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                         ),
                       const SizedBox(height: 14),
 
-                      // Capture Buttons
+                      // Capture Buttons (Strict Monochrome)
                       Row(
                         children: [
                           Expanded(
                             child: ScaleTap(
                               child: ElevatedButton.icon(
                                 onPressed: _isProcessing ? null : () => _pickImage(ImageSource.camera),
-                                icon: const Icon(LucideIcons.camera, size: 16, color: Colors.white),
-                                label: const Text(
+                                icon: Icon(
+                                  LucideIcons.camera,
+                                  size: 16,
+                                  color: isDark ? const Color(0xFF121214) : Colors.white,
+                                ),
+                                label: Text(
                                   'Prendre une photo',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2563EB),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                  foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -407,10 +414,10 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                       // Fast Demo Trigger
                       TextButton.icon(
                         onPressed: _isProcessing ? null : () => _runDemoScan(_selectedDocType),
-                        icon: const Icon(LucideIcons.sparkles, size: 13, color: Color(0xFF2563EB)),
-                        label: const Text(
+                        icon: Icon(LucideIcons.sparkles, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
+                        label: Text(
                           'Tester avec un modèle de document type',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF2563EB)),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? Colors.white70 : AppConstants.textDark),
                         ),
                       ),
                     ],
@@ -505,21 +512,25 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 5. Main Action Button: Apply to Field Report
+                // 5. Main Action Button: Apply to Field Report (Strict Monochrome)
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ScaleTap(
                     child: ElevatedButton.icon(
                       onPressed: _applyToFieldReport,
-                      icon: const Icon(LucideIcons.check, size: 18, color: Colors.white),
-                      label: const Text(
+                      icon: Icon(LucideIcons.check, size: 18, color: isDark ? const Color(0xFF121214) : Colors.white),
+                      label: Text(
                         'Valider et Insérer dans le Dossier',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? const Color(0xFF121214) : Colors.white,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
+                        backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                        foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                     ),
@@ -542,12 +553,12 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF2563EB)
+              ? (isDark ? Colors.white : const Color(0xFF18181B))
               : (isDark ? const Color(0xFF1E1E24) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF2563EB)
+                ? (isDark ? Colors.white : const Color(0xFF18181B))
                 : (isDark ? const Color(0xFF2E2E38) : const Color(0xFFE2E8F0)),
           ),
         ),
@@ -557,7 +568,9 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
             Icon(
               icon,
               size: 14,
-              color: isSelected ? Colors.white : (isDark ? Colors.white70 : AppConstants.textDark),
+              color: isSelected
+                  ? (isDark ? const Color(0xFF121214) : Colors.white)
+                  : (isDark ? Colors.white70 : AppConstants.textDark),
             ),
             const SizedBox(width: 6),
             Text(
@@ -565,7 +578,9 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                color: isSelected ? Colors.white : (isDark ? Colors.white : AppConstants.textDark),
+                color: isSelected
+                    ? (isDark ? const Color(0xFF121214) : Colors.white)
+                    : (isDark ? Colors.white : AppConstants.textDark),
               ),
             ),
           ],

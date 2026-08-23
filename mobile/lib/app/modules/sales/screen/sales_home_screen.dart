@@ -340,9 +340,7 @@ class SalesHomeScreen extends StatelessWidget {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w800,
-                                            color: salesController.currentPrep.value != null
-                                                ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8))
-                                                : (isDark ? Colors.white : AppConstants.textDark),
+                                            color: isDark ? Colors.white : AppConstants.textDark,
                                           ),
                                         ),
                                       ),
@@ -358,19 +356,19 @@ class SalesHomeScreen extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                                    color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                                    border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
+                                    border: Border.all(color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE2E8F0)),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       Icon(
                                         LucideIcons.scanLine,
                                         size: 15,
-                                        color: Color(0xFF2563EB),
+                                        color: isDark ? Colors.white70 : AppConstants.textDark,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Flexible(
                                         child: Text(
                                           'Scanner',
@@ -379,7 +377,7 @@ class SalesHomeScreen extends StatelessWidget {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w900,
-                                            color: Color(0xFF2563EB),
+                                            color: isDark ? Colors.white : AppConstants.textDark,
                                           ),
                                         ),
                                       ),
