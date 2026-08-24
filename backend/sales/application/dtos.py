@@ -23,6 +23,7 @@ class PlaqueDTO(BaseDTO):
     is_active: bool = True
     center_latitude: Optional[float] = None
     center_longitude: Optional[float] = None
+    created_at: Optional[datetime] = None
 
 
 @dataclass

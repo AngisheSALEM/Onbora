@@ -66,10 +66,16 @@ class PlaqueListCreateView(APIView):
         return [IsSalespersonOrAdmin()]
 
     def get(self, request):
-        use_case = ListPlaquesUseCase()
-        plaques_dto = use_case.execute()
-        serializer = PlaqueSerializer(plaques_dto, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            use_case = ListPlaquesUseCase()
+            plaques_dto = use_case.execute()
+            serializer = PlaqueSerializer(plaques_dto, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as exc:
+            logger.error(f"Error in PlaqueListCreateView.get: {exc}", exc_info=True)
+            plaques = Plaque.objects.filter(is_active=True).prefetch_related('enterprises', 'assigned_salespersons')
+            serializer = PlaqueSerializer(plaques, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = PlaqueSerializer(data=request.data)

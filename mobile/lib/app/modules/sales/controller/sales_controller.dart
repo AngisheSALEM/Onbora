@@ -335,9 +335,12 @@ class SalesController extends GetxController {
         if (!codes.contains(activePlaqueCode.value)) {
           activePlaqueCode.value = 'Toutes';
         }
+        debugPrint("[Plaques] Synchronisation réussie : ${parsed.length} plaque(s) récupérée(s)");
+      } else {
+        debugPrint("[Plaques] Aucune plaque en base de données ou liste vide reçue");
       }
-    } catch (_) {
-      // Keep fallback
+    } catch (e) {
+      debugPrint("[Plaques] Erreur lors de la récupération des plaques : $e");
     } finally {
       isLoadingPlaques.value = false;
     }

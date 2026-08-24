@@ -63,7 +63,8 @@ class ListPlaquesUseCase(BaseUseCase[Any, List[PlaqueDTO]]):
                 kml_url=f"/api/sales/plaques/{p.id}/kml/",
                 is_active=p.is_active,
                 center_latitude=p.latitude,
-                center_longitude=p.longitude
+                center_longitude=p.longitude,
+                created_at=getattr(p, 'created_at', None)
             ))
         return results
 
