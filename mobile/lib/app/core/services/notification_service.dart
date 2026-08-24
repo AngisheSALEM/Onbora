@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -112,9 +113,28 @@ class NotificationService extends GetxService {
           payload: data,
         );
 
-        // Si le contrôleur de ventes est actif, rafraîchir la liste
+        // Si le contrôleur de ventes est actif, rafraîchir la liste et les plaques en temps réel
         if (Get.isRegistered<SalesController>()) {
-          Get.find<SalesController>().fetchNotifications(showBannerOnNew: false);
+          final salesCtrl = Get.find<SalesController>();
+          salesCtrl.fetchNotifications(showBannerOnNew: false);
+
+          final notifType = data['notification_type'] ?? '';
+          if (notifType == 'PLAQUE_ASSIGNED' ||
+              notifType == 'TERRITORY_UPDATE' ||
+              data.containsKey('plaque_id') ||
+              data.containsKey('plaque_code')) {
+            salesCtrl.fetchPlaques();
+            Get.snackbar(
+              '🎯 Territoire Synchronisé',
+              body,
+              snackPosition: SnackPosition.TOP,
+              duration: const Duration(seconds: 4),
+              backgroundColor: const Color(0xEE1E293B),
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(12),
+              icon: const Icon(Icons.location_on, color: Color(0xFF2563EB)),
+            );
+          }
         }
       });
 
@@ -259,13 +279,14 @@ class NotificationService extends GetxService {
 
   /// Routage intelligent vers la plaque ou l'écran approprié lors d'un clic sur la notification
   void _handleMessageNavigation(Map<String, dynamic> data) {
-    final plaqueCode = data['plaque_code'] ?? data['code'];
-    if (plaqueCode != null && plaqueCode.toString().isNotEmpty) {
-      if (Get.isRegistered<SalesController>()) {
-        final salesCtrl = Get.find<SalesController>();
-        salesCtrl.setFilterPlaque(plaqueCode.toString());
+    if (Get.isRegistered<SalesController>()) {
+      final salesCtrl = Get.find<SalesController>();
+      salesCtrl.fetchPlaques();
+      final plaqueCode = data['plaque_code'] ?? data['code'];
+      if (plaqueCode != null && plaqueCode.toString().isNotEmpty) {
+        salesCtrl.filterByPlaque(plaqueCode.toString());
       }
-      Get.toNamed(Routes.SALES_HOME);
     }
+    Get.toNamed(Routes.SALES_HOME);
   }
 }

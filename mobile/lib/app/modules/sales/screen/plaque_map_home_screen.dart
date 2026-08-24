@@ -22,7 +22,7 @@ class PlaqueMapHomeScreen extends StatefulWidget {
   State<PlaqueMapHomeScreen> createState() => _PlaqueMapHomeScreenState();
 }
 
-class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
+class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsBindingObserver {
   MapLibreMapController? _mapController;
   bool _isStyleLoaded = false;
   bool _hasLocationPermission = false;
@@ -33,6 +33,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkAndRequestLocationPermission();
 
     final salesCtrl = Get.find<SalesController>();
@@ -57,10 +58,19 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     for (final w in _workers) {
       w.dispose();
     }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint("[PlaqueMap] Reprise au premier plan : rafraîchissement des plaques...");
+      Get.find<SalesController>().fetchPlaques();
+    }
   }
 
   Future<void> _checkAndRequestLocationPermission() async {
@@ -320,6 +330,50 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
                               ),
                             ),
                           ),
+                          // Bouton Synchronisation Instantanée des Plaques (Option 2)
+                          Obx(() {
+                            final isLoading = salesController.isLoadingPlaques.value;
+                            return ScaleTap(
+                              onTap: () async {
+                                await salesController.fetchPlaques();
+                                Get.snackbar(
+                                  'Territoires synchronisés',
+                                  'Les plaques et tracés cartographiques sont à jour.',
+                                  snackPosition: SnackPosition.TOP,
+                                  duration: const Duration(seconds: 2),
+                                  margin: const EdgeInsets.all(12),
+                                  backgroundColor: const Color(0xEE1E293B),
+                                  colorText: Colors.white,
+                                  icon: const Icon(LucideIcons.checkCheck, color: Color(0xFF10B981)),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: isLoading
+                                    ? SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            isDark ? Colors.white : AppConstants.textDark,
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        LucideIcons.refreshCw,
+                                        size: 18,
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                      ),
+                              ),
+                            );
+                          }),
+                          const SizedBox(width: 6),
+
                           Obx(() {
                             final unread = salesController.unreadNotificationsCount.value;
                             return ScaleTap(
