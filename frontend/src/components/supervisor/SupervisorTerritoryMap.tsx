@@ -22,6 +22,19 @@ export interface Plaque {
   kml_url?: string;
 }
 
+export interface DrawnZone {
+  id: string;
+  code: string;
+  name: string;
+  color: string;
+  lineWidth: number;
+  points: [number, number][];
+  areaKm2: number;
+  center: [number, number];
+  createdAt: string;
+  isSaved?: boolean;
+}
+
 export interface Enterprise {
   id: number;
   name: string;
@@ -185,7 +198,7 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  // Interactive Polygon / KML Drawing Mode (Paint Pencil Canvas Overlay)
+  // Interactive Multi-Zone Polygon / KML Drawing Mode (Continuous Paint Pencil)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const isDrawingModeRef = useRef(false);
   const [drawColor, setDrawColor] = useState('#2563EB'); // Default electric blue
@@ -193,6 +206,9 @@ export default function SupervisorTerritoryMap({
   const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingCanvasMouseDown = useRef(false);
   const canvasPointsRef = useRef<{ x: number; y: number; lng: number; lat: number }[]>([]);
+  const [drawnZones, setDrawnZones] = useState<DrawnZone[]>([]);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [activeZoneToAssign, setActiveZoneToAssign] = useState<DrawnZone | null>(null);
   const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
   const [isSaveDrawnModalOpen, setIsSaveDrawnModalOpen] = useState(false);
   const [drawnPlaqueCode, setDrawnPlaqueCode] = useState('');
@@ -432,6 +448,25 @@ export default function SupervisorTerritoryMap({
     }
   };
 
+  // Shoelace formula to calculate real-world polygon surface area (km²)
+  const calculatePolygonAreaKm2 = (points: [number, number][]): number => {
+    if (points.length < 3) return 0;
+    let area = 0;
+    const n = points.length;
+    const latFactor = 111.132;
+    const lngFactor = 111.320 * Math.cos(-4.3033 * (Math.PI / 180));
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      const xi = points[i][0] * lngFactor;
+      const yi = points[i][1] * latFactor;
+      const xj = points[j][0] * lngFactor;
+      const yj = points[j][1] * latFactor;
+      area += xi * yj - xj * yi;
+    }
+    return Math.abs(area / 2);
+  };
+
   const handleCanvasMouseUp = () => {
     if (!isDrawingCanvasMouseDown.current) return;
     isDrawingCanvasMouseDown.current = false;
@@ -440,21 +475,49 @@ export default function SupervisorTerritoryMap({
     const pts = canvasPointsRef.current;
 
     if (canvas && pts.length >= 3) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.closePath();
-        ctx.fillStyle = hexToRgba(drawColor, 0.22);
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      // Convert to GPS coordinates array for GeoJSON and KML
+      // Convert to GPS coordinates array
       const gpsPoints: [number, number][] = pts.map((p) => [p.lng, p.lat]);
       if (gpsPoints[0][0] !== gpsPoints[gpsPoints.length - 1][0] || gpsPoints[0][1] !== gpsPoints[gpsPoints.length - 1][1]) {
         gpsPoints.push(gpsPoints[0]);
       }
+
+      // Calculate centroid and area
+      const avgLng = parseFloat((gpsPoints.reduce((sum, p) => sum + p[0], 0) / gpsPoints.length).toFixed(5));
+      const avgLat = parseFloat((gpsPoints.reduce((sum, p) => sum + p[1], 0) / gpsPoints.length).toFixed(5));
+      const area = calculatePolygonAreaKm2(gpsPoints);
+
+      const zoneIndex = drawnZones.length + 1;
+      const newZone: DrawnZone = {
+        id: `zone-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        code: `KIN-ZONE-${String(zoneIndex).padStart(2, '0')}`,
+        name: `Zone Délimitée ${zoneIndex}`,
+        color: drawColor,
+        lineWidth: drawLineWidth,
+        points: gpsPoints,
+        areaKm2: area,
+        center: [avgLng, avgLat],
+        createdAt: new Date().toISOString(),
+      };
+
+      setDrawnZones((prev) => [...prev, newZone]);
+      setSelectedZoneId(newZone.id);
       setDrawingPoints(gpsPoints);
-    } else if (pts.length < 3) {
+      setStatusMessage({
+        text: `Zone ${newZone.code} (${newZone.areaKm2.toFixed(2)} km²) ajoutée sur la carte. Vous pouvez enchaîner d'autres tracés.`,
+        type: 'success',
+      });
+
+      // Clear the temporary HTML5 canvas so the user can immediately chain the next drawing!
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const dpr = window.devicePixelRatio || 1;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      canvasPointsRef.current = [];
+    } else {
       const ctx = canvas?.getContext('2d');
       if (canvas && ctx) {
         const dpr = window.devicePixelRatio || 1;
@@ -464,8 +527,21 @@ export default function SupervisorTerritoryMap({
         ctx.restore();
       }
       canvasPointsRef.current = [];
-      setDrawingPoints([]);
     }
+  };
+
+  const handleDeleteZone = (zoneId: string) => {
+    setDrawnZones((prev) => prev.filter((z) => z.id !== zoneId));
+    if (selectedZoneId === zoneId) setSelectedZoneId(null);
+    setStatusMessage({ text: "Zone supprimée de la carte.", type: 'success' });
+  };
+
+  const handleClearAllZones = () => {
+    setDrawnZones([]);
+    setSelectedZoneId(null);
+    setDrawingPoints([]);
+    handleClearDrawing();
+    setStatusMessage({ text: "Toutes les zones dessinées ont été effacées.", type: 'success' });
   };
 
   const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
@@ -694,46 +770,39 @@ export default function SupervisorTerritoryMap({
     });
   }, [enterprises, plaques, nearbyLeads, tradeAudits, markerFilter]);
 
-  // Render Drawn Polygon & Saved Plaque Polygons on MapLibre
+  // Render Multi-Zones & Saved Plaque Polygons on MapLibre
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const updateDrawingLayers = () => {
-      // 1. Update actively drawn polygon source
-      const closedPoints = [...drawingPoints];
-      if (closedPoints.length >= 3 && (closedPoints[0][0] !== closedPoints[closedPoints.length - 1][0] || closedPoints[0][1] !== closedPoints[closedPoints.length - 1][1])) {
-        closedPoints.push(closedPoints[0]);
-      }
+      // 1. Convert all drawnZones to GeoJSON Features
+      const drawnZoneFeatures: GeoJSON.Feature[] = drawnZones.map((z) => {
+        const closed = [...z.points];
+        if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
+          closed.push(closed[0]);
+        }
+        return {
+          type: 'Feature' as const,
+          properties: {
+            id: z.id,
+            code: z.code,
+            name: z.name,
+            color: z.color || '#2563EB',
+            lineWidth: z.lineWidth || 4,
+            areaKm2: z.areaKm2.toFixed(2),
+            isSelected: z.id === selectedZoneId,
+          },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [closed],
+          },
+        };
+      });
 
       const drawingGeojson: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
-        features: [
-          ...(closedPoints.length >= 4 ? [{
-            type: 'Feature' as const,
-            properties: {},
-            geometry: {
-              type: 'Polygon' as const,
-              coordinates: [closedPoints],
-            },
-          }] : []),
-          ...(drawingPoints.length >= 2 ? [{
-            type: 'Feature' as const,
-            properties: {},
-            geometry: {
-              type: 'LineString' as const,
-              coordinates: drawingPoints,
-            },
-          }] : []),
-          ...drawingPoints.map((pt, idx) => ({
-            type: 'Feature' as const,
-            properties: { index: idx + 1 },
-            geometry: {
-              type: 'Point' as const,
-              coordinates: pt,
-            },
-          })),
-        ],
+        features: drawnZoneFeatures,
       };
 
       const drawingSource = map.getSource('drawing-source') as maplibregl.GeoJSONSource | undefined;
@@ -749,10 +818,9 @@ export default function SupervisorTerritoryMap({
           id: 'drawing-fill',
           type: 'fill',
           source: 'drawing-source',
-          filter: ['==', '$type', 'Polygon'],
           paint: {
-            'fill-color': drawColor,
-            'fill-opacity': 0.22,
+            'fill-color': ['coalesce', ['get', 'color'], '#2563EB'],
+            'fill-opacity': ['case', ['boolean', ['get', 'isSelected'], false], 0.40, 0.25],
           },
         });
 
@@ -761,8 +829,8 @@ export default function SupervisorTerritoryMap({
           type: 'line',
           source: 'drawing-source',
           paint: {
-            'line-color': drawColor,
-            'line-width': drawLineWidth,
+            'line-color': ['coalesce', ['get', 'color'], '#2563EB'],
+            'line-width': ['case', ['boolean', ['get', 'isSelected'], false], 5.5, ['coalesce', ['get', 'lineWidth'], 4]],
             'line-opacity': 0.95,
           },
           layout: {
@@ -822,9 +890,56 @@ export default function SupervisorTerritoryMap({
     } else {
       map.once('load', updateDrawingLayers);
     }
-  }, [drawingPoints, plaques]);
+  }, [drawnZones, selectedZoneId, plaques]);
 
-  // KML Generation and Export with Chosen Paint Color
+  // Multi-Zone KML Generation
+  const generateMultiZoneKmlString = (zones: DrawnZone[]) => {
+    if (zones.length === 0) return '';
+    const stylesXml = zones.map((z) => {
+      const cleanId = z.id.replace(/[^a-zA-Z0-9_]/g, '_');
+      return `
+    <Style id="style_${cleanId}">
+      <LineStyle><color>${hexToKmlColor(z.color, 'ff')}</color><width>${z.lineWidth || 4}</width></LineStyle>
+      <PolyStyle><color>${hexToKmlColor(z.color, '40')}</color><fill>1</fill><outline>1</outline></PolyStyle>
+    </Style>`;
+    }).join('\n');
+
+    const placemarksXml = zones.map((z) => {
+      const cleanId = z.id.replace(/[^a-zA-Z0-9_]/g, '_');
+      const closed = [...z.points];
+      if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
+        closed.push(closed[0]);
+      }
+      const coordsStr = closed.map((p) => `${p[0]},${p[1]},0`).join(' ');
+      return `
+    <Placemark>
+      <name>${z.code} - ${z.name}</name>
+      <description>Zone commerciale Onbora (${z.points.length} points GPS - ${z.areaKm2.toFixed(2)} km²)</description>
+      <styleUrl>#style_${cleanId}</styleUrl>
+      <Polygon>
+        <extrude>1</extrude>
+        <altitudeMode>clampToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>${coordsStr}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>`;
+    }).join('\n');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Territoires Commerciaux Onbora (${zones.length} zones)</name>
+    <description>Tracé vectoriel KML multi-zones - Onbora Telecom Intelligence</description>
+    ${stylesXml}
+    ${placemarksXml}
+  </Document>
+</kml>`;
+  };
+
+  // Single Zone KML Generation
   const generateKmlString = (points: [number, number][], name: string, code: string, colorHex = drawColor) => {
     const closed = [...points];
     if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
@@ -859,6 +974,24 @@ export default function SupervisorTerritoryMap({
 </kml>`;
   };
 
+  const handleDownloadAllKml = () => {
+    if (drawnZones.length === 0) {
+      setStatusMessage({ text: "Tracez au moins une zone sur la carte avant d'exporter.", type: 'error' });
+      return;
+    }
+    const kml = generateMultiZoneKmlString(drawnZones);
+    const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `territoires_onbora_multi_zones_${drawnZones.length}.kml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatusMessage({ text: `Fichier KML consolidé (${drawnZones.length} zones) téléchargé avec succès.`, type: 'success' });
+  };
+
   const handleDownloadKml = (points: [number, number][], name: string, code: string, colorHex = drawColor) => {
     if (points.length < 3) {
       setStatusMessage({ text: "Tracez au moins 3 points sur la carte pour exporter le fichier KML.", type: 'error' });
@@ -875,6 +1008,15 @@ export default function SupervisorTerritoryMap({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     setStatusMessage({ text: `Fichier KML (${code || 'zone'}.kml) téléchargé avec succès.`, type: 'success' });
+  };
+
+  const handleOpenAssignModalForZone = (zone: DrawnZone) => {
+    setActiveZoneToAssign(zone);
+    setDrawnPlaqueCode(zone.code);
+    setDrawnPlaqueName(zone.name);
+    setDrawnPlaqueCity('Kinshasa');
+    setDrawingPoints(zone.points);
+    setIsSaveDrawnModalOpen(true);
   };
 
   const handleSaveDrawnPlaque = async (e: React.FormEvent) => {
@@ -1397,14 +1539,16 @@ export default function SupervisorTerritoryMap({
                 </div>
               )}
 
-              {/* Floating Drawing Toolbar (Paint Pencil Mode with Color & Width Palette) */}
+              {/* Floating Drawing Toolbar (Continuous Multi-Zone Paint Mode) */}
               {isDrawingMode && (
                 <div className="absolute top-4 left-4 right-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center justify-between gap-3 z-30 border border-blue-600/30 animate-fade-in">
                   {/* Left: Info & Color Palette */}
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
                       <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: drawColor }} />
-                      <span>✏️ Crayon Paint : {drawingPoints.length > 0 ? `${drawingPoints.length} points tracés` : 'Maintenez le clic et dessinez'}</span>
+                      <span>
+                        ✏️ Mode Crayon : {drawnZones.length === 0 ? 'Maintenez le clic et tracez votre 1ère zone' : `${drawnZones.length} zone(s) sur la carte`}
+                      </span>
                     </div>
 
                     {/* Color Swatches */}
@@ -1459,34 +1603,103 @@ export default function SupervisorTerritoryMap({
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={handleClearDrawing}
-                      disabled={drawingPoints.length === 0}
+                      onClick={handleClearAllZones}
+                      disabled={drawnZones.length === 0}
                       className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
                     >
-                      Effacer
+                      Tout Effacer
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDownloadKml(drawingPoints, 'Zone_Tracée', 'ZONE', drawColor)}
-                      disabled={drawingPoints.length < 3}
+                      onClick={handleDownloadAllKml}
+                      disabled={drawnZones.length === 0}
                       className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1"
                     >
                       <Icons.Download size={13} />
-                      Export KML
+                      Export KML Multi ({drawnZones.length})
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDrawnPlaqueCode(`KIN-ZONE-${Math.floor(100 + Math.random() * 900)}`);
-                        setDrawnPlaqueName('Nouvelle Zone Délimitée');
-                        setIsSaveDrawnModalOpen(true);
-                      }}
-                      disabled={drawingPoints.length < 3}
-                      className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
-                    >
-                      <Icons.CheckCircle size={13} />
-                      Affecter & Notifier
-                    </button>
+                    {drawnZones.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const lastZone = drawnZones[drawnZones.length - 1];
+                          handleOpenAssignModalForZone(lastZone);
+                        }}
+                        className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                      >
+                        <Icons.CheckCircle size={13} />
+                        Affecter & Notifier
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Floating Active Zones Manager */}
+              {isDrawingMode && drawnZones.length > 0 && (
+                <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md p-3 rounded-[20px] shadow-2xl flex flex-col gap-2 z-30 border border-zinc-200 dark:border-zinc-800 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                      <Icons.Layers size={13} className="text-blue-600 dark:text-blue-400" />
+                      Zones actives sur la carte ({drawnZones.length})
+                    </span>
+                    <span className="text-[10px] text-zinc-500 font-bold">
+                      Surface totale : {drawnZones.reduce((sum, z) => sum + z.areaKm2, 0).toFixed(2)} km²
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {drawnZones.map((zone) => (
+                      <div
+                        key={zone.id}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all shrink-0 ${
+                          selectedZoneId === zone.id
+                            ? 'bg-blue-500/15 border-blue-500 shadow-sm'
+                            : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700'
+                        }`}
+                      >
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: zone.color }} />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedZoneId(zone.id);
+                            mapRef.current?.flyTo({ center: zone.center, zoom: 14 });
+                          }}
+                          className="text-xs font-black text-zinc-900 dark:text-white cursor-pointer hover:underline"
+                        >
+                          {zone.code}
+                        </button>
+                        <span className="text-[10px] text-zinc-500 font-bold">
+                          {zone.areaKm2.toFixed(2)} km²
+                        </span>
+                        <div className="flex items-center gap-1 border-l border-zinc-200 dark:border-zinc-700 pl-1.5 ml-0.5">
+                          <button
+                            type="button"
+                            title="Télécharger le KML de cette zone"
+                            onClick={() => handleDownloadKml(zone.points, zone.name, zone.code, zone.color)}
+                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-zinc-600 dark:text-zinc-300 cursor-pointer"
+                          >
+                            <Icons.Download size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Affecter et notifier les commerciaux pour cette zone"
+                            onClick={() => handleOpenAssignModalForZone(zone)}
+                            className="p-1 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded cursor-pointer"
+                          >
+                            <Icons.UserCheck size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Supprimer cette zone de la carte"
+                            onClick={() => handleDeleteZone(zone.id)}
+                            className="p-1 hover:bg-red-500/20 text-red-500 rounded cursor-pointer"
+                          >
+                            <Icons.Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
