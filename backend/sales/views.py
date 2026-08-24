@@ -60,10 +60,7 @@ class PlaqueListCreateView(APIView):
     GET: Liste toutes les plaques territoriales actives avec le nombre de leads et commerciaux assignés.
     POST: Crée une nouvelle plaque de prospection territoriale.
     """
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [permissions.AllowAny()]
-        return [IsSalespersonOrAdmin()]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         try:
@@ -91,7 +88,7 @@ class PlaqueDetailView(APIView):
     PATCH: Modifie la plaque ou assigne des commerciaux.
     DELETE: Supprime définitivement la plaque.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def get(self, request, pk):
         try:
@@ -128,7 +125,7 @@ class SalespersonListView(APIView):
     GET: Liste tous les commerciaux avec leur statut et plaques affectées.
     POST: Création administrative d'un compte commercial par le superviseur.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         from accounts.models import User
@@ -203,7 +200,7 @@ class SalespersonDetailView(APIView):
     DELETE: Révoque et supprime un compte commercial (interdiction d'accès immédiate à l'application mobile).
     PATCH: Met à jour les informations ou le mot de passe du commercial.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def delete(self, request, pk):
         from accounts.models import User
@@ -261,7 +258,7 @@ class AssignSalespersonsToPlaqueView(APIView):
     """
     POST: Assigne une liste de commerciaux à une plaque donnée et émet des notifications push.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def post(self, request, pk):
         from accounts.models import User
@@ -365,7 +362,7 @@ class PlaqueDrawAndSaveView(APIView):
     POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
     génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         try:
@@ -493,7 +490,7 @@ class PlaquePurgeMockView(APIView):
     """
     POST / DELETE: Supprime toutes les plaques mockées pour ne conserver que les zones tracées.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         mock_codes = [

@@ -225,13 +225,22 @@ export default function SupervisorTerritoryMap({
   const [isSavingDrawnPlaque, setIsSavingDrawnPlaque] = useState(false);
   const [isPurgingMocks, setIsPurgingMocks] = useState(false);
 
+  const getAuthHeaders = (includeJson = true): Record<string, string> => {
+    const headers: Record<string, string> = {};
+    if (includeJson) headers['Content-Type'] = 'application/json';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
+      headers['Authorization'] = `Token ${token.trim()}`;
+    }
+    return headers;
+  };
+
   // Fetch Field Intelligence Data from Django Backend
   const loadFieldIntelligence = useCallback(async () => {
     setLoadingFieldIntel(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Token ${token}` };
+      const headers = getAuthHeaders(false);
 
       const [nearbyRes, auditsRes, boardRes] = await Promise.all([
         fetch(`${API_URL}/api/sales/field-intelligence/nearby-leads/`, { headers }).catch(() => null),
@@ -1229,10 +1238,7 @@ export default function SupervisorTerritoryMap({
 
       const res = await fetch(`${API_URL}/api/sales/plaques/draw-zone/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(true),
         body: JSON.stringify({
           code: drawnPlaqueCode.trim().toUpperCase(),
           name: drawnPlaqueName.trim(),
@@ -1291,13 +1297,9 @@ export default function SupervisorTerritoryMap({
     setIsPurgingMocks(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/sales/plaques/purge-mock/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(true),
       });
       if (res.ok) {
         const data = await res.json();
@@ -1323,12 +1325,9 @@ export default function SupervisorTerritoryMap({
     setIsDeletingPlaque(plaqueId);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/sales/plaques/${plaqueId}/`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(false),
       });
       if (res.ok) {
         setStatusMessage({ text: `Plaque '${plaqueCode}' supprimée avec succès.`, type: 'success' });
@@ -1359,14 +1358,10 @@ export default function SupervisorTerritoryMap({
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
 
       const res = await fetch(`${API_URL}/api/sales/plaques/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(true),
         body: JSON.stringify({
           code: newPlaqueCode.trim().toUpperCase(),
           name: newPlaqueName.trim(),
@@ -1403,14 +1398,10 @@ export default function SupervisorTerritoryMap({
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
 
       const res = await fetch(`${API_URL}/api/sales/plaques/${assigningPlaque.id}/assign/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(true),
         body: JSON.stringify({
           salesperson_ids: assigningSalespersonIds,
         }),
@@ -1440,14 +1431,10 @@ export default function SupervisorTerritoryMap({
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
 
       const res = await fetch(`${API_URL}/api/sales/salespersons/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(true),
         body: JSON.stringify({
           username: newSalesUsername.trim(),
           password: newSalesPassword,
@@ -1485,13 +1472,10 @@ export default function SupervisorTerritoryMap({
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const token = localStorage.getItem('token');
 
       const res = await fetch(`${API_URL}/api/sales/salespersons/${revokingSalesperson.id}/`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Token ${token}`,
-        },
+        headers: getAuthHeaders(false),
       });
 
       if (!res.ok) throw new Error("Erreur de suppression du compte commercial");
