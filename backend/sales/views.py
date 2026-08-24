@@ -254,11 +254,14 @@ class AssignSalespersonsToPlaqueView(APIView):
         plaque.save()
 
         # Émission automatique de notifications dans l'application mobile de chaque commercial
+        from shared.infrastructure.firebase_service import send_push_notification_to_user
         for sp in salespersons:
+            notif_title = f"🎯 Nouvelle Plaque Assignée : {plaque.code}"
+            notif_body = f"Le Back-Office vous a affecté au territoire '{plaque.name}' ({plaque.city}). Le périmètre cartographique et le fichier KML sont prêts dans votre application."
             SalesNotification.objects.create(
                 recipient=sp,
-                title=f"🎯 Nouvelle Plaque Assignée : {plaque.code}",
-                message=f"Le Back-Office vous a affecté au territoire '{plaque.name}' ({plaque.city}). Le périmètre cartographique et le fichier KML sont prêts dans votre application.",
+                title=notif_title,
+                message=notif_body,
                 notification_type='PLAQUE_ASSIGNED',
                 plaque=plaque,
                 payload={
@@ -271,6 +274,19 @@ class AssignSalespersonsToPlaqueView(APIView):
                     "radius_km": plaque.radius_km,
                     "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
                     "assigned_by": request.user.username if request.user.is_authenticated else "Superviseur Back-Office"
+                }
+            )
+            # Envoi Push Notification FCM direct
+            send_push_notification_to_user(
+                user=sp,
+                title=notif_title,
+                body=notif_body,
+                data={
+                    "notification_type": "PLAQUE_ASSIGNED",
+                    "plaque_id": str(plaque.id),
+                    "plaque_code": str(plaque.code),
+                    "plaque_name": str(plaque.name),
+                    "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
                 }
             )
 
@@ -380,12 +396,15 @@ class PlaqueDrawAndSaveView(APIView):
         salespersons = User.objects.filter(id__in=salesperson_ids, role=User.SALESPERSON)
         plaque.assigned_salespersons.set(salespersons)
 
-        # Envoi de notification push in-app aux commerciaux
+        # Envoi de notification push in-app et Firebase aux commerciaux
+        from shared.infrastructure.firebase_service import send_push_notification_to_user
         for sp in salespersons:
+            draw_title = f"🎯 Nouveau Périmètre KML : {plaque.code}"
+            draw_body = f"La zone '{plaque.name}' ({plaque.city}) a été tracée par le Back-Office. Les contours KML sont synchronisés avec votre application."
             SalesNotification.objects.create(
                 recipient=sp,
-                title=f"🎯 Nouveau Périmètre KML : {plaque.code}",
-                message=f"La zone '{plaque.name}' ({plaque.city}) a été tracée par le Back-Office. Les contours KML sont synchronisés avec votre application.",
+                title=draw_title,
+                message=draw_body,
                 notification_type='TERRITORY_UPDATE',
                 plaque=plaque,
                 payload={
@@ -395,6 +414,19 @@ class PlaqueDrawAndSaveView(APIView):
                     "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
                     "boundary_geojson": plaque.boundary_geojson,
                     "center": {"lat": plaque.latitude, "lon": plaque.longitude}
+                }
+            )
+            # Envoi Push Notification FCM direct
+            send_push_notification_to_user(
+                user=sp,
+                title=draw_title,
+                body=draw_body,
+                data={
+                    "notification_type": "TERRITORY_UPDATE",
+                    "plaque_id": str(plaque.id),
+                    "plaque_code": str(plaque.code),
+                    "plaque_name": str(plaque.name),
+                    "kml_url": f"/api/sales/plaques/{plaque.id}/kml/",
                 }
             )
 

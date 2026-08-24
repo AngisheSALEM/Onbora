@@ -193,3 +193,10 @@ REST_FRAMEWORK = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Firebase Admin SDK Configuration
+FIREBASE_CREDENTIALS_PATH = os.getenv(
+    'FIREBASE_CREDENTIALS_PATH',
+    str(BASE_DIR / 'firebase-service-account.json')
+)
+
+

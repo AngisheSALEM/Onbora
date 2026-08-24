@@ -96,3 +96,39 @@ class KAMListView(APIView):
             }
             for k in kams
         ], status=status.HTTP_200_OK)
+
+
+class FCMTokenUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        fcm_token = request.data.get('fcm_token', '').strip()
+        device_type = request.data.get('device_type', 'android')
+        device_name = request.data.get('device_name', '')
+
+        if not fcm_token:
+            return Response({"detail": "Le token FCM est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Mettre à jour le token principal de l'utilisateur
+        request.user.fcm_token = fcm_token
+        request.user.save(update_fields=['fcm_token'])
+
+        # Enregistrer ou mettre à jour le terminal de l'utilisateur
+        from .models import UserDevice
+        device, created = UserDevice.objects.update_or_create(
+            fcm_token=fcm_token,
+            defaults={
+                'user': request.user,
+                'device_type': device_type,
+                'device_name': device_name,
+                'is_active': True,
+            }
+        )
+
+        return Response({
+            "status": "success",
+            "message": "Jeton FCM enregistré avec succès.",
+            "device_id": device.id,
+            "created": created,
+        }, status=status.HTTP_200_OK)
+

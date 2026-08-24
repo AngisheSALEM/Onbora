@@ -16,6 +16,9 @@ build/
 .env
 *.env
 .env*
+*firebase*.json
+google-services.json
+GoogleService-Info.plist
 
 # OS / IDE
 .DS_Store
