@@ -209,6 +209,8 @@ export default function SupervisorTerritoryMap({
   const drawLineWidthRef = useRef(3);
   const [activeStrokePoints, setActiveStrokePoints] = useState<[number, number][]>([]);
   const activeStrokePointsRef = useRef<[number, number][]>([]);
+  const [liveCursorPos, setLiveCursorPos] = useState<{ x: number; y: number; lng: number; lat: number } | null>(null);
+  const [mapTransformKey, setMapTransformKey] = useState(0);
   const isMouseDownDrawingRef = useRef(false);
   const [drawnZones, setDrawnZones] = useState<DrawnZone[]>([]);
   const drawnZonesRef = useRef<DrawnZone[]>([]);
@@ -426,6 +428,18 @@ export default function SupervisorTerritoryMap({
     setStatusMessage({ text: "Toutes les zones tracées ont été effacées.", type: 'success' });
   };
 
+  // Helper to project GPS coordinates to pixel coordinates on the active MapLibre viewport
+  const projectGps = (lng: number, lat: number): { x: number; y: number } | null => {
+    const map = mapRef.current;
+    if (!map) return null;
+    try {
+      const p = map.project([lng, lat]);
+      return { x: p.x, y: p.y };
+    } catch {
+      return null;
+    }
+  };
+
   // Initialize MapLibre GL JS & Attach Native GeoJSON Linear Drawing Handlers
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -440,6 +454,12 @@ export default function SupervisorTerritoryMap({
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
+
+    // Viewport transform listeners for real-time SVG projection overlay
+    map.on('move', () => setMapTransformKey((k) => k + 1));
+    map.on('zoom', () => setMapTransformKey((k) => k + 1));
+    map.on('rotate', () => setMapTransformKey((k) => k + 1));
+    map.on('resize', () => setMapTransformKey((k) => k + 1));
 
     // Single Click on Map (Point Delimitation OR Linear Vertex Placement)
     map.on('click', (e) => {
@@ -460,7 +480,7 @@ export default function SupervisorTerritoryMap({
         if (currentPts.length >= 3) {
           const first = currentPts[0];
           const dist = Math.hypot(newPt[0] - first[0], newPt[1] - first[1]);
-          if (dist < 0.001) {
+          if (dist < 0.0012) {
             handleFinishCurrentZone(currentPts);
             return;
           }
@@ -482,24 +502,29 @@ export default function SupervisorTerritoryMap({
       }
     });
 
-    // Mouse Move (for Freehand continuous stroke)
+    // Mouse Move (for Freehand continuous stroke and live cursor rubberband)
     map.on('mousemove', (e) => {
       if (!isDrawingModeRef.current) return;
+      const curLng = parseFloat(e.lngLat.lng.toFixed(5));
+      const curLat = parseFloat(e.lngLat.lat.toFixed(5));
+      setLiveCursorPos({ x: e.point.x, y: e.point.y, lng: curLng, lat: curLat });
+
       if (drawingToolTypeRef.current === 'FREEHAND' && isMouseDownDrawingRef.current) {
-        const cur: [number, number] = [
-          parseFloat(e.lngLat.lng.toFixed(5)),
-          parseFloat(e.lngLat.lat.toFixed(5)),
-        ];
+        const cur: [number, number] = [curLng, curLat];
         const pts = activeStrokePointsRef.current;
         if (pts.length > 0) {
           const last = pts[pts.length - 1];
           const dist = Math.hypot(cur[0] - last[0], cur[1] - last[1]);
-          if (dist < 0.00015) return;
+          if (dist < 0.0001) return;
         }
         const next = [...pts, cur];
         activeStrokePointsRef.current = next;
         setActiveStrokePoints(next);
       }
+    });
+
+    map.on('mouseout', () => {
+      setLiveCursorPos(null);
     });
 
     // Mouse Down / Up for Freehand Drawing Mode
@@ -1595,6 +1620,173 @@ export default function SupervisorTerritoryMap({
             <div className="relative w-full h-[560px] rounded-[22px] overflow-hidden shadow-sm bg-zinc-950">
               <div ref={mapContainerRef} className="w-full h-full" />
 
+              {/* Live High-Performance Vector SVG Overlay for 100% Guaranteed Visual Drawing */}
+              <svg key={mapTransformKey} className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-hidden">
+                {/* 1. All Finished Drawn Zones */}
+                {drawnZones.map((zone) => {
+                  const projected = zone.points
+                    .map((pt) => projectGps(pt[0], pt[1]))
+                    .filter((p): p is { x: number; y: number } => p !== null);
+                  if (projected.length < 3) return null;
+
+                  const pointsStr = projected.map((p) => `${p.x},${p.y}`).join(' ');
+                  const centerProj = projectGps(zone.center[0], zone.center[1]);
+                  const isSelected = selectedZoneId === zone.id;
+
+                  return (
+                    <g key={zone.id} className="transition-opacity duration-200">
+                      {/* Shaded Area */}
+                      <polygon
+                        points={pointsStr}
+                        fill={zone.color}
+                        fillOpacity={isSelected ? 0.38 : 0.22}
+                        stroke={zone.color}
+                        strokeWidth={isSelected ? 4.5 : 3}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Coordinate Vertices */}
+                      {projected.map((p, idx) => (
+                        <circle
+                          key={idx}
+                          cx={p.x}
+                          cy={p.y}
+                          r={isSelected ? 5 : 3.5}
+                          fill="#FFFFFF"
+                          stroke={zone.color}
+                          strokeWidth="2"
+                        />
+                      ))}
+
+                      {/* Centroid Label Badge */}
+                      {centerProj && (
+                        <g transform={`translate(${centerProj.x}, ${centerProj.y})`}>
+                          <rect
+                            x="-50"
+                            y="-13"
+                            width="100"
+                            height="26"
+                            rx="13"
+                            fill="rgba(15, 23, 42, 0.88)"
+                            stroke={zone.color}
+                            strokeWidth="1.5"
+                          />
+                          <text
+                            x="0"
+                            y="4"
+                            textAnchor="middle"
+                            fill="#FFFFFF"
+                            fontSize="10"
+                            fontWeight="900"
+                            letterSpacing="0.2px"
+                          >
+                            {zone.code} • {zone.areaKm2.toFixed(1)} km²
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+
+                {/* 2. Active Stroke in Progress (Live Real-Time Preview) */}
+                {isDrawingMode && activeStrokePoints.length > 0 && (() => {
+                  const projected = activeStrokePoints
+                    .map((pt) => projectGps(pt[0], pt[1]))
+                    .filter((p): p is { x: number; y: number } => p !== null);
+
+                  if (projected.length === 0) return null;
+
+                  const pointsStr = projected.map((p) => `${p.x},${p.y}`).join(' ');
+                  const firstPt = projected[0];
+                  const lastPt = projected[projected.length - 1];
+
+                  return (
+                    <g>
+                      {/* Live Shaded Polygon Fill (if >= 3 points) */}
+                      {projected.length >= 3 && (
+                        <polygon
+                          points={pointsStr}
+                          fill={drawColor}
+                          fillOpacity="0.22"
+                          stroke="none"
+                        />
+                      )}
+
+                      {/* Solid line connecting clicked vertices */}
+                      {projected.length >= 2 && (
+                        <polyline
+                          points={pointsStr}
+                          fill="none"
+                          stroke={drawColor}
+                          strokeWidth={drawLineWidth + 0.5}
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                        />
+                      )}
+
+                      {/* Live Rubberband Line to Cursor */}
+                      {liveCursorPos && (
+                        <>
+                          {/* Dashed line to mouse cursor */}
+                          <line
+                            x1={lastPt.x}
+                            y1={lastPt.y}
+                            x2={liveCursorPos.x}
+                            y2={liveCursorPos.y}
+                            stroke={drawColor}
+                            strokeWidth={drawLineWidth}
+                            strokeDasharray="5 3"
+                            strokeLinecap="round"
+                          />
+
+                          {/* Loop Closure preview line from cursor back to Point 0 if >= 2 points */}
+                          {projected.length >= 2 && (
+                            <line
+                              x1={liveCursorPos.x}
+                              y1={liveCursorPos.y}
+                              x2={firstPt.x}
+                              y2={firstPt.y}
+                              stroke={drawColor}
+                              strokeWidth="1.5"
+                              strokeDasharray="3 3"
+                              opacity="0.6"
+                            />
+                          )}
+                        </>
+                      )}
+
+                      {/* Vertex Circles */}
+                      {projected.map((p, idx) => {
+                        const isFirst = idx === 0;
+                        return (
+                          <g key={idx}>
+                            {isFirst ? (
+                              // Pulsating Green Bullseye on Point 1 for easy loop closure
+                              <g>
+                                <circle cx={p.x} cy={p.y} r="14" fill="#10B981" fillOpacity="0.30" />
+                                <circle cx={p.x} cy={p.y} r="8" fill="#10B981" stroke="#FFFFFF" strokeWidth="2.5" />
+                                <circle cx={p.x} cy={p.y} r="3" fill="#FFFFFF" />
+                              </g>
+                            ) : (
+                              // Standard vertex
+                              <circle
+                                cx={p.x}
+                                cy={p.y}
+                                r="5.5"
+                                fill="#FFFFFF"
+                                stroke={drawColor}
+                                strokeWidth="2.5"
+                              />
+                            )}
+                          </g>
+                        );
+                      })}
+                    </g>
+                  );
+                })()}
+              </svg>
+
               {/* Map Legend Overlay */}
               {!isDrawingMode && (
                 <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[18px] shadow-lg flex flex-col gap-2 z-10 text-[11px]">
@@ -1706,15 +1898,6 @@ export default function SupervisorTerritoryMap({
                       </button>
                       <button
                         type="button"
-                        onClick={handleDownloadAllGeoJson}
-                        disabled={drawnZones.length === 0}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
-                      >
-                        <Icons.Download size={13} />
-                        Export GeoJSON ({drawnZones.length})
-                      </button>
-                      <button
-                        type="button"
                         onClick={handleDownloadAllKml}
                         disabled={drawnZones.length === 0}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
@@ -1732,7 +1915,7 @@ export default function SupervisorTerritoryMap({
                           className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
                         >
                           <Icons.CheckCircle size={13} />
-                          Affecter & Notifier
+                          💾 Enregistrer ce polygone
                         </button>
                       )}
                     </div>
@@ -1784,7 +1967,7 @@ export default function SupervisorTerritoryMap({
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                       <Icons.Layers size={13} className="text-blue-600 dark:text-blue-400" />
-                      Polygones GeoJSON sur la carte ({drawnZones.length})
+                      Polygones dessinés sur la carte ({drawnZones.length})
                     </span>
                     <span className="text-[10px] text-zinc-500 font-bold">
                       Surface totale : {drawnZones.reduce((sum, z) => sum + z.areaKm2, 0).toFixed(2)} km²
@@ -1795,13 +1978,13 @@ export default function SupervisorTerritoryMap({
                     {drawnZones.map((zone) => (
                       <div
                         key={zone.id}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all shrink-0 ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all shrink-0 ${
                           selectedZoneId === zone.id
                             ? 'bg-blue-500/15 border-blue-500 shadow-sm'
                             : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700'
                         }`}
                       >
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: zone.color }} />
+                        <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: zone.color }} />
                         <button
                           type="button"
                           onClick={() => {
@@ -1815,32 +1998,15 @@ export default function SupervisorTerritoryMap({
                         <span className="text-[10px] text-zinc-500 font-bold">
                           {zone.areaKm2.toFixed(2)} km²
                         </span>
-                        <div className="flex items-center gap-1 border-l border-zinc-200 dark:border-zinc-700 pl-1.5 ml-0.5">
+                        <div className="flex items-center gap-1.5 border-l border-zinc-200 dark:border-zinc-700 pl-2 ml-1">
                           <button
                             type="button"
-                            title="Télécharger le GeoJSON de cette zone"
-                            onClick={() => {
-                              const fc = {
-                                type: 'FeatureCollection',
-                                features: [{
-                                  type: 'Feature',
-                                  properties: { id: zone.id, code: zone.code, name: zone.name, color: zone.color, area_km2: zone.areaKm2 },
-                                  geometry: { type: 'Polygon', coordinates: [zone.points] }
-                                }]
-                              };
-                              const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/geo+json' });
-                              const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${zone.code}.geojson`;
-                              document.body.appendChild(a);
-                              a.click();
-                              document.body.removeChild(a);
-                              URL.revokeObjectURL(url);
-                            }}
-                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-blue-600 dark:text-blue-400 cursor-pointer"
+                            title="Enregistrer cette zone dans le système et l'affecter aux commerciaux"
+                            onClick={() => handleOpenAssignModalForZone(zone)}
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-extrabold flex items-center gap-1 cursor-pointer shadow-sm"
                           >
-                            <Icons.FileText size={12} />
+                            <Icons.CheckCircle size={12} />
+                            Enregistrer
                           </button>
                           <button
                             type="button"
@@ -1849,14 +2015,6 @@ export default function SupervisorTerritoryMap({
                             className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-zinc-600 dark:text-zinc-300 cursor-pointer"
                           >
                             <Icons.Download size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            title="Affecter et notifier les commerciaux pour cette zone"
-                            onClick={() => handleOpenAssignModalForZone(zone)}
-                            className="p-1 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded cursor-pointer"
-                          >
-                            <Icons.UserCheck size={12} />
                           </button>
                           <button
                             type="button"
