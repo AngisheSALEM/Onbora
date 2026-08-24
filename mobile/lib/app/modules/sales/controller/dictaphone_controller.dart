@@ -77,12 +77,13 @@ class DictaphoneController extends GetxController {
         onResult: (result) {
           transcribedText.value = result.recognizedWords;
         },
-        listenFor: const Duration(minutes: 5),
-        pauseFor: const Duration(seconds: 10),
-        partialResults: true,
-        localeId: 'fr_FR',
-        cancelOnError: false,
-        listenMode: stt.ListenMode.dictation,
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.dictation,
+          cancelOnError: false,
+          partialResults: true,
+          onDevice: false,
+          localeId: 'fr_FR',
+        ),
       );
     }
   }

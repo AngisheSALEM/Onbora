@@ -418,7 +418,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                             ),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
-                              value: _nurturingReason,
+                              initialValue: _nurturingReason,
                               isExpanded: true,
                               dropdownColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                               style: TextStyle(fontSize: 12, color: isDark ? Colors.white : AppConstants.textDark, fontWeight: FontWeight.w600),
@@ -642,7 +642,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                               SizedBox(
                                 width: 120,
                                 child: DropdownButtonFormField<String>(
-                                  value: _ref1Type,
+                                  initialValue: _ref1Type,
                                   isExpanded: true,
                                   dropdownColor: isDark ? const Color(0xFF1C1C22) : Colors.white,
                                   style: TextStyle(fontSize: 11, color: isDark ? Colors.white : AppConstants.textDark, fontWeight: FontWeight.w600),
