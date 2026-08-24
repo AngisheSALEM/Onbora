@@ -44,14 +44,19 @@ def send_push_notification_to_token(token: str, title: str, body: str, data: dic
     
     try:
         from firebase_admin import messaging
+        import datetime
         
         clean_data = {}
         if data:
             for k, v in data.items():
                 clean_data[str(k)] = str(v) if not isinstance(v, str) else v
+        clean_data['title'] = str(title)
+        clean_data['body'] = str(body)
+        clean_data['click_action'] = 'FLUTTER_NOTIFICATION_CLICK'
 
         android_config = messaging.AndroidConfig(
             priority='high',
+            ttl=datetime.timedelta(days=7),
             notification=messaging.AndroidNotification(
                 title=title,
                 body=body,
@@ -59,10 +64,14 @@ def send_push_notification_to_token(token: str, title: str, body: str, data: dic
                 sound='default',
                 priority='max',
                 default_vibrate_timings=True,
+                default_sound=True,
+                visibility='public',
+                click_action='FLUTTER_NOTIFICATION_CLICK',
             )
         )
         
         apns_config = messaging.APNSConfig(
+            headers={'apns-priority': '10'},
             payload=messaging.APNSPayload(
                 aps=messaging.Aps(
                     alert=messaging.ApsAlert(
@@ -71,6 +80,7 @@ def send_push_notification_to_token(token: str, title: str, body: str, data: dic
                     ),
                     sound='default',
                     badge=1,
+                    content_available=True,
                 )
             )
         )

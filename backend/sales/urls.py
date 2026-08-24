@@ -34,6 +34,7 @@ from .views import (
     AdvProvisioningQueueView,
     AdvTriggerProvisioningStpView,
     DocumentOcrScanView,
+    TestPushNotificationView,
 )
 
 urlpatterns = [
@@ -41,6 +42,7 @@ urlpatterns = [
     path('notifications/', SalesNotificationListView.as_view(), name='sales-notifications-list'),
     path('notifications/<int:pk>/mark-read/', SalesNotificationListView.as_view(), name='sales-notification-mark-read'),
     path('notifications/mark-all-read/', SalesNotificationListView.as_view(), name='sales-notifications-mark-all-read'),
+    path('notifications/test-push/', TestPushNotificationView.as_view(), name='sales-notifications-test-push'),
 
     # Numérisation OCR de Documents (RCCM, Carte de visite, Facture Télécom)
     path('ocr/scan/', DocumentOcrScanView.as_view(), name='sales-ocr-scan'),

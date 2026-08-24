@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.models import User
 from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification
@@ -1437,10 +1437,47 @@ class DocumentOcrScanView(APIView):
             result["contact_name"] = result["contact_name"] or "Alain Ilunga"
             result["contact_title"] = result["contact_title"] or "Responsable Logistique & Télécoms"
             result["phone"] = result["phone"] or "+243 89 123 4567"
-            result["email"] = result["email"] or "a.ilunga@congologistics.cd"
-            result["current_provider"] = result["current_provider"] or "Vodacom Business"
-            result["monthly_spend_estimated"] = result["monthly_spend_estimated"] or 450
-
         return result
+
+
+class TestPushNotificationView(APIView):
+    """
+    POST: Déclenche un test push Firebase direct pour l'utilisateur connecté ou le commercial ciblé.
+    Permet de tester la réception instantanée quand l'application est en arrière-plan ou fermée.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from accounts.models import User
+        target_user = request.user
+        target_id = request.data.get('user_id')
+        if target_id and request.user.role in [User.SUPERVISOR, User.ADMIN]:
+            try:
+                target_user = User.objects.get(pk=target_id)
+            except User.DoesNotExist:
+                return Response({"detail": "Commercial introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        title = request.data.get('title', '🔔 Test Notification Push Onbora')
+        body = request.data.get('body', 'Ceci est un test de notification push Firebase temps réel. L\'application reçoit le message même si elle est fermée.')
+
+        from shared.infrastructure.firebase_service import send_push_notification_to_user
+        sent_count = send_push_notification_to_user(
+            user=target_user,
+            title=title,
+            body=body,
+            data={
+                "notification_type": "TEST_PUSH",
+                "test": "true",
+            }
+        )
+
+        return Response({
+            "status": "success" if sent_count > 0 else "no_tokens",
+            "message": f"Notification transmise à {sent_count} appareil(s) pour {target_user.username}.",
+            "fcm_token_registered": bool(target_user.fcm_token),
+            "sent_count": sent_count,
+            "target_user": target_user.username,
+        }, status=status.HTTP_200_OK)
+
 
 

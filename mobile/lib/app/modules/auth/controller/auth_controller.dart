@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../model/user_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/storage/session_storage.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../routes/app_routes.dart';
 
 class AuthController extends GetxController {
@@ -38,6 +39,9 @@ class AuthController extends GetxController {
           isAuthenticated.value = true;
         }
 
+        // Synchroniser le token FCM de l'appareil dès la restauration de session
+        _syncFCM();
+
         // Automatic session restore & redirection if currently on LOGIN page
         if (Get.currentRoute == Routes.LOGIN || Get.currentRoute.isEmpty) {
           Future.microtask(() => Get.offAllNamed(Routes.MAIN_NAVIGATION));
@@ -50,6 +54,14 @@ class AuthController extends GetxController {
     } finally {
       isBootstrapping.value = false;
     }
+  }
+
+  void _syncFCM() {
+    try {
+      if (Get.isRegistered<NotificationService>()) {
+        NotificationService.to.syncFCMTokenWithBackend();
+      }
+    } catch (_) {}
   }
 
   Future<UserModel?> getProfile() async {
@@ -89,6 +101,9 @@ class AuthController extends GetxController {
       _currentUser.value = user;
       isAuthenticated.value = true;
       isLoading.value = false;
+
+      // Synchroniser le token FCM après authentification
+      _syncFCM();
 
       Get.offAllNamed(Routes.MAIN_NAVIGATION);
       return true;
