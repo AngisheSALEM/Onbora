@@ -35,6 +35,11 @@ class PlaqueModel {
   });
 
   factory PlaqueModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic>? parsedGeojson;
+    if (json['boundary_geojson'] is Map) {
+      parsedGeojson = Map<String, dynamic>.from(json['boundary_geojson'] as Map);
+    }
+
     return PlaqueModel(
       id: json['id'] ?? 0,
       code: json['code'] ?? 'ZONE',
@@ -47,7 +52,7 @@ class PlaqueModel {
       readyCount: json['ready_count'] ?? 0,
       assignedSalespersonsNames: (json['assigned_salespersons_names'] as List?)?.map((e) => e.toString()).toList() ?? [],
       isActive: json['is_active'] ?? true,
-      boundaryGeojson: json['boundary_geojson'] is Map<String, dynamic> ? json['boundary_geojson'] : null,
+      boundaryGeojson: parsedGeojson,
       kmlData: json['kml_data'],
       kmlUrl: json['kml_url'],
     );
@@ -57,28 +62,37 @@ class PlaqueModel {
     if (boundaryGeojson != null && boundaryGeojson!.containsKey('coordinates')) {
       final rawCoords = boundaryGeojson!['coordinates'];
       if (rawCoords is List && rawCoords.isNotEmpty) {
-        final ring = rawCoords[0] is List && (rawCoords[0] as List).isNotEmpty && rawCoords[0][0] is List
-            ? rawCoords[0] as List
-            : rawCoords;
-        final list = <LatLng>[];
-        for (final pt in ring) {
-          if (pt is List && pt.length >= 2) {
-            final lng = (pt[0] as num).toDouble();
-            final lat = (pt[1] as num).toDouble();
-            list.add(LatLng(lat, lng));
+        List? ring;
+        if (rawCoords[0] is List) {
+          final firstEl = rawCoords[0] as List;
+          if (firstEl.isNotEmpty && firstEl[0] is List) {
+            ring = firstEl; // [[[lng, lat], ...]]
+          } else {
+            ring = rawCoords; // [[lng, lat], ...]
           }
         }
-        if (list.isNotEmpty) return list;
+        if (ring != null && ring.isNotEmpty) {
+          final list = <LatLng>[];
+          for (final pt in ring) {
+            if (pt is List && pt.length >= 2) {
+              final lng = (pt[0] as num).toDouble();
+              final lat = (pt[1] as num).toDouble();
+              list.add(LatLng(lat, lng));
+            }
+          }
+          if (list.isNotEmpty) return list;
+        }
       }
     }
     // Fallback circle approximation around centroid
     final list = <LatLng>[];
-    const numPts = 24;
+    const numPts = 32;
     const latFactor = 111.32;
+    final r = radiusKm > 0 ? radiusKm : 4.0;
     for (int i = 0; i <= numPts; i++) {
       final angle = (2 * math.pi * i) / numPts;
-      final dLat = (radiusKm) / latFactor;
-      final dLng = (radiusKm) / (latFactor * math.cos(latitude * math.pi / 180));
+      final dLat = r / latFactor;
+      final dLng = r / (latFactor * math.cos(latitude * math.pi / 180));
       list.add(LatLng(latitude + dLat * math.sin(angle), longitude + dLng * math.cos(angle)));
     }
     return list;

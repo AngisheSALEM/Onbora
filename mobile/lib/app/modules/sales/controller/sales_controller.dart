@@ -37,20 +37,11 @@ class SalesController extends GetxController {
 
   // Plaque Portfolio Filter & State
   final RxBool isPlaqueUnlocked = true.obs;
-  final RxString activePlaqueCode = 'KIN-GOMBE'.obs;
+  final RxString activePlaqueCode = 'Toutes'.obs;
   final RxString selectedPlaqueFilter = 'Toutes'.obs;
   final RxString plaqueErrorMessage = ''.obs;
 
-  final RxList<String> availablePlaques = <String>[
-    'Toutes',
-    'KIN-GOMBE',
-    'KIN-LIMETE',
-    'BZV-CENTRE',
-    'PNR-CENTRE',
-    'LSH-CENTRE',
-    'ABJ-PLATEAU',
-    'DKR-PLATEAU',
-  ].obs;
+  final RxList<String> availablePlaques = <String>['Toutes'].obs;
 
   final RxBool isSearching = false.obs;
   final RxBool isCreatingPrep = false.obs;
@@ -325,12 +316,24 @@ class SalesController extends GetxController {
     isLoadingPlaques.value = true;
     try {
       final response = await _apiClient.get('/api/sales/plaques/');
+      List rawList = [];
       if (response is List) {
-        plaquesList.value = response.map((e) => PlaqueModel.fromJson(e as Map<String, dynamic>)).toList();
-        final codes = ['Toutes', ...plaquesList.map((p) => p.code)];
+        rawList = response;
+      } else if (response is Map && response['results'] is List) {
+        rawList = response['results'] as List;
+      } else if (response is Map && response['plaques'] is List) {
+        rawList = response['plaques'] as List;
+      }
+
+      if (rawList.isNotEmpty) {
+        final parsed = rawList
+            .map((e) => PlaqueModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        plaquesList.value = parsed;
+        final codes = ['Toutes', ...parsed.map((p) => p.code)];
         availablePlaques.value = codes;
         if (!codes.contains(activePlaqueCode.value)) {
-          activePlaqueCode.value = codes.isNotEmpty ? codes[0] : 'Toutes';
+          activePlaqueCode.value = 'Toutes';
         }
       }
     } catch (_) {

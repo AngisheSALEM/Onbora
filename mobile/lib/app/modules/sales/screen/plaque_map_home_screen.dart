@@ -26,6 +26,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
   MapLibreMapController? _mapController;
   bool _isStyleLoaded = false;
   bool _hasLocationPermission = false;
+  final List<Worker> _workers = [];
 
   static const LatLng _kinshasaGombeCenter = LatLng(-4.3033, 15.3084);
 
@@ -33,6 +34,33 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
   void initState() {
     super.initState();
     _checkAndRequestLocationPermission();
+
+    final salesCtrl = Get.find<SalesController>();
+    salesCtrl.fetchPlaques();
+
+    _workers.add(ever(salesCtrl.plaquesList, (_) {
+      if (mounted && _isStyleLoaded) {
+        _updateMapMarkers();
+      }
+    }));
+    _workers.add(ever(salesCtrl.activePlaqueCode, (_) {
+      if (mounted && _isStyleLoaded) {
+        _updateMapMarkers();
+      }
+    }));
+    _workers.add(ever(salesCtrl.searchResults, (_) {
+      if (mounted && _isStyleLoaded) {
+        _updateMapMarkers();
+      }
+    }));
+  }
+
+  @override
+  void dispose() {
+    for (final w in _workers) {
+      w.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _checkAndRequestLocationPermission() async {
@@ -84,8 +112,10 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
           ? '${AppConstants.mapTilerDarkStyleUrl}$apiKey'
           : '${AppConstants.mapTilerStreetsStyleUrl}$apiKey';
     }
-    // Style vectoriel MapLibre par défaut (100% gratuit, 0 clé requise)
-    return AppConstants.mapLibreDemoStyleUrl;
+    // Style vectoriel mondial OpenStreetMap OpenFreeMap
+    return isDark
+        ? 'https://tiles.openfreemap.org/styles/dark'
+        : 'https://tiles.openfreemap.org/styles/bright';
   }
 
   void _onMapCreated(MapLibreMapController controller) {
@@ -129,20 +159,36 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
       final isSelectedPlaque = activeCode == 'Toutes' || activeCode == plaque.code;
       final pts = plaque.polygonLatLngs;
       if (pts.length >= 3) {
+        final closedPts = List<LatLng>.from(pts);
+        if (closedPts.first.latitude != closedPts.last.latitude || closedPts.first.longitude != closedPts.last.longitude) {
+          closedPts.add(closedPts.first);
+        }
+
         _mapController?.addFill(
           FillOptions(
-            geometry: [pts],
+            geometry: [closedPts],
             fillColor: '#2563EB',
-            fillOpacity: isSelectedPlaque ? (activeCode == 'Toutes' ? 0.14 : 0.25) : 0.05,
+            fillOpacity: isSelectedPlaque ? (activeCode == 'Toutes' ? 0.16 : 0.28) : 0.06,
             fillOutlineColor: '#2563EB',
           ),
         );
         _mapController?.addLine(
           LineOptions(
-            geometry: pts,
+            geometry: closedPts,
             lineColor: '#2563EB',
-            lineWidth: isSelectedPlaque ? 3.0 : 1.5,
-            lineOpacity: isSelectedPlaque ? 0.95 : 0.40,
+            lineWidth: isSelectedPlaque ? 3.5 : 1.8,
+            lineOpacity: isSelectedPlaque ? 0.95 : 0.45,
+          ),
+        );
+
+        _mapController?.addCircle(
+          CircleOptions(
+            geometry: LatLng(plaque.latitude, plaque.longitude),
+            circleColor: '#0F172A',
+            circleRadius: isSelectedPlaque ? 8.0 : 6.0,
+            circleStrokeColor: '#2563EB',
+            circleStrokeWidth: 2.0,
+            circleOpacity: 0.95,
           ),
         );
       }
