@@ -198,15 +198,20 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  // Interactive Multi-Zone Polygon / KML Drawing Mode (Continuous Paint Pencil)
+  // Interactive Multi-Zone Native GeoJSON Drawing Engine (Linear Segments & Freehand)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const isDrawingModeRef = useRef(false);
+  const [drawingToolType, setDrawingToolType] = useState<'LINEAR' | 'FREEHAND'>('LINEAR');
+  const drawingToolTypeRef = useRef<'LINEAR' | 'FREEHAND'>('LINEAR');
   const [drawColor, setDrawColor] = useState('#2563EB'); // Default electric blue
-  const [drawLineWidth, setDrawLineWidth] = useState(4); // 2, 4, 8 px
-  const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isDrawingCanvasMouseDown = useRef(false);
-  const canvasPointsRef = useRef<{ x: number; y: number; lng: number; lat: number }[]>([]);
+  const drawColorRef = useRef('#2563EB');
+  const [drawLineWidth, setDrawLineWidth] = useState(3); // 2, 3, 5 px
+  const drawLineWidthRef = useRef(3);
+  const [activeStrokePoints, setActiveStrokePoints] = useState<[number, number][]>([]);
+  const activeStrokePointsRef = useRef<[number, number][]>([]);
+  const isMouseDownDrawingRef = useRef(false);
   const [drawnZones, setDrawnZones] = useState<DrawnZone[]>([]);
+  const drawnZonesRef = useRef<DrawnZone[]>([]);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [activeZoneToAssign, setActiveZoneToAssign] = useState<DrawnZone | null>(null);
   const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
@@ -307,6 +312,121 @@ export default function SupervisorTerritoryMap({
   };
 
   // Initialize MapLibre GL JS
+  // Synchronize dynamic state references & Map cursor
+  useEffect(() => {
+    isDrawingModeRef.current = isDrawingMode;
+    drawingToolTypeRef.current = drawingToolType;
+    drawColorRef.current = drawColor;
+    drawLineWidthRef.current = drawLineWidth;
+    drawnZonesRef.current = drawnZones;
+    activeStrokePointsRef.current = activeStrokePoints;
+
+    const map = mapRef.current;
+    if (map) {
+      if (isDrawingMode) {
+        map.getCanvas().style.cursor = 'crosshair';
+        map.doubleClickZoom.disable();
+        if (drawingToolType === 'FREEHAND') {
+          map.dragPan.disable();
+        } else {
+          map.dragPan.enable();
+        }
+      } else {
+        map.getCanvas().style.cursor = '';
+        map.doubleClickZoom.enable();
+        map.dragPan.enable();
+      }
+    }
+  }, [isDrawingMode, drawingToolType, drawColor, drawLineWidth, drawnZones, activeStrokePoints]);
+
+  // Shoelace formula to calculate real-world polygon surface area (km²)
+  const calculatePolygonAreaKm2 = (points: [number, number][]): number => {
+    if (points.length < 3) return 0;
+    let area = 0;
+    const n = points.length;
+    const latFactor = 111.132;
+    const lngFactor = 111.320 * Math.cos(-4.3033 * (Math.PI / 180));
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      const xi = points[i][0] * lngFactor;
+      const yi = points[i][1] * latFactor;
+      const xj = points[j][0] * lngFactor;
+      const yj = points[j][1] * latFactor;
+      area += xi * yj - xj * yi;
+    }
+    return Math.abs(area / 2);
+  };
+
+  // Finish and commit the current linear/freehand zone to MapLibre GeoJSON layers
+  const handleFinishCurrentZone = (pointsToClose?: [number, number][]) => {
+    const pts = pointsToClose || activeStrokePointsRef.current;
+    if (pts.length < 3) {
+      setStatusMessage({ text: "Placez au moins 3 points pour fermer un polygone de zone.", type: 'error' });
+      return;
+    }
+
+    const closed = [...pts];
+    if (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1]) {
+      closed.push(closed[0]);
+    }
+
+    const avgLng = parseFloat((closed.reduce((sum, p) => sum + p[0], 0) / closed.length).toFixed(5));
+    const avgLat = parseFloat((closed.reduce((sum, p) => sum + p[1], 0) / closed.length).toFixed(5));
+    const area = calculatePolygonAreaKm2(closed);
+
+    const zoneIndex = drawnZonesRef.current.length + 1;
+    const newZone: DrawnZone = {
+      id: `zone-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      code: `KIN-ZONE-${String(zoneIndex).padStart(2, '0')}`,
+      name: `Zone Délimitée ${zoneIndex}`,
+      color: drawColorRef.current,
+      lineWidth: drawLineWidthRef.current,
+      points: closed,
+      areaKm2: area,
+      center: [avgLng, avgLat],
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedZones = [...drawnZonesRef.current, newZone];
+    drawnZonesRef.current = updatedZones;
+    setDrawnZones(updatedZones);
+    setSelectedZoneId(newZone.id);
+    activeStrokePointsRef.current = [];
+    setActiveStrokePoints([]);
+    setDrawingPoints(closed);
+
+    setStatusMessage({
+      text: `Zone ${newZone.code} (${newZone.areaKm2.toFixed(2)} km²) créée et affichée sur la carte. Vous pouvez enchaîner une autre zone.`,
+      type: 'success',
+    });
+  };
+
+  const handleCancelCurrentStroke = () => {
+    activeStrokePointsRef.current = [];
+    setActiveStrokePoints([]);
+    setStatusMessage({ text: "Tracé en cours annulé.", type: 'success' });
+  };
+
+  const handleDeleteZone = (zoneId: string) => {
+    const next = drawnZones.filter((z) => z.id !== zoneId);
+    drawnZonesRef.current = next;
+    setDrawnZones(next);
+    if (selectedZoneId === zoneId) setSelectedZoneId(null);
+    setStatusMessage({ text: "Zone supprimée de la carte.", type: 'success' });
+  };
+
+  const handleClearAllZones = () => {
+    drawnZonesRef.current = [];
+    setDrawnZones([]);
+    setSelectedZoneId(null);
+    activeStrokePointsRef.current = [];
+    setActiveStrokePoints([]);
+    setDrawingPoints([]);
+    setStatusMessage({ text: "Toutes les zones tracées ont été effacées.", type: 'success' });
+  };
+
+  // Initialize MapLibre GL JS & Attach Native GeoJSON Linear Drawing Handlers
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -321,10 +441,86 @@ export default function SupervisorTerritoryMap({
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
 
+    // Single Click on Map (Point Delimitation OR Linear Vertex Placement)
     map.on('click', (e) => {
       if (!isDrawingModeRef.current) {
         setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
         setNewPlaqueLng(parseFloat(e.lngLat.lng.toFixed(5)));
+        return;
+      }
+
+      if (drawingToolTypeRef.current === 'LINEAR') {
+        const newPt: [number, number] = [
+          parseFloat(e.lngLat.lng.toFixed(5)),
+          parseFloat(e.lngLat.lat.toFixed(5)),
+        ];
+        const currentPts = activeStrokePointsRef.current;
+
+        // If >= 3 points and clicked very close to 1st point (closing loop)
+        if (currentPts.length >= 3) {
+          const first = currentPts[0];
+          const dist = Math.hypot(newPt[0] - first[0], newPt[1] - first[1]);
+          if (dist < 0.001) {
+            handleFinishCurrentZone(currentPts);
+            return;
+          }
+        }
+
+        const next = [...currentPts, newPt];
+        activeStrokePointsRef.current = next;
+        setActiveStrokePoints(next);
+      }
+    });
+
+    // Double Click to instantly close linear polygon
+    map.on('dblclick', (e) => {
+      if (isDrawingModeRef.current) {
+        e.preventDefault();
+        if (activeStrokePointsRef.current.length >= 3) {
+          handleFinishCurrentZone(activeStrokePointsRef.current);
+        }
+      }
+    });
+
+    // Mouse Move (for Freehand continuous stroke)
+    map.on('mousemove', (e) => {
+      if (!isDrawingModeRef.current) return;
+      if (drawingToolTypeRef.current === 'FREEHAND' && isMouseDownDrawingRef.current) {
+        const cur: [number, number] = [
+          parseFloat(e.lngLat.lng.toFixed(5)),
+          parseFloat(e.lngLat.lat.toFixed(5)),
+        ];
+        const pts = activeStrokePointsRef.current;
+        if (pts.length > 0) {
+          const last = pts[pts.length - 1];
+          const dist = Math.hypot(cur[0] - last[0], cur[1] - last[1]);
+          if (dist < 0.00015) return;
+        }
+        const next = [...pts, cur];
+        activeStrokePointsRef.current = next;
+        setActiveStrokePoints(next);
+      }
+    });
+
+    // Mouse Down / Up for Freehand Drawing Mode
+    map.on('mousedown', (e) => {
+      if (isDrawingModeRef.current && drawingToolTypeRef.current === 'FREEHAND') {
+        isMouseDownDrawingRef.current = true;
+        const startPt: [number, number] = [
+          parseFloat(e.lngLat.lng.toFixed(5)),
+          parseFloat(e.lngLat.lat.toFixed(5)),
+        ];
+        activeStrokePointsRef.current = [startPt];
+        setActiveStrokePoints([startPt]);
+      }
+    });
+
+    map.on('mouseup', () => {
+      if (isDrawingModeRef.current && drawingToolTypeRef.current === 'FREEHAND' && isMouseDownDrawingRef.current) {
+        isMouseDownDrawingRef.current = false;
+        if (activeStrokePointsRef.current.length >= 3) {
+          handleFinishCurrentZone(activeStrokePointsRef.current);
+        }
       }
     });
 
@@ -349,286 +545,6 @@ export default function SupervisorTerritoryMap({
     const g = cleanHex.substring(2, 4);
     const b = cleanHex.substring(4, 6);
     return `${alphaHex}${b}${g}${r}`;
-  };
-
-  // Canvas Setup & Resize on Drawing Mode Toggle
-  useEffect(() => {
-    isDrawingModeRef.current = isDrawingMode;
-    const map = mapRef.current;
-    if (map) {
-      if (isDrawingMode) {
-        map.dragPan.disable();
-        map.touchZoomRotate.disable();
-      } else {
-        map.dragPan.enable();
-        map.touchZoomRotate.enable();
-      }
-    }
-
-    if (!isDrawingMode || !drawingCanvasRef.current || !mapContainerRef.current) return;
-    const canvas = drawingCanvasRef.current;
-    const rect = mapContainerRef.current.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.scale(dpr, dpr);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-    }
-  }, [isDrawingMode]);
-
-  // Canvas Mouse & Touch Drawing Handlers (Instant Real-Time Canvas 2D)
-  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = drawingCanvasRef.current;
-    const map = mapRef.current;
-    if (!canvas || !map) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    isDrawingCanvasMouseDown.current = true;
-    const lngLat = map.unproject([x, y]);
-
-    canvasPointsRef.current = [{
-      x,
-      y,
-      lng: parseFloat(lngLat.lng.toFixed(5)),
-      lat: parseFloat(lngLat.lat.toFixed(5)),
-    }];
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const dpr = window.devicePixelRatio || 1;
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.restore();
-
-      ctx.beginPath();
-      ctx.strokeStyle = drawColor;
-      ctx.lineWidth = drawLineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.moveTo(x, y);
-    }
-  };
-
-  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawingCanvasMouseDown.current) return;
-    const canvas = drawingCanvasRef.current;
-    const map = mapRef.current;
-    if (!canvas || !map) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const pts = canvasPointsRef.current;
-    if (pts.length > 0) {
-      const last = pts[pts.length - 1];
-      const dist = Math.hypot(x - last.x, y - last.y);
-      if (dist < 2) return;
-    }
-
-    const lngLat = map.unproject([x, y]);
-    canvasPointsRef.current.push({
-      x,
-      y,
-      lng: parseFloat(lngLat.lng.toFixed(5)),
-      lat: parseFloat(lngLat.lat.toFixed(5)),
-    });
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.lineTo(x, y);
-      ctx.stroke();
-    }
-  };
-
-  // Shoelace formula to calculate real-world polygon surface area (km²)
-  const calculatePolygonAreaKm2 = (points: [number, number][]): number => {
-    if (points.length < 3) return 0;
-    let area = 0;
-    const n = points.length;
-    const latFactor = 111.132;
-    const lngFactor = 111.320 * Math.cos(-4.3033 * (Math.PI / 180));
-
-    for (let i = 0; i < n; i++) {
-      const j = (i + 1) % n;
-      const xi = points[i][0] * lngFactor;
-      const yi = points[i][1] * latFactor;
-      const xj = points[j][0] * lngFactor;
-      const yj = points[j][1] * latFactor;
-      area += xi * yj - xj * yi;
-    }
-    return Math.abs(area / 2);
-  };
-
-  const handleCanvasMouseUp = () => {
-    if (!isDrawingCanvasMouseDown.current) return;
-    isDrawingCanvasMouseDown.current = false;
-
-    const canvas = drawingCanvasRef.current;
-    const pts = canvasPointsRef.current;
-
-    if (canvas && pts.length >= 3) {
-      // Convert to GPS coordinates array
-      const gpsPoints: [number, number][] = pts.map((p) => [p.lng, p.lat]);
-      if (gpsPoints[0][0] !== gpsPoints[gpsPoints.length - 1][0] || gpsPoints[0][1] !== gpsPoints[gpsPoints.length - 1][1]) {
-        gpsPoints.push(gpsPoints[0]);
-      }
-
-      // Calculate centroid and area
-      const avgLng = parseFloat((gpsPoints.reduce((sum, p) => sum + p[0], 0) / gpsPoints.length).toFixed(5));
-      const avgLat = parseFloat((gpsPoints.reduce((sum, p) => sum + p[1], 0) / gpsPoints.length).toFixed(5));
-      const area = calculatePolygonAreaKm2(gpsPoints);
-
-      const zoneIndex = drawnZones.length + 1;
-      const newZone: DrawnZone = {
-        id: `zone-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        code: `KIN-ZONE-${String(zoneIndex).padStart(2, '0')}`,
-        name: `Zone Délimitée ${zoneIndex}`,
-        color: drawColor,
-        lineWidth: drawLineWidth,
-        points: gpsPoints,
-        areaKm2: area,
-        center: [avgLng, avgLat],
-        createdAt: new Date().toISOString(),
-      };
-
-      setDrawnZones((prev) => [...prev, newZone]);
-      setSelectedZoneId(newZone.id);
-      setDrawingPoints(gpsPoints);
-      setStatusMessage({
-        text: `Zone ${newZone.code} (${newZone.areaKm2.toFixed(2)} km²) ajoutée sur la carte. Vous pouvez enchaîner d'autres tracés.`,
-        type: 'success',
-      });
-
-      // Clear the temporary HTML5 canvas so the user can immediately chain the next drawing!
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const dpr = window.devicePixelRatio || 1;
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      }
-      canvasPointsRef.current = [];
-    } else {
-      const ctx = canvas?.getContext('2d');
-      if (canvas && ctx) {
-        const dpr = window.devicePixelRatio || 1;
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      }
-      canvasPointsRef.current = [];
-    }
-  };
-
-  const handleDeleteZone = (zoneId: string) => {
-    setDrawnZones((prev) => prev.filter((z) => z.id !== zoneId));
-    if (selectedZoneId === zoneId) setSelectedZoneId(null);
-    setStatusMessage({ text: "Zone supprimée de la carte.", type: 'success' });
-  };
-
-  const handleClearAllZones = () => {
-    setDrawnZones([]);
-    setSelectedZoneId(null);
-    setDrawingPoints([]);
-    handleClearDrawing();
-    setStatusMessage({ text: "Toutes les zones dessinées ont été effacées.", type: 'success' });
-  };
-
-  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const canvas = drawingCanvasRef.current;
-    const map = mapRef.current;
-    if (!canvas || !map) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    isDrawingCanvasMouseDown.current = true;
-    const lngLat = map.unproject([x, y]);
-
-    canvasPointsRef.current = [{
-      x,
-      y,
-      lng: parseFloat(lngLat.lng.toFixed(5)),
-      lat: parseFloat(lngLat.lat.toFixed(5)),
-    }];
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const dpr = window.devicePixelRatio || 1;
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.restore();
-
-      ctx.beginPath();
-      ctx.strokeStyle = drawColor;
-      ctx.lineWidth = drawLineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.moveTo(x, y);
-    }
-  };
-
-  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawingCanvasMouseDown.current || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const canvas = drawingCanvasRef.current;
-    const map = mapRef.current;
-    if (!canvas || !map) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    const pts = canvasPointsRef.current;
-    if (pts.length > 0) {
-      const last = pts[pts.length - 1];
-      const dist = Math.hypot(x - last.x, y - last.y);
-      if (dist < 2) return;
-    }
-
-    const lngLat = map.unproject([x, y]);
-    canvasPointsRef.current.push({
-      x,
-      y,
-      lng: parseFloat(lngLat.lng.toFixed(5)),
-      lat: parseFloat(lngLat.lat.toFixed(5)),
-    });
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.lineTo(x, y);
-      ctx.stroke();
-    }
-  };
-
-  const handleClearDrawing = () => {
-    const canvas = drawingCanvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const dpr = window.devicePixelRatio || 1;
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      }
-    }
-    canvasPointsRef.current = [];
-    setDrawingPoints([]);
   };
 
   // Update Markers on Map with 3 Key Categories
@@ -770,13 +686,13 @@ export default function SupervisorTerritoryMap({
     });
   }, [enterprises, plaques, nearbyLeads, tradeAudits, markerFilter]);
 
-  // Render Multi-Zones & Saved Plaque Polygons on MapLibre
+  // Render Multi-Zones, Active Linear Stroke & Saved Plaque Polygons on MapLibre
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const updateDrawingLayers = () => {
-      // 1. Convert all drawnZones to GeoJSON Features
+      // 1. COMPLETED DRAWN ZONES (Polygons + Vertices)
       const drawnZoneFeatures: GeoJSON.Feature[] = drawnZones.map((z) => {
         const closed = [...z.points];
         if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
@@ -789,7 +705,7 @@ export default function SupervisorTerritoryMap({
             code: z.code,
             name: z.name,
             color: z.color || '#2563EB',
-            lineWidth: z.lineWidth || 4,
+            lineWidth: z.lineWidth || 3,
             areaKm2: z.areaKm2.toFixed(2),
             isSelected: z.id === selectedZoneId,
           },
@@ -800,37 +716,57 @@ export default function SupervisorTerritoryMap({
         };
       });
 
-      const drawingGeojson: GeoJSON.FeatureCollection = {
+      const completedVertices: GeoJSON.Feature[] = [];
+      drawnZones.forEach((z) => {
+        z.points.forEach((pt, idx) => {
+          completedVertices.push({
+            type: 'Feature' as const,
+            properties: {
+              zoneId: z.id,
+              color: z.color || '#2563EB',
+              index: idx + 1,
+            },
+            geometry: {
+              type: 'Point' as const,
+              coordinates: pt,
+            },
+          });
+        });
+      });
+
+      const completedGeojson: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
-        features: drawnZoneFeatures,
+        features: [...drawnZoneFeatures, ...completedVertices],
       };
 
-      const drawingSource = map.getSource('drawing-source') as maplibregl.GeoJSONSource | undefined;
-      if (drawingSource) {
-        drawingSource.setData(drawingGeojson);
+      const completedSource = map.getSource('completed-zones-source') as maplibregl.GeoJSONSource | undefined;
+      if (completedSource) {
+        completedSource.setData(completedGeojson);
       } else if (map.isStyleLoaded()) {
-        map.addSource('drawing-source', {
+        map.addSource('completed-zones-source', {
           type: 'geojson',
-          data: drawingGeojson,
+          data: completedGeojson,
         });
 
         map.addLayer({
-          id: 'drawing-fill',
+          id: 'completed-zones-fill',
           type: 'fill',
-          source: 'drawing-source',
+          source: 'completed-zones-source',
+          filter: ['==', '$type', 'Polygon'],
           paint: {
             'fill-color': ['coalesce', ['get', 'color'], '#2563EB'],
-            'fill-opacity': ['case', ['boolean', ['get', 'isSelected'], false], 0.40, 0.25],
+            'fill-opacity': ['case', ['boolean', ['get', 'isSelected'], false], 0.45, 0.24],
           },
         });
 
         map.addLayer({
-          id: 'drawing-line',
+          id: 'completed-zones-line',
           type: 'line',
-          source: 'drawing-source',
+          source: 'completed-zones-source',
+          filter: ['==', '$type', 'Polygon'],
           paint: {
             'line-color': ['coalesce', ['get', 'color'], '#2563EB'],
-            'line-width': ['case', ['boolean', ['get', 'isSelected'], false], 5.5, ['coalesce', ['get', 'lineWidth'], 4]],
+            'line-width': ['case', ['boolean', ['get', 'isSelected'], false], 5.0, ['coalesce', ['get', 'lineWidth'], 3.5]],
             'line-opacity': 0.95,
           },
           layout: {
@@ -838,9 +774,115 @@ export default function SupervisorTerritoryMap({
             'line-join': 'round',
           },
         });
+
+        map.addLayer({
+          id: 'completed-zones-points',
+          type: 'circle',
+          source: 'completed-zones-source',
+          filter: ['==', '$type', 'Point'],
+          paint: {
+            'circle-radius': 4,
+            'circle-color': '#FFFFFF',
+            'circle-stroke-width': 2,
+            'circle-stroke-color': ['coalesce', ['get', 'color'], '#2563EB'],
+          },
+        });
       }
 
-      // 2. Update Saved Plaque Polygons
+      // 2. ACTIVE IN-PROGRESS LINEAR / FREEHAND DRAWING
+      const activePts = activeStrokePoints;
+      const activeClosed = [...activePts];
+      if (activeClosed.length >= 3 && (activeClosed[0][0] !== activeClosed[activeClosed.length - 1][0] || activeClosed[0][1] !== activeClosed[activeClosed.length - 1][1])) {
+        activeClosed.push(activeClosed[0]);
+      }
+
+      const activeFeatures: GeoJSON.Feature[] = [
+        ...(activeClosed.length >= 4 ? [{
+          type: 'Feature' as const,
+          properties: { color: drawColor },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [activeClosed],
+          },
+        }] : []),
+        ...(activePts.length >= 2 ? [{
+          type: 'Feature' as const,
+          properties: { color: drawColor },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: activePts,
+          },
+        }] : []),
+        ...activePts.map((pt, idx) => ({
+          type: 'Feature' as const,
+          properties: {
+            index: idx + 1,
+            isFirst: idx === 0,
+            color: drawColor,
+          },
+          geometry: {
+            type: 'Point' as const,
+            coordinates: pt,
+          },
+        })),
+      ];
+
+      const activeGeojson: GeoJSON.FeatureCollection = {
+        type: 'FeatureCollection',
+        features: activeFeatures,
+      };
+
+      const activeSource = map.getSource('active-drawing-source') as maplibregl.GeoJSONSource | undefined;
+      if (activeSource) {
+        activeSource.setData(activeGeojson);
+      } else if (map.isStyleLoaded()) {
+        map.addSource('active-drawing-source', {
+          type: 'geojson',
+          data: activeGeojson,
+        });
+
+        map.addLayer({
+          id: 'active-drawing-fill',
+          type: 'fill',
+          source: 'active-drawing-source',
+          filter: ['==', '$type', 'Polygon'],
+          paint: {
+            'fill-color': drawColor,
+            'fill-opacity': 0.20,
+          },
+        });
+
+        map.addLayer({
+          id: 'active-drawing-line',
+          type: 'line',
+          source: 'active-drawing-source',
+          filter: ['==', '$type', 'LineString'],
+          paint: {
+            'line-color': drawColor,
+            'line-width': drawLineWidth + 0.5,
+            'line-opacity': 0.95,
+          },
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round',
+          },
+        });
+
+        map.addLayer({
+          id: 'active-drawing-points',
+          type: 'circle',
+          source: 'active-drawing-source',
+          filter: ['==', '$type', 'Point'],
+          paint: {
+            'circle-radius': ['case', ['boolean', ['get', 'isFirst'], false], 7.5, 5.0],
+            'circle-color': ['case', ['boolean', ['get', 'isFirst'], false], '#10B981', '#FFFFFF'],
+            'circle-stroke-width': 2.5,
+            'circle-stroke-color': drawColor,
+          },
+        });
+      }
+
+      // 3. Saved Plaque Polygons from Database
       const plaqueFeatures = plaques
         .filter((p) => p.boundary_geojson && p.boundary_geojson.coordinates)
         .map((p) => ({
@@ -890,7 +932,57 @@ export default function SupervisorTerritoryMap({
     } else {
       map.once('load', updateDrawingLayers);
     }
-  }, [drawnZones, selectedZoneId, plaques]);
+  }, [drawnZones, activeStrokePoints, selectedZoneId, drawColor, drawLineWidth, plaques]);
+
+  // Multi-Zone GeoJSON Export Generation
+  const generateMultiZoneGeoJsonString = (zones: DrawnZone[]) => {
+    const fc = {
+      type: 'FeatureCollection',
+      name: 'Onbora_Territoires_MultiZones',
+      features: zones.map((z) => {
+        const closed = [...z.points];
+        if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
+          closed.push(closed[0]);
+        }
+        return {
+          type: 'Feature',
+          properties: {
+            id: z.id,
+            code: z.code,
+            name: z.name,
+            color: z.color,
+            lineWidth: z.lineWidth,
+            area_km2: parseFloat(z.areaKm2.toFixed(3)),
+            center: z.center,
+            created_at: z.createdAt,
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [closed],
+          },
+        };
+      }),
+    };
+    return JSON.stringify(fc, null, 2);
+  };
+
+  const handleDownloadAllGeoJson = () => {
+    if (drawnZones.length === 0) {
+      setStatusMessage({ text: "Tracez au moins une zone sur la carte avant d'exporter.", type: 'error' });
+      return;
+    }
+    const jsonStr = generateMultiZoneGeoJsonString(drawnZones);
+    const blob = new Blob([jsonStr], { type: 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `territoires_onbora_${drawnZones.length}_zones.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatusMessage({ text: `Fichier GeoJSON (${drawnZones.length} zones) téléchargé avec succès.`, type: 'success' });
+  };
 
   // Multi-Zone KML Generation
   const generateMultiZoneKmlString = (zones: DrawnZone[]) => {
@@ -1500,23 +1592,8 @@ export default function SupervisorTerritoryMap({
             </div>
 
             {/* Map Container */}
-            <div className="relative w-full h-[540px] rounded-[22px] overflow-hidden shadow-sm bg-zinc-950">
+            <div className="relative w-full h-[560px] rounded-[22px] overflow-hidden shadow-sm bg-zinc-950">
               <div ref={mapContainerRef} className="w-full h-full" />
-
-              {/* Dedicated High-Performance HTML5 Painting Canvas Overlay */}
-              {isDrawingMode && (
-                <canvas
-                  ref={drawingCanvasRef}
-                  onMouseDown={handleCanvasMouseDown}
-                  onMouseMove={handleCanvasMouseMove}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onTouchStart={handleCanvasTouchStart}
-                  onTouchMove={handleCanvasTouchMove}
-                  onTouchEnd={handleCanvasMouseUp}
-                  className="absolute inset-0 w-full h-full z-20 cursor-crosshair touch-none"
-                />
-              )}
 
               {/* Map Legend Overlay */}
               {!isDrawingMode && (
@@ -1539,97 +1616,163 @@ export default function SupervisorTerritoryMap({
                 </div>
               )}
 
-              {/* Floating Drawing Toolbar (Continuous Multi-Zone Paint Mode) */}
+              {/* Floating Drawing Toolbar (Native MapLibre GeoJSON Linear & Freehand Engine) */}
               {isDrawingMode && (
-                <div className="absolute top-4 left-4 right-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center justify-between gap-3 z-30 border border-blue-600/30 animate-fade-in">
-                  {/* Left: Info & Color Palette */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
-                      <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: drawColor }} />
-                      <span>
-                        ✏️ Mode Crayon : {drawnZones.length === 0 ? 'Maintenez le clic et tracez votre 1ère zone' : `${drawnZones.length} zone(s) sur la carte`}
-                      </span>
-                    </div>
-
-                    {/* Color Swatches */}
-                    <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                      <span className="text-[10px] font-bold text-zinc-500 mr-1 hidden sm:inline">Couleur :</span>
-                      {[
-                        { color: '#2563EB', name: 'Bleu' },
-                        { color: '#EA580C', name: 'Orange' },
-                        { color: '#10B981', name: 'Vert' },
-                        { color: '#8B5CF6', name: 'Violet' },
-                        { color: '#EF4444', name: 'Rouge' },
-                        { color: '#F59E0B', name: 'Jaune' },
-                      ].map((c) => (
+                <div className="absolute top-4 left-4 right-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md p-3.5 rounded-[20px] shadow-2xl flex flex-col gap-2.5 z-30 border border-blue-600/30 animate-fade-in">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Left: Mode Switcher & Tool Info */}
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* Mode Toggle: Linear vs Freehand */}
+                      <div className="flex items-center bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
                         <button
-                          key={c.color}
                           type="button"
-                          title={c.name}
-                          onClick={() => setDrawColor(c.color)}
-                          className={`w-5 h-5 rounded-full transition-transform cursor-pointer flex items-center justify-center ${
-                            drawColor === c.color ? 'scale-125 ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-zinc-900 shadow-md' : 'hover:scale-110 opacity-75 hover:opacity-100'
-                          }`}
-                          style={{ backgroundColor: c.color }}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Stroke Width Selector */}
-                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                      <span className="text-[10px] font-bold text-zinc-500 mx-1 hidden sm:inline">Taille :</span>
-                      {[
-                        { size: 2, label: 'Fin' },
-                        { size: 4, label: 'Moyen' },
-                        { size: 8, label: 'Épais' },
-                      ].map((s) => (
-                        <button
-                          key={s.size}
-                          type="button"
-                          onClick={() => setDrawLineWidth(s.size)}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                            drawLineWidth === s.size
+                          onClick={() => setDrawingToolType('LINEAR')}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            drawingToolType === 'LINEAR'
                               ? 'bg-blue-600 text-white shadow-sm'
-                              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                           }`}
                         >
-                          {s.label}
+                          <span>📐</span> Mode Linéaire (Points & Segments)
                         </button>
-                      ))}
+                        <button
+                          type="button"
+                          onClick={() => setDrawingToolType('FREEHAND')}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            drawingToolType === 'FREEHAND'
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                          }`}
+                        >
+                          <span>✏️</span> Main Levée
+                        </button>
+                      </div>
+
+                      {/* Color Swatches */}
+                      <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        {[
+                          { color: '#2563EB', name: 'Bleu' },
+                          { color: '#EA580C', name: 'Orange' },
+                          { color: '#10B981', name: 'Vert' },
+                          { color: '#8B5CF6', name: 'Violet' },
+                          { color: '#EF4444', name: 'Rouge' },
+                          { color: '#F59E0B', name: 'Jaune' },
+                        ].map((c) => (
+                          <button
+                            key={c.color}
+                            type="button"
+                            title={c.name}
+                            onClick={() => setDrawColor(c.color)}
+                            className={`w-5 h-5 rounded-full transition-transform cursor-pointer flex items-center justify-center ${
+                              drawColor === c.color ? 'scale-125 ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-zinc-900 shadow-md' : 'hover:scale-110 opacity-75 hover:opacity-100'
+                            }`}
+                            style={{ backgroundColor: c.color }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Stroke Width Selector */}
+                      <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        {[
+                          { size: 2, label: 'Fin' },
+                          { size: 3, label: 'Moyen' },
+                          { size: 5, label: 'Épais' },
+                        ].map((s) => (
+                          <button
+                            key={s.size}
+                            type="button"
+                            onClick={() => setDrawLineWidth(s.size)}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                              drawLineWidth === s.size
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                            }`}
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleClearAllZones}
+                        disabled={drawnZones.length === 0 && activeStrokePoints.length === 0}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
+                      >
+                        Tout Effacer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadAllGeoJson}
+                        disabled={drawnZones.length === 0}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Icons.Download size={13} />
+                        Export GeoJSON ({drawnZones.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadAllKml}
+                        disabled={drawnZones.length === 0}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Icons.Download size={13} />
+                        Export KML ({drawnZones.length})
+                      </button>
+                      {drawnZones.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const lastZone = drawnZones[drawnZones.length - 1];
+                            handleOpenAssignModalForZone(lastZone);
+                          }}
+                          className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                        >
+                          <Icons.CheckCircle size={13} />
+                          Affecter & Notifier
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Right: Actions */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleClearAllZones}
-                      disabled={drawnZones.length === 0}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
-                    >
-                      Tout Effacer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDownloadAllKml}
-                      disabled={drawnZones.length === 0}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1"
-                    >
-                      <Icons.Download size={13} />
-                      Export KML Multi ({drawnZones.length})
-                    </button>
-                    {drawnZones.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const lastZone = drawnZones[drawnZones.length - 1];
-                          handleOpenAssignModalForZone(lastZone);
-                        }}
-                        className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
-                      >
-                        <Icons.CheckCircle size={13} />
-                        Affecter & Notifier
-                      </button>
+                  {/* Active In-Progress Linear Stroke Helper Bar */}
+                  <div className="flex flex-wrap items-center justify-between text-xs bg-zinc-100/90 dark:bg-zinc-850/90 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-750">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full animate-ping shrink-0" style={{ backgroundColor: drawColor }} />
+                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200">
+                        {activeStrokePoints.length === 0 ? (
+                          drawingToolType === 'LINEAR'
+                            ? "Cliquez sur la carte pour poser les sommets de votre polygone."
+                            : "Maintenez le clic et glissez sur la carte pour dessiner en continu."
+                        ) : (
+                          `Tracé en cours : ${activeStrokePoints.length} sommet(s) placé(s). Double-cliquez ou cliquez sur le 1er point vert pour fermer.`
+                        )}
+                      </span>
+                    </div>
+
+                    {activeStrokePoints.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        {activeStrokePoints.length >= 3 && (
+                          <button
+                            type="button"
+                            onClick={() => handleFinishCurrentZone(activeStrokePoints)}
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-black bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer flex items-center gap-1 shadow-sm"
+                          >
+                            <Icons.Check size={12} />
+                            Fermer ce polygone
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleCancelCurrentStroke}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-red-500/20 hover:text-red-500 cursor-pointer"
+                        >
+                          Annuler ce tracé
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1641,7 +1784,7 @@ export default function SupervisorTerritoryMap({
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                       <Icons.Layers size={13} className="text-blue-600 dark:text-blue-400" />
-                      Zones actives sur la carte ({drawnZones.length})
+                      Polygones GeoJSON sur la carte ({drawnZones.length})
                     </span>
                     <span className="text-[10px] text-zinc-500 font-bold">
                       Surface totale : {drawnZones.reduce((sum, z) => sum + z.areaKm2, 0).toFixed(2)} km²
@@ -1673,6 +1816,32 @@ export default function SupervisorTerritoryMap({
                           {zone.areaKm2.toFixed(2)} km²
                         </span>
                         <div className="flex items-center gap-1 border-l border-zinc-200 dark:border-zinc-700 pl-1.5 ml-0.5">
+                          <button
+                            type="button"
+                            title="Télécharger le GeoJSON de cette zone"
+                            onClick={() => {
+                              const fc = {
+                                type: 'FeatureCollection',
+                                features: [{
+                                  type: 'Feature',
+                                  properties: { id: zone.id, code: zone.code, name: zone.name, color: zone.color, area_km2: zone.areaKm2 },
+                                  geometry: { type: 'Polygon', coordinates: [zone.points] }
+                                }]
+                              };
+                              const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/geo+json' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${zone.code}.geojson`;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                            }}
+                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-blue-600 dark:text-blue-400 cursor-pointer"
+                          >
+                            <Icons.FileText size={12} />
+                          </button>
                           <button
                             type="button"
                             title="Télécharger le KML de cette zone"
