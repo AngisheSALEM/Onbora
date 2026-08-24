@@ -325,13 +325,16 @@ class SalesController extends GetxController {
     isLoadingPlaques.value = true;
     try {
       final response = await _apiClient.get('/api/sales/plaques/');
-      if (response is List && response.isNotEmpty) {
+      if (response is List) {
         plaquesList.value = response.map((e) => PlaqueModel.fromJson(e as Map<String, dynamic>)).toList();
         final codes = ['Toutes', ...plaquesList.map((p) => p.code)];
         availablePlaques.value = codes;
+        if (!codes.contains(activePlaqueCode.value)) {
+          activePlaqueCode.value = codes.isNotEmpty ? codes[0] : 'Toutes';
+        }
       }
     } catch (_) {
-      // Keep defaults
+      // Keep fallback
     } finally {
       isLoadingPlaques.value = false;
     }

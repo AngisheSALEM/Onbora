@@ -80,6 +80,7 @@ class PlaqueDetailView(APIView):
     """
     GET: Détail d'une plaque avec la liste complète de ses entreprises / leads qualifiés.
     PATCH: Modifie la plaque ou assigne des commerciaux.
+    DELETE: Supprime définitivement la plaque.
     """
     permission_classes = [IsSalespersonOrAdmin]
 
@@ -97,11 +98,20 @@ class PlaqueDetailView(APIView):
         except Plaque.DoesNotExist:
             return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = PlaqueSerializer(plaque_obj, data=request.data, partial=True)
+        serializer = PlaqueSerializer(plaque_obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            plaque_obj = Plaque.objects.get(pk=pk)
+            plaque_code = plaque_obj.code
+            plaque_obj.delete()
+            return Response({"message": f"Plaque {plaque_code} supprimée avec succès."}, status=status.HTTP_200_OK)
+        except Plaque.DoesNotExist:
+            return Response({"detail": "Plaque introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class SalespersonListView(APIView):

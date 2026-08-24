@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'package:maplibre_gl/maplibre_gl.dart';
+
 class PlaqueModel {
   final int id;
   final String code;
@@ -34,8 +37,8 @@ class PlaqueModel {
   factory PlaqueModel.fromJson(Map<String, dynamic> json) {
     return PlaqueModel(
       id: json['id'] ?? 0,
-      code: json['code'] ?? 'KIN-GOMBE',
-      name: json['name'] ?? 'Kinshasa (Gombe)',
+      code: json['code'] ?? 'ZONE',
+      name: json['name'] ?? 'Zone Commerciale',
       city: json['city'] ?? 'Kinshasa',
       latitude: (json['latitude'] ?? json['center_latitude'] as num?)?.toDouble() ?? -4.3033,
       longitude: (json['longitude'] ?? json['center_longitude'] as num?)?.toDouble() ?? 15.3083,
@@ -48,6 +51,37 @@ class PlaqueModel {
       kmlData: json['kml_data'],
       kmlUrl: json['kml_url'],
     );
+  }
+
+  List<LatLng> get polygonLatLngs {
+    if (boundaryGeojson != null && boundaryGeojson!.containsKey('coordinates')) {
+      final rawCoords = boundaryGeojson!['coordinates'];
+      if (rawCoords is List && rawCoords.isNotEmpty) {
+        final ring = rawCoords[0] is List && (rawCoords[0] as List).isNotEmpty && rawCoords[0][0] is List
+            ? rawCoords[0] as List
+            : rawCoords;
+        final list = <LatLng>[];
+        for (final pt in ring) {
+          if (pt is List && pt.length >= 2) {
+            final lng = (pt[0] as num).toDouble();
+            final lat = (pt[1] as num).toDouble();
+            list.add(LatLng(lat, lng));
+          }
+        }
+        if (list.isNotEmpty) return list;
+      }
+    }
+    // Fallback circle approximation around centroid
+    final list = <LatLng>[];
+    const numPts = 24;
+    const latFactor = 111.32;
+    for (int i = 0; i <= numPts; i++) {
+      final angle = (2 * math.pi * i) / numPts;
+      final dLat = (radiusKm) / latFactor;
+      final dLng = (radiusKm) / (latFactor * math.cos(latitude * math.pi / 180));
+      list.add(LatLng(latitude + dLat * math.sin(angle), longitude + dLng * math.cos(angle)));
+    }
+    return list;
   }
 
   Map<String, dynamic> toJson() {

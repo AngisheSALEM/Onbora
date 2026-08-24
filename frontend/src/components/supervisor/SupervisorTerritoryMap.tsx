@@ -722,9 +722,9 @@ export default function SupervisorTerritoryMap({
       const el = document.createElement('div');
       el.className = 'cursor-pointer transform hover:scale-110 transition-transform duration-150';
       el.innerHTML = `
-        <div style="background: rgba(37, 99, 235, 0.16); border: 2px solid #2563EB; border-radius: 9999px; padding: 4px 10px; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(37,99,235,0.25);">
-          <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #2563EB;"></div>
-          <span style="font-size: 11px; font-weight: 800; color: #2563EB; letter-spacing: 0.3px;">${p.code}</span>
+        <div style="background: rgba(15, 23, 42, 0.92); border: 1.5px solid #2563EB; border-radius: 9999px; padding: 4px 12px; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+          <div style="width: 7px; height: 7px; border-radius: 50%; background-color: #3B82F6;"></div>
+          <span style="font-size: 11px; font-weight: 900; color: #FFFFFF; letter-spacing: 0.3px;">${p.code}</span>
         </div>
       `;
 
@@ -1314,6 +1314,38 @@ export default function SupervisorTerritoryMap({
     }
   };
 
+  const [isDeletingPlaque, setIsDeletingPlaque] = useState<number | null>(null);
+
+  const handleDeletePlaque = async (plaqueId: number, plaqueCode: string) => {
+    if (!confirm(`Voulez-vous vraiment supprimer définitivement la plaque '${plaqueCode}' ? Tous ses contours GeoJSON et ses affectations associées seront supprimés.`)) {
+      return;
+    }
+    setIsDeletingPlaque(plaqueId);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/sales/plaques/${plaqueId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      if (res.ok) {
+        setStatusMessage({ text: `Plaque '${plaqueCode}' supprimée avec succès.`, type: 'success' });
+        if (selectedPlaque?.id === plaqueId) setSelectedPlaque(null);
+        setDrawnZones((prev) => prev.filter((z) => z.code !== plaqueCode));
+        onPlaqueCreated();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setStatusMessage({ text: err.detail || "Erreur lors de la suppression de la plaque", type: 'error' });
+      }
+    } catch (e: any) {
+      setStatusMessage({ text: `Erreur: ${e.message}`, type: 'error' });
+    } finally {
+      setIsDeletingPlaque(null);
+    }
+  };
+
   // Handlers for Plaque Creation, Assignment, and Sales Creation
   const handleCreatePlaque = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1777,33 +1809,6 @@ export default function SupervisorTerritoryMap({
                           strokeWidth="1.5"
                         />
                       ))}
-
-                      {/* Centroid Label Badge */}
-                      {centerProj && (
-                        <g transform={`translate(${centerProj.x}, ${centerProj.y})`}>
-                          <rect
-                            x="-45"
-                            y="-11"
-                            width="90"
-                            height="22"
-                            rx="11"
-                            fill="rgba(15, 23, 42, 0.85)"
-                            stroke="#2563EB"
-                            strokeWidth="1.5"
-                          />
-                          <text
-                            x="0"
-                            y="4"
-                            textAnchor="middle"
-                            fill="#FFFFFF"
-                            fontSize="10"
-                            fontWeight="900"
-                            letterSpacing="0.2px"
-                          >
-                            {plaque.code}
-                          </text>
-                        </g>
-                      )}
                     </g>
                   );
                 })}
@@ -1816,7 +1821,6 @@ export default function SupervisorTerritoryMap({
                   if (projected.length < 3) return null;
 
                   const pointsStr = projected.map((p) => `${p.x},${p.y}`).join(' ');
-                  const centerProj = projectGps(zone.center[0], zone.center[1]);
                   const isSelected = selectedZoneId === zone.id;
 
                   return (
@@ -1844,33 +1848,6 @@ export default function SupervisorTerritoryMap({
                           strokeWidth="2"
                         />
                       ))}
-
-                      {/* Centroid Label Badge */}
-                      {centerProj && (
-                        <g transform={`translate(${centerProj.x}, ${centerProj.y})`}>
-                          <rect
-                            x="-50"
-                            y="-13"
-                            width="100"
-                            height="26"
-                            rx="13"
-                            fill="rgba(15, 23, 42, 0.88)"
-                            stroke={zone.color}
-                            strokeWidth="1.5"
-                          />
-                          <text
-                            x="0"
-                            y="4"
-                            textAnchor="middle"
-                            fill="#FFFFFF"
-                            fontSize="10"
-                            fontWeight="900"
-                            letterSpacing="0.2px"
-                          >
-                            {zone.code} • {zone.areaKm2.toFixed(1)} km²
-                          </text>
-                        </g>
-                      )}
                     </g>
                   );
                 })}
@@ -2486,8 +2463,89 @@ export default function SupervisorTerritoryMap({
                   Fermer la Fiche
                 </button>
               </div>
+            ) : selectedPlaque ? (
+              /* 5. Selected Plaque Inspector */
+              <div className="studio-card p-6 flex flex-col gap-4 shadow-sm animate-fade-in border-2 border-blue-600/30">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
+                      <Icons.Layers size={12} /> Plaque Territoriale
+                    </span>
+                    <h3 className="text-base font-black text-zinc-950 dark:text-white">{selectedPlaque.name}</h3>
+                    <p className="text-xs text-zinc-600 dark:text-gray-300">{selectedPlaque.city} • Code : <strong className="text-blue-600">{selectedPlaque.code}</strong></p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-blue-600/15 text-blue-600 dark:text-blue-400">
+                    {selectedPlaque.code}
+                  </span>
+                </div>
+
+                <div className="studio-subcard p-3 rounded-2xl flex flex-col gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Leads Prospectés :</span>
+                    <span className="font-extrabold text-zinc-950 dark:text-white">{selectedPlaque.total_enterprises || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Pré-convertis :</span>
+                    <span className="font-extrabold text-emerald-600">{selectedPlaque.ready_count || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-bold text-[10px] uppercase">Commerciaux Affectés :</span>
+                    <span className="font-extrabold text-zinc-950 dark:text-white">
+                      {selectedPlaque.assigned_salespersons_names?.length || 0}
+                    </span>
+                  </div>
+                  {selectedPlaque.assigned_salespersons_names && selectedPlaque.assigned_salespersons_names.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                      {selectedPlaque.assigned_salespersons_names.map((name, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
+                          👤 {name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setAssigningPlaque(selectedPlaque);
+                        setAssigningSalespersonIds(selectedPlaque.assigned_salespersons || []);
+                      }}
+                      className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <Icons.Users size={13} /> Affecter Commerciaux
+                    </button>
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/plaques/${selectedPlaque.id}/kml/?download=true`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-4 py-2.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Icons.Download size={13} /> KML
+                    </a>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDeletePlaque(selectedPlaque.id, selectedPlaque.code)}
+                      disabled={isDeletingPlaque === selectedPlaque.id}
+                      className="flex-1 py-2.5 bg-red-500/15 hover:bg-red-600 hover:text-white text-red-600 dark:text-red-400 rounded-2xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Icons.Trash2 size={13} className={isDeletingPlaque === selectedPlaque.id ? 'animate-spin' : ''} />
+                      {isDeletingPlaque === selectedPlaque.id ? 'Suppression...' : 'Supprimer cette Plaque'}
+                    </button>
+                    <button
+                      onClick={() => setSelectedPlaque(null)}
+                      className="py-2.5 px-4 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : (
-              /* 5. Plaques List */
+              /* 6. Plaques List */
               <div className="studio-card p-6 flex flex-col gap-3 shadow-sm">
                 <div className="flex justify-between items-center border-b border-zinc-200/60 dark:border-zinc-800 pb-3">
                   <div className="flex items-center gap-2">
@@ -2545,6 +2603,17 @@ export default function SupervisorTerritoryMap({
                         >
                           <Icons.Download size={12} /> KML
                         </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePlaque(p.id, p.code);
+                          }}
+                          disabled={isDeletingPlaque === p.id}
+                          className="px-2.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          title="Supprimer définitivement cette plaque"
+                        >
+                          <Icons.Trash2 size={12} className={isDeletingPlaque === p.id ? 'animate-spin' : ''} />
+                        </button>
                       </div>
                     </div>
                   ))}

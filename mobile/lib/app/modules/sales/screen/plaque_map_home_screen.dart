@@ -28,9 +28,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
   bool _hasLocationPermission = false;
 
   static const LatLng _kinshasaGombeCenter = LatLng(-4.3033, 15.3084);
-  static const LatLng _kinshasaLimeteCenter = LatLng(-4.3450, 15.3400);
-  static const LatLng _kinshasaNgaliemaCenter = LatLng(-4.3250, 15.2600);
-  static const LatLng _lubumbashiCenter = LatLng(-11.6608, 27.4794);
 
   @override
   void initState() {
@@ -119,10 +116,39 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
 
     final salesCtrl = Get.find<SalesController>();
     final enterprises = salesCtrl.searchResults;
+    final plaques = salesCtrl.plaquesList;
+    final activeCode = salesCtrl.activePlaqueCode.value;
 
     _mapController?.clearSymbols();
     _mapController?.clearCircles();
+    _mapController?.clearFills();
+    _mapController?.clearLines();
 
+    // 1. Draw Back-Office GeoJSON Plaque Polygons / Layers
+    for (final plaque in plaques) {
+      final isSelectedPlaque = activeCode == 'Toutes' || activeCode == plaque.code;
+      final pts = plaque.polygonLatLngs;
+      if (pts.length >= 3) {
+        _mapController?.addFill(
+          FillOptions(
+            geometry: [pts],
+            fillColor: '#2563EB',
+            fillOpacity: isSelectedPlaque ? (activeCode == 'Toutes' ? 0.14 : 0.25) : 0.05,
+            fillOutlineColor: '#2563EB',
+          ),
+        );
+        _mapController?.addLine(
+          LineOptions(
+            geometry: pts,
+            lineColor: '#2563EB',
+            lineWidth: isSelectedPlaque ? 3.0 : 1.5,
+            lineOpacity: isSelectedPlaque ? 0.95 : 0.40,
+          ),
+        );
+      }
+    }
+
+    // 2. Enterprise Lead Markers
     for (final ent in enterprises) {
       final isSelected = salesCtrl.selectedMapEnterprise.value?.id == ent.id;
       final colorHex = ent.isConverted
@@ -143,37 +169,36 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
     }
   }
 
-  void _onPlaqueSelected(String plaque, SalesController salesController) {
-    salesController.filterByPlaque(plaque);
+  void _onPlaqueSelected(String plaqueCode, SalesController salesController) {
+    salesController.filterByPlaque(plaqueCode);
     _updateMapMarkers();
 
-    LatLng target;
-    double zoom = 13.5;
-
-    switch (plaque) {
-      case 'KIN-GOMBE':
-        target = _kinshasaGombeCenter;
-        break;
-      case 'KIN-LIMETE':
-        target = _kinshasaLimeteCenter;
-        break;
-      case 'KIN-NGALIEMA':
-        target = _kinshasaNgaliemaCenter;
-        break;
-      case 'LUBUMBASHI-01':
-        target = _lubumbashiCenter;
-        zoom = 12.5;
-        break;
-      default:
-        target = _kinshasaGombeCenter;
-        zoom = 12.8;
+    if (plaqueCode != 'Toutes') {
+      final targetPlaque = salesController.plaquesList.firstWhereOrNull((p) => p.code == plaqueCode);
+      if (targetPlaque != null) {
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(targetPlaque.latitude, targetPlaque.longitude),
+              zoom: 13.5,
+            ),
+          ),
+        );
+        return;
+      }
+    } else {
+      if (salesController.plaquesList.isNotEmpty) {
+        final firstP = salesController.plaquesList.first;
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(firstP.latitude, firstP.longitude),
+              zoom: 12.5,
+            ),
+          ),
+        );
+      }
     }
-
-    _mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: target, zoom: zoom),
-      ),
-    );
   }
 
   @override
