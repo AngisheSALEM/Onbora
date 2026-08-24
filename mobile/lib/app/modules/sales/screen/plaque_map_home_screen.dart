@@ -112,10 +112,8 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
           ? '${AppConstants.mapTilerDarkStyleUrl}$apiKey'
           : '${AppConstants.mapTilerStreetsStyleUrl}$apiKey';
     }
-    // Style vectoriel mondial OpenStreetMap OpenFreeMap
-    return isDark
-        ? 'https://tiles.openfreemap.org/styles/dark'
-        : 'https://tiles.openfreemap.org/styles/bright';
+    // Style vectoriel MapLibre / OSM garanti 100% compatible Android & iOS
+    return AppConstants.mapLibreDemoStyleUrl;
   }
 
   void _onMapCreated(MapLibreMapController controller) {
@@ -719,23 +717,29 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> {
 
               // En-tête modal
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(LucideIcons.bell, color: const Color(0xFF2563EB), size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Notifications Territoriales',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : AppConstants.textDark,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(LucideIcons.bell, color: const Color(0xFF2563EB), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Notifications Territoriales',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: isDark ? Colors.white : AppConstants.textDark,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     TextButton(
                       onPressed: () => salesController.markAllNotificationsAsRead(),

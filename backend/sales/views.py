@@ -60,7 +60,10 @@ class PlaqueListCreateView(APIView):
     GET: Liste toutes les plaques territoriales actives avec le nombre de leads et commerciaux assignés.
     POST: Crée une nouvelle plaque de prospection territoriale.
     """
-    permission_classes = [IsSalespersonOrAdmin]
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [IsSalespersonOrAdmin()]
 
     def get(self, request):
         use_case = ListPlaquesUseCase()
