@@ -572,6 +572,36 @@ export default function SupervisorTerritoryMap({
     return `${alphaHex}${b}${g}${r}`;
   };
 
+  // Extract or generate polygon points from a saved Plaque model
+  const getPlaquePolygonPoints = (plaque: Plaque): [number, number][] => {
+    if (plaque.boundary_geojson && typeof plaque.boundary_geojson === 'object') {
+      const coords = (plaque.boundary_geojson as any).coordinates || plaque.boundary_geojson;
+      if (Array.isArray(coords)) {
+        if (coords.length > 0 && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+          return coords[0] as [number, number][];
+        } else if (coords.length > 0 && Array.isArray(coords[0]) && typeof coords[0][0] === 'number') {
+          return coords as [number, number][];
+        }
+      }
+    }
+    if (plaque.latitude && plaque.longitude) {
+      const pts: [number, number][] = [];
+      const numPts = 24;
+      const latRad = (plaque.latitude * Math.PI) / 180;
+      const dLat = (plaque.radius_km || 4.0) / 111.32;
+      const dLng = (plaque.radius_km || 4.0) / (111.32 * Math.cos(latRad) || 111.32);
+      for (let i = 0; i <= numPts; i++) {
+        const angle = (2 * Math.PI * i) / numPts;
+        pts.push([
+          parseFloat((plaque.longitude + dLng * Math.cos(angle)).toFixed(5)),
+          parseFloat((plaque.latitude + dLat * Math.sin(angle)).toFixed(5)),
+        ]);
+      }
+      return pts;
+    }
+    return [];
+  };
+
   // Update Markers on Map with 3 Key Categories
   useEffect(() => {
     const map = mapRef.current;
@@ -1190,13 +1220,26 @@ export default function SupervisorTerritoryMap({
         throw new Error(err.detail || "Erreur lors de l'enregistrement de la zone");
       }
 
+      const cleanCode = drawnPlaqueCode.trim().toUpperCase();
+      const newDrawnZone: DrawnZone = {
+        id: `zone-saved-${Date.now()}`,
+        code: cleanCode,
+        name: drawnPlaqueName.trim(),
+        color: drawColor,
+        lineWidth: drawLineWidth,
+        points: closed,
+        areaKm2: calculatePolygonAreaKm2(closed),
+        center: [parseFloat(avgLng.toFixed(5)), parseFloat(avgLat.toFixed(5))],
+        createdAt: new Date().toISOString(),
+      };
+      setDrawnZones((prev) => [...prev.filter((z) => z.code !== cleanCode), newDrawnZone]);
+
       setStatusMessage({
-        text: `Zone tracée '${drawnPlaqueCode}' enregistrée avec succès. KML généré et ${drawnSalespersonIds.length} commercial(aux) notifié(s) dans leur application mobile !`,
+        text: `Zone tracée '${cleanCode}' enregistrée avec succès. KML généré et ${drawnSalespersonIds.length} commercial(aux) notifié(s) dans leur application mobile !`,
         type: 'success',
       });
 
       setIsSaveDrawnModalOpen(false);
-      setIsDrawingMode(false);
       setDrawingPoints([]);
       setDrawnPlaqueCode('');
       setDrawnPlaqueName('');
@@ -1622,7 +1665,79 @@ export default function SupervisorTerritoryMap({
 
               {/* Live High-Performance Vector SVG Overlay for 100% Guaranteed Visual Drawing */}
               <svg key={mapTransformKey} className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-hidden">
-                {/* 1. All Finished Drawn Zones */}
+                {/* 1. Saved Plaque Polygons from Database (Persistent on page reload) */}
+                {plaques.map((plaque) => {
+                  if (drawnZones.some((z) => z.code === plaque.code)) return null;
+                  const pts = getPlaquePolygonPoints(plaque);
+                  if (pts.length < 3) return null;
+
+                  const projected = pts
+                    .map((pt) => projectGps(pt[0], pt[1]))
+                    .filter((p): p is { x: number; y: number } => p !== null);
+                  if (projected.length < 3) return null;
+
+                  const pointsStr = projected.map((p) => `${p.x},${p.y}`).join(' ');
+                  const centerProj = projectGps(plaque.longitude, plaque.latitude);
+                  const isSelected = selectedPlaque?.id === plaque.id;
+
+                  return (
+                    <g key={`plaque-polygon-${plaque.id}`} className="transition-opacity duration-200">
+                      {/* Shaded Area */}
+                      <polygon
+                        points={pointsStr}
+                        fill="#3B82F6"
+                        fillOpacity={isSelected ? 0.35 : 0.18}
+                        stroke="#2563EB"
+                        strokeWidth={isSelected ? 3.5 : 2}
+                        strokeDasharray={plaque.boundary_geojson && Object.keys(plaque.boundary_geojson).length > 0 ? 'none' : '4 3'}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Vertices */}
+                      {projected.map((p, idx) => (
+                        <circle
+                          key={idx}
+                          cx={p.x}
+                          cy={p.y}
+                          r={isSelected ? 4 : 2.5}
+                          fill="#FFFFFF"
+                          stroke="#2563EB"
+                          strokeWidth="1.5"
+                        />
+                      ))}
+
+                      {/* Centroid Label Badge */}
+                      {centerProj && (
+                        <g transform={`translate(${centerProj.x}, ${centerProj.y})`}>
+                          <rect
+                            x="-45"
+                            y="-11"
+                            width="90"
+                            height="22"
+                            rx="11"
+                            fill="rgba(15, 23, 42, 0.85)"
+                            stroke="#2563EB"
+                            strokeWidth="1.5"
+                          />
+                          <text
+                            x="0"
+                            y="4"
+                            textAnchor="middle"
+                            fill="#FFFFFF"
+                            fontSize="10"
+                            fontWeight="900"
+                            letterSpacing="0.2px"
+                          >
+                            {plaque.code}
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+
+                {/* 2. Finished Drawn Zones in Current Session */}
                 {drawnZones.map((zone) => {
                   const projected = zone.points
                     .map((pt) => projectGps(pt[0], pt[1]))
