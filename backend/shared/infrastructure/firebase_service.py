@@ -56,7 +56,7 @@ def send_push_notification_to_token(token: str, title: str, body: str, data: dic
 
         android_config = messaging.AndroidConfig(
             priority='high',
-            ttl=datetime.timedelta(days=7),
+            ttl=datetime.timedelta(days=28),
             notification=messaging.AndroidNotification(
                 title=title,
                 body=body,

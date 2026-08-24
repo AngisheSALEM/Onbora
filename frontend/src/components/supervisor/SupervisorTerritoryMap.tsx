@@ -185,9 +185,11 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  // Interactive Polygon / KML Drawing Mode
+  // Interactive Polygon / KML Drawing Mode (Paint Pencil Freehand)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const isDrawingModeRef = useRef(false);
+  const isMouseDownRef = useRef(false);
+  const drawingPointsRef = useRef<[number, number][]>([]);
   const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
   const [isSaveDrawnModalOpen, setIsSaveDrawnModalOpen] = useState(false);
   const [drawnPlaqueCode, setDrawnPlaqueCode] = useState('');
@@ -300,14 +302,92 @@ export default function SupervisorTerritoryMap({
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
 
-    map.on('click', (e) => {
+    // Freehand Paint Pencil Drawing Handlers
+    const startDrawingStroke = (lng: number, lat: number) => {
+      if (!isDrawingModeRef.current) return;
+      isMouseDownRef.current = true;
+      const initialPt: [number, number] = [
+        parseFloat(lng.toFixed(5)),
+        parseFloat(lat.toFixed(5)),
+      ];
+      drawingPointsRef.current = [initialPt];
+      setDrawingPoints([initialPt]);
+    };
+
+    const continueDrawingStroke = (lng: number, lat: number) => {
+      if (!isDrawingModeRef.current || !isMouseDownRef.current) return;
+      const newPt: [number, number] = [
+        parseFloat(lng.toFixed(5)),
+        parseFloat(lat.toFixed(5)),
+      ];
+      const pts = drawingPointsRef.current;
+      if (pts.length > 0) {
+        const last = pts[pts.length - 1];
+        const dx = newPt[0] - last[0];
+        const dy = newPt[1] - last[1];
+        // Minimum distance to prevent redundant points while maintaining high precision
+        if (dx * dx + dy * dy < 0.00000005) return;
+      }
+      const updated = [...pts, newPt];
+      drawingPointsRef.current = updated;
+      setDrawingPoints(updated);
+    };
+
+    const finishDrawingStroke = () => {
+      if (!isDrawingModeRef.current || !isMouseDownRef.current) return;
+      isMouseDownRef.current = false;
+      const pts = drawingPointsRef.current;
+      if (pts.length >= 3) {
+        const closed = [...pts];
+        if (
+          closed[0][0] !== closed[closed.length - 1][0] ||
+          closed[0][1] !== closed[closed.length - 1][1]
+        ) {
+          closed.push(closed[0]);
+        }
+        drawingPointsRef.current = closed;
+        setDrawingPoints(closed);
+      }
+    };
+
+    map.on('mousedown', (e) => {
       if (isDrawingModeRef.current) {
-        const newPt: [number, number] = [
-          parseFloat(e.lngLat.lng.toFixed(5)),
-          parseFloat(e.lngLat.lat.toFixed(5))
-        ];
-        setDrawingPoints((prev) => [...prev, newPt]);
-      } else {
+        startDrawingStroke(e.lngLat.lng, e.lngLat.lat);
+      }
+    });
+
+    map.on('mousemove', (e) => {
+      if (isDrawingModeRef.current && isMouseDownRef.current) {
+        continueDrawingStroke(e.lngLat.lng, e.lngLat.lat);
+      }
+    });
+
+    map.on('mouseup', () => {
+      if (isDrawingModeRef.current) {
+        finishDrawingStroke();
+      }
+    });
+
+    map.on('touchstart', (e) => {
+      if (isDrawingModeRef.current && e.lngLat) {
+        startDrawingStroke(e.lngLat.lng, e.lngLat.lat);
+      }
+    });
+
+    map.on('touchmove', (e) => {
+      if (isDrawingModeRef.current && isMouseDownRef.current && e.lngLat) {
+        continueDrawingStroke(e.lngLat.lng, e.lngLat.lat);
+      }
+    });
+
+    map.on('touchend', () => {
+      if (isDrawingModeRef.current) {
+        finishDrawingStroke();
+      }
+    });
+
+    map.on('click', (e) => {
+      if (!isDrawingModeRef.current) {
         setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
         setNewPlaqueLng(parseFloat(e.lngLat.lng.toFixed(5)));
       }
@@ -318,11 +398,21 @@ export default function SupervisorTerritoryMap({
     };
   }, []);
 
-  // Update cursor and ref on drawing mode toggle
+  // Update cursor, interaction mode and ref on drawing mode toggle
   useEffect(() => {
     isDrawingModeRef.current = isDrawingMode;
-    if (mapRef.current) {
-      mapRef.current.getCanvas().style.cursor = isDrawingMode ? 'crosshair' : '';
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (isDrawingMode) {
+      map.dragPan.disable();
+      map.touchZoomRotate.disable();
+      map.getCanvas().style.cursor = 'crosshair';
+    } else {
+      map.dragPan.enable();
+      map.touchZoomRotate.enable();
+      map.getCanvas().style.cursor = '';
+      isMouseDownRef.current = false;
     }
   }, [isDrawingMode]);
 
@@ -523,7 +613,7 @@ export default function SupervisorTerritoryMap({
           filter: ['==', '$type', 'Polygon'],
           paint: {
             'fill-color': '#2563EB',
-            'fill-opacity': 0.25,
+            'fill-opacity': 0.22,
           },
         });
 
@@ -533,21 +623,12 @@ export default function SupervisorTerritoryMap({
           source: 'drawing-source',
           paint: {
             'line-color': '#2563EB',
-            'line-width': 2.5,
-            'line-dasharray': [2, 1],
+            'line-width': 4,
+            'line-opacity': 0.95,
           },
-        });
-
-        map.addLayer({
-          id: 'drawing-points',
-          type: 'circle',
-          source: 'drawing-source',
-          filter: ['==', '$type', 'Point'],
-          paint: {
-            'circle-radius': 6,
-            'circle-color': '#2563EB',
-            'circle-stroke-width': 2,
-            'circle-stroke-color': '#FFFFFF',
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round',
           },
         });
       }
@@ -1158,30 +1239,25 @@ export default function SupervisorTerritoryMap({
                 </div>
               </div>
 
-              {/* Floating Drawing Toolbar */}
+              {/* Floating Drawing Toolbar (Paint Pencil Mode) */}
               {isDrawingMode && (
                 <div className="absolute top-4 right-14 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center gap-3 z-10 border border-blue-600/30 animate-fade-in">
                   <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-                    <span>Tracé KML ({drawingPoints.length} pt{drawingPoints.length > 1 ? 's' : ''})</span>
+                    <span>✏️ Crayon Libre : {drawingPoints.length > 0 ? `${drawingPoints.length} points` : 'Maintenez le clic et tracez'}</span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setDrawingPoints((prev) => prev.slice(0, -1))}
+                      onClick={() => {
+                        drawingPointsRef.current = [];
+                        setDrawingPoints([]);
+                      }}
                       disabled={drawingPoints.length === 0}
-                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
                     >
-                      Annuler pt
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDrawingPoints([])}
-                      disabled={drawingPoints.length === 0}
-                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer"
-                    >
-                      Effacer
+                      Effacer / Recommencer
                     </button>
                     <button
                       type="button"
