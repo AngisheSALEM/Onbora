@@ -37,59 +37,35 @@ from catalog.models import ServiceCatalog
 from reporting.utils import log_demo_event
 from shared.application.use_case import BaseUseCase
 
-# Default OpenStreetMap coordinates for territorial hubs
-PLAQUE_COORDINATES = {
-    'KIN-GOMBE': ('Kinshasa (Gombe)', 'Kinshasa', -4.3033, 15.3083, 5.0),
-    'KIN-LIMETE': ('Kinshasa (Limete)', 'Kinshasa', -4.3411, 15.3444, 7.0),
-    'BZV-CENTRE': ('Brazzaville (Centre/Plateau)', 'Brazzaville', -4.2634, 15.2832, 6.0),
-    'PNR-CENTRE': ('Pointe-Noire (Centre)', 'Pointe-Noire', -4.7977, 11.8504, 5.0),
-    'LSH-CENTRE': ('Lubumbashi (Centre)', 'Lubumbashi', -11.6609, 27.4794, 8.0),
-    'ABJ-PLATEAU': ('Abidjan (Plateau)', 'Abidjan', 5.3247, -4.0197, 6.0),
-    'DKR-PLATEAU': ('Dakar (Plateau)', 'Dakar', 14.6708, -17.4381, 6.0),
-}
-
-
 class ListPlaquesUseCase(BaseUseCase[Any, List[PlaqueDTO]]):
     def execute(self, request: Any = None) -> List[PlaqueDTO]:
-        # S'assurer que les plaques de référence existent en base
-        if not Plaque.objects.exists():
-            self._seed_default_plaques()
-
         plaques = Plaque.objects.filter(is_active=True).prefetch_related('enterprises', 'assigned_salespersons')
         results = []
         for p in plaques:
             total_leads = p.enterprises.count()
             ready_leads = p.enterprises.filter(is_ready_for_conversion=True).count()
+            assigned_ids = [u.id for u in p.assigned_salespersons.all()]
             assigned_names = [f"{u.first_name} {u.last_name}".strip() or u.username for u in p.assigned_salespersons.all()]
             results.append(PlaqueDTO(
                 id=p.id,
                 code=p.code,
                 name=p.name,
                 city=p.city,
-                center_latitude=p.latitude,
-                center_longitude=p.longitude,
+                latitude=p.latitude,
+                longitude=p.longitude,
                 radius_km=p.radius_km,
                 total_enterprises=total_leads,
                 ready_count=ready_leads,
-                assigned_salespersons_names=assigned_names
+                assigned_salespersons=assigned_ids,
+                assigned_salespersons_names=assigned_names,
+                boundary_geojson=p.boundary_geojson or {},
+                kml_data=p.kml_data,
+                kml_url=f"/api/sales/plaques/{p.id}/kml/",
+                is_active=p.is_active,
+                center_latitude=p.latitude,
+                center_longitude=p.longitude
             ))
         return results
-
-    def _seed_default_plaques(self):
-        for code, (name, city, lat, lng, radius) in PLAQUE_COORDINATES.items():
-            plaque_obj, _ = Plaque.objects.get_or_create(
-                code=code,
-                defaults={
-                    "name": name,
-                    "city": city,
-                    "latitude": lat,
-                    "longitude": lng,
-                    "radius_km": radius,
-                    "is_active": True
-                }
-            )
-            # Lier les entreprises existantes correspondant au nom
-            Enterprise.objects.filter(plaque__icontains=city).update(plaque_rel=plaque_obj)
 
 
 class GetPlaqueDetailUseCase(BaseUseCase[int, PlaqueDetailDTO]):

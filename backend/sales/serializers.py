@@ -23,9 +23,9 @@ class SalespersonUserSerializer(serializers.ModelSerializer):
 
 
 class PlaqueSerializer(serializers.ModelSerializer):
-    total_enterprises = serializers.IntegerField(read_only=True, required=False)
-    ready_count = serializers.IntegerField(read_only=True, required=False)
-    assigned_salespersons_names = serializers.ListField(read_only=True, required=False)
+    total_enterprises = serializers.SerializerMethodField()
+    ready_count = serializers.SerializerMethodField()
+    assigned_salespersons_names = serializers.SerializerMethodField()
     assigned_salespersons = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.filter(role=User.SALESPERSON), required=False
     )
@@ -40,7 +40,32 @@ class PlaqueSerializer(serializers.ModelSerializer):
         ]
 
     def get_kml_url(self, obj):
-        return f"/api/sales/plaques/{obj.id}/kml/"
+        obj_id = getattr(obj, 'id', None)
+        return f"/api/sales/plaques/{obj_id}/kml/" if obj_id else None
+
+    def get_total_enterprises(self, obj):
+        val = getattr(obj, 'total_enterprises', None)
+        if val is not None and not callable(val):
+            return val
+        if hasattr(obj, 'enterprises'):
+            return obj.enterprises.count()
+        return 0
+
+    def get_ready_count(self, obj):
+        val = getattr(obj, 'ready_count', None)
+        if val is not None and not callable(val):
+            return val
+        if hasattr(obj, 'enterprises'):
+            return obj.enterprises.filter(is_ready_for_conversion=True).count()
+        return 0
+
+    def get_assigned_salespersons_names(self, obj):
+        val = getattr(obj, 'assigned_salespersons_names', None)
+        if val is not None and not callable(val):
+            return val
+        if hasattr(obj, 'assigned_salespersons'):
+            return [f"{u.first_name} {u.last_name}".strip() or u.username for u in obj.assigned_salespersons.all()]
+        return []
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):

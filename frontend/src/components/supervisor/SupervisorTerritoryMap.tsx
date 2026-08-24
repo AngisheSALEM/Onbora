@@ -223,6 +223,7 @@ export default function SupervisorTerritoryMap({
   const [drawnPlaqueCity, setDrawnPlaqueCity] = useState('Kinshasa');
   const [drawnSalespersonIds, setDrawnSalespersonIds] = useState<number[]>([]);
   const [isSavingDrawnPlaque, setIsSavingDrawnPlaque] = useState(false);
+  const [isPurgingMocks, setIsPurgingMocks] = useState(false);
 
   // Fetch Field Intelligence Data from Django Backend
   const loadFieldIntelligence = useCallback(async () => {
@@ -771,6 +772,36 @@ export default function SupervisorTerritoryMap({
         };
       });
 
+      // Saved plaques from DB with GeoJSON boundaries
+      const savedPlaqueFeatures: GeoJSON.Feature[] = [];
+      plaques
+        .filter((p) => !drawnZones.some((z) => z.code === p.code))
+        .forEach((p) => {
+          const pts = getPlaquePolygonPoints(p);
+          if (pts.length >= 3) {
+            const closed = [...pts];
+            if (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1]) {
+              closed.push(closed[0]);
+            }
+            savedPlaqueFeatures.push({
+              type: 'Feature' as const,
+              properties: {
+                id: `plaque-${p.id}`,
+                code: p.code,
+                name: p.name,
+                color: '#2563EB',
+                lineWidth: 3,
+                areaKm2: ((p.radius_km || 5.0) * Math.PI).toFixed(2),
+                isSelected: selectedPlaque?.id === p.id,
+              },
+              geometry: {
+                type: 'Polygon' as const,
+                coordinates: [closed],
+              },
+            });
+          }
+        });
+
       const completedVertices: GeoJSON.Feature[] = [];
       drawnZones.forEach((z) => {
         z.points.forEach((pt, idx) => {
@@ -791,7 +822,7 @@ export default function SupervisorTerritoryMap({
 
       const completedGeojson: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
-        features: [...drawnZoneFeatures, ...completedVertices],
+        features: [...drawnZoneFeatures, ...savedPlaqueFeatures, ...completedVertices],
       };
 
       const completedSource = map.getSource('completed-zones-source') as maplibregl.GeoJSONSource | undefined;
@@ -1253,6 +1284,36 @@ export default function SupervisorTerritoryMap({
     }
   };
 
+  const handlePurgeMockPlaques = async () => {
+    if (!confirm("Voulez-vous vraiment purger toutes les plaques de démonstration / mockées pour ne conserver que les zones tracées ?")) {
+      return;
+    }
+    setIsPurgingMocks(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/sales/plaques/purge-mock/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStatusMessage({ text: data.message || "Plaques mockées purgées avec succès !", type: 'success' });
+        onPlaqueCreated();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setStatusMessage({ text: err.detail || "Erreur lors de la purge", type: 'error' });
+      }
+    } catch (e: any) {
+      setStatusMessage({ text: `Erreur: ${e.message}`, type: 'error' });
+    } finally {
+      setIsPurgingMocks(false);
+    }
+  };
+
   // Handlers for Plaque Creation, Assignment, and Sales Creation
   const handleCreatePlaque = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1561,6 +1622,16 @@ export default function SupervisorTerritoryMap({
               >
                 <Icons.Crosshair size={14} />
                 {isDelimiting ? 'Fermer Délimitation' : 'Délimiter une Plaque'}
+              </button>
+
+              <button
+                onClick={handlePurgeMockPlaques}
+                disabled={isPurgingMocks}
+                title="Supprimer les plaques mockées pour ne conserver que les zones tracées"
+                className="px-3 py-2.5 rounded-2xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-red-500/20 hover:text-red-500 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Icons.Trash2 size={13} className={isPurgingMocks ? 'animate-spin' : ''} />
+                {isPurgingMocks ? 'Purge...' : 'Purger Mock'}
               </button>
             </div>
           )}

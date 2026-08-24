@@ -10,12 +10,19 @@ class PlaqueDTO(BaseDTO):
     code: str
     name: str
     city: str
-    center_latitude: float
-    center_longitude: float
+    latitude: float
+    longitude: float
     radius_km: float
-    total_enterprises: int
-    ready_count: int
+    total_enterprises: int = 0
+    ready_count: int = 0
+    assigned_salespersons: List[int] = field(default_factory=list)
     assigned_salespersons_names: List[str] = field(default_factory=list)
+    boundary_geojson: Dict[str, Any] = field(default_factory=dict)
+    kml_data: Optional[str] = None
+    kml_url: Optional[str] = None
+    is_active: bool = True
+    center_latitude: Optional[float] = None
+    center_longitude: Optional[float] = None
 
 
 @dataclass

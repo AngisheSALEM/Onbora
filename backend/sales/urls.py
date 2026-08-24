@@ -4,6 +4,7 @@ from .views import (
     PlaqueDetailView,
     PlaqueKMLDownloadView,
     PlaqueDrawAndSaveView,
+    PlaquePurgeMockView,
     SalesNotificationListView,
     SalespersonListView,
     SalespersonDetailView,
@@ -58,6 +59,7 @@ urlpatterns = [
     path('plaques/<int:pk>/assign/', AssignSalespersonsToPlaqueView.as_view(), name='plaque-assign-salespersons'),
     path('plaques/<int:pk>/kml/', PlaqueKMLDownloadView.as_view(), name='plaque-kml-download'),
     path('plaques/draw-zone/', PlaqueDrawAndSaveView.as_view(), name='plaque-draw-save-kml'),
+    path('plaques/purge-mock/', PlaquePurgeMockView.as_view(), name='plaque-purge-mock'),
     # Gestion des Plaques territoriales & Cartographie
     path('plaques/', PlaqueListCreateView.as_view(), name='plaque-list-create'),
     path('plaques/<int:pk>/', PlaqueDetailView.as_view(), name='plaque-detail'),

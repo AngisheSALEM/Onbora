@@ -470,6 +470,26 @@ class PlaqueDrawAndSaveView(APIView):
             return Response({"detail": f"Erreur lors de l'enregistrement de la plaque: {str(exc)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class PlaquePurgeMockView(APIView):
+    """
+    POST / DELETE: Supprime toutes les plaques mockées pour ne conserver que les zones tracées.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        mock_codes = [
+            'KIN-GOMBE', 'KIN-LIMETE', 'BZV-CENTRE',
+            'PNR-CENTRE', 'LSH-CENTRE', 'ABJ-PLATEAU', 'DKR-PLATEAU'
+        ]
+        # Delete default mock codes
+        deleted_count, _ = Plaque.objects.filter(code__in=mock_codes).delete()
+        remaining_count = Plaque.objects.count()
+        return Response({
+            "message": f"{deleted_count} plaque(s) mockée(s) purgée(s) de la base de données.",
+            "remaining_plaques_count": remaining_count
+        }, status=status.HTTP_200_OK)
+
+
 class SalesNotificationListView(APIView):
     """
     GET: Liste les notifications pour l'utilisateur commercial connecté.
