@@ -185,11 +185,14 @@ export default function SupervisorTerritoryMap({
   const [revokingSalesperson, setRevokingSalesperson] = useState<Salesperson | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  // Interactive Polygon / KML Drawing Mode (Paint Pencil Freehand)
+  // Interactive Polygon / KML Drawing Mode (Paint Pencil Canvas Overlay)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const isDrawingModeRef = useRef(false);
-  const isMouseDownRef = useRef(false);
-  const drawingPointsRef = useRef<[number, number][]>([]);
+  const [drawColor, setDrawColor] = useState('#2563EB'); // Default electric blue
+  const [drawLineWidth, setDrawLineWidth] = useState(4); // 2, 4, 8 px
+  const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDrawingCanvasMouseDown = useRef(false);
+  const canvasPointsRef = useRef<{ x: number; y: number; lng: number; lat: number }[]>([]);
   const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
   const [isSaveDrawnModalOpen, setIsSaveDrawnModalOpen] = useState(false);
   const [drawnPlaqueCode, setDrawnPlaqueCode] = useState('');
@@ -302,90 +305,6 @@ export default function SupervisorTerritoryMap({
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
 
-    // Freehand Paint Pencil Drawing Handlers
-    const startDrawingStroke = (lng: number, lat: number) => {
-      if (!isDrawingModeRef.current) return;
-      isMouseDownRef.current = true;
-      const initialPt: [number, number] = [
-        parseFloat(lng.toFixed(5)),
-        parseFloat(lat.toFixed(5)),
-      ];
-      drawingPointsRef.current = [initialPt];
-      setDrawingPoints([initialPt]);
-    };
-
-    const continueDrawingStroke = (lng: number, lat: number) => {
-      if (!isDrawingModeRef.current || !isMouseDownRef.current) return;
-      const newPt: [number, number] = [
-        parseFloat(lng.toFixed(5)),
-        parseFloat(lat.toFixed(5)),
-      ];
-      const pts = drawingPointsRef.current;
-      if (pts.length > 0) {
-        const last = pts[pts.length - 1];
-        const dx = newPt[0] - last[0];
-        const dy = newPt[1] - last[1];
-        // Minimum distance to prevent redundant points while maintaining high precision
-        if (dx * dx + dy * dy < 0.00000005) return;
-      }
-      const updated = [...pts, newPt];
-      drawingPointsRef.current = updated;
-      setDrawingPoints(updated);
-    };
-
-    const finishDrawingStroke = () => {
-      if (!isDrawingModeRef.current || !isMouseDownRef.current) return;
-      isMouseDownRef.current = false;
-      const pts = drawingPointsRef.current;
-      if (pts.length >= 3) {
-        const closed = [...pts];
-        if (
-          closed[0][0] !== closed[closed.length - 1][0] ||
-          closed[0][1] !== closed[closed.length - 1][1]
-        ) {
-          closed.push(closed[0]);
-        }
-        drawingPointsRef.current = closed;
-        setDrawingPoints(closed);
-      }
-    };
-
-    map.on('mousedown', (e) => {
-      if (isDrawingModeRef.current) {
-        startDrawingStroke(e.lngLat.lng, e.lngLat.lat);
-      }
-    });
-
-    map.on('mousemove', (e) => {
-      if (isDrawingModeRef.current && isMouseDownRef.current) {
-        continueDrawingStroke(e.lngLat.lng, e.lngLat.lat);
-      }
-    });
-
-    map.on('mouseup', () => {
-      if (isDrawingModeRef.current) {
-        finishDrawingStroke();
-      }
-    });
-
-    map.on('touchstart', (e) => {
-      if (isDrawingModeRef.current && e.lngLat) {
-        startDrawingStroke(e.lngLat.lng, e.lngLat.lat);
-      }
-    });
-
-    map.on('touchmove', (e) => {
-      if (isDrawingModeRef.current && isMouseDownRef.current && e.lngLat) {
-        continueDrawingStroke(e.lngLat.lng, e.lngLat.lat);
-      }
-    });
-
-    map.on('touchend', () => {
-      if (isDrawingModeRef.current) {
-        finishDrawingStroke();
-      }
-    });
-
     map.on('click', (e) => {
       if (!isDrawingModeRef.current) {
         setNewPlaqueLat(parseFloat(e.lngLat.lat.toFixed(5)));
@@ -398,23 +317,243 @@ export default function SupervisorTerritoryMap({
     };
   }, []);
 
-  // Update cursor, interaction mode and ref on drawing mode toggle
+  // Helper for Hex to RGBA
+  const hexToRgba = (hex: string, alpha: number) => {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 37;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 99;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 235;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  // Helper for KML AABBGGRR color format
+  const hexToKmlColor = (hex: string, alphaHex = '80'): string => {
+    const cleanHex = hex.replace('#', '');
+    const r = cleanHex.substring(0, 2);
+    const g = cleanHex.substring(2, 4);
+    const b = cleanHex.substring(4, 6);
+    return `${alphaHex}${b}${g}${r}`;
+  };
+
+  // Canvas Setup & Resize on Drawing Mode Toggle
   useEffect(() => {
     isDrawingModeRef.current = isDrawingMode;
     const map = mapRef.current;
-    if (!map) return;
+    if (map) {
+      if (isDrawingMode) {
+        map.dragPan.disable();
+        map.touchZoomRotate.disable();
+      } else {
+        map.dragPan.enable();
+        map.touchZoomRotate.enable();
+      }
+    }
 
-    if (isDrawingMode) {
-      map.dragPan.disable();
-      map.touchZoomRotate.disable();
-      map.getCanvas().style.cursor = 'crosshair';
-    } else {
-      map.dragPan.enable();
-      map.touchZoomRotate.enable();
-      map.getCanvas().style.cursor = '';
-      isMouseDownRef.current = false;
+    if (!isDrawingMode || !drawingCanvasRef.current || !mapContainerRef.current) return;
+    const canvas = drawingCanvasRef.current;
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
     }
   }, [isDrawingMode]);
+
+  // Canvas Mouse & Touch Drawing Handlers (Instant Real-Time Canvas 2D)
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = drawingCanvasRef.current;
+    const map = mapRef.current;
+    if (!canvas || !map) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    isDrawingCanvasMouseDown.current = true;
+    const lngLat = map.unproject([x, y]);
+
+    canvasPointsRef.current = [{
+      x,
+      y,
+      lng: parseFloat(lngLat.lng.toFixed(5)),
+      lat: parseFloat(lngLat.lat.toFixed(5)),
+    }];
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.strokeStyle = drawColor;
+      ctx.lineWidth = drawLineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.moveTo(x, y);
+    }
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawingCanvasMouseDown.current) return;
+    const canvas = drawingCanvasRef.current;
+    const map = mapRef.current;
+    if (!canvas || !map) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const pts = canvasPointsRef.current;
+    if (pts.length > 0) {
+      const last = pts[pts.length - 1];
+      const dist = Math.hypot(x - last.x, y - last.y);
+      if (dist < 2) return;
+    }
+
+    const lngLat = map.unproject([x, y]);
+    canvasPointsRef.current.push({
+      x,
+      y,
+      lng: parseFloat(lngLat.lng.toFixed(5)),
+      lat: parseFloat(lngLat.lat.toFixed(5)),
+    });
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+  };
+
+  const handleCanvasMouseUp = () => {
+    if (!isDrawingCanvasMouseDown.current) return;
+    isDrawingCanvasMouseDown.current = false;
+
+    const canvas = drawingCanvasRef.current;
+    const pts = canvasPointsRef.current;
+
+    if (canvas && pts.length >= 3) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.closePath();
+        ctx.fillStyle = hexToRgba(drawColor, 0.22);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Convert to GPS coordinates array for GeoJSON and KML
+      const gpsPoints: [number, number][] = pts.map((p) => [p.lng, p.lat]);
+      if (gpsPoints[0][0] !== gpsPoints[gpsPoints.length - 1][0] || gpsPoints[0][1] !== gpsPoints[gpsPoints.length - 1][1]) {
+        gpsPoints.push(gpsPoints[0]);
+      }
+      setDrawingPoints(gpsPoints);
+    } else if (pts.length < 3) {
+      const ctx = canvas?.getContext('2d');
+      if (canvas && ctx) {
+        const dpr = window.devicePixelRatio || 1;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      canvasPointsRef.current = [];
+      setDrawingPoints([]);
+    }
+  };
+
+  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const canvas = drawingCanvasRef.current;
+    const map = mapRef.current;
+    if (!canvas || !map) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    isDrawingCanvasMouseDown.current = true;
+    const lngLat = map.unproject([x, y]);
+
+    canvasPointsRef.current = [{
+      x,
+      y,
+      lng: parseFloat(lngLat.lng.toFixed(5)),
+      lat: parseFloat(lngLat.lat.toFixed(5)),
+    }];
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.strokeStyle = drawColor;
+      ctx.lineWidth = drawLineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.moveTo(x, y);
+    }
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawingCanvasMouseDown.current || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const canvas = drawingCanvasRef.current;
+    const map = mapRef.current;
+    if (!canvas || !map) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const pts = canvasPointsRef.current;
+    if (pts.length > 0) {
+      const last = pts[pts.length - 1];
+      const dist = Math.hypot(x - last.x, y - last.y);
+      if (dist < 2) return;
+    }
+
+    const lngLat = map.unproject([x, y]);
+    canvasPointsRef.current.push({
+      x,
+      y,
+      lng: parseFloat(lngLat.lng.toFixed(5)),
+      lat: parseFloat(lngLat.lat.toFixed(5)),
+    });
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+  };
+
+  const handleClearDrawing = () => {
+    const canvas = drawingCanvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const dpr = window.devicePixelRatio || 1;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+    }
+    canvasPointsRef.current = [];
+    setDrawingPoints([]);
+  };
 
   // Update Markers on Map with 3 Key Categories
   useEffect(() => {
@@ -612,7 +751,7 @@ export default function SupervisorTerritoryMap({
           source: 'drawing-source',
           filter: ['==', '$type', 'Polygon'],
           paint: {
-            'fill-color': '#2563EB',
+            'fill-color': drawColor,
             'fill-opacity': 0.22,
           },
         });
@@ -622,8 +761,8 @@ export default function SupervisorTerritoryMap({
           type: 'line',
           source: 'drawing-source',
           paint: {
-            'line-color': '#2563EB',
-            'line-width': 4,
+            'line-color': drawColor,
+            'line-width': drawLineWidth,
             'line-opacity': 0.95,
           },
           layout: {
@@ -685,21 +824,23 @@ export default function SupervisorTerritoryMap({
     }
   }, [drawingPoints, plaques]);
 
-  // KML Generation and Export
-  const generateKmlString = (points: [number, number][], name: string, code: string) => {
+  // KML Generation and Export with Chosen Paint Color
+  const generateKmlString = (points: [number, number][], name: string, code: string, colorHex = drawColor) => {
     const closed = [...points];
     if (closed.length > 0 && (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1])) {
       closed.push(closed[0]);
     }
     const coordsStr = closed.map((p) => `${p[0]},${p[1]},0`).join(' ');
+    const kmlLineColor = hexToKmlColor(colorHex, 'ff');
+    const kmlPolyColor = hexToKmlColor(colorHex, '40');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>${name || 'Plaque'} (${code || 'ZONE'})</name>
     <description>Périmètre commercial Onbora pour ${name} - Tracé vectoriel</description>
     <Style id="plaqueStyle">
-      <LineStyle><color>ffeb6325</color><width>3</width></LineStyle>
-      <PolyStyle><color>40eb6325</color><fill>1</fill><outline>1</outline></PolyStyle>
+      <LineStyle><color>${kmlLineColor}</color><width>${drawLineWidth}</width></LineStyle>
+      <PolyStyle><color>${kmlPolyColor}</color><fill>1</fill><outline>1</outline></PolyStyle>
     </Style>
     <Placemark>
       <name>${code || 'ZONE'}</name>
@@ -718,12 +859,12 @@ export default function SupervisorTerritoryMap({
 </kml>`;
   };
 
-  const handleDownloadKml = (points: [number, number][], name: string, code: string) => {
+  const handleDownloadKml = (points: [number, number][], name: string, code: string, colorHex = drawColor) => {
     if (points.length < 3) {
       setStatusMessage({ text: "Tracez au moins 3 points sur la carte pour exporter le fichier KML.", type: 'error' });
       return;
     }
-    const kml = generateKmlString(points, name, code);
+    const kml = generateKmlString(points, name, code, colorHex);
     const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1220,52 +1361,117 @@ export default function SupervisorTerritoryMap({
             <div className="relative w-full h-[540px] rounded-[22px] overflow-hidden shadow-sm bg-zinc-950">
               <div ref={mapContainerRef} className="w-full h-full" />
 
-              {/* Map Legend Overlay */}
-              <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[18px] shadow-lg flex flex-col gap-2 z-10 text-[11px]">
-                <span className="font-black text-zinc-950 dark:text-white uppercase tracking-wider text-[10px]">
-                  Légende Onbora Map
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#1C1C22]" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Client Pré-converti (ADV)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white dark:border-[#1C1C22]" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Lead Voisin 100m (Lookalike)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-white dark:border-[#1C1C22]" />
-                  <span className="font-semibold text-zinc-800 dark:text-gray-300">Alerte Friction Concurrent (SQL KAM)</span>
-                </div>
-              </div>
-
-              {/* Floating Drawing Toolbar (Paint Pencil Mode) */}
+              {/* Dedicated High-Performance HTML5 Painting Canvas Overlay */}
               {isDrawingMode && (
-                <div className="absolute top-4 right-14 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center gap-3 z-10 border border-blue-600/30 animate-fade-in">
-                  <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-                    <span>✏️ Crayon Libre : {drawingPoints.length > 0 ? `${drawingPoints.length} points` : 'Maintenez le clic et tracez'}</span>
+                <canvas
+                  ref={drawingCanvasRef}
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                  onTouchStart={handleCanvasTouchStart}
+                  onTouchMove={handleCanvasTouchMove}
+                  onTouchEnd={handleCanvasMouseUp}
+                  className="absolute inset-0 w-full h-full z-20 cursor-crosshair touch-none"
+                />
+              )}
+
+              {/* Map Legend Overlay */}
+              {!isDrawingMode && (
+                <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[18px] shadow-lg flex flex-col gap-2 z-10 text-[11px]">
+                  <span className="font-black text-zinc-950 dark:text-white uppercase tracking-wider text-[10px]">
+                    Légende Onbora Map
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#1C1C22]" />
+                    <span className="font-semibold text-zinc-800 dark:text-gray-300">Client Pré-converti (ADV)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white dark:border-[#1C1C22]" />
+                    <span className="font-semibold text-zinc-800 dark:text-gray-300">Lead Voisin 100m (Lookalike)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-white dark:border-[#1C1C22]" />
+                    <span className="font-semibold text-zinc-800 dark:text-gray-300">Alerte Friction Concurrent (SQL KAM)</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Floating Drawing Toolbar (Paint Pencil Mode with Color & Width Palette) */}
+              {isDrawingMode && (
+                <div className="absolute top-4 left-4 right-4 bg-white/95 dark:bg-[#1C1C22]/95 backdrop-blur-md px-4 py-3 rounded-[20px] shadow-2xl flex flex-wrap items-center justify-between gap-3 z-30 border border-blue-600/30 animate-fade-in">
+                  {/* Left: Info & Color Palette */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2 text-xs font-black text-zinc-950 dark:text-white">
+                      <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: drawColor }} />
+                      <span>✏️ Crayon Paint : {drawingPoints.length > 0 ? `${drawingPoints.length} points tracés` : 'Maintenez le clic et dessinez'}</span>
+                    </div>
+
+                    {/* Color Swatches */}
+                    <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                      <span className="text-[10px] font-bold text-zinc-500 mr-1 hidden sm:inline">Couleur :</span>
+                      {[
+                        { color: '#2563EB', name: 'Bleu' },
+                        { color: '#EA580C', name: 'Orange' },
+                        { color: '#10B981', name: 'Vert' },
+                        { color: '#8B5CF6', name: 'Violet' },
+                        { color: '#EF4444', name: 'Rouge' },
+                        { color: '#F59E0B', name: 'Jaune' },
+                      ].map((c) => (
+                        <button
+                          key={c.color}
+                          type="button"
+                          title={c.name}
+                          onClick={() => setDrawColor(c.color)}
+                          className={`w-5 h-5 rounded-full transition-transform cursor-pointer flex items-center justify-center ${
+                            drawColor === c.color ? 'scale-125 ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-zinc-900 shadow-md' : 'hover:scale-110 opacity-75 hover:opacity-100'
+                          }`}
+                          style={{ backgroundColor: c.color }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Stroke Width Selector */}
+                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                      <span className="text-[10px] font-bold text-zinc-500 mx-1 hidden sm:inline">Taille :</span>
+                      {[
+                        { size: 2, label: 'Fin' },
+                        { size: 4, label: 'Moyen' },
+                        { size: 8, label: 'Épais' },
+                      ].map((s) => (
+                        <button
+                          key={s.size}
+                          type="button"
+                          onClick={() => setDrawLineWidth(s.size)}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            drawLineWidth === s.size
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        drawingPointsRef.current = [];
-                        setDrawingPoints([]);
-                      }}
+                      onClick={handleClearDrawing}
                       disabled={drawingPoints.length === 0}
-                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-500 disabled:opacity-40 cursor-pointer transition-colors"
                     >
-                      Effacer / Recommencer
+                      Effacer
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDownloadKml(drawingPoints, 'Zone_Tracée', 'ZONE')}
+                      onClick={() => handleDownloadKml(drawingPoints, 'Zone_Tracée', 'ZONE', drawColor)}
                       disabled={drawingPoints.length < 3}
-                      className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-40 cursor-pointer flex items-center gap-1"
                     >
-                      <Icons.Download size={12} />
+                      <Icons.Download size={13} />
                       Export KML
                     </button>
                     <button
@@ -1276,9 +1482,9 @@ export default function SupervisorTerritoryMap({
                         setIsSaveDrawnModalOpen(true);
                       }}
                       disabled={drawingPoints.length < 3}
-                      className="px-3.5 py-1.5 rounded-xl text-[10px] font-black text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 cursor-pointer flex items-center gap-1 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                      className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
                     >
-                      <Icons.CheckCircle size={12} />
+                      <Icons.CheckCircle size={13} />
                       Affecter & Notifier
                     </button>
                   </div>
