@@ -249,14 +249,16 @@ class ProcessLiveCopilotTurnUseCase(BaseUseCase[Tuple[int, str, Any], LiveCopilo
         if new_transcript_chunk:
             session.live_transcript = (session.live_transcript + " " + new_transcript_chunk).strip()
 
-        # Inférence Core AI en direct
+        # Inférence Core AI en direct avec préservation des offres déjà sélectionnées
         ai_client = CoreAISalesClient()
+        existing_packages = session.live_proposition.get("recommended_packages") if isinstance(session.live_proposition, dict) else None
         live_res = ai_client.analyze_live_copilot_turn(
             transcript_text=session.live_transcript,
             enterprise_name=enterprise.name,
             sector=enterprise.sector or "Services B2B",
             accumulated_needs=session.detected_needs,
-            accumulated_objections=session.detected_objections
+            accumulated_objections=session.detected_objections,
+            existing_packages=existing_packages,
         )
 
         session.detected_needs = live_res.get("detected_needs", [])
@@ -271,8 +273,56 @@ class ProcessLiveCopilotTurnUseCase(BaseUseCase[Tuple[int, str, Any], LiveCopilo
             active_sentiment=live_res.get("active_sentiment", "En discussion"),
             detected_needs=session.detected_needs,
             detected_objections=session.detected_objections,
-            realtime_proposition=session.live_proposition
+            realtime_proposition=session.live_proposition,
+            coaching_tip=live_res.get("coaching_tip", "")
         )
+
+
+class ToggleLivePackageUseCase(BaseUseCase[Tuple[int, str, bool, Any], Dict[str, Any]]):
+    """
+    Permet au commercial de cocher/décocher une offre recommandée en plein live.
+    Recalcule instantanément le MRR total et persiste la sélection.
+    """
+    def execute(self, params: Tuple[int, str, bool, Any]) -> Dict[str, Any]:
+        enterprise_id, service_id, checked, user = params
+
+        try:
+            enterprise = Enterprise.objects.get(pk=enterprise_id)
+        except Enterprise.DoesNotExist:
+            raise EnterpriseNotFoundException(enterprise_id)
+
+        session = LiveVisitSession.objects.filter(enterprise=enterprise, session_status='ACTIVE').order_by('-updated_at').first()
+        if not session:
+            prep = VisitPreparation.objects.filter(enterprise=enterprise).order_by('-created_at').first()
+            if not prep:
+                prep = VisitPreparation.objects.create(enterprise=enterprise, salesperson=user if (user and user.is_authenticated) else None)
+            session = LiveVisitSession.objects.create(
+                preparation=prep,
+                enterprise=enterprise,
+                salesperson=user if (user and user.is_authenticated) else prep.salesperson,
+                session_status='ACTIVE'
+            )
+
+        prop = session.live_proposition or {}
+        packages = prop.get("recommended_packages", [])
+        total_monthly = 0.0
+
+        for pkg in packages:
+            if pkg.get("service_id") == service_id:
+                pkg["checked"] = checked
+            if pkg.get("checked", True):
+                total_monthly += float(pkg.get("monthly_price_usd", 0.0))
+
+        prop["recommended_packages"] = packages
+        prop["estimated_total_monthly_usd"] = round(total_monthly, 2)
+        session.live_proposition = prop
+        session.save()
+
+        return {
+            "session_id": session.id,
+            "enterprise_id": enterprise.id,
+            "realtime_proposition": prop
+        }
 
 
 class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any], PostVisitReportResultDTO]):
@@ -307,13 +357,22 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
             salesperson_name=salesperson_name
         )
 
-        # 2. Création / Mise à jour du VisitReport
+        # 2. Fusionner les offres cochées en direct par le commercial avec les besoins confirmés
+        confirmed_needs = list(ai_report.get("confirmed_needs", []))
+        if live_session and isinstance(live_session.live_proposition, dict):
+            live_pkgs = live_session.live_proposition.get("recommended_packages", [])
+            for pkg in live_pkgs:
+                pkg_name = pkg.get("name")
+                if pkg.get("checked", True) and pkg_name and pkg_name not in confirmed_needs:
+                    confirmed_needs.append(pkg_name)
+
+        # Création / Mise à jour du VisitReport
         report, _ = VisitReport.objects.get_or_create(
             preparation=prep,
             defaults={
                 "raw_transcript": transcript,
                 "executive_summary": ai_report.get("executive_summary", ""),
-                "confirmed_needs": ai_report.get("confirmed_needs", []),
+                "confirmed_needs": confirmed_needs,
                 "objections_raised": ai_report.get("objections_raised", []),
                 "actions_todo": ai_report.get("actions_todo", []),
                 "follow_up_email_draft": ai_report.get("follow_up_email_draft", ""),
@@ -322,7 +381,7 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
         )
         report.raw_transcript = transcript
         report.executive_summary = ai_report.get("executive_summary", report.executive_summary)
-        report.confirmed_needs = ai_report.get("confirmed_needs", report.confirmed_needs)
+        report.confirmed_needs = confirmed_needs
         report.objections_raised = ai_report.get("objections_raised", report.objections_raised)
         report.actions_todo = ai_report.get("actions_todo", report.actions_todo)
         report.follow_up_email_draft = ai_report.get("follow_up_email_draft", report.follow_up_email_draft)

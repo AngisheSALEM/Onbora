@@ -14,9 +14,9 @@ from .views import (
     EnterpriseMapView,
     EnterpriseBriefView,
     EnterpriseEnrichView,
-    PlaqueListView,
     SalespersonActivityView,
     LiveCopilotTurnView,
+    LiveCopilotTogglePackageView,
     VisitPreparationCreateView,
     VisitReportCreateView,
     VisitReportGenerateFromAIView,
@@ -73,6 +73,7 @@ urlpatterns = [
 
     # Copilote en direct temps réel pendant la visite
     path('live-copilot/turn/', LiveCopilotTurnView.as_view(), name='live-copilot-turn'),
+    path('live-copilot/toggle-package/', LiveCopilotTogglePackageView.as_view(), name='live-copilot-toggle-package'),
 
     # Fiches de visite, Génération IA et Boucle d'apprentissage continu
     path('visit-preparations/', VisitPreparationCreateView.as_view(), name='visit-preparation-create'),

@@ -484,4 +484,43 @@ class KaabuClientTestCase(APITestCase):
         self.assertEqual(dossier.raw_conversation_data['provisioning']['fibre'], 'COMPLETED')
         self.assertEqual(dossier.raw_conversation_data['provisioning']['m365'], 'COMPLETED')
 
+    def test_live_copilot_roaming_turn_and_package_toggle(self):
+        """Test Live Copilot speech stream analysis for Roaming detection & interactive package checkbox toggling"""
+        ent = Enterprise.objects.create(
+            name="Groupe BCDC Multinational",
+            sector="Banque & Finance",
+            location="Kinshasa (Gombe)"
+        )
+
+        # 1. Post speech turn mentioning roaming and overseas trips
+        turn_url = reverse('live-copilot-turn')
+        payload = {
+            "enterprise_id": ent.id,
+            "transcript_chunk": "Notre équipe de direction se déplace souvent à l'étranger et à l'extérieur du pays pour des missions régionales."
+        }
+        resp = self.client.post(turn_url, payload, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn("Connectivité Roaming International", resp.data["detected_needs"])
+        self.assertTrue(len(resp.data["realtime_proposition"]["recommended_packages"]) >= 1)
+        
+        # Verify Roaming package is included and checked by default
+        roaming_pkg = next((p for p in resp.data["realtime_proposition"]["recommended_packages"] if p["service_id"] == "roaming-pass-pro"), None)
+        self.assertIsNotNone(roaming_pkg)
+        self.assertTrue(roaming_pkg["checked"])
+        self.assertEqual(roaming_pkg["category"], "Mobilité & International")
+        self.assertIn("Roaming", resp.data.get("coaching_tip", ""))
+
+        # 2. Test toggling package checkbox
+        toggle_url = reverse('live-copilot-toggle-package')
+        toggle_payload = {
+            "enterprise_id": ent.id,
+            "service_id": "roaming-pass-pro",
+            "checked": False
+        }
+        toggle_resp = self.client.post(toggle_url, toggle_payload, format='json')
+        self.assertEqual(toggle_resp.status_code, status.HTTP_200_OK)
+        updated_roaming_pkg = next(p for p in toggle_resp.data["realtime_proposition"]["recommended_packages"] if p["service_id"] == "roaming-pass-pro")
+        self.assertFalse(updated_roaming_pkg["checked"])
+
+
 

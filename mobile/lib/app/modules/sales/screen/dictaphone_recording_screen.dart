@@ -186,6 +186,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                   // Speech Transcription Live Preview Box
                   Obx(() {
                     final text = dictController.transcribedText.value;
+                    final isSpeaking = dictController.isVADSpeaking.value;
                     if (text.isEmpty && dictController.state != RecordingState.recording) {
                       return const SizedBox.shrink();
                     }
@@ -198,20 +199,47 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(LucideIcons.activity, color: isDark ? Colors.white70 : AppConstants.textSecondaryLight, size: 18),
+                                Icon(LucideIcons.activity, color: isSpeaking ? const Color(0xFF10B981) : (isDark ? Colors.white70 : AppConstants.textSecondaryLight), size: 18),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Retranscription en direct',
+                                    isSpeaking ? 'Parole détectée (VAD en cours...)' : 'Retranscription en direct',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                      color: isSpeaking ? const Color(0xFF10B981) : (isDark ? Colors.white : AppConstants.textDark),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
                                     ),
                                   ),
                                 ),
+                                if (salesController.isAnalyzingCopilotTurn.value)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const SizedBox(
+                                          width: 10,
+                                          height: 10,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2563EB)),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          'IA Live',
+                                          style: TextStyle(
+                                            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 10),
@@ -230,6 +258,295 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 16),
+
+                  // 💡 Real-Time Live Copilot Interactive Recommendations Section
+                  Obx(() {
+                    final copilot = salesController.currentLiveCopilot.value;
+                    if (copilot == null || (dictController.state == RecordingState.idle && copilot.realtimeProposition.recommendedPackages.isEmpty)) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final prop = copilot.realtimeProposition;
+                    final packages = prop.recommendedPackages;
+
+                    return RepaintBoundary(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header Strip with Live Score
+                          GlassCard(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 18),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Copilote Commercial Live',
+                                          style: TextStyle(
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 14,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        'Closing : ${prop.closingReadinessScore}%',
+                                        style: const TextStyle(
+                                          color: Color(0xFF10B981),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                // Real-Time AI Coaching Tip Bubble
+                                if (copilot.coachingTip.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Icon(LucideIcons.lightbulb, color: Color(0xFF2563EB), size: 16),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            copilot.coachingTip,
+                                            style: TextStyle(
+                                              color: isDark ? Colors.white : AppConstants.textDark,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
+                                // Detected Needs & Objections Badges
+                                if (copilot.detectedNeeds.isNotEmpty || copilot.detectedObjections.isNotEmpty) ...[
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      ...copilot.detectedNeeds.map((need) => Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              '✓ $need',
+                                              style: TextStyle(
+                                                color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          )),
+                                      ...copilot.detectedObjections.map((obj) => Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              '⚠️ $obj',
+                                              style: const TextStyle(
+                                                color: Color(0xFFEF4444),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          )),
+                                    ],
+                                  ),
+                                ],
+
+                                // Interactive Recommended Packages Checklist
+                                if (packages.isNotEmpty) ...[
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    'Offres Détectées & Recommandées (Cochez pour inclure) :',
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ...packages.map((pkg) => Container(
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF18181B) : Colors.white,
+                                          borderRadius: BorderRadius.circular(14),
+                                          border: Border.all(
+                                            color: pkg.checked
+                                                ? const Color(0xFF2563EB)
+                                                : (isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7)),
+                                            width: pkg.checked ? 1.5 : 1.0,
+                                          ),
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            borderRadius: BorderRadius.circular(14),
+                                            onTap: () {
+                                              salesController.toggleLivePackage(pkg.serviceId, !pkg.checked);
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(12),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Checkbox(
+                                                        value: pkg.checked,
+                                                        activeColor: const Color(0xFF2563EB),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(4),
+                                                        ),
+                                                        onChanged: (val) {
+                                                          salesController.toggleLivePackage(pkg.serviceId, val ?? true);
+                                                        },
+                                                      ),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    pkg.name,
+                                                                    style: TextStyle(
+                                                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                                                      fontWeight: FontWeight.w800,
+                                                                      fontSize: 12,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  '${pkg.monthlyPriceUsd.toStringAsFixed(0)} \$/m',
+                                                                  style: const TextStyle(
+                                                                    color: Color(0xFF2563EB),
+                                                                    fontWeight: FontWeight.w900,
+                                                                    fontSize: 13,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            const SizedBox(height: 2),
+                                                            Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                              decoration: BoxDecoration(
+                                                                color: isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                                                                borderRadius: BorderRadius.circular(6),
+                                                              ),
+                                                              child: Text(
+                                                                pkg.category,
+                                                                style: TextStyle(
+                                                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                                                  fontSize: 9,
+                                                                  fontWeight: FontWeight.w700,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  if (pkg.pitchArgument.isNotEmpty) ...[
+                                                    const SizedBox(height: 6),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 48, right: 4),
+                                                      child: Text(
+                                                        'Pitch : ${pkg.pitchArgument}',
+                                                        style: TextStyle(
+                                                          color: isDark ? Colors.white60 : AppConstants.textMuted,
+                                                          fontSize: 11,
+                                                          height: 1.3,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      )),
+
+                                  // Live Estimated Total MRR Bar
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Total MRR Estimé :',
+                                          style: TextStyle(
+                                            color: isDark ? Colors.white70 : AppConstants.textDark,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${prop.estimatedTotalMonthlyUsd.toStringAsFixed(0)} \$/mois',
+                                          style: const TextStyle(
+                                            color: Color(0xFF2563EB),
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }),

@@ -2,15 +2,19 @@ class RecommendedPackageModel {
   final String serviceId;
   final String name;
   final double monthlyPriceUsd;
+  final String category;
   final String pitchArgument;
   final String objectionKiller;
+  bool checked;
 
   RecommendedPackageModel({
     required this.serviceId,
     required this.name,
     required this.monthlyPriceUsd,
+    this.category = 'Offre Recommandée',
     required this.pitchArgument,
     required this.objectionKiller,
+    this.checked = true,
   });
 
   factory RecommendedPackageModel.fromJson(Map<String, dynamic> json) {
@@ -18,8 +22,10 @@ class RecommendedPackageModel {
       serviceId: json['service_id'] ?? '',
       name: json['name'] ?? '',
       monthlyPriceUsd: (json['monthly_price_usd'] as num?)?.toDouble() ?? 0.0,
+      category: json['category'] ?? 'Offre Recommandée',
       pitchArgument: json['pitch_argument'] ?? '',
       objectionKiller: json['objection_killer'] ?? '',
+      checked: json['checked'] ?? true,
     );
   }
 
@@ -28,9 +34,31 @@ class RecommendedPackageModel {
       'service_id': serviceId,
       'name': name,
       'monthly_price_usd': monthlyPriceUsd,
+      'category': category,
       'pitch_argument': pitchArgument,
       'objection_killer': objectionKiller,
+      'checked': checked,
     };
+  }
+
+  RecommendedPackageModel copyWith({
+    String? serviceId,
+    String? name,
+    double? monthlyPriceUsd,
+    String? category,
+    String? pitchArgument,
+    String? objectionKiller,
+    bool? checked,
+  }) {
+    return RecommendedPackageModel(
+      serviceId: serviceId ?? this.serviceId,
+      name: name ?? this.name,
+      monthlyPriceUsd: monthlyPriceUsd ?? this.monthlyPriceUsd,
+      category: category ?? this.category,
+      pitchArgument: pitchArgument ?? this.pitchArgument,
+      objectionKiller: objectionKiller ?? this.objectionKiller,
+      checked: checked ?? this.checked,
+    );
   }
 }
 
@@ -70,6 +98,20 @@ class LivePropositionModel {
       'closing_readiness_score': closingReadinessScore,
     };
   }
+
+  LivePropositionModel copyWith({
+    String? title,
+    List<RecommendedPackageModel>? recommendedPackages,
+    double? estimatedTotalMonthlyUsd,
+    int? closingReadinessScore,
+  }) {
+    return LivePropositionModel(
+      title: title ?? this.title,
+      recommendedPackages: recommendedPackages ?? this.recommendedPackages,
+      estimatedTotalMonthlyUsd: estimatedTotalMonthlyUsd ?? this.estimatedTotalMonthlyUsd,
+      closingReadinessScore: closingReadinessScore ?? this.closingReadinessScore,
+    );
+  }
 }
 
 class LiveCopilotTurnModel {
@@ -80,6 +122,7 @@ class LiveCopilotTurnModel {
   final List<String> detectedNeeds;
   final List<String> detectedObjections;
   final LivePropositionModel realtimeProposition;
+  final String coachingTip;
 
   LiveCopilotTurnModel({
     required this.sessionId,
@@ -89,6 +132,7 @@ class LiveCopilotTurnModel {
     required this.detectedNeeds,
     required this.detectedObjections,
     required this.realtimeProposition,
+    this.coachingTip = '',
   });
 
   factory LiveCopilotTurnModel.fromJson(Map<String, dynamic> json) {
@@ -102,6 +146,7 @@ class LiveCopilotTurnModel {
       realtimeProposition: LivePropositionModel.fromJson(
         (json['realtime_proposition'] as Map<String, dynamic>?) ?? {},
       ),
+      coachingTip: json['coaching_tip'] ?? '',
     );
   }
 }

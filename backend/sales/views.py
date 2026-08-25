@@ -32,6 +32,7 @@ from .application.use_cases import (
     GetPlaqueDetailUseCase,
     ScrapeAndEnrichEnterpriseUseCase,
     ProcessLiveCopilotTurnUseCase,
+    ToggleLivePackageUseCase,
     GenerateVisitReportWithAIUseCase,
     SubmitCoreAIFeedbackUseCase,
     SearchEnterprisesUseCase,
@@ -637,6 +638,29 @@ class LiveCopilotTurnView(APIView):
             turn_dto = use_case.execute((enterprise_id, transcript_chunk, request.user))
             serializer = LiveCopilotTurnSerializer(turn_dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except EnterpriseNotFoundException:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LiveCopilotTogglePackageView(APIView):
+    """
+    POST: Permet au commercial de cocher/décocher une offre recommandée en plein live.
+    Recalcule et sauvegarde la proposition en direct.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request):
+        enterprise_id = request.data.get('enterprise_id')
+        service_id = request.data.get('service_id')
+        checked = bool(request.data.get('checked', True))
+
+        if not enterprise_id or not service_id:
+            return Response({"detail": "enterprise_id et service_id sont requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            use_case = ToggleLivePackageUseCase()
+            res = use_case.execute((enterprise_id, service_id, checked, request.user))
+            return Response(res, status=status.HTTP_200_OK)
         except EnterpriseNotFoundException:
             return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
 

@@ -21,6 +21,7 @@ class SalesController extends GetxController {
   final Rx<VisitPrepModel?> currentPrep = Rx<VisitPrepModel?>(null);
   final Rx<VisitReportModel?> currentReport = Rx<VisitReportModel?>(null);
   final Rx<LiveCopilotTurnModel?> currentLiveCopilot = Rx<LiveCopilotTurnModel?>(null);
+  final RxBool isAnalyzingCopilotTurn = false.obs;
 
   // Dynamic server-backed KPIs & Plaques
   final RxInt kpiVisitsCount = 3.obs;
@@ -375,8 +376,9 @@ class SalesController extends GetxController {
     return false;
   }
 
-  /// 3. Real-Time Live Copilot Turn Endpoint
+  /// 3. Real-Time Live Copilot Turn Endpoint (Silence-aware async stream)
   Future<LiveCopilotTurnModel?> sendLiveCopilotTurn(int enterpriseId, String transcriptChunk) async {
+    isAnalyzingCopilotTurn.value = true;
     try {
       final response = await _apiClient.post(
         '/api/sales/live-copilot/turn/',
@@ -392,10 +394,54 @@ class SalesController extends GetxController {
         return turnModel;
       }
     } catch (e) {
-      // Fallback local copilot
-      final currentNeeds = ['Fibre Optique Pro Orange', 'Microsoft 365 Pro'];
-      if (transcriptChunk.toLowerCase().contains('sécurité') || transcriptChunk.toLowerCase().contains('virus')) {
+      // Fallback local copilot avec détection de Roaming, Fibre, Cybersécurité et Outils Pro
+      final chunkLower = transcriptChunk.toLowerCase();
+      final currentNeeds = <String>['Fibre Optique Pro Orange', 'Microsoft 365 Pro'];
+      final List<RecommendedPackageModel> packages = [];
+      double totalMonthly = 0.0;
+      String coaching = "Écoutez activement et présentez les forfaits Orange Pro adaptés.";
+
+      // Détection Roaming / Voyage
+      if (chunkLower.contains('roaming') || chunkLower.contains('voyage') || chunkLower.contains('étranger') || chunkLower.contains('extérieur') || chunkLower.contains('deplacement')) {
+        currentNeeds.add('Connectivité Roaming International');
+        packages.add(RecommendedPackageModel(
+          serviceId: 'roaming-pass-pro',
+          name: 'Pass Roaming International Pro (Afrique & Monde)',
+          monthlyPriceUsd: 45.0,
+          category: 'Mobilité & International',
+          pitchArgument: 'Forfait voix & 15 Go d\'internet utilisable dans plus de 80 pays sans surtaxe.',
+          objectionKiller: 'Plafond garanti et blocage automatique sans mauvaise surprise.',
+          checked: true,
+        ));
+        totalMonthly += 45.0;
+        coaching = "Le client a évoqué des déplacements. Proposez immédiatement le Pass Roaming Pro.";
+      }
+
+      // Fibre Pro
+      packages.add(RecommendedPackageModel(
+        serviceId: 'fibre-pro-50m',
+        name: 'Fibre Optique Pro Orange (50 Mbps symétrique)',
+        monthlyPriceUsd: 150.0,
+        category: 'Très Haut Débit',
+        pitchArgument: 'Garantit un débit symétrique stable avec engagement de rétablissement sous 4 heures.',
+        objectionKiller: 'Secours 4G automatique activé sans surcoût.',
+        checked: true,
+      ));
+      totalMonthly += 150.0;
+
+      // Cybersécurité
+      if (chunkLower.contains('sécurité') || chunkLower.contains('virus') || chunkLower.contains('pirat') || chunkLower.contains('antivirus')) {
         currentNeeds.add('Firewall Managé & Cybersécurité');
+        packages.add(RecommendedPackageModel(
+          serviceId: 'firewall-utm',
+          name: 'Cyberdéfense Orange Pro (Firewall UTM & EDR)',
+          monthlyPriceUsd: 70.0,
+          category: 'Cybersécurité',
+          pitchArgument: 'Protège l\'ensemble du réseau d\'entreprise contre les cyberattaques.',
+          objectionKiller: 'Veille et surveillance 24/7 par le SOC Orange Business.',
+          checked: true,
+        ));
+        totalMonthly += 70.0;
       }
 
       currentLiveCopilot.value = LiveCopilotTurnModel(
@@ -404,24 +450,66 @@ class SalesController extends GetxController {
         enterpriseName: selectedEnterprise.value?.name ?? 'Client B2B',
         activeSentiment: 'Positif et réceptif',
         detectedNeeds: currentNeeds,
-        detectedObjections: transcriptChunk.toLowerCase().contains('cher') ? ['Budget mensuel limité'] : [],
+        detectedObjections: chunkLower.contains('cher') ? ['Budget mensuel limité'] : [],
+        coachingTip: coaching,
         realtimeProposition: LivePropositionModel(
-          title: 'Pack Orange Business Connect',
-          recommendedPackages: [
-            RecommendedPackageModel(
-              serviceId: 'fibre-pro-50m',
-              name: 'Fibre Optique Pro Orange (50 Mbps symétrique)',
-              monthlyPriceUsd: 150.0,
-              pitchArgument: 'Garantit un débit symétrique stable avec engagement de rétablissement sous 4 heures.',
-              objectionKiller: 'Secours 4G automatique activé sans surcoût.',
-            ),
-          ],
-          estimatedTotalMonthlyUsd: 150.0,
+          title: 'Offre Numérique B2B Personnalisée',
+          recommendedPackages: packages,
+          estimatedTotalMonthlyUsd: totalMonthly,
           closingReadinessScore: 88,
         ),
       );
+    } finally {
+      isAnalyzingCopilotTurn.value = false;
     }
     return currentLiveCopilot.value;
+  }
+
+  /// Toggle Live Package checkbox in real time
+  Future<void> toggleLivePackage(String serviceId, bool checked) async {
+    final cur = currentLiveCopilot.value;
+    if (cur == null) return;
+
+    final curProp = cur.realtimeProposition;
+    final updatedPkgs = curProp.recommendedPackages.map((p) {
+      if (p.serviceId == serviceId) {
+        return p.copyWith(checked: checked);
+      }
+      return p;
+    }).toList();
+
+    double newTotal = 0.0;
+    for (final p in updatedPkgs) {
+      if (p.checked) newTotal += p.monthlyPriceUsd;
+    }
+
+    final updatedProp = curProp.copyWith(
+      recommendedPackages: updatedPkgs,
+      estimatedTotalMonthlyUsd: newTotal,
+    );
+
+    currentLiveCopilot.value = LiveCopilotTurnModel(
+      sessionId: cur.sessionId,
+      enterpriseId: cur.enterpriseId,
+      enterpriseName: cur.enterpriseName,
+      activeSentiment: cur.activeSentiment,
+      detectedNeeds: cur.detectedNeeds,
+      detectedObjections: cur.detectedObjections,
+      realtimeProposition: updatedProp,
+      coachingTip: cur.coachingTip,
+    );
+
+    // Asynchronously notify backend
+    try {
+      await _apiClient.post(
+        '/api/sales/live-copilot/toggle-package/',
+        body: {
+          'enterprise_id': cur.enterpriseId,
+          'service_id': serviceId,
+          'checked': checked,
+        },
+      );
+    } catch (_) {}
   }
 
   /// 4. Generate Visit Report from Core AI & transmit to Backoffice KAM

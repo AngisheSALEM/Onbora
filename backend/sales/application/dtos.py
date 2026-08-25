@@ -124,6 +124,7 @@ class LiveCopilotTurnDTO(BaseDTO):
     detected_needs: List[str]
     detected_objections: List[str]
     realtime_proposition: Dict[str, Any]
+    coaching_tip: str = ""
 
 
 @dataclass

@@ -185,6 +185,7 @@ class LiveCopilotTurnSerializer(serializers.Serializer):
     detected_needs = serializers.ListField()
     detected_objections = serializers.ListField()
     realtime_proposition = serializers.DictField()
+    coaching_tip = serializers.CharField(required=False, default="")
 
 
 class VisitPreparationSerializer(serializers.ModelSerializer):
