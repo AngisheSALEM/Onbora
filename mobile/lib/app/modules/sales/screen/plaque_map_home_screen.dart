@@ -26,6 +26,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
   MapLibreMapController? _mapController;
   bool _isStyleLoaded = false;
   bool _hasLocationPermission = false;
+  bool _isMapDark = false; // Par défaut : Thème clair pour une lisibilité maximale, indépendant du thème global
   final List<Worker> _workers = [];
 
   static const LatLng _kinshasaGombeCenter = LatLng(-4.3033, 15.3084);
@@ -115,15 +116,17 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
     }
   }
 
-  String _getMapStyle(bool isDark) {
+  String _getMapStyle(bool isDarkMap) {
     final apiKey = dotenv.env['MAPTILER_API_KEY'] ?? AppConstants.mapTilerApiKey;
     if (apiKey.isNotEmpty && apiKey != 'YOUR_MAPTILER_KEY') {
-      return isDark
+      return isDarkMap
           ? '${AppConstants.mapTilerDarkStyleUrl}$apiKey'
           : '${AppConstants.mapTilerStreetsStyleUrl}$apiKey';
     }
-    // Style vectoriel MapLibre / OSM garanti 100% compatible Android & iOS
-    return AppConstants.mapLibreDemoStyleUrl;
+    // Style vectoriel 100% compatible Android & iOS
+    return isDarkMap
+        ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+        : AppConstants.mapLibreDemoStyleUrl;
   }
 
   void _onMapCreated(MapLibreMapController controller) {
@@ -276,7 +279,8 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
           else
             RepaintBoundary(
               child: MapLibreMap(
-                styleString: _getMapStyle(isDark),
+                key: ValueKey('map_style_$_isMapDark'),
+                styleString: _getMapStyle(_isMapDark),
                 initialCameraPosition: const CameraPosition(
                   target: _kinshasaGombeCenter,
                   zoom: 13.0,
@@ -557,39 +561,94 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
             ),
           ),
 
-          // 3. Bouton Flottant : Me Géolocaliser (Position temps réel avec halo bleu Google Maps)
+          // 3. Boutons Flottants : Thème Carte & Me Géolocaliser
           Positioned(
             right: 16,
             bottom: 165,
-            child: ScaleTap(
-              onTap: _recenterOnUser,
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xEE18181C) : Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Bouton Thème Carte (Indépendant du thème global de l'app)
+                ScaleTap(
+                  onTap: () {
+                    setState(() {
+                      _isMapDark = !_isMapDark;
+                      _isStyleLoaded = false;
+                    });
+                    Get.snackbar(
+                      'Thème Carte',
+                      _isMapDark ? 'Mode sombre activé sur la carte.' : 'Mode clair activé sur la carte.',
+                      snackPosition: SnackPosition.TOP,
+                      duration: const Duration(seconds: 2),
+                      margin: const EdgeInsets.all(12),
+                      backgroundColor: const Color(0xEE18181B),
+                      colorText: Colors.white,
+                      icon: Icon(
+                        _isMapDark ? LucideIcons.moon : LucideIcons.sun,
+                        color: _isMapDark ? const Color(0xFF60A5FA) : const Color(0xFFFBBF24),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xEE18181C) : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    LucideIcons.locateFixed,
-                    size: 20,
-                    color: _hasLocationPermission
-                        ? const Color(0xFF2563EB)
-                        : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
+                    child: Center(
+                      child: Icon(
+                        _isMapDark ? LucideIcons.sun : LucideIcons.moon,
+                        size: 19,
+                        color: _isMapDark ? const Color(0xFFFBBF24) : (isDark ? Colors.white : AppConstants.textDark),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+
+                // Bouton Me Géolocaliser
+                ScaleTap(
+                  onTap: _recenterOnUser,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xEE18181C) : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        LucideIcons.locateFixed,
+                        size: 20,
+                        color: _hasLocationPermission
+                            ? const Color(0xFF2563EB)
+                            : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
