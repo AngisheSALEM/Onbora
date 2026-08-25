@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/dictaphone_controller.dart';
 import '../controller/sales_controller.dart';
+import '../model/live_copilot_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
@@ -263,294 +264,41 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                   }),
                   const SizedBox(height: 16),
 
-                  // 💡 Real-Time Live Copilot Interactive Recommendations Section
+                  const SizedBox(height: 20),
+
+                  // 💡 Live Offers Section (Minimalist Circular Checkbox Cards + Skeleton Loader)
                   Obx(() {
                     final copilot = salesController.currentLiveCopilot.value;
-                    if (copilot == null || (dictController.state == RecordingState.idle && copilot.realtimeProposition.recommendedPackages.isEmpty)) {
+                    final packages = copilot?.realtimeProposition.recommendedPackages ?? [];
+                    final isRecording = dictController.state == RecordingState.recording;
+                    final isAnalyzing = salesController.isAnalyzingCopilotTurn.value;
+
+                    // If not recording and no packages discovered, do not render empty section
+                    if (!isRecording && packages.isEmpty) {
                       return const SizedBox.shrink();
                     }
-
-                    final prop = copilot.realtimeProposition;
-                    final packages = prop.recommendedPackages;
 
                     return RepaintBoundary(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header Strip with Live Score
-                          GlassCard(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 18),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Copilote Commercial Live',
-                                          style: TextStyle(
-                                            color: isDark ? Colors.white : AppConstants.textDark,
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 14,
-                                            letterSpacing: -0.2,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'Closing : ${prop.closingReadinessScore}%',
-                                        style: const TextStyle(
-                                          color: Color(0xFF10B981),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          // Discovered Live Offer Cards
+                          ...packages.map((pkg) => _LiveOfferCard(
+                                package: pkg,
+                                isDark: isDark,
+                                onToggle: () {
+                                  salesController.toggleLivePackage(pkg.serviceId, !pkg.checked);
+                                },
+                              )),
 
-                                // Real-Time AI Coaching Tip Bubble
-                                if (copilot.coachingTip.isNotEmpty) ...[
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Icon(LucideIcons.lightbulb, color: Color(0xFF2563EB), size: 16),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            copilot.coachingTip,
-                                            style: TextStyle(
-                                              color: isDark ? Colors.white : AppConstants.textDark,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              height: 1.4,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-
-                                // Detected Needs & Objections Badges
-                                if (copilot.detectedNeeds.isNotEmpty || copilot.detectedObjections.isNotEmpty) ...[
-                                  const SizedBox(height: 10),
-                                  Wrap(
-                                    spacing: 6,
-                                    runSpacing: 6,
-                                    children: [
-                                      ...copilot.detectedNeeds.map((need) => Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF2563EB).withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              '✓ $need',
-                                              style: TextStyle(
-                                                color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                          )),
-                                      ...copilot.detectedObjections.map((obj) => Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              '⚠️ $obj',
-                                              style: const TextStyle(
-                                                color: Color(0xFFEF4444),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                          )),
-                                    ],
-                                  ),
-                                ],
-
-                                // Interactive Recommended Packages Checklist
-                                if (packages.isNotEmpty) ...[
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    'Offres Détectées & Recommandées (Cochez pour inclure) :',
-                                    style: TextStyle(
-                                      color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ...packages.map((pkg) => Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF18181B) : Colors.white,
-                                          borderRadius: BorderRadius.circular(14),
-                                          border: Border.all(
-                                            color: pkg.checked
-                                                ? const Color(0xFF2563EB)
-                                                : (isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7)),
-                                            width: pkg.checked ? 1.5 : 1.0,
-                                          ),
-                                        ),
-                                        child: Material(
-                                          color: Colors.transparent,
-                                          child: InkWell(
-                                            borderRadius: BorderRadius.circular(14),
-                                            onTap: () {
-                                              salesController.toggleLivePackage(pkg.serviceId, !pkg.checked);
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(12),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Checkbox(
-                                                        value: pkg.checked,
-                                                        activeColor: const Color(0xFF2563EB),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(4),
-                                                        ),
-                                                        onChanged: (val) {
-                                                          salesController.toggleLivePackage(pkg.serviceId, val ?? true);
-                                                        },
-                                                      ),
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                              children: [
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    pkg.name,
-                                                                    style: TextStyle(
-                                                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                                                      fontWeight: FontWeight.w800,
-                                                                      fontSize: 12,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  '${pkg.monthlyPriceUsd.toStringAsFixed(0)} \$/m',
-                                                                  style: const TextStyle(
-                                                                    color: Color(0xFF2563EB),
-                                                                    fontWeight: FontWeight.w900,
-                                                                    fontSize: 13,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            const SizedBox(height: 2),
-                                                            Container(
-                                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                              decoration: BoxDecoration(
-                                                                color: isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
-                                                                borderRadius: BorderRadius.circular(6),
-                                                              ),
-                                                              child: Text(
-                                                                pkg.category,
-                                                                style: TextStyle(
-                                                                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
-                                                                  fontSize: 9,
-                                                                  fontWeight: FontWeight.w700,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  if (pkg.pitchArgument.isNotEmpty) ...[
-                                                    const SizedBox(height: 6),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 48, right: 4),
-                                                      child: Text(
-                                                        'Pitch : ${pkg.pitchArgument}',
-                                                        style: TextStyle(
-                                                          color: isDark ? Colors.white60 : AppConstants.textMuted,
-                                                          fontSize: 11,
-                                                          height: 1.3,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )),
-
-                                  // Live Estimated Total MRR Bar
-                                  const SizedBox(height: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Total MRR Estimé :',
-                                          style: TextStyle(
-                                            color: isDark ? Colors.white70 : AppConstants.textDark,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${prop.estimatedTotalMonthlyUsd.toStringAsFixed(0)} \$/mois',
-                                          style: const TextStyle(
-                                            color: Color(0xFF2563EB),
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
+                          // Animated Skeleton Loader showing that Core AI is listening & another offer is pending
+                          if (isRecording || isAnalyzing) ...[
+                            _LiveSkeletonOfferCard(isDark: isDark),
+                          ],
                         ],
                       ),
                     );
                   }),
-                  const SizedBox(height: 24),
 
                   // Progress Indicator for Report Generation
                   Obx(() {
@@ -656,5 +404,193 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
           ),
         ),
       );
+  }
+}
+
+/// Carte d'offre ultra-épurée avec case à cocher circulaire conforme à l'UI Onbora
+class _LiveOfferCard extends StatelessWidget {
+  final RecommendedPackageModel package;
+  final bool isDark;
+  final VoidCallback onToggle;
+
+  const _LiveOfferCard({
+    required this.package,
+    required this.isDark,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTap(
+      onTap: onToggle,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
+          border: Border.all(
+            color: package.checked
+                ? AppConstants.primaryBlue
+                : (isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000)),
+            width: package.checked ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: package.checked
+                  ? AppConstants.primaryBlue.withValues(alpha: isDark ? 0.2 : 0.08)
+                  : Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
+              blurRadius: package.checked ? 12 : 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Case à cocher circulaire ultra-épurée
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: package.checked
+                    ? AppConstants.primaryBlue
+                    : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7)),
+                border: Border.all(
+                  color: package.checked
+                      ? AppConstants.primaryBlue
+                      : (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6)),
+                  width: package.checked ? 2.0 : 1.5,
+                ),
+              ),
+              child: package.checked
+                  ? const Center(
+                      child: Icon(
+                        Icons.check,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            // Uniquement le nom de l'offre
+            Expanded(
+              child: Text(
+                package.name,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppConstants.textLight : AppConstants.textDark,
+                  height: 1.35,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Carte Skeleton animée indiquant qu'une autre proposition est en cours d'analyse par l'IA
+class _LiveSkeletonOfferCard extends StatefulWidget {
+  final bool isDark;
+  const _LiveSkeletonOfferCard({required this.isDark});
+
+  @override
+  State<_LiveSkeletonOfferCard> createState() => _LiveSkeletonOfferCardState();
+}
+
+class _LiveSkeletonOfferCardState extends State<_LiveSkeletonOfferCard> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _pulseAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 0.35, end: 0.85).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulseAnim,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _pulseAnim.value,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            decoration: BoxDecoration(
+              color: widget.isDark ? AppConstants.cardDark : AppConstants.cardLight,
+              borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
+              border: Border.all(
+                color: widget.isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: widget.isDark ? 0.25 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Skeleton Cercle de case à cocher
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // Skeleton Barre de texte pour l'offre à venir
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 14,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: widget.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Icône IA subtile
+                const Icon(
+                  LucideIcons.sparkles,
+                  color: Color(0xFF2563EB),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

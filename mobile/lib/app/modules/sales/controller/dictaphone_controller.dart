@@ -19,10 +19,13 @@ class DictaphoneController extends GetxController {
   final RxBool isSpeechAvailable = false.obs;
   final RxString speechStatus = "".obs;
 
-  // Silence-aware VAD & Async Stream Buffer
+  // Continuous speech accumulation & VAD
   final RxBool isVADSpeaking = false.obs;
   final RxString lastSpeechChunk = "".obs;
   Timer? _silenceDebounceTimer;
+  Timer? _restartListenTimer;
+  String _accumulatedWords = "";
+  String _currentSessionWords = "";
   String _lastDispatchedText = "";
 
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -36,10 +39,11 @@ class DictaphoneController extends GetxController {
   Future<void> _initSpeechRecognizer() async {
     try {
       final available = await _speechToText.initialize(
-        onStatus: (status) => speechStatus.value = status,
+        onStatus: _handleSpeechStatus,
         onError: (errorNotification) {
-          if (transcribedText.value.isEmpty) {
-            speechStatus.value = "Erreur: ${errorNotification.errorMsg}";
+          speechStatus.value = "Erreur: ${errorNotification.errorMsg}";
+          if (_state.value == RecordingState.recording) {
+            _scheduleContinuousRestart();
           }
         },
       );
@@ -47,6 +51,30 @@ class DictaphoneController extends GetxController {
     } catch (_) {
       isSpeechAvailable.value = false;
     }
+  }
+
+  void _handleSpeechStatus(String status) {
+    speechStatus.value = status;
+    // Si le moteur STT s'arrête (après une pause ou un silence), on le relance immédiatement en continu
+    if ((status == 'done' || status == 'notListening') && _state.value == RecordingState.recording) {
+      if (_currentSessionWords.trim().isNotEmpty) {
+        _accumulatedWords = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+        _currentSessionWords = "";
+        transcribedText.value = _accumulatedWords;
+      }
+      _scheduleContinuousRestart();
+    }
+  }
+
+  void _scheduleContinuousRestart() {
+    _restartListenTimer?.cancel();
+    if (_state.value != RecordingState.recording) return;
+
+    _restartListenTimer = Timer(const Duration(milliseconds: 150), () {
+      if (_state.value == RecordingState.recording && !_speechToText.isListening) {
+        _startListeningLoop();
+      }
+    });
   }
 
   String get formattedDuration {
@@ -69,6 +97,8 @@ class DictaphoneController extends GetxController {
     _state.value = RecordingState.recording;
     recordingSeconds.value = 0;
     transcribedText.value = "";
+    _accumulatedWords = "";
+    _currentSessionWords = "";
     _lastDispatchedText = "";
     lastSpeechChunk.value = "";
     isVADSpeaking.value = false;
@@ -82,10 +112,18 @@ class DictaphoneController extends GetxController {
       await _initSpeechRecognizer();
     }
 
-    if (isSpeechAvailable.value) {
+    _startListeningLoop();
+  }
+
+  Future<void> _startListeningLoop() async {
+    if (_state.value != RecordingState.recording) return;
+
+    try {
       await _speechToText.listen(
         onResult: (result) {
-          transcribedText.value = result.recognizedWords;
+          _currentSessionWords = result.recognizedWords;
+          final fullText = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+          transcribedText.value = fullText;
           isVADSpeaking.value = true;
 
           // Réinitialisation de la fenêtre temporelle de silence (VAD 500-600ms)
@@ -93,15 +131,26 @@ class DictaphoneController extends GetxController {
           _silenceDebounceTimer = Timer(const Duration(milliseconds: 600), () {
             _onSilenceDetected();
           });
+
+          if (result.finalResult) {
+            _accumulatedWords = fullText;
+            _currentSessionWords = "";
+          }
         },
         listenOptions: stt.SpeechListenOptions(
           listenMode: stt.ListenMode.dictation,
           cancelOnError: false,
           partialResults: true,
           onDevice: false,
+          pauseFor: const Duration(seconds: 4),
+          listenFor: const Duration(hours: 1),
           localeId: 'fr_FR',
         ),
       );
+    } catch (_) {
+      if (_state.value == RecordingState.recording) {
+        _scheduleContinuousRestart();
+      }
     }
   }
 
@@ -134,7 +183,14 @@ class DictaphoneController extends GetxController {
   Future<void> stopRecording() async {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
+    _restartListenTimer?.cancel();
     isVADSpeaking.value = false;
+
+    if (_currentSessionWords.trim().isNotEmpty) {
+      _accumulatedWords = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+      _currentSessionWords = "";
+      transcribedText.value = _accumulatedWords;
+    }
 
     // Dispatch final turn si reliquat de parole
     final currentFull = transcribedText.value.trim();
@@ -176,12 +232,15 @@ class DictaphoneController extends GetxController {
   void reset() {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
+    _restartListenTimer?.cancel();
     if (_speechToText.isListening) {
       _speechToText.stop();
     }
     _state.value = RecordingState.idle;
     recordingSeconds.value = 0;
     transcribedText.value = "";
+    _accumulatedWords = "";
+    _currentSessionWords = "";
     _lastDispatchedText = "";
     lastSpeechChunk.value = "";
     isVADSpeaking.value = false;
@@ -192,6 +251,7 @@ class DictaphoneController extends GetxController {
   void onClose() {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
+    _restartListenTimer?.cancel();
     if (_speechToText.isListening) {
       _speechToText.stop();
     }

@@ -390,58 +390,119 @@ class SalesController extends GetxController {
 
       if (response is Map<String, dynamic>) {
         final turnModel = LiveCopilotTurnModel.fromJson(response);
-        currentLiveCopilot.value = turnModel;
-        return turnModel;
+        
+        // Fusion intelligente des packages avec l'état précédent
+        final existingPkgs = currentLiveCopilot.value?.realtimeProposition.recommendedPackages ?? [];
+        final Map<String, bool> checkedMap = {
+          for (var p in existingPkgs) p.serviceId: p.checked,
+        };
+
+        final mergedPackages = <RecommendedPackageModel>[];
+        final Set<String> seenIds = {};
+
+        // 1. Conserver les offres déjà découvertes
+        for (final p in existingPkgs) {
+          mergedPackages.add(p);
+          seenIds.add(p.serviceId);
+        }
+
+        // 2. Ajouter les nouvelles offres retournées par l'IA
+        for (final p in turnModel.realtimeProposition.recommendedPackages) {
+          if (!seenIds.contains(p.serviceId)) {
+            mergedPackages.add(p.copyWith(
+              checked: checkedMap[p.serviceId] ?? p.checked,
+            ));
+            seenIds.add(p.serviceId);
+          }
+        }
+
+        double totalMonthly = 0.0;
+        for (final p in mergedPackages) {
+          if (p.checked) totalMonthly += p.monthlyPriceUsd;
+        }
+
+        final updatedProp = turnModel.realtimeProposition.copyWith(
+          recommendedPackages: mergedPackages,
+          estimatedTotalMonthlyUsd: totalMonthly,
+        );
+
+        final mergedTurn = LiveCopilotTurnModel(
+          sessionId: turnModel.sessionId,
+          enterpriseId: turnModel.enterpriseId,
+          enterpriseName: turnModel.enterpriseName,
+          activeSentiment: turnModel.activeSentiment,
+          detectedNeeds: turnModel.detectedNeeds,
+          detectedObjections: turnModel.detectedObjections,
+          realtimeProposition: updatedProp,
+          coachingTip: turnModel.coachingTip,
+        );
+
+        currentLiveCopilot.value = mergedTurn;
+        return mergedTurn;
       }
     } catch (e) {
       // Fallback local copilot avec détection de Roaming, Fibre, Cybersécurité et Outils Pro
       final chunkLower = transcriptChunk.toLowerCase();
-      final currentNeeds = <String>['Fibre Optique Pro Orange', 'Microsoft 365 Pro'];
-      final List<RecommendedPackageModel> packages = [];
-      double totalMonthly = 0.0;
-      String coaching = "Écoutez activement et présentez les forfaits Orange Pro adaptés.";
+      final currentNeeds = <String>[...currentLiveCopilot.value?.detectedNeeds ?? []];
+      final existingPkgs = currentLiveCopilot.value?.realtimeProposition.recommendedPackages ?? [];
+      final List<RecommendedPackageModel> mergedPackages = List.from(existingPkgs);
+      final Set<String> seenIds = {for (var p in mergedPackages) p.serviceId};
 
       // Détection Roaming / Voyage
       if (chunkLower.contains('roaming') || chunkLower.contains('voyage') || chunkLower.contains('étranger') || chunkLower.contains('extérieur') || chunkLower.contains('deplacement')) {
-        currentNeeds.add('Connectivité Roaming International');
-        packages.add(RecommendedPackageModel(
-          serviceId: 'roaming-pass-pro',
-          name: 'Pass Roaming International Pro (Afrique & Monde)',
-          monthlyPriceUsd: 45.0,
-          category: 'Mobilité & International',
-          pitchArgument: 'Forfait voix & 15 Go d\'internet utilisable dans plus de 80 pays sans surtaxe.',
-          objectionKiller: 'Plafond garanti et blocage automatique sans mauvaise surprise.',
-          checked: true,
-        ));
-        totalMonthly += 45.0;
-        coaching = "Le client a évoqué des déplacements. Proposez immédiatement le Pass Roaming Pro.";
+        if (!currentNeeds.contains('Connectivité Roaming International')) {
+          currentNeeds.add('Connectivité Roaming International');
+        }
+        if (!seenIds.contains('roaming-pass-pro')) {
+          mergedPackages.add(RecommendedPackageModel(
+            serviceId: 'roaming-pass-pro',
+            name: 'Pass Roaming International Pro (Afrique & Monde)',
+            monthlyPriceUsd: 45.0,
+            category: 'Mobilité & International',
+            pitchArgument: 'Forfait voix & 15 Go d\'internet utilisable dans plus de 80 pays sans surtaxe.',
+            objectionKiller: 'Plafond garanti et blocage automatique sans mauvaise surprise.',
+            checked: true,
+          ));
+          seenIds.add('roaming-pass-pro');
+        }
       }
 
       // Fibre Pro
-      packages.add(RecommendedPackageModel(
-        serviceId: 'fibre-pro-50m',
-        name: 'Fibre Optique Pro Orange (50 Mbps symétrique)',
-        monthlyPriceUsd: 150.0,
-        category: 'Très Haut Débit',
-        pitchArgument: 'Garantit un débit symétrique stable avec engagement de rétablissement sous 4 heures.',
-        objectionKiller: 'Secours 4G automatique activé sans surcoût.',
-        checked: true,
-      ));
-      totalMonthly += 150.0;
+      if (!seenIds.contains('fibre-pro-50m')) {
+        mergedPackages.add(RecommendedPackageModel(
+          serviceId: 'fibre-pro-50m',
+          name: 'Fibre Optique Pro Orange (50 Mbps symétrique)',
+          monthlyPriceUsd: 150.0,
+          category: 'Très Haut Débit',
+          pitchArgument: 'Garantit un débit symétrique stable avec engagement de rétablissement sous 4 heures.',
+          objectionKiller: 'Secours 4G automatique activé sans surcoût.',
+          checked: true,
+        ));
+        seenIds.add('fibre-pro-50m');
+      }
 
       // Cybersécurité
       if (chunkLower.contains('sécurité') || chunkLower.contains('virus') || chunkLower.contains('pirat') || chunkLower.contains('antivirus')) {
-        currentNeeds.add('Firewall Managé & Cybersécurité');
-        packages.add(RecommendedPackageModel(
-          serviceId: 'firewall-utm',
-          name: 'Cyberdéfense Orange Pro (Firewall UTM & EDR)',
-          monthlyPriceUsd: 70.0,
-          category: 'Cybersécurité',
-          pitchArgument: 'Protège l\'ensemble du réseau d\'entreprise contre les cyberattaques.',
-          objectionKiller: 'Veille et surveillance 24/7 par le SOC Orange Business.',
-          checked: true,
-        ));
-        totalMonthly += 70.0;
+        if (!currentNeeds.contains('Firewall Managé & Cybersécurité')) {
+          currentNeeds.add('Firewall Managé & Cybersécurité');
+        }
+        if (!seenIds.contains('firewall-utm')) {
+          mergedPackages.add(RecommendedPackageModel(
+            serviceId: 'firewall-utm',
+            name: 'Cyberdéfense Orange Pro (Firewall UTM & EDR)',
+            monthlyPriceUsd: 70.0,
+            category: 'Cybersécurité',
+            pitchArgument: 'Protège l\'ensemble du réseau d\'entreprise contre les cyberattaques.',
+            objectionKiller: 'Veille et surveillance 24/7 par le SOC Orange Business.',
+            checked: true,
+          ));
+          seenIds.add('firewall-utm');
+        }
+      }
+
+      double totalMonthly = 0.0;
+      for (final p in mergedPackages) {
+        if (p.checked) totalMonthly += p.monthlyPriceUsd;
       }
 
       currentLiveCopilot.value = LiveCopilotTurnModel(
@@ -451,10 +512,10 @@ class SalesController extends GetxController {
         activeSentiment: 'Positif et réceptif',
         detectedNeeds: currentNeeds,
         detectedObjections: chunkLower.contains('cher') ? ['Budget mensuel limité'] : [],
-        coachingTip: coaching,
+        coachingTip: 'Écoutez activement et présentez les forfaits Orange Pro adaptés.',
         realtimeProposition: LivePropositionModel(
           title: 'Offre Numérique B2B Personnalisée',
-          recommendedPackages: packages,
+          recommendedPackages: mergedPackages,
           estimatedTotalMonthlyUsd: totalMonthly,
           closingReadinessScore: 88,
         ),
