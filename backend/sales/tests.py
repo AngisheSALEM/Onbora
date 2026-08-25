@@ -37,14 +37,23 @@ class SalesAPITestCase(APITestCase):
         self.assertEqual(Enterprise.objects.count(), 2)
 
     def test_plaque_list_and_detail(self):
-        # 1. Test auto-seeding and listing plaques
+        # 1. Create and list plaques
+        plaque_obj = Plaque.objects.create(
+            code="PLQ-GOMBE-01",
+            name="Zone Gombe Centre",
+            city="Kinshasa",
+            latitude=-4.3033,
+            longitude=15.3084,
+            radius_km=3.5,
+            is_active=True
+        )
+
         list_url = reverse('plaque-list-create')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data), 1)
 
-        first_plaque_id = response.data[0]['id']
-        plaque_obj = Plaque.objects.get(pk=first_plaque_id)
+        first_plaque_id = plaque_obj.id
         
         # Add a lead to this plaque
         Enterprise.objects.create(
