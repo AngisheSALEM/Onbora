@@ -342,7 +342,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                   snackPosition: SnackPosition.TOP,
                                   duration: const Duration(seconds: 2),
                                   margin: const EdgeInsets.all(12),
-                                  backgroundColor: const Color(0xEE1E293B),
+                                  backgroundColor: const Color(0xEE18181B),
                                   colorText: Colors.white,
                                   icon: const Icon(LucideIcons.checkCheck, color: Color(0xFF10B981)),
                                 );
@@ -873,16 +873,21 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: item.isRead
-                                ? (isDark ? const Color(0xFF222226) : const Color(0xFFF8FAFC))
-                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF)),
+                            color: isDark ? const Color(0xFF18181B) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: item.isRead
-                                  ? (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05))
-                                  : const Color(0xFF2563EB).withValues(alpha: 0.4),
-                              width: item.isRead ? 1 : 1.5,
+                              color: isDark
+                                  ? (item.isRead ? const Color(0x22FFFFFF) : const Color(0x44FFFFFF))
+                                  : (item.isRead ? AppConstants.borderLight : const Color(0xFFCBD5E1)),
+                              width: 1,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -895,13 +900,17 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF2563EB),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                                            width: 0.8,
+                                          ),
                                         ),
                                         child: Text(
                                           item.plaqueCode.isNotEmpty ? item.plaqueCode : 'ONBORA',
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: isDark ? Colors.white : AppConstants.textDark,
                                             fontSize: 10,
                                             fontWeight: FontWeight.w900,
                                           ),
@@ -953,14 +962,14 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(LucideIcons.fileCode, size: 12, color: const Color(0xFF2563EB)),
+                                    Icon(LucideIcons.fileCode, size: 12, color: isDark ? Colors.white60 : Colors.black54),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Fichier KML & Tracé synchronisés sur votre carte',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? Colors.white60 : Colors.black54,
                                       ),
                                     ),
                                   ],

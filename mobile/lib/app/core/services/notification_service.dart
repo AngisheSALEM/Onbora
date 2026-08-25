@@ -103,7 +103,7 @@ class NotificationService extends GetxService {
         final notification = message.notification;
         final data = message.data;
 
-        final title = notification?.title ?? data['title'] ?? '🎯 Notification Onbora Territoire';
+        final title = notification?.title ?? data['title'] ?? 'Notification Onbora Territoire';
         final body = notification?.body ?? data['body'] ?? data['message'] ?? 'Mise à jour de votre portefeuille commercial.';
 
         showPushNotification(
@@ -125,11 +125,11 @@ class NotificationService extends GetxService {
               data.containsKey('plaque_code')) {
             salesCtrl.fetchPlaques();
             Get.snackbar(
-              '🎯 Territoire Synchronisé',
+              'Territoire Synchronisé',
               body,
               snackPosition: SnackPosition.TOP,
               duration: const Duration(seconds: 4),
-              backgroundColor: const Color(0xEE1E293B),
+              backgroundColor: const Color(0xEE18181B),
               colorText: Colors.white,
               margin: const EdgeInsets.all(12),
               icon: const Icon(Icons.location_on, color: Color(0xFF2563EB)),

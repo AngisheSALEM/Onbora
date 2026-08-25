@@ -275,7 +275,7 @@ class AssignSalespersonsToPlaqueView(APIView):
         # Émission automatique de notifications dans l'application mobile de chaque commercial
         from shared.infrastructure.firebase_service import send_push_notification_to_user
         for sp in salespersons:
-            notif_title = f"🎯 Nouvelle Plaque Assignée : {plaque.code}"
+            notif_title = f"Nouvelle Plaque Assignée : {plaque.code}"
             notif_body = f"Le Back-Office vous a affecté au territoire '{plaque.name}' ({plaque.city}). Le périmètre cartographique et le fichier KML sont prêts dans votre application."
             SalesNotification.objects.create(
                 recipient=sp,
@@ -429,7 +429,7 @@ class PlaqueDrawAndSaveView(APIView):
             # Envoi de notification push in-app et Firebase aux commerciaux
             from shared.infrastructure.firebase_service import send_push_notification_to_user
             for sp in salespersons:
-                draw_title = f"🎯 Nouveau Périmètre KML : {plaque.code}"
+                draw_title = f"Nouveau Périmètre KML : {plaque.code}"
                 draw_body = f"La zone '{plaque.name}' ({plaque.city}) a été tracée par le Back-Office. Les contours KML sont synchronisés avec votre application."
                 try:
                     SalesNotification.objects.create(
