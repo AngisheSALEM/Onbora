@@ -322,8 +322,7 @@ export default function BackOfficeDashboard({
       {/* 1. KEY METRIC CARDS (HERO KPIS) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Prospects */}
-        <div className="studio-card p-5 shadow-sm flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
+        <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden group">
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
             <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
@@ -338,10 +337,10 @@ export default function BackOfficeDashboard({
               </span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-[11px] font-medium text-zinc-500">
-              <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold">
                 Inbound: {data.inbound_count}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold">
                 Outbound: {data.outbound_count}
               </span>
             </div>
@@ -349,8 +348,7 @@ export default function BackOfficeDashboard({
         </div>
 
         {/* Global Conversion Rate */}
-        <div className="studio-card p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
+        <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Taux de Conversion</span>
             <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -362,9 +360,9 @@ export default function BackOfficeDashboard({
               <span className="text-3xl font-black text-zinc-950 dark:text-white">{data.conversion_rate}%</span>
               <span className="text-[11px] text-zinc-400 font-medium">Objectif : 25%</span>
             </div>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden mt-3">
+            <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden mt-3">
               <div
-                className="bg-gradient-to-r from-emerald-500 to-blue-600 h-full rounded-full transition-all duration-500"
+                className="bg-zinc-950 dark:bg-white h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(data.conversion_rate * 3, 100)}%` }}
               />
             </div>
@@ -372,17 +370,16 @@ export default function BackOfficeDashboard({
         </div>
 
         {/* Unconverted & Recovery Potential */}
-        <div className="studio-card p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
+        <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Clients Non-Convertis</span>
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <span className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
               <Icons.AlertTriangle size={16} />
             </span>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-amber-600 dark:text-amber-400">
+              <span className="text-3xl font-black text-zinc-950 dark:text-white">
                 {data.drop_off_metrics?.total_unconverted || (data.total_dossiers - data.status_counts.ACCEPTED)}
               </span>
               <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-extrabold">
@@ -396,11 +393,10 @@ export default function BackOfficeDashboard({
         </div>
 
         {/* Velocity & Deal Size */}
-        <div className="studio-card p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-purple-500" />
+        <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Vélocité & Panier Moyen</span>
-            <span className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+            <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Icons.Zap size={16} />
             </span>
           </div>
@@ -409,7 +405,7 @@ export default function BackOfficeDashboard({
               <span className="text-2xl font-black text-zinc-950 dark:text-white">
                 {data.kpis?.avg_cycle_days || 3.8} <span className="text-xs font-bold text-zinc-400">jours</span>
               </span>
-              <span className="text-xs font-black text-purple-600 dark:text-purple-400">
+              <span className="text-xs font-black text-blue-600 dark:text-blue-400">
                 {data.kpis?.average_deal_mrr || "750 $"} /m
               </span>
             </div>
@@ -472,11 +468,11 @@ export default function BackOfficeDashboard({
                 onClick={() => setChartMetric('conversions')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   chartMetric === 'conversions'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-purple-500" /> Signatures
+                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Signatures
               </button>
             </div>
           </div>
@@ -546,11 +542,11 @@ export default function BackOfficeDashboard({
                 />
               )}
 
-              {/* Conversions Line (Purple) */}
+              {/* Conversions Line (Emerald Dashed) */}
               {(chartMetric === 'all' || chartMetric === 'conversions') && (
                 <polyline
                   fill="none"
-                  stroke="#8B5CF6"
+                  stroke="#10B981"
                   strokeWidth="2.5"
                   strokeDasharray="5 3"
                   strokeLinecap="round"
@@ -633,7 +629,7 @@ export default function BackOfficeDashboard({
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] pt-0.5">
                   <span className="text-blue-400 font-medium">Inbound : <strong>{timeline[hoveredPointIndex].inbound}</strong></span>
                   <span className="text-emerald-400 font-medium">Outbound : <strong>{timeline[hoveredPointIndex].outbound}</strong></span>
-                  <span className="text-purple-400 font-medium">Signatures : <strong>{timeline[hoveredPointIndex].conversions}</strong></span>
+                  <span className="text-emerald-400 font-medium">Signatures : <strong>{timeline[hoveredPointIndex].conversions}</strong></span>
                   <span className="text-red-400 font-medium">Abandons : <strong>{timeline[hoveredPointIndex].dropoffs}</strong></span>
                 </div>
               </div>
@@ -654,7 +650,7 @@ export default function BackOfficeDashboard({
             </div>
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
               <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Génération Devis IA</span>
-              <span className="text-sm font-black text-purple-600 dark:text-purple-400 mt-0.5">94% auto-calculés</span>
+              <span className="text-sm font-black text-blue-600 dark:text-blue-400 mt-0.5">94% auto-calculés</span>
             </div>
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
               <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Temps moyen de signature</span>
@@ -700,15 +696,14 @@ export default function BackOfficeDashboard({
                     else setDropOffFilter('ALL');
                     setActiveSubTab('dropoffs');
                   }}
-                  className="studio-subcard p-4 rounded-2xl flex flex-col justify-between border-2 border-transparent hover:border-blue-500/30 transition-all cursor-pointer group relative overflow-hidden"
+                  className="studio-subcard p-4 rounded-2xl flex flex-col justify-between border border-zinc-200/60 dark:border-zinc-800/60 hover:border-blue-500/40 transition-all cursor-pointer group relative overflow-hidden"
                 >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-black uppercase text-zinc-500 group-hover:text-blue-600 transition-colors">
                       {stage.name}
                     </span>
                     <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: stage.color }}
+                      className={`w-2 h-2 rounded-full ${isLast ? 'bg-emerald-500' : 'bg-blue-600'}`}
                     />
                   </div>
 
@@ -722,10 +717,10 @@ export default function BackOfficeDashboard({
 
                   {/* Progress Gauge & Drop-off indicator */}
                   <div>
-                    <div className="w-full bg-zinc-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${stage.percentage}%`, backgroundColor: stage.color }}
+                        className={`h-full rounded-full transition-all duration-700 ${isLast ? 'bg-emerald-500' : 'bg-zinc-950 dark:bg-white'}`}
+                        style={{ width: `${stage.percentage}%` }}
                       />
                     </div>
 
@@ -755,7 +750,7 @@ export default function BackOfficeDashboard({
             <div className="p-4 rounded-2xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/40 flex flex-col gap-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
-                  <Icons.AlertCircle size={14} className="text-amber-500" />
+                  <Icons.AlertCircle size={14} className="text-zinc-600 dark:text-zinc-400" />
                   Causes Principales d'Abandons & Points de Blocage
                 </span>
                 <span className="text-[11px] text-zinc-500 font-medium">
@@ -780,9 +775,7 @@ export default function BackOfficeDashboard({
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-black shrink-0 ${
                         r.severity === 'CRITICAL'
                           ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                          : r.severity === 'WARNING'
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                          : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                       }`}>
                         {r.count} cas
                       </span>
@@ -845,7 +838,7 @@ export default function BackOfficeDashboard({
                   onClick={() => setDropOffFilter('CRITICAL')}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     dropOffFilter === 'CRITICAL'
-                      ? 'bg-red-500 text-white shadow-xs'
+                      ? 'bg-red-600 text-white shadow-xs'
                       : 'text-zinc-500 hover:text-red-500'
                   }`}
                 >
@@ -855,8 +848,8 @@ export default function BackOfficeDashboard({
                   onClick={() => setDropOffFilter('INCOMPLETE_KYC')}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     dropOffFilter === 'INCOMPLETE_KYC'
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-zinc-500 hover:text-amber-500'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-zinc-500 hover:text-blue-600'
                   }`}
                 >
                   KYC / RCCM
@@ -865,8 +858,8 @@ export default function BackOfficeDashboard({
                   onClick={() => setDropOffFilter('ESTIMATE_PENDING')}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     dropOffFilter === 'ESTIMATE_PENDING'
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-zinc-500 hover:text-purple-600'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-zinc-500 hover:text-blue-600'
                   }`}
                 >
                   Devis en attente
@@ -1027,7 +1020,7 @@ export default function BackOfficeDashboard({
                         title={`${zone.conversions} convertis (${convPct}%)`}
                       />
                       <div
-                        className="bg-amber-500 h-full"
+                        className="bg-zinc-300 dark:bg-zinc-600 h-full"
                         style={{ width: `${100 - convPct}%` }}
                         title={`${zone.unconverted} non convertis`}
                       />
@@ -1046,10 +1039,10 @@ export default function BackOfficeDashboard({
           </div>
 
           {/* Sector Distribution */}
-          <div className="studio-card p-6 shadow-sm flex flex-col gap-4">
+          <div className="studio-card p-6 shadow-xs flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Icons.PieChart size={16} className="text-purple-600" />
+                <Icons.PieChart size={16} className="text-blue-600" />
                 <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">
                   Répartition des Clients par Secteur d'Activité
                 </h3>
@@ -1064,9 +1057,9 @@ export default function BackOfficeDashboard({
                     <span className="font-bold text-zinc-800 dark:text-zinc-200">{sec.sector}</span>
                     <span className="font-black text-zinc-900 dark:text-white">{sec.count} entreprises ({sec.percentage}%)</span>
                   </div>
-                  <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 h-full rounded-full"
+                      className="bg-zinc-950 dark:bg-white h-full rounded-full transition-all"
                       style={{ width: `${sec.percentage}%` }}
                     />
                   </div>

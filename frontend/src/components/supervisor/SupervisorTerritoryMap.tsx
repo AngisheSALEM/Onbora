@@ -159,6 +159,7 @@ export default function SupervisorTerritoryMap({
   const [selectedPlaque, setSelectedPlaque] = useState<Plaque | null>(null);
   const [selectedNearbyLead, setSelectedNearbyLead] = useState<NearbyLead | null>(null);
   const [selectedTradeAudit, setSelectedTradeAudit] = useState<TradeAudit | null>(null);
+  const [isMapDark, setIsMapDark] = useState<boolean>(false); // Mode clair par défaut pour visibilité maximale
 
   // Field Intelligence State
   const [nearbyLeads, setNearbyLeads] = useState<NearbyLead[]>(initialNearbyLeads || []);
@@ -323,6 +324,18 @@ export default function SupervisorTerritoryMap({
     }
   };
 
+  const handleToggleMapTheme = () => {
+    const next = !isMapDark;
+    setIsMapDark(next);
+    const map = mapRef.current;
+    if (map) {
+      map.setStyle(getMapStyle(next));
+      map.once('style.load', () => {
+        setMapTransformKey((k) => k + 1);
+      });
+    }
+  };
+
   // Initialize MapLibre GL JS
   // Synchronize dynamic state references & Map cursor
   useEffect(() => {
@@ -454,10 +467,9 @@ export default function SupervisorTerritoryMap({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const isDarkMode = document.documentElement.classList.contains('dark');
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: getMapStyle(isDarkMode),
+      style: getMapStyle(false), // Mode clair par défaut pour visibilité maximale
       center: [15.3084, -4.3033], // Kinshasa
       zoom: 12.5,
     });
@@ -1530,7 +1542,7 @@ export default function SupervisorTerritoryMap({
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Pré-conversions 🟢</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Pré-conversions</span>
             <Icons.CheckCircle size={18} className="text-emerald-500" />
           </div>
           <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
@@ -1541,7 +1553,7 @@ export default function SupervisorTerritoryMap({
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Lookalike 100m 🔵</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Lookalike 100m</span>
             <Icons.MapPin size={18} className="text-blue-600 dark:text-blue-400" />
           </div>
           <span className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">
@@ -1552,7 +1564,7 @@ export default function SupervisorTerritoryMap({
 
         <div className="studio-card p-6 flex flex-col gap-1.5 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider">Radar Frictions 🔴</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Radar Frictions</span>
             <Icons.AlertTriangle size={18} className="text-red-500" />
           </div>
           <span className="text-3xl font-black text-red-600 dark:text-red-400 mt-1">
@@ -1610,6 +1622,19 @@ export default function SupervisorTerritoryMap({
         <div className="flex items-center gap-2">
           {activeTab === 'map' && (
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleToggleMapTheme}
+                title="Basculer le thème de la carte indépendamment du reste de l'application"
+                className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isMapDark
+                    ? 'bg-zinc-900 text-white border border-zinc-700 hover:bg-zinc-800'
+                    : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300'
+                }`}
+              >
+                {isMapDark ? <Icons.Sun size={13} className="text-amber-400" /> : <Icons.Moon size={13} className="text-blue-600" />}
+                <span>{isMapDark ? 'Carte Sombre' : 'Carte Claire'}</span>
+              </button>
+
               <button
                 onClick={() => {
                   setIsDrawingMode(!isDrawingMode);
