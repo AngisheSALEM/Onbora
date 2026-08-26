@@ -218,22 +218,25 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                                      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const SizedBox(
+                                        SizedBox(
                                           width: 10,
                                           height: 10,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2563EB)),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                          ),
                                         ),
                                         const SizedBox(width: 5),
                                         Text(
                                           'IA Live',
                                           style: TextStyle(
-                                            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                            color: isDark ? Colors.white : AppConstants.textDark,
                                             fontSize: 10,
                                             fontWeight: FontWeight.w900,
                                           ),
@@ -421,76 +424,55 @@ class _LiveOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTap(
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       onTap: onToggle,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        decoration: BoxDecoration(
-          color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
-          border: Border.all(
-            color: package.checked
-                ? AppConstants.primaryBlue
-                : (isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000)),
-            width: package.checked ? 1.5 : 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
+      child: Row(
+        children: [
+          // Case à cocher circulaire conforme à l'UI
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
               color: package.checked
-                  ? AppConstants.primaryBlue.withValues(alpha: isDark ? 0.2 : 0.08)
-                  : Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
-              blurRadius: package.checked ? 12 : 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Case à cocher circulaire ultra-épurée
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                  ? (isDark ? Colors.white : const Color(0xFF18181B))
+                  : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7)),
+              border: Border.all(
                 color: package.checked
-                    ? AppConstants.primaryBlue
-                    : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7)),
-                border: Border.all(
-                  color: package.checked
-                      ? AppConstants.primaryBlue
-                      : (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6)),
-                  width: package.checked ? 2.0 : 1.5,
-                ),
-              ),
-              child: package.checked
-                  ? const Center(
-                      child: Icon(
-                        Icons.check,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            // Uniquement le nom de l'offre
-            Expanded(
-              child: Text(
-                package.name,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppConstants.textLight : AppConstants.textDark,
-                  height: 1.35,
-                  letterSpacing: -0.2,
-                ),
+                    ? (isDark ? Colors.white : const Color(0xFF18181B))
+                    : (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6)),
+                width: package.checked ? 2.0 : 1.5,
               ),
             ),
-          ],
-        ),
+            child: package.checked
+                ? Center(
+                    child: Icon(
+                      Icons.check,
+                      size: 16,
+                      color: isDark ? const Color(0xFF121214) : Colors.white,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 14),
+          // Uniquement le nom de l'offre
+          Expanded(
+            child: Text(
+              package.name,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppConstants.textLight : AppConstants.textDark,
+                height: 1.35,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -534,24 +516,9 @@ class _LiveSkeletonOfferCardState extends State<_LiveSkeletonOfferCard> with Sin
       builder: (context, child) {
         return Opacity(
           opacity: _pulseAnim.value,
-          child: Container(
+          child: GlassCard(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            decoration: BoxDecoration(
-              color: widget.isDark ? AppConstants.cardDark : AppConstants.cardLight,
-              borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
-              border: Border.all(
-                color: widget.isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: widget.isDark ? 0.25 : 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
             child: Row(
               children: [
                 // Skeleton Cercle de case à cocher
@@ -579,12 +546,6 @@ class _LiveSkeletonOfferCardState extends State<_LiveSkeletonOfferCard> with Sin
                       ),
                     ],
                   ),
-                ),
-                // Icône IA subtile
-                const Icon(
-                  LucideIcons.sparkles,
-                  color: Color(0xFF2563EB),
-                  size: 16,
                 ),
               ],
             ),
