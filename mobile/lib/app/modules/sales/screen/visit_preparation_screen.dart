@@ -179,6 +179,179 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // ⚡ Brief Flash 30 Secondes (Innovation n°1 - Préparation Instantanée)
+                    GlassCard(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(LucideIcons.zap, color: Color(0xFF2563EB), size: 16),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Brief Flash 30s',
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                    Text(
+                                      'À consulter avant d\'entrer en rendez-vous',
+                                      style: TextStyle(
+                                        color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Offre Orange Cible Prioritaire
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF4F4F6),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'OFFRE ORANGE CIBLE',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  prep.targetOffer,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // 5 Questions d'Or de Découverte
+                          if (prep.goldenQuestions.isNotEmpty) ...[
+                            Text(
+                              '5 Questions d\'Or de Découverte :',
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...prep.goldenQuestions.asMap().entries.map((entry) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 20,
+                                      height: 20,
+                                      margin: const EdgeInsets.only(top: 1),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${entry.key + 1}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          height: 1.35,
+                                          color: isDark ? AppConstants.textLight : AppConstants.textDark,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+
+                          // Alerte Concurrence & Risques
+                          if (prep.competitorAlert.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF261C14) : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(LucideIcons.alertTriangle, color: Color(0xFFF59E0B), size: 16),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      prep.competitorAlert,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        height: 1.35,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF92400E),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
                     // Meeting Objective
                     _buildSectionCard(
                       context,
@@ -253,14 +426,6 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-
-                    // Key Questions
-                    _buildSectionCard(
-                      context,
-                      title: 'Questions à poser',
-                      icon: LucideIcons.helpCircle,
-                      content: prep.keyQuestions,
-                    ),
                     const SizedBox(height: 24),
 
                     // Action Button: Launch Voice Dictaphone

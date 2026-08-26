@@ -154,6 +154,9 @@ class EnterpriseBriefSerializer(serializers.Serializer):
     ai_hypotheses = serializers.ListField(required=False)
     ai_potential_objections = serializers.ListField(required=False)
     recommended_catalog_services = serializers.ListField()
+    target_offer = serializers.CharField(required=False, default="")
+    golden_questions = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    competitor_alert = serializers.CharField(required=False, default="")
 
 
 class SalespersonActivitySerializer(serializers.Serializer):

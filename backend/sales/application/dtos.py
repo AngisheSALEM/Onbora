@@ -104,6 +104,9 @@ class EnterpriseBriefDTO(BaseDTO):
     ai_hypotheses: List[str] = field(default_factory=list)
     ai_potential_objections: List[str] = field(default_factory=list)
     recommended_catalog_services: List[Dict[str, Any]] = field(default_factory=list)
+    target_offer: str = ""
+    golden_questions: List[str] = field(default_factory=list)
+    competitor_alert: str = ""
 
 
 @dataclass

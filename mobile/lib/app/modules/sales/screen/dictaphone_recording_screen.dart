@@ -19,6 +19,28 @@ class DictaphoneRecordingScreen extends StatefulWidget {
 
 class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
   int _processingStep = 1;
+  bool _hasConsented = false;
+  bool _isNoAudioMode = false;
+  final TextEditingController _manualNotesController = TextEditingController();
+
+  final List<String> _quickNoteChips = [
+    'Fibre Pro 50M',
+    'Pass Roaming Pro',
+    'Microsoft 365',
+    'Cloud Backup Souverain',
+    'TPE Orange Money',
+    'GTR 4h Garantie',
+    'Budget Validé',
+    'Décideur Absent',
+    'Concurrent Vodacom',
+    'Concurrent Canalbox',
+  ];
+
+  @override
+  void dispose() {
+    _manualNotesController.dispose();
+    super.dispose();
+  }
 
   void _simulateProgressSteps() async {
     setState(() => _processingStep = 1);
@@ -26,6 +48,149 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
     if (mounted) setState(() => _processingStep = 2);
     await Future.delayed(const Duration(milliseconds: 2000));
     if (mounted) setState(() => _processingStep = 3);
+  }
+
+  void _showConsentModal(BuildContext context, bool isDark, DictaphoneController dictController) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF18181B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(LucideIcons.shieldCheck, color: Color(0xFF10B981), size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Consentement Légal',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : AppConstants.textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        Text(
+                          'Code du Numérique RDC (Ordonnance-loi n° 23/010)',
+                          style: TextStyle(
+                            color: isDark ? Colors.white60 : AppConstants.textSecondaryLight,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF222228) : const Color(0xFFF4F4F6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
+                  ),
+                ),
+                child: Text(
+                  'Avant d\'activer le micro, demandez l\'accord de votre interlocuteur :\n\n'
+                  '« Cet échange est assisté par l\'IA Orange pour la qualification technique et la prise de notes. Êtes-vous d\'accord ? »\n\n'
+                  '• Données chiffrées & usage strictement professionnel\n'
+                  '• Suppression de l\'audio après génération du rapport',
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.45,
+                    color: isDark ? AppConstants.textLight : AppConstants.textDark,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Option 1 : Accord du client
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _hasConsented = true;
+                      _isNoAudioMode = false;
+                    });
+                    await dictController.startRecording();
+                  },
+                  icon: const Icon(LucideIcons.mic, size: 18, color: Colors.white),
+                  label: const Text(
+                    'Client d\'accord — Enregistrer l\'Audio',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Option 2 : Refus -> Mode sans audio
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _isNoAudioMode = true;
+                    });
+                  },
+                  icon: Icon(LucideIcons.fileText, size: 18, color: isDark ? Colors.white : AppConstants.textDark),
+                  label: Text(
+                    'Client refuse — Mode Prise de Notes / Mémo',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppConstants.textDark,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: isDark ? const Color(0x33FFFFFF) : const Color(0x33000000)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -93,96 +258,277 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                       ),
                     );
                   }),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-                  // Timer Display (Bold 75 Typography)
-                  Obx(() => Text(
-                        dictController.formattedDuration,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : AppConstants.textDark,
-                          fontSize: 56,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      )),
-                  const SizedBox(height: 8),
-                  Obx(() {
-                    final st = dictController.state;
-                    final isRec = st == RecordingState.recording;
-                    return Text(
-                      isRec
-                          ? AppConstants.dictaphoneRecordingState
-                          : st == RecordingState.stopped
-                              ? AppConstants.dictaphoneStoppedState
-                              : st == RecordingState.uploading
-                                  ? AppConstants.dictaphoneAnalyzingState
-                                  : AppConstants.dictaphoneIdleState,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: isRec
-                            ? AppConstants.errorRed
-                            : (isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 32),
-
-                  // Large Animated Microphone Record Button (Sleek Apple Studio Style)
-                  Center(
-                    child: Obx(() {
-                      final isRec = dictController.state == RecordingState.recording;
-                      return ScaleTap(
-                        onTap: () async {
-                          if (dictController.state == RecordingState.idle) {
-                            await dictController.startRecording();
-                          } else if (dictController.state == RecordingState.recording) {
-                            await dictController.stopRecording();
-                          }
-                        },
-                        child: RepaintBoundary(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOutCubic,
-                            height: 120,
-                            width: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isRec
-                                  ? AppConstants.errorRed
-                                  : (isDark ? const Color(0xFF222228) : const Color(0xFF18181B)),
-                              border: Border.all(
-                                color: isRec
-                                    ? AppConstants.errorRed.withValues(alpha: 0.8)
-                                    : (isDark ? const Color(0x33FFFFFF) : const Color(0x22000000)),
-                                width: 2.0,
+                  // Mode Selector Tabs (Audio Consenti vs Prise de Notes Sans Audio)
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E5EA),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              if (_isNoAudioMode) {
+                                setState(() => _isNoAudioMode = false);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: !_isNoAudioMode
+                                    ? (isDark ? const Color(0xFF2C2C2E) : Colors.white)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isRec
-                                      ? AppConstants.errorRed.withValues(alpha: 0.45)
-                                      : Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
-                                  blurRadius: isRec ? 32 : 16,
-                                  spreadRadius: isRec ? 6 : 1,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Icon(
-                                isRec ? LucideIcons.square : LucideIcons.mic,
-                                color: Colors.white,
-                                size: isRec ? 44 : 50,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.mic, size: 14, color: !_isNoAudioMode ? const Color(0xFF2563EB) : (isDark ? Colors.white60 : AppConstants.textMuted)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Audio Consenti',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: !_isNoAudioMode ? (isDark ? Colors.white : AppConstants.textDark) : (isDark ? Colors.white60 : AppConstants.textMuted),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              if (!_isNoAudioMode) {
+                                if (dictController.state == RecordingState.recording) {
+                                  dictController.stopRecording();
+                                }
+                                setState(() => _isNoAudioMode = true);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _isNoAudioMode
+                                    ? (isDark ? const Color(0xFF2C2C2E) : Colors.white)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.fileText, size: 14, color: _isNoAudioMode ? const Color(0xFF2563EB) : (isDark ? Colors.white60 : AppConstants.textMuted)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Sans Audio / Mémo',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: _isNoAudioMode ? (isDark ? Colors.white : AppConstants.textDark) : (isDark ? Colors.white60 : AppConstants.textMuted),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (!_isNoAudioMode) ...[
+                    // Timer Display (Bold 75 Typography)
+                    Obx(() => Text(
+                          dictController.formattedDuration,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : AppConstants.textDark,
+                            fontSize: 56,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        )),
+                    const SizedBox(height: 8),
+                    Obx(() {
+                      final st = dictController.state;
+                      final isRec = st == RecordingState.recording;
+                      return Text(
+                        isRec
+                            ? AppConstants.dictaphoneRecordingState
+                            : st == RecordingState.stopped
+                                ? AppConstants.dictaphoneStoppedState
+                                : st == RecordingState.uploading
+                                    ? AppConstants.dictaphoneAnalyzingState
+                                    : AppConstants.dictaphoneIdleState,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isRec
+                              ? AppConstants.errorRed
+                              : (isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.1,
+                        ),
                       );
                     }),
-                  ),
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
+
+                    // Large Animated Microphone Record Button (Sleek Apple Studio Style)
+                    Center(
+                      child: Obx(() {
+                        final isRec = dictController.state == RecordingState.recording;
+                        return ScaleTap(
+                          onTap: () async {
+                            if (dictController.state == RecordingState.idle) {
+                              if (!_hasConsented) {
+                                _showConsentModal(context, isDark, dictController);
+                              } else {
+                                await dictController.startRecording();
+                              }
+                            } else if (dictController.state == RecordingState.recording) {
+                              await dictController.stopRecording();
+                            }
+                          },
+                          child: RepaintBoundary(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutCubic,
+                              height: 120,
+                              width: 120,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isRec
+                                    ? AppConstants.errorRed
+                                    : (isDark ? const Color(0xFF222228) : const Color(0xFF18181B)),
+                                border: Border.all(
+                                  color: isRec
+                                      ? AppConstants.errorRed.withValues(alpha: 0.8)
+                                      : (isDark ? const Color(0x33FFFFFF) : const Color(0x22000000)),
+                                  width: 2.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isRec
+                                        ? AppConstants.errorRed.withValues(alpha: 0.45)
+                                        : Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
+                                    blurRadius: isRec ? 32 : 16,
+                                    spreadRadius: isRec ? 6 : 1,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  isRec ? LucideIcons.square : LucideIcons.mic,
+                                  color: Colors.white,
+                                  size: isRec ? 44 : 50,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 32),
+                  ] else ...[
+                    // Mode Prise de Notes / Mémo Sans Audio
+                    GlassCard(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(LucideIcons.fileEdit, color: Color(0xFF2563EB), size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Prise de Notes Rapide & Mémo',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : AppConstants.textDark,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Ajoutez des éléments clés en 1 clic :',
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: _quickNoteChips.map((chip) {
+                              return ActionChip(
+                                label: Text(chip, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                backgroundColor: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+                                labelStyle: TextStyle(color: isDark ? Colors.white : AppConstants.textDark),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                onPressed: () {
+                                  final current = _manualNotesController.text;
+                                  _manualNotesController.text = current.isEmpty ? '• $chip' : '$current\n• $chip';
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _manualNotesController,
+                            maxLines: 6,
+                            style: TextStyle(color: isDark ? Colors.white : AppConstants.textDark, fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: 'Saisissez vos observations ou dictez un mémo rapide après votre sortie du rendez-vous...',
+                              hintStyle: TextStyle(color: isDark ? Colors.white38 : AppConstants.textMuted, fontSize: 12),
+                              filled: true,
+                              fillColor: isDark ? const Color(0xFF1E1E24) : const Color(0xFFF8FAFC),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final text = _manualNotesController.text.trim();
+                                if (text.isEmpty) {
+                                  Get.snackbar('Note vide', 'Veuillez saisir au moins quelques éléments de visite.');
+                                  return;
+                                }
+                                _simulateProgressSteps();
+                                final success = await salesController.generateReportFromTranscript(text, audioPath: null);
+                                if (success) {
+                                  Get.offNamed(Routes.VISIT_REPORT_DETAIL);
+                                }
+                              },
+                              icon: const Icon(LucideIcons.sparkles, size: 16, color: Colors.white),
+                              label: const Text('Générer le Compte-Rendu IA', style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
 
                   // Speech Transcription Live Preview Box
                   Obx(() {

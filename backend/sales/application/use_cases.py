@@ -629,6 +629,69 @@ class GetEnterpriseBriefUseCase(BaseUseCase[Tuple[int, Any], EnterpriseBriefDTO]
                 )
             )
 
+        # 1. Génération dynamique du Brief 30s & Découverte selon le secteur
+        sector_lower = (enterprise.sector or "").lower()
+        if any(w in sector_lower for w in ["banque", "finance", "assurance", "microfinance", "audit"]):
+            target_offer = "Fibre Optique Dédiée (GTR 4h) + SD-WAN Multi-sites & Secours 4G"
+            golden_questions = [
+                "Combien de transactions et requêtes bancaires transitent par jour entre votre siège et vos agences ?",
+                "Quel est l'impact financier d'une coupure réseau de plus de 30 minutes sur vos opérations de guichet ?",
+                "Disposez-vous d'une double adduction avec bascule automatique 4G/Fibre sans coupure ?",
+                "Comment sauvegardez-vous les données clients sensibles hors de votre salle serveurs locale ?",
+                "Quels sont vos besoins de connectivité sécurisée pour vos cadres en mission internationale ?"
+            ]
+            competitor_alert = "Concurrents probables : Vodacom Business / Liquid Telecom — Mettre en avant la GTR 4h garantie et le NOC Orange RDC 24/7."
+        elif any(w in sector_lower for w in ["santé", "sante", "clinique", "hôpital", "hopital", "pharmacie", "médical"]):
+            target_offer = "Fibre Pro Orange (50 Mbps) + Cloud Backup Souverain & Cyberdéfense"
+            golden_questions = [
+                "Utilisez-vous un logiciel de gestion des dossiers patients connecté au réseau ?",
+                "Vos équipements d'imagerie et d'analyses médicales nécessitent-ils un transfert de fichiers lourds ?",
+                "En cas de coupure de courant ou de panne, vos dossiers médicaux restent-ils accessibles ?",
+                "Comment protégez-vous votre réseau contre les attaques par ransomware ciblant les cliniques ?",
+                "Souhaitez-vous un standard téléphonique IP pour gérer les urgences sans ligne occupée ?"
+            ]
+            competitor_alert = "Concurrents probables : Fournisseurs locaux / Canalbox — Insister sur la souveraineté des datacenters Orange en RDC et la haute disponibilité."
+        elif any(w in sector_lower for w in ["mine", "industrie", "logistique", "transport", "usine", "construction"]):
+            target_offer = "Liaison Spécialisée BLR/Fibre + Flotte Mobile Entreprise & Pass Roaming Pro"
+            golden_questions = [
+                "Vos dépôts, usines et sites miniers distants sont-ils interconnectés en temps réel avec la direction ?",
+                "Vos superviseurs et expatriés ont-ils besoin de forfaits voix/data utilisables sans surtaxe à l'étranger ?",
+                "Quel système de géolocalisation et suivi télématique utilisez-vous pour votre flotte de camions ?",
+                "Avez-vous une redondance télécom pour assurer la continuité des expéditions 24/7 ?",
+                "Les communications entre équipes terrain se font-elles par flotte mobile gratuite inter-SIM ?"
+            ]
+            competitor_alert = "Concurrents probables : Airtel / VSAT tiers — Mettre en avant le réseau terrestre unifié Orange et les accords roaming avantageux."
+        elif any(w in sector_lower for w in ["commerce", "distribution", "hotel", "hôtel", "restaurant", "supermarché"]):
+            target_offer = "Business Box Fibre Pro + Terminaux TPE Orange Money Pro Connectés"
+            golden_questions = [
+                "Quels moyens de paiement numériques proposez-vous à vos clients en caisse ?",
+                "Vos caisses enregistreuses et terminaux de paiement fonctionnent-ils sans interruption ?",
+                "Proposez-vous un Wi-Fi visiteurs sécurisé et séparé de votre réseau administratif ?",
+                "Vos équipes de direction ont-elles accès aux rapports de vente à distance en temps réel ?",
+                "Souhaitez-vous réduire vos commissions d'encaissement via les comptes Orange Money B2B ?"
+            ]
+            competitor_alert = "Concurrents probables : Canalbox / Connexions grand public — Insister sur la facturation entreprise avec RCCM, le SAV dédié et le paiement TPE intégré."
+        elif any(w in sector_lower for w in ["éducation", "education", "université", "universite", "école", "ecole", "institut"]):
+            target_offer = "Fibre Optique Campus Haut Débit + Pack Microsoft 365 Éducation & Teams"
+            golden_questions = [
+                "Combien d'étudiants et enseignants se connectent simultanément sur votre réseau Wi-Fi ?",
+                "Utilisez-vous une plateforme de cours en ligne ou de gestion de scolarité ?",
+                "Disposez-vous d'adresses emails institutionnelles (@ecole.cd) pour vos professeurs ?",
+                "Avez-vous besoin de filtrer l'accès aux contenus inappropriés sur le réseau du campus ?",
+                "Souhaitez-vous regrouper toutes vos licences Office sous un contrat éducation avantageux ?"
+            ]
+            competitor_alert = "Concurrents probables : Fournisseurs grand public — Insister sur la bande passante dédiée et la suite Microsoft 365 officielle."
+        else:
+            target_offer = "Fibre Pro Orange (50 Mbps symétrique) + Microsoft 365 Business & Teams"
+            golden_questions = [
+                "Vos collaborateurs partagent-ils leurs documents via un cloud sécurisé avec historique de versions ?",
+                "Vos réunions en visioconférence Teams/Zoom souffrent-elles de ralentissements ou décalages ?",
+                "Comment gérez-vous les déplacements professionnels de vos consultants à l'étranger ?",
+                "Avez-vous un standard virtuel avec numéro d'accueil unique pour votre entreprise ?",
+                "Êtes-vous satisfait du temps de réponse du support technique de votre opérateur actuel ?"
+            ]
+            competitor_alert = "Concurrents probables : Vodacom / Airtel — Insister sur le support dédié B2B Orange, l'IP fixe offerte et la GTR 4h."
+
         services = ServiceCatalog.objects.all()[:3]
         rec_services = [
             {"id": s.id, "name": s.name, "category": s.category, "description": s.description, "benefits": s.benefits}
@@ -643,7 +706,7 @@ class GetEnterpriseBriefUseCase(BaseUseCase[Tuple[int, Any], EnterpriseBriefDTO]
             location=enterprise.location or enterprise.plaque,
             plaque=enterprise.plaque,
             conversion_score=enterprise.conversion_score,
-            recommended_solution=enterprise.recommended_solution,
+            recommended_solution=enterprise.recommended_solution or target_offer,
             meeting_objective=prep.meeting_objective,
             hypothesis_to_verify=prep.hypothesis_to_verify,
             custom_pitch=prep.custom_pitch,
@@ -651,6 +714,9 @@ class GetEnterpriseBriefUseCase(BaseUseCase[Tuple[int, Any], EnterpriseBriefDTO]
             ai_hypotheses=enterprise.ai_hypotheses,
             ai_potential_objections=enterprise.ai_potential_objections,
             recommended_catalog_services=rec_services,
+            target_offer=target_offer,
+            golden_questions=golden_questions,
+            competitor_alert=competitor_alert,
         )
 
 
