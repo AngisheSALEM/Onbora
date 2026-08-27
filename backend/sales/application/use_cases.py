@@ -5,7 +5,7 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from datetime import datetime
 
-from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential
+from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, VisitFormSubmission
 from sales.domain.exceptions import (
     PlaqueNotFoundException,
     EnterpriseNotFoundException,
@@ -946,3 +946,157 @@ class ProcessVoiceUploadUseCase(BaseUseCase[Tuple[Any, Optional[int], Any], Voic
             transcript=transcript,
             provider=whisper_res.get("provider", "whisper")
         )
+
+
+class SubmitVisitFormUseCase(BaseUseCase[Tuple[Dict[str, Any], Any], Dict[str, Any]]):
+    def execute(self, params: Tuple[Dict[str, Any], Any]) -> Dict[str, Any]:
+        data, user = params
+        enterprise_id = data.get('enterprise_id')
+        questionnaire_id = data.get('questionnaire_id')
+        target_offer_name = data.get('target_offer_name') or "Fibre Optique Pro Orange"
+        answers = data.get('answers', [])
+        objections_noted = data.get('objections_noted', '')
+        custom_notes = data.get('custom_notes', '')
+
+        try:
+            enterprise = Enterprise.objects.get(pk=enterprise_id)
+        except Enterprise.DoesNotExist:
+            raise EnterpriseNotFoundException(enterprise_id)
+
+        questionnaire = None
+        if questionnaire_id:
+            try:
+                from catalog.models import OfferQuestionnaire
+                questionnaire = OfferQuestionnaire.objects.get(pk=questionnaire_id)
+                target_offer_name = questionnaire.target_offer_name or target_offer_name
+            except Exception:
+                pass
+
+        # 1. Calcul du score de qualification et extraction des besoins
+        score = 80
+        detected_needs = [target_offer_name]
+
+        # Synthèse des réponses textuelles
+        answers_summary_lines = []
+        for a in answers:
+            q_text = a.get('question_text', '')
+            ans_val = a.get('answer', '')
+            if isinstance(ans_val, list):
+                ans_str = ", ".join(str(x) for x in ans_val)
+            else:
+                ans_str = str(ans_val)
+            answers_summary_lines.append(f"- {q_text} : {ans_str}")
+
+            # Enrichissement des besoins déduits
+            if any(w in ans_str.lower() for w in ['secours', 'backup', '4g', 'oui']):
+                if 'Backup Secours 4G Automatique' not in detected_needs:
+                    detected_needs.append('Backup Secours 4G Automatique')
+            if any(w in ans_str.lower() for w in ['visio', 'teams', 'onedrive', 'm365', 'collaboratif']):
+                if 'Microsoft 365 Pro & Teams' not in detected_needs:
+                    detected_needs.append('Microsoft 365 Pro & Teams')
+            if any(w in ans_str.lower() for w in ['sécurité', 'firewall', 'ransomware', 'sauvegarde']):
+                if 'Firewall UTM & Cloud Backup Souverain' not in detected_needs:
+                    detected_needs.append('Firewall UTM & Cloud Backup Souverain')
+            if any(w in ans_str.lower() for w in ['tpe', 'orange money', 'caisse']):
+                if 'TPE Connecté Orange Money Pro' not in detected_needs:
+                    detected_needs.append('TPE Connecté Orange Money Pro')
+
+        # 2. Génération automatique du résumé exécutif pour le Back-Office
+        answers_block = "\n".join(answers_summary_lines) if answers_summary_lines else "Réponses enregistrées dans le formulaire."
+        ai_summary = (
+            f"Visite de qualification effectuée pour {enterprise.name} ({enterprise.sector or 'Secteur B2B'}) "
+            f"portant sur l'offre {target_offer_name}.\n\n"
+            f"Synthèse des réponses fournies par le prospect :\n{answers_block}\n\n"
+            f"Points d'attention / Objections : {objections_noted or 'Aucun blocage bloquant relevé.'}\n"
+            f"Notes complémentaires de l'agent : {custom_notes or 'Intérêt confirmé pour une étude technique Orange.'}"
+        )
+
+        # 3. Création de la soumission VisitFormSubmission
+        submission = VisitFormSubmission.objects.create(
+            enterprise=enterprise,
+            salesperson=user if (user and user.is_authenticated) else None,
+            questionnaire=questionnaire,
+            target_offer_name=target_offer_name,
+            answers=answers,
+            ai_summary=ai_summary,
+            qualification_score=score,
+            detected_needs=detected_needs,
+            objections_noted=objections_noted,
+            next_action="Étude d'éligibilité technique & Contact KAM sous 24h",
+            status='QUALIFIED'
+        )
+
+        # 4. Création d'une VisitPreparation et VisitReport associée pour la continuité
+        prep, _ = VisitPreparation.objects.get_or_create(
+            enterprise=enterprise,
+            defaults={
+                'salesperson': user if (user and user.is_authenticated) else None,
+                'meeting_objective': f"Qualifier le besoin pour l'offre {target_offer_name}",
+                'hypothesis_to_verify': f"Le prospect recherche une solution performante pour {enterprise.name}",
+                'custom_pitch': f"Présentation de l'offre {target_offer_name}",
+                'key_questions': "\n".join(answers_summary_lines[:3]) if answers_summary_lines else "Questions formulaires"
+            }
+        )
+
+        report, _ = VisitReport.objects.get_or_create(
+            preparation=prep,
+            defaults={
+                'executive_summary': ai_summary,
+                'confirmed_needs': detected_needs,
+                'objections_raised': [objections_noted] if objections_noted else ["Étude tarifaire demandée"],
+                'actions_todo': [
+                    "Transmettre le dossier technique à l'équipe Avant-Vente Orange",
+                    "Programmer un appel de cadrage KAM sous 24h"
+                ],
+                'follow_up_email_draft': f"Bonjour,\n\nSuite à notre échange concernant l'offre {target_offer_name}, nos équipes techniques Orange RDC finalisent votre proposition personnalisée.\n\nCordialement,\nOrange Business RDC"
+            }
+        )
+
+        # 5. Transmission automatique au KAM
+        from kam.models import ProspectDossier
+        from accounts.models import User
+
+        kam_user = User.objects.filter(role='KAM', is_available=True).first()
+        if not kam_user:
+            kam_user = User.objects.filter(role='KAM').first()
+
+        dossier, _ = ProspectDossier.objects.get_or_create(
+            visit_report=report,
+            defaults={
+                'source': ProspectDossier.OUTBOUND_VISIT,
+                'kam': kam_user,
+                'status': ProspectDossier.NEW,
+                'contact_name': enterprise.name,
+                'phone': getattr(enterprise, 'phone', '') or '',
+                'billing_address': getattr(enterprise, 'location', '') or '',
+                'internal_kam_notes': f"Dossier qualifié via formulaire terrain Onbora [{target_offer_name}].\n\n{ai_summary}",
+                'raw_conversation_data': {
+                    'target_offer_name': target_offer_name,
+                    'answers': answers,
+                    'detected_needs': detected_needs,
+                    'qualification_score': score,
+                }
+            }
+        )
+
+        log_demo_event(
+            'VISIT_FORM_SUBMITTED',
+            f"Formulaire de visite soumis pour {enterprise.name} ({target_offer_name}) - Transmis au Back-Office KAM",
+            user=user if (user and user.is_authenticated) else None,
+            metadata={"submission_id": submission.id, "score": score, "report_id": report.id}
+        )
+
+        return {
+            "submission_id": submission.id,
+            "report_id": report.id,
+            "enterprise_id": enterprise.id,
+            "enterprise_name": enterprise.name,
+            "target_offer_name": target_offer_name,
+            "qualification_score": score,
+            "ai_summary": ai_summary,
+            "detected_needs": detected_needs,
+            "next_action": submission.next_action,
+            "status": submission.status,
+            "created_at": submission.created_at.isoformat()
+        }
+

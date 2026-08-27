@@ -522,5 +522,60 @@ class KaabuClientTestCase(APITestCase):
         updated_roaming_pkg = next(p for p in toggle_resp.data["realtime_proposition"]["recommended_packages"] if p["service_id"] == "roaming-pass-pro")
         self.assertFalse(updated_roaming_pkg["checked"])
 
+    def test_submit_guided_visit_form(self):
+        from catalog.models import OfferQuestionnaire, OfferQuestion
+        ent = Enterprise.objects.create(
+            name="Banque Commerciale du Congo (BCDC)",
+            sector="Banque & Finance",
+            location="Kinshasa (Gombe)"
+        )
+        questionnaire = OfferQuestionnaire.objects.create(
+            title="Formulaire Qualification Fibre Pro",
+            target_offer_name="Fibre Optique Pro 50M",
+            is_active=True
+        )
+        q1 = OfferQuestion.objects.create(
+            questionnaire=questionnaire,
+            question_text="Quel est votre fournisseur actuel ?",
+            question_type="TEXT",
+            is_required=True,
+            order=1
+        )
+        q2 = OfferQuestion.objects.create(
+            questionnaire=questionnaire,
+            question_text="Exigence de secours automatique 4G ?",
+            question_type="BOOLEAN",
+            options=["Oui", "Non"],
+            is_required=True,
+            order=2
+        )
+
+        submit_url = reverse('submit-visit-form')
+        payload = {
+            "enterprise_id": ent.id,
+            "questionnaire_id": questionnaire.id,
+            "target_offer_name": "Fibre Optique Pro 50M",
+            "answers": [
+                {"question_id": q1.id, "question_text": q1.question_text, "answer": "Vodacom Business"},
+                {"question_id": q2.id, "question_text": q2.question_text, "answer": "Oui, secours indispensable"}
+            ],
+            "objections_noted": "Prix mensuel à négocier",
+            "custom_notes": "Le DSI souhaite un devis sous 24h"
+        }
+
+        resp = self.client.post(submit_url, payload, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data["enterprise_name"], "Banque Commerciale du Congo (BCDC)")
+        self.assertEqual(resp.data["target_offer_name"], "Fibre Optique Pro 50M")
+        self.assertIn("Fibre Optique Pro 50M", resp.data["ai_summary"])
+        self.assertIn("Backup Secours 4G Automatique", resp.data["detected_needs"])
+
+        # Check that submission list returns it
+        list_url = reverse('visit-form-submissions')
+        list_resp = self.client.get(list_url)
+        self.assertEqual(list_resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(list_resp.data) >= 1)
+
+
 
 

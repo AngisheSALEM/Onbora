@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.models import User
 
 logger = logging.getLogger(__name__)
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission
 from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
@@ -26,6 +26,8 @@ from .serializers import (
     CoreAIFeedbackSerializer,
     ScraperCredentialSerializer,
     SalesNotificationSerializer,
+    VisitFormSubmissionSerializer,
+    SubmitVisitFormRequestSerializer,
 )
 from .application.use_cases import (
     ListPlaquesUseCase,
@@ -43,6 +45,7 @@ from .application.use_cases import (
     CreateVisitReportUseCase,
     TransmitVisitReportUseCase,
     ProcessVoiceUploadUseCase,
+    SubmitVisitFormUseCase,
 )
 from .domain.exceptions import (
     PlaqueNotFoundException,
@@ -1565,6 +1568,43 @@ class TestPushNotificationView(APIView):
             "sent_count": sent_count,
             "target_user": target_user.username,
         }, status=status.HTTP_200_OK)
+
+
+class SubmitVisitFormView(APIView):
+    """
+    POST: Soumission d'un formulaire guidé de visite (questions prédéfinies selon l'offre ciblée).
+    Génère automatiquement la synthèse exécutive, le score de qualification, le rapport de visite et le dossier KAM.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SubmitVisitFormRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = SubmitVisitFormUseCase().execute((serializer.validated_data, request.user))
+            return Response(result, status=status.HTTP_201_CREATED)
+        except EnterpriseNotFoundException:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": f"Erreur lors de la soumission du formulaire : {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VisitFormSubmissionListView(APIView):
+    """
+    GET: Liste des formulaires de visite soumis au Back-Office.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        enterprise_id = request.query_params.get('enterprise_id')
+        queryset = VisitFormSubmission.objects.select_related('enterprise', 'salesperson').all()
+        if enterprise_id:
+            queryset = queryset.filter(enterprise_id=enterprise_id)
+        serializer = VisitFormSubmissionSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 

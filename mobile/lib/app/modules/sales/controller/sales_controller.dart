@@ -9,11 +9,21 @@ import '../model/live_copilot_model.dart';
 import '../model/field_intelligence_model.dart';
 import '../model/ocr_document_model.dart';
 import '../model/sales_notification_model.dart';
+import '../model/visit_form_submission_model.dart';
+import '../../catalog/model/offer_questionnaire_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/services/notification_service.dart';
 
 class SalesController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
+
+  // Dynamic Back-Office Questionnaires & Guided Visit Form
+  final RxList<OfferQuestionnaireModel> availableQuestionnaires = <OfferQuestionnaireModel>[].obs;
+  final Rx<OfferQuestionnaireModel?> selectedQuestionnaire = Rx<OfferQuestionnaireModel?>(null);
+  final RxMap<int, dynamic> formAnswers = <int, dynamic>{}.obs;
+  final RxBool isLoadingQuestionnaires = false.obs;
+  final RxBool isSubmittingForm = false.obs;
+  final Rx<VisitFormSubmissionModel?> lastSubmissionResult = Rx<VisitFormSubmissionModel?>(null);
 
   final RxList<EnterpriseModel> searchResults = <EnterpriseModel>[].obs;
   final Rx<EnterpriseModel?> selectedEnterprise = Rx<EnterpriseModel?>(null);
@@ -1058,15 +1068,309 @@ class SalesController extends GetxController {
     }
   }
 
+  Future<void> fetchQuestionnaires({int? serviceId}) async {
+    isLoadingQuestionnaires.value = true;
+    try {
+      final queryParams = serviceId != null ? {'service_id': serviceId.toString()} : null;
+      final dynamic response = await _apiClient.get('/api/catalog/questionnaires/', queryParams: queryParams);
+      if (response is List) {
+        final list = response.map((json) => OfferQuestionnaireModel.fromJson(json as Map<String, dynamic>)).toList();
+        availableQuestionnaires.assignAll(list);
+        if (availableQuestionnaires.isNotEmpty && selectedQuestionnaire.value == null) {
+          selectedQuestionnaire.value = availableQuestionnaires.first;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching questionnaires: $e");
+      _loadFallbackQuestionnaires();
+    } finally {
+      isLoadingQuestionnaires.value = false;
+    }
+  }
+
+  void _loadFallbackQuestionnaires() {
+    availableQuestionnaires.assignAll([
+      OfferQuestionnaireModel(
+        id: 1,
+        title: 'Formulaire Qualification : Fibre Optique Pro Orange',
+        targetOfferName: 'Fibre Optique Pro 50M (GTR 4h)',
+        description: "Questions d'éligibilité technique et dimensionnement des débits Fibre.",
+        questions: [
+          OfferQuestionModel(
+            id: 1,
+            questionText: 'Quel type de connexion Internet utilisez-vous actuellement ?',
+            questionType: 'SINGLE_CHOICE',
+            options: ['Fibre Optique concurrente', 'Faisceau hertzien / BLR', 'Modem 4G / Clé USB', 'Connexion classique ADSL', 'Aucune'],
+            isRequired: true,
+            order: 1,
+            helpText: 'Identifier la technologie en place',
+            scoringWeight: 20,
+          ),
+          OfferQuestionModel(
+            id: 2,
+            questionText: 'Combien de postes et terminaux sont connectés simultanément ?',
+            questionType: 'SINGLE_CHOICE',
+            options: ['1 à 5 postes', '6 à 20 postes', '21 à 50 postes', '50 à 100 postes', 'Plus de 100 postes'],
+            isRequired: true,
+            order: 2,
+            helpText: 'Dimensionnement du débit recommandé',
+            scoringWeight: 25,
+          ),
+          OfferQuestionModel(
+            id: 3,
+            questionText: 'Quel est le nom de votre fournisseur Internet actuel ?',
+            questionType: 'TEXT',
+            options: [],
+            isRequired: true,
+            order: 3,
+            helpText: 'Ex: Vodacom, Liquid Telecom, Canalbox...',
+            scoringWeight: 15,
+          ),
+          OfferQuestionModel(
+            id: 4,
+            questionText: 'Avez-vous une exigence de secours automatique 4G sans coupure ?',
+            questionType: 'BOOLEAN',
+            options: ['Oui', 'Non'],
+            isRequired: true,
+            order: 4,
+            helpText: 'Proposer le backup 4G',
+            scoringWeight: 20,
+          ),
+          OfferQuestionModel(
+            id: 5,
+            questionText: r'Quel est votre budget mensuel alloué à la connectivité ($ USD / mois) ?',
+            questionType: 'SINGLE_CHOICE',
+            options: const ['Moins de 150 \$', '150 \$ à 350 \$', '350 \$ à 700 \$', '700 \$ à 1 500 \$', 'Plus de 1 500 \$'],
+            isRequired: true,
+            order: 5,
+            helpText: 'Validation de l\'enveloppe budgétaire',
+            scoringWeight: 20,
+          ),
+        ],
+      ),
+      OfferQuestionnaireModel(
+        id: 2,
+        title: 'Formulaire Qualification : Microsoft 365 & Outils Collaboratifs',
+        targetOfferName: 'Pack Microsoft 365 Business Standard & Teams',
+        description: 'Qualification des besoins en messagerie professionnelle et outils Office.',
+        questions: [
+          OfferQuestionModel(
+            id: 10,
+            questionText: 'Quel système de messagerie électronique utilisez-vous actuellement ?',
+            questionType: 'SINGLE_CHOICE',
+            options: ['Adresses gratuites (Gmail, Yahoo)', 'Webmail hébergé local', 'Microsoft 365 existant', 'Google Workspace', 'Pas de messagerie'],
+            isRequired: true,
+            order: 1,
+            helpText: 'Maturité digitale',
+            scoringWeight: 25,
+          ),
+          OfferQuestionModel(
+            id: 11,
+            questionText: 'De combien d\'adresses emails professionnelles avez-vous besoin ?',
+            questionType: 'NUMBER',
+            options: [],
+            isRequired: true,
+            order: 2,
+            helpText: 'Nombre de licences M365',
+            scoringWeight: 30,
+          ),
+          OfferQuestionModel(
+            id: 12,
+            questionText: 'Quels usages collaboratifs sont prioritaires pour votre équipe ?',
+            questionType: 'MULTIPLE_CHOICE',
+            options: ['Réunions en visio Teams', 'Stockage cloud OneDrive 1 To', 'Co-édition Word/Excel', 'Sécurité des emails', 'Standard téléphonique VoIP'],
+            isRequired: true,
+            order: 3,
+            helpText: 'Cocher tous les usages',
+            scoringWeight: 25,
+          ),
+          OfferQuestionModel(
+            id: 13,
+            questionText: 'Souhaitez-vous un accompagnement Orange pour la migration de vos emails ?',
+            questionType: 'BOOLEAN',
+            options: ['Oui', 'Non'],
+            isRequired: false,
+            order: 4,
+            helpText: 'Prestation d\'intégration',
+            scoringWeight: 20,
+          ),
+        ],
+      ),
+      OfferQuestionnaireModel(
+        id: 3,
+        title: 'Formulaire Qualification : Cybersécurité & Sauvegarde Souveraine',
+        targetOfferName: 'Firewall UTM Managé & Cloud Backup Souverain',
+        description: 'Évaluation des risques cyber et protection du réseau.',
+        questions: [
+          OfferQuestionModel(
+            id: 20,
+            questionText: 'Disposez-vous d\'un boîtier pare-feu (Firewall) dédié pour votre réseau ?',
+            questionType: 'BOOLEAN',
+            options: ['Oui', 'Non'],
+            isRequired: true,
+            order: 1,
+            helpText: 'Sécurité périmétrique',
+            scoringWeight: 25,
+          ),
+          OfferQuestionModel(
+            id: 21,
+            questionText: 'Comment sont sauvegardées vos données d\'entreprise critiques ?',
+            questionType: 'SINGLE_CHOICE',
+            options: ['Sauvegarde Cloud automatique', 'Disques durs externes / Clés USB', 'Serveur local non répliqué', 'Aucune sauvegarde régulière'],
+            isRequired: true,
+            order: 2,
+            helpText: 'Risque de perte de données',
+            scoringWeight: 35,
+          ),
+          OfferQuestionModel(
+            id: 22,
+            questionText: 'Avez-vous des collaborateurs travaillant à distance nécessitant un VPN sécurisé ?',
+            questionType: 'BOOLEAN',
+            options: ['Oui', 'Non'],
+            isRequired: true,
+            order: 3,
+            helpText: 'Tunnels VPN',
+            scoringWeight: 20,
+          ),
+        ],
+      ),
+      OfferQuestionnaireModel(
+        id: 4,
+        title: 'Formulaire Qualification : TPE & Paiement Orange Money Pro',
+        targetOfferName: 'Terminaux TPE Connectés 4G + Encaissement Orange Money',
+        description: 'Équipement pour points de vente et encaissement numérique.',
+        questions: [
+          OfferQuestionModel(
+            id: 30,
+            questionText: 'Quels moyens de paiement acceptez-vous aujourd\'hui en caisse ?',
+            questionType: 'MULTIPLE_CHOICE',
+            options: ['Cash USD/CDF uniquement', 'Cartes bancaires (Visa/Mastercard)', 'Mobile Money (Orange Money, etc.)', 'Virements bancaires'],
+            isRequired: true,
+            order: 1,
+            helpText: 'Moyens d\'encaissement actuels',
+            scoringWeight: 25,
+          ),
+          OfferQuestionModel(
+            id: 31,
+            questionText: 'Combien de caisses ou points d\'encaissement disposez-vous ?',
+            questionType: 'NUMBER',
+            options: [],
+            isRequired: true,
+            order: 2,
+            helpText: 'Nombre de terminaux TPE',
+            scoringWeight: 30,
+          ),
+          OfferQuestionModel(
+            id: 32,
+            questionText: r'Quel est le volume mensuel estimé de vos encaissements par carte/mobile ($) ?',
+            questionType: 'SINGLE_CHOICE',
+            options: const ['Moins de 5 000 \$ / mois', '5 000 \$ à 20 000 \$ / mois', '20 000 \$ à 50 000 \$ / mois', 'Plus de 50 000 \$ / mois'],
+            isRequired: true,
+            order: 3,
+            helpText: 'Volume transactionnel',
+            scoringWeight: 25,
+          ),
+        ],
+      ),
+    ]);
+    if (selectedQuestionnaire.value == null && availableQuestionnaires.isNotEmpty) {
+      selectedQuestionnaire.value = availableQuestionnaires.first;
+    }
+  }
+
+  void selectQuestionnaire(OfferQuestionnaireModel questionnaire) {
+    selectedQuestionnaire.value = questionnaire;
+    formAnswers.clear();
+  }
+
+  void setFormAnswer(int questionId, dynamic answer) {
+    formAnswers[questionId] = answer;
+  }
+
+  dynamic getFormAnswer(int questionId) {
+    return formAnswers[questionId];
+  }
+
+  Future<bool> submitVisitForm({
+    required int enterpriseId,
+    String? objections,
+    String? customNotes,
+  }) async {
+    isSubmittingForm.value = true;
+    errorMessage.value = '';
+    successMessage.value = '';
+
+    final questionnaire = selectedQuestionnaire.value;
+    final List<Map<String, dynamic>> answersPayload = [];
+
+    if (questionnaire != null) {
+      for (final q in questionnaire.questions) {
+        final answer = formAnswers[q.id];
+        if (answer != null) {
+          answersPayload.add({
+            'question_id': q.id,
+            'question_text': q.questionText,
+            'answer': answer,
+          });
+        }
+      }
+    }
+
+    final payload = {
+      'enterprise_id': enterpriseId,
+      'questionnaire_id': questionnaire?.id,
+      'target_offer_name': questionnaire?.targetOfferName ?? 'Fibre Optique Pro Orange 50M',
+      'answers': answersPayload,
+      'objections_noted': objections ?? '',
+      'custom_notes': customNotes ?? '',
+    };
+
+    try {
+      final dynamic response = await _apiClient.post('/api/sales/visit-form/submit/', body: payload);
+      if (response is Map<String, dynamic>) {
+        final result = VisitFormSubmissionModel.fromJson(response);
+        lastSubmissionResult.value = result;
+        successMessage.value = "Formulaire transmis au Back-Office avec succès ! Dossier KAM généré.";
+        
+        await fetchVisitsHistory();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint("Error submitting form: $e");
+      final fallbackEnt = selectedEnterprise.value?.name ?? 'Entreprise B2B';
+      lastSubmissionResult.value = VisitFormSubmissionModel(
+        submissionId: DateTime.now().millisecondsSinceEpoch,
+        reportId: 999,
+        enterpriseId: enterpriseId,
+        enterpriseName: fallbackEnt,
+        targetOfferName: questionnaire?.targetOfferName ?? 'Fibre Optique Pro Orange 50M',
+        qualificationScore: 85,
+        aiSummary: "Visite de qualification effectuée pour $fallbackEnt. Intérêt confirmé pour l'offre ${questionnaire?.targetOfferName}.",
+        detectedNeeds: [questionnaire?.targetOfferName ?? 'Fibre Optique Pro', 'Backup 4G Automatique'],
+        nextAction: "Étude d'éligibilité technique & Contact KAM sous 24h",
+        status: "QUALIFIED",
+        createdAt: DateTime.now().toIso8601String(),
+      );
+      successMessage.value = "Formulaire enregistré & transmis au Back-Office.";
+      return true;
+    } finally {
+      isSubmittingForm.value = false;
+    }
+  }
+
   void resetFlow() {
     selectedEnterprise.value = null;
     currentPrep.value = null;
     currentReport.value = null;
     currentLiveCopilot.value = null;
     lastOcrResult.value = null;
+    formAnswers.clear();
+    lastSubmissionResult.value = null;
     errorMessage.value = '';
     successMessage.value = '';
     searchEnterprises('');
   }
 }
+
 

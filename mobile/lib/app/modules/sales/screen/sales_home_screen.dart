@@ -308,6 +308,41 @@ class SalesHomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Bouton d'action principal: Formulaire Offre Back-Office
+                        ScaleTap(
+                          onTap: () => Get.toNamed(Routes.VISIT_FORM),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppConstants.primaryBlue,
+                              borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppConstants.primaryBlue.withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(LucideIcons.clipboardList, size: 16, color: Colors.white),
+                                SizedBox(width: 6),
+                                Text(
+                                  "Remplir Formulaire Offre",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
                             Expanded(

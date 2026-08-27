@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission
 
 
 class SalespersonUserSerializer(serializers.ModelSerializer):
@@ -315,4 +315,29 @@ class LeaderboardEntrySerializer(serializers.Serializer):
     referrals_count = serializers.IntegerField()
     trade_audits_count = serializers.IntegerField()
     rank = serializers.IntegerField()
+
+
+class VisitFormSubmissionSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.CharField(source='enterprise.name', read_only=True)
+    salesperson_name = serializers.CharField(source='salesperson.username', read_only=True)
+
+    class Meta:
+        model = VisitFormSubmission
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'salesperson', 'salesperson_name',
+            'questionnaire', 'target_offer_name', 'answers', 'ai_summary',
+            'qualification_score', 'detected_needs', 'objections_noted',
+            'next_action', 'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'salesperson', 'ai_summary', 'qualification_score', 'created_at']
+
+
+class SubmitVisitFormRequestSerializer(serializers.Serializer):
+    enterprise_id = serializers.IntegerField()
+    questionnaire_id = serializers.IntegerField(required=False, allow_null=True)
+    target_offer_name = serializers.CharField(required=False, default="Fibre Optique Pro Orange")
+    answers = serializers.ListField(child=serializers.DictField())
+    objections_noted = serializers.CharField(required=False, allow_blank=True, default='')
+    custom_notes = serializers.CharField(required=False, allow_blank=True, default='')
+
 

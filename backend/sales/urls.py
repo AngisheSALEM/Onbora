@@ -36,6 +36,8 @@ from .views import (
     AdvTriggerProvisioningStpView,
     DocumentOcrScanView,
     TestPushNotificationView,
+    SubmitVisitFormView,
+    VisitFormSubmissionListView,
 )
 
 urlpatterns = [
@@ -75,7 +77,9 @@ urlpatterns = [
     path('live-copilot/turn/', LiveCopilotTurnView.as_view(), name='live-copilot-turn'),
     path('live-copilot/toggle-package/', LiveCopilotTogglePackageView.as_view(), name='live-copilot-toggle-package'),
 
-    # Fiches de visite, Génération IA et Boucle d'apprentissage continu
+    # Fiches de visite, Formulaires guidés, Génération IA et Boucle d'apprentissage continu
+    path('visit-form/submit/', SubmitVisitFormView.as_view(), name='submit-visit-form'),
+    path('visit-form/submissions/', VisitFormSubmissionListView.as_view(), name='visit-form-submissions'),
     path('visit-preparations/', VisitPreparationCreateView.as_view(), name='visit-preparation-create'),
     path('visit-reports/', VisitReportCreateView.as_view(), name='visit-report-create'),
     path('visit-reports/generate-from-ai/', VisitReportGenerateFromAIView.as_view(), name='visit-report-generate-ai'),

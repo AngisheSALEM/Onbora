@@ -135,3 +135,28 @@ class CatalogUploadView(APIView):
             "services_found_count": result.services_found_count,
             "services": result.services
         }, status=status.HTTP_200_OK)
+
+
+class OfferQuestionnaireListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        service_id = request.query_params.get('service_id')
+        queryset = OfferQuestionnaire.objects.filter(is_active=True).prefetch_related('questions')
+        if service_id:
+            queryset = queryset.filter(service_id=service_id)
+        serializer = OfferQuestionnaireSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class OfferQuestionnaireDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            q = OfferQuestionnaire.objects.prefetch_related('questions').get(pk=pk, is_active=True)
+            serializer = OfferQuestionnaireSerializer(q)
+            return Response(serializer.data)
+        except OfferQuestionnaire.DoesNotExist:
+            return Response({"detail": "Questionnaire introuvable."}, status=status.HTTP_404_NOT_FOUND)
+

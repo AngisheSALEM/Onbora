@@ -25,6 +25,7 @@ import '../modules/profile/screen/profile_screen.dart';
 import '../modules/sales/screen/leaderboard_screen.dart';
 import '../modules/sales/screen/field_intelligence_screen.dart';
 import '../modules/sales/screen/document_scan_screen.dart';
+import '../modules/sales/screen/visit_form_screen.dart';
 
 class AppPages {
   static const INITIAL = Routes.LOGIN;
@@ -97,6 +98,13 @@ class AppPages {
     GetPage(
       name: Routes.DOCUMENT_SCAN,
       page: () => const DocumentScanScreen(),
+      binding: SalesBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.VISIT_FORM,
+      page: () => const VisitFormScreen(),
       binding: SalesBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),

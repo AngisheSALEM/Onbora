@@ -428,32 +428,74 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                     const SizedBox(height: 14),
                     const SizedBox(height: 24),
 
-                    // Action Button: Launch Voice Dictaphone
+                    // Primary Action Button: Launch Guided Offer Form
                     SizedBox(
                       width: double.infinity,
                       height: 52,
+                      child: ScaleTap(
+                        onTap: () => Get.toNamed(Routes.VISIT_FORM),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppConstants.primaryBlue,
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppConstants.primaryBlue.withValues(alpha: 0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(LucideIcons.clipboardList, size: 20, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                "Remplir le Formulaire de l'Offre",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Secondary Action: Audio / Note-taking mode
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
                       child: ScaleTap(
                         child: ElevatedButton.icon(
                           onPressed: () => Get.toNamed(Routes.DICTAPHONE),
                           icon: Icon(
                             LucideIcons.mic,
-                            size: 20,
-                            color: isDark ? const Color(0xFF121214) : Colors.white,
+                            size: 18,
+                            color: isDark ? Colors.white70 : AppConstants.textDark,
                           ),
                           label: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              'Démarrer l\'enregistrement',
+                              'Mode Enregistrement Audio / Live',
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? const Color(0xFF121214) : Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white70 : AppConstants.textDark,
                               ),
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                            foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                            backgroundColor: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
+                            foregroundColor: isDark ? Colors.white : AppConstants.textDark,
+                            elevation: 0,
+                            side: BorderSide(
+                              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE2E8F0),
+                            ),
                           ),
                         ),
                       ),

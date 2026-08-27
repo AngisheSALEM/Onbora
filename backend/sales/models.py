@@ -428,3 +428,47 @@ class SalesNotification(models.Model):
         return f"Notification [{self.get_notification_type_display()}]: {self.title} -> {self.recipient.username}"
 
 
+class VisitFormSubmission(models.Model):
+    """
+    Soumission de formulaire terrain guidé selon l'offre ciblée.
+    Remplace la saisie libre par des questions standardisées préconfigurées par le Back-Office.
+    """
+    STATUS_CHOICES = [
+        ('SUBMITTED', 'Soumis au Back-Office'),
+        ('QUALIFIED', 'Qualifié (Transmis KAM)'),
+        ('NEEDS_INFO', 'Informations Complémentaires Requises'),
+        ('REJECTED', 'Non Éligible / Rejeté'),
+    ]
+
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='form_submissions')
+    salesperson = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='form_submissions'
+    )
+    questionnaire = models.ForeignKey(
+        'catalog.OfferQuestionnaire',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='submissions'
+    )
+    target_offer_name = models.CharField(max_length=150, help_text="Nom de l'offre ciblée (ex: Fibre Pro Orange 50M)")
+    answers = models.JSONField(default=list, help_text="Liste des réponses formatées [{question_id, question_text, answer}]")
+    ai_summary = models.TextField(blank=True, default='', help_text="Synthèse exécutive générée automatiquement pour le Back-Office")
+    qualification_score = models.PositiveIntegerField(default=75, help_text="Score de qualification de 0 à 100")
+    detected_needs = models.JSONField(default=list, blank=True, help_text="Besoins télécoms déduits des réponses")
+    objections_noted = models.TextField(blank=True, default='', help_text="Objections ou contraintes mentionnées")
+    next_action = models.CharField(max_length=255, default="Étude d'éligibilité technique & Contact KAM sous 24h")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='QUALIFIED')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Formulaire [{self.target_offer_name}] - {self.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
+
+
