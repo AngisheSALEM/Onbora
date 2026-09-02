@@ -100,16 +100,18 @@ WSGI_APPLICATION = 'onbora.wsgi.application'
 
 import urllib.parse
 
-DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+raw_db_url = os.getenv('DATABASE_URL', '').strip()
+DATABASE_URL = "".join(raw_db_url.split()) if raw_db_url else ''
 DB_HOST = os.getenv('DB_HOST', '').strip()
 
 if DATABASE_URL:
     parsed_db = urllib.parse.urlparse(DATABASE_URL)
     query_params = urllib.parse.parse_qs(parsed_db.query)
+    clean_host = (parsed_db.hostname or '').replace(' ', '')
     db_options = {}
     if 'sslmode' in query_params:
         db_options['sslmode'] = query_params['sslmode'][0]
-    elif parsed_db.hostname and ('neon.tech' in parsed_db.hostname or 'render.com' in parsed_db.hostname):
+    elif clean_host and ('neon.tech' in clean_host or 'render.com' in clean_host):
         db_options['sslmode'] = 'require'
 
     DATABASES = {
@@ -118,7 +120,7 @@ if DATABASE_URL:
             'NAME': parsed_db.path.lstrip('/'),
             'USER': urllib.parse.unquote(parsed_db.username or ''),
             'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
-            'HOST': parsed_db.hostname,
+            'HOST': clean_host,
             'PORT': parsed_db.port or 5432,
             'OPTIONS': db_options,
         }
