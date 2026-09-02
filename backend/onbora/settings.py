@@ -105,6 +105,13 @@ DB_HOST = os.getenv('DB_HOST', '').strip()
 
 if DATABASE_URL:
     parsed_db = urllib.parse.urlparse(DATABASE_URL)
+    query_params = urllib.parse.parse_qs(parsed_db.query)
+    db_options = {}
+    if 'sslmode' in query_params:
+        db_options['sslmode'] = query_params['sslmode'][0]
+    elif parsed_db.hostname and ('neon.tech' in parsed_db.hostname or 'render.com' in parsed_db.hostname):
+        db_options['sslmode'] = 'require'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -113,6 +120,7 @@ if DATABASE_URL:
             'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
             'HOST': parsed_db.hostname,
             'PORT': parsed_db.port or 5432,
+            'OPTIONS': db_options,
         }
     }
 elif DB_HOST:
