@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import '../controller/sales_controller.dart';
 import 'widget/ai_brief_modal.dart';
+import 'widget/notifications_modal.dart';
 import '../../../routes/app_routes.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/glass_card.dart';
@@ -22,7 +24,8 @@ class PlaqueMapHomeScreen extends StatefulWidget {
   State<PlaqueMapHomeScreen> createState() => _PlaqueMapHomeScreenState();
 }
 
-class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsBindingObserver {
+class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   MapLibreMapController? _mapController;
   bool _isStyleLoaded = false;
   bool _hasLocationPermission = false;
@@ -30,6 +33,9 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
   final List<Worker> _workers = [];
 
   static const LatLng _kinshasaGombeCenter = LatLng(-4.3033, 15.3084);
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -260,12 +266,14 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final salesController = Get.find<SalesController>();
     final bool isTestEnv = Get.testMode ||
         WidgetsBinding.instance.runtimeType.toString().contains('Test');
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // 1. Moteur Cartographique Vectoriel MapLibre GL (Isolé par RepaintBoundary)
@@ -315,21 +323,18 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                             decoration: BoxDecoration(
                               color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                              ),
                             ),
                             child: Center(
-                              child: Icon(LucideIcons.map, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
+                              child: Icon(CupertinoIcons.map, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Carte Territoire Orange B2B',
+                              'Map',
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
-                                fontSize: 15,
+                                fontSize: 16,
                                 color: isDark ? Colors.white : AppConstants.textDark,
                               ),
                             ),
@@ -348,7 +353,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                   margin: const EdgeInsets.all(12),
                                   backgroundColor: const Color(0xEE18181B),
                                   colorText: Colors.white,
-                                  icon: const Icon(LucideIcons.checkCheck, color: Color(0xFF10B981)),
+                                  icon: const Icon(CupertinoIcons.checkmark_alt, color: Color(0xFF10B981)),
                                 );
                               },
                               child: Container(
@@ -369,7 +374,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                         ),
                                       )
                                     : Icon(
-                                        LucideIcons.refreshCw,
+                                        CupertinoIcons.arrow_2_circlepath,
                                         size: 18,
                                         color: isDark ? Colors.white : AppConstants.textDark,
                                       ),
@@ -378,8 +383,10 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                           }),
                           const SizedBox(width: 6),
 
+                          // Notifications sur la Map
                           Obx(() {
                             final unread = salesController.unreadNotificationsCount.value;
+                            final isOpen = salesController.isNotificationsOpen.value;
                             return ScaleTap(
                               onTap: () => _showNotificationsModal(context, isDark),
                               child: Stack(
@@ -392,7 +399,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
-                                      LucideIcons.bell,
+                                      isOpen ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
                                       size: 18,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
@@ -422,22 +429,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                               ),
                             );
                           }),
-                          const SizedBox(width: 6),
-                          ScaleTap(
-                            onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF222226) : const Color(0xFFF1F5F9),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                LucideIcons.search,
-                                size: 18,
-                                color: isDark ? Colors.white : AppConstants.textDark,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -470,11 +461,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                         ? (isDark ? Colors.white : const Color(0xFF18181B))
                                         : (isDark ? const Color(0xDD18181C) : const Color(0xF8FFFFFF)),
                                     borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? (isDark ? Colors.white : const Color(0xFF18181B))
-                                          : (isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight),
-                                    ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
@@ -512,15 +498,15 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                           margin: const EdgeInsets.only(top: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                              color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(LucideIcons.bellRing, color: Color(0xFF2563EB), size: 16),
+                              Icon(CupertinoIcons.bell, color: isDark ? Colors.white : AppConstants.textDark, size: 16),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -528,7 +514,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: isDark ? Colors.white : const Color(0xFF1E3A8A),
+                                    color: isDark ? Colors.white : AppConstants.textDark,
                                   ),
                                 ),
                               ),
@@ -538,13 +524,13 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF2563EB),
+                                    color: AppConstants.primaryBtnColor(isDark),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'Autoriser',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppConstants.primaryBtnTextColor(isDark),
                                       fontSize: 11,
                                       fontWeight: FontWeight.w900,
                                     ),
@@ -564,7 +550,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
           // 3. Boutons Flottants : Thème Carte & Me Géolocaliser
           Positioned(
             right: 16,
-            bottom: 165,
+            bottom: 255,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -584,7 +570,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                       backgroundColor: const Color(0xEE18181B),
                       colorText: Colors.white,
                       icon: Icon(
-                        _isMapDark ? LucideIcons.moon : LucideIcons.sun,
+                        _isMapDark ? CupertinoIcons.moon : CupertinoIcons.sun_max,
                         color: _isMapDark ? const Color(0xFF60A5FA) : const Color(0xFFFBBF24),
                       ),
                     );
@@ -595,9 +581,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xEE18181C) : Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
-                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
@@ -608,8 +591,8 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                     ),
                     child: Center(
                       child: Icon(
-                        _isMapDark ? LucideIcons.sun : LucideIcons.moon,
-                        size: 19,
+                        _isMapDark ? CupertinoIcons.sun_max : CupertinoIcons.moon,
+                        size: 20,
                         color: _isMapDark ? const Color(0xFFFBBF24) : (isDark ? Colors.white : AppConstants.textDark),
                       ),
                     ),
@@ -626,9 +609,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xEE18181C) : Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? const Color(0x33FFFFFF) : AppConstants.borderLight,
-                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
@@ -639,7 +619,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                     ),
                     child: Center(
                       child: Icon(
-                        LucideIcons.locateFixed,
+                        CupertinoIcons.location,
                         size: 20,
                         color: _hasLocationPermission
                             ? const Color(0xFF2563EB)
@@ -652,22 +632,19 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
             ),
           ),
 
-          // 4. Carte Flottante Inférieure : Entreprise Sélectionnée
+          // 4. Carte Flottante Contextuelle Émergente (Au-dessus de la Tab Bar à 92px)
           Positioned(
             left: 16,
             right: 16,
-            bottom: 20,
+            bottom: 92,
             child: Obx(() {
-              final selected = salesController.selectedMapEnterprise.value ??
-                  (salesController.searchResults.isNotEmpty
-                      ? salesController.searchResults.first
-                      : null);
+              final selected = salesController.selectedMapEnterprise.value;
 
               if (selected == null) return const SizedBox.shrink();
 
               return RepaintBoundary(
                 child: GlassCard(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -684,21 +661,14 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                   selected.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 16,
-                                    color: isDark ? Colors.white : AppConstants.textDark,
-                                  ),
+                                  style: AppConstants.largeTitleStyle(isDark).copyWith(fontSize: 16),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${selected.sector} • ${selected.location}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                  ),
+                                  style: AppConstants.subheadStyle(isDark).copyWith(fontSize: 11),
                                 ),
                               ],
                             ),
@@ -711,9 +681,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                   ? AppConstants.successGreen.withValues(alpha: 0.15)
                                   : AppConstants.accentYellow.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                              border: Border.all(
-                                color: selected.isConverted ? AppConstants.successGreen : AppConstants.accentYellow,
-                              ),
                             ),
                             child: Text(
                               selected.isConverted ? 'Converti' : 'À convertir',
@@ -721,6 +688,22 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                 color: selected.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 10,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          ScaleTap(
+                            onTap: () => salesController.setMapEnterprise(null),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                LucideIcons.x,
+                                size: 14,
+                                color: isDark ? Colors.white70 : AppConstants.textDark,
                               ),
                             ),
                           ),
@@ -738,14 +721,17 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
                                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+                                  border: Border.all(
+                                    color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
                                     'Voir le Débrief',
                                     style: TextStyle(
-                                      color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                                      color: isDark ? Colors.white : AppConstants.textDark,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -764,7 +750,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: isDark ? Colors.white : const Color(0xFF18181B),
+                                  color: AppConstants.primaryBtnColor(isDark),
                                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                                 ),
                                 child: Center(
@@ -772,8 +758,8 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
                                     'Démarrer Visite',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark ? const Color(0xFF121214) : Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppConstants.primaryBtnTextColor(isDark),
                                     ),
                                   ),
                                 ),
@@ -794,258 +780,6 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen> with WidgetsB
   }
 
   void _showNotificationsModal(BuildContext context, bool isDark) {
-    final salesController = Get.find<SalesController>();
-    salesController.fetchNotifications();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Poignée
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // En-tête modal
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Icon(LucideIcons.bell, color: const Color(0xFF2563EB), size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Notifications Territoriales',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? Colors.white : AppConstants.textDark,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => salesController.markAllNotificationsAsRead(),
-                      child: const Text(
-                        'Tout marquer lu',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF2563EB),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-
-              // Liste des notifications
-              Expanded(
-                child: Obx(() {
-                  if (salesController.isLoadingNotifications.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final notifs = salesController.notifications;
-                  if (notifs.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.bellOff, size: 40, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Aucune notification pour le moment',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white60 : Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Les assignations de plaques et tracés KML apparaîtront ici.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark ? Colors.white38 : Colors.black38,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: notifs.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, idx) {
-                      final item = notifs[idx];
-                      return ScaleTap(
-                        onTap: () {
-                          salesController.markNotificationAsRead(item.id);
-                          if (item.plaqueCode.isNotEmpty) {
-                            salesController.setFilterPlaque(item.plaqueCode);
-                            // Centrer la carte si coordonnées disponibles
-                            final center = item.payload['center'];
-                            if (center != null && center['lon'] != null && center['lat'] != null) {
-                              _mapController?.animateCamera(
-                                CameraUpdate.newLatLng(
-                                  LatLng((center['lat'] as num).toDouble(), (center['lon'] as num).toDouble()),
-                                ),
-                              );
-                            }
-                            Navigator.pop(ctx);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF18181B) : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? (item.isRead ? const Color(0x22FFFFFF) : const Color(0x44FFFFFF))
-                                  : (item.isRead ? AppConstants.borderLight : const Color(0xFFCBD5E1)),
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                                            width: 0.8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          item.plaqueCode.isNotEmpty ? item.plaqueCode : 'ONBORA',
-                                          style: TextStyle(
-                                            color: isDark ? Colors.white : AppConstants.textDark,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                      if (!item.isRead) ...[
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFF2563EB),
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  if (item.createdAt != null)
-                                    Text(
-                                      '${item.createdAt!.hour.toString().padLeft(2, '0')}:${item.createdAt!.minute.toString().padLeft(2, '0')}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white38 : Colors.black38,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item.title,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  color: isDark ? Colors.white : AppConstants.textDark,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.message,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? Colors.white70 : Colors.black87,
-                                  height: 1.4,
-                                ),
-                              ),
-                              if (item.payload.containsKey('kml_url')) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(LucideIcons.fileCode, size: 12, color: isDark ? Colors.white60 : Colors.black54),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Fichier KML & Tracé synchronisés sur votre carte',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? Colors.white60 : Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    NotificationsModal.show(context, isDark: isDark, mapController: _mapController);
   }
 }

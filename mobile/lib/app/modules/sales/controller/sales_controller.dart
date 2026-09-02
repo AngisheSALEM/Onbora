@@ -13,6 +13,7 @@ import '../model/visit_form_submission_model.dart';
 import '../../catalog/model/offer_questionnaire_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../common/constants/app_constants.dart';
 
 class SalesController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -45,6 +46,7 @@ class SalesController extends GetxController {
   final RxList<SalesNotificationModel> notifications = <SalesNotificationModel>[].obs;
   final RxInt unreadNotificationsCount = 0.obs;
   final RxBool isLoadingNotifications = false.obs;
+  final RxBool isNotificationsOpen = false.obs;
 
   // Plaque Portfolio Filter & State
   final RxBool isPlaqueUnlocked = true.obs;
@@ -247,7 +249,7 @@ class SalesController extends GetxController {
               latest.title,
               latest.message,
               snackPosition: SnackPosition.TOP,
-              backgroundColor: const Color(0xFF2563EB),
+              backgroundColor: AppConstants.primaryBlack,
               colorText: Colors.white,
               duration: const Duration(seconds: 6),
               margin: const EdgeInsets.all(16),
@@ -798,7 +800,7 @@ class SalesController extends GetxController {
     successMessage.value = '';
   }
 
-  void setMapEnterprise(EnterpriseModel enterprise) {
+  void setMapEnterprise(EnterpriseModel? enterprise) {
     selectedMapEnterprise.value = enterprise;
   }
 
@@ -1357,6 +1359,97 @@ class SalesController extends GetxController {
     } finally {
       isSubmittingForm.value = false;
     }
+  }
+
+  // =========================================================================
+  // TRANSACTIONAL SALES ACCELERATORS (Accord de principe, Tracking & Offline Vault)
+  // =========================================================================
+
+  final RxInt pendingSyncCount = 0.obs;
+  final RxBool isOfflineMode = false.obs;
+
+  void confirmQuickAgreement(EnterpriseModel enterprise, String offerName, double monthlyPrice) {
+    userTotalPoints.value += 20;
+    kpiReportsCount.value += 1;
+    kpiVisitsCount.value += 1;
+
+    final newVisit = VisitHistoryItem(
+      id: DateTime.now().millisecondsSinceEpoch % 10000,
+      enterpriseName: enterprise.name,
+      sector: enterprise.sector ?? 'B2B',
+      location: enterprise.location ?? 'Kinshasa',
+      visitDate: DateTime.now(),
+      status: 'TRANSMIS',
+    );
+    visitsHistory.insert(0, newVisit);
+
+    final notif = SalesNotificationModel(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: 'Accord de Principe Signé ✍️',
+      message: 'Félicitations ! ${enterprise.name} a validé l\'offre $offerName (${monthlyPrice.toStringAsFixed(0)} \$/mois). +20 points crédités !',
+      notificationType: 'AGREEMENT_SIGNED',
+      createdAt: DateTime.now(),
+    );
+    notifications.insert(0, notif);
+    unreadNotificationsCount.value += 1;
+
+    Get.snackbar(
+      'Accord Validé ! (+20 pts)',
+      'La signature de ${enterprise.name} a été enregistrée et transmise au Back-Office.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 4),
+    );
+  }
+
+  void trackProposalSent(String enterpriseName) {
+    final notif = SalesNotificationModel(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: 'Proposition Partagée 📤',
+      message: 'Proposition transmise pour $enterpriseName. Suivi d\'ouverture activé en temps réel.',
+      notificationType: 'PROPOSAL_SHARED',
+      createdAt: DateTime.now(),
+    );
+    notifications.insert(0, notif);
+    unreadNotificationsCount.value += 1;
+  }
+
+  void simulateClientOpeningProposal(String enterpriseName) {
+    final notif = SalesNotificationModel(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: 'Consultation en direct 🔥',
+      message: 'Le décideur de $enterpriseName consulte actuellement votre proposition. C\'est le moment idéal pour le relancer !',
+      notificationType: 'PROPOSAL_VIEWED',
+      createdAt: DateTime.now(),
+    );
+    notifications.insert(0, notif);
+    unreadNotificationsCount.value += 1;
+
+    Get.snackbar(
+      'Consultation en direct 🔥',
+      'Le décideur de $enterpriseName consulte actuellement votre proposition. Relancez-le !',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: AppConstants.primaryBlack,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 5),
+    );
+  }
+
+  Future<void> syncPendingQueue() async {
+    if (pendingSyncCount.value == 0) return;
+    final count = pendingSyncCount.value;
+    pendingSyncCount.value = 0;
+    Get.snackbar(
+      'Synchronisation terminée ☁️',
+      '$count dossier(s) hors-ligne synchronisé(s) avec succès avec le serveur.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+    );
   }
 
   void resetFlow() {

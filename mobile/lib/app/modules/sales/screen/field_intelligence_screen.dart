@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -187,8 +188,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final salesController = Get.find<SalesController>();
     final enterprise = salesController.selectedEnterprise.value;
 
@@ -197,38 +197,11 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
+          icon: Icon(CupertinoIcons.chevron_back, color: isDark ? Colors.white : AppConstants.textDark, size: 22),
           tooltip: 'Retour',
           onPressed: () => Get.back(),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Intelligence Terrain',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isDark ? Colors.white : AppConstants.textDark,
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-                letterSpacing: -0.3,
-              ),
-            ),
-            if (enterprise != null)
-              Text(
-                'Visite : ${enterprise.name}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : AppConstants.textSecondaryLight,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11,
-                ),
-              ),
-          ],
         ),
       ),
       body: AuroraBackground(
@@ -239,10 +212,27 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
               child: SingleChildScrollView(
                 keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg, vertical: 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Surtitre Meta (11px Uppercase)
+                    Text(
+                      'FORMULAIRE DE VISITE',
+                      style: AppConstants.overlineStyle(isDark),
+                    ),
+                    const SizedBox(height: 4),
+                    // Grand Titre (34px Bold)
+                    Text(
+                      enterprise?.name ?? 'Compte-rendu terrain',
+                      style: AppConstants.largeTitleStyle(isDark),
+                    ),
+                    Divider(
+                      height: 16,
+                      thickness: 0.5,
+                      color: isDark ? const Color(0x22FFFFFF) : const Color(0x15000000),
+                    ),
+                    const SizedBox(height: 6),
                     // Banner explanation (Clean, neutral)
                     GlassCard(
                       padding: const EdgeInsets.all(14),

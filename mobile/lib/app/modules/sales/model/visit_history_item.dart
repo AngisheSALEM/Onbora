@@ -27,6 +27,19 @@ class VisitHistoryItem {
     return visitDate.year == now.year && visitDate.month == now.month;
   }
 
+  String get formattedTime {
+    final now = DateTime.now();
+    final hourStr = '${visitDate.hour.toString().padLeft(2, '0')}:${visitDate.minute.toString().padLeft(2, '0')}';
+    if (isToday) {
+      return 'Aujourd\'hui à $hourStr';
+    }
+    final diff = now.difference(visitDate).inDays;
+    if (diff == 1) {
+      return 'Hier à $hourStr';
+    }
+    return '${visitDate.day.toString().padLeft(2, '0')}/${visitDate.month.toString().padLeft(2, '0')} à $hourStr';
+  }
+
   factory VisitHistoryItem.fromJson(Map<String, dynamic> json) {
     return VisitHistoryItem(
       id: json['id'] as int? ?? 0,

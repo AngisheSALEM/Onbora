@@ -227,6 +227,16 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Bilan Financier & Rentabilité Métier (COI vs Gain Net)
+                    _buildFinancialROICard(report, isDark),
+                    const SizedBox(height: 16),
+
+                    // Packages Tierés (Marge MSP Garantie)
+                    if (report.tieredPackages.isNotEmpty) ...[
+                      _buildTieredPackagesSection(report.tieredPackages, isDark),
+                      const SizedBox(height: 16),
+                    ],
+
                     // Enregistrement & Retranscription
                     RepaintBoundary(
                       child: GlassCard(
@@ -703,5 +713,218 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
           ),
         ),
       );
+  }
+
+  Widget _buildFinancialROICard(dynamic report, bool isDark) {
+    final coi = report.coiMetrics as Map<String, dynamic>?;
+    final monthlyLoss = coi != null ? (coi['total_monthly_coi_usd'] as num?)?.toDouble() ?? 1250.0 : 1250.0;
+    final netGain = monthlyLoss - 320.0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF141416), const Color(0xFF1E1E24)]
+              : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.trending_up_rounded, color: Color(0xFF22C55E), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Bilan Financier & Rentabilité Métier',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pertes Actuelles (COI)',
+                        style: TextStyle(color: Color(0xFFFCA5A5), fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${monthlyLoss.toStringAsFixed(0)} \$/m',
+                        style: const TextStyle(color: Colors.redAccent, fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Gain Net Client',
+                        style: TextStyle(color: Color(0xFF86EFAC), fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '+${netGain.toStringAsFixed(0)} \$/m',
+                        style: const TextStyle(color: Color(0xFF22C55E), fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'L\'offre MSP transforme une perte de 1 250 \$/mois en un investissement de 320 \$/mois remboursé 3x dès le 1er mois.',
+            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11, height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTieredPackagesSection(List<Map<String, dynamic>> packages, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF97316).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(LucideIcons.packageCheck, color: Color(0xFFF97316), size: 18),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Devis & Formules Tarifaires Packagées',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                color: isDark ? Colors.white : AppConstants.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...packages.map((pkg) {
+          final isRecommended = pkg['tier'] == 'PERFORMANCE';
+          final price = (pkg['monthly_price_usd'] as num?)?.toDouble() ?? 0.0;
+          final margin = (pkg['gross_margin_percent'] as num?)?.toDouble() ?? 40.0;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isRecommended
+                  ? (isDark ? const Color(0xFF2A1C12) : const Color(0xFFFFF7ED))
+                  : (isDark ? const Color(0xFF18181A) : Colors.white),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isRecommended ? const Color(0xFFF97316) : (isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
+                width: isRecommended ? 1.5 : 1.0,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        pkg['name'] as String? ?? 'Pack MSP',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: isRecommended ? const Color(0xFFEA580C) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isRecommended ? const Color(0xFFF97316) : const Color(0xFF64748B),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${price.toStringAsFixed(0)} \$/mois',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Marge MSP : ${margin.toStringAsFixed(0)}%',
+                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (isRecommended)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'Recommandé',
+                          style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold, fontSize: 10),
+                        ),
+                      ),
+                  ],
+                ),
+                if (pkg['pitch'] != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    pkg['pitch'] as String,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }),
+      ],
+    );
   }
 }

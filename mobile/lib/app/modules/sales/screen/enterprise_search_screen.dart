@@ -1,16 +1,16 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../controller/sales_controller.dart';
 import 'widget/ai_brief_modal.dart';
+import 'widget/credit_risk_badge.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/skeleton_loader.dart';
-import '../../../common/screen/widget/aurora_background.dart';
-import '../../../common/screen/widget/glass_card.dart';
+import '../../../common/screen/widget/scale_tap.dart';
+import '../../../common/screen/widget/apple_large_title_sliver_app_bar.dart';
 
-/// Page Recherche Prospects Ultra-Épurée :
-/// Uniquement la barre de recherche et les prospects avec Nom + Badge Vert (OK Converti) ou Jaune (À convertir).
+/// Screen: Recherche Prospects (Apple Design System)
 class EnterpriseSearchScreen extends StatefulWidget {
   const EnterpriseSearchScreen({super.key});
 
@@ -20,6 +20,7 @@ class EnterpriseSearchScreen extends StatefulWidget {
 
 class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
   final _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   Timer? _debounceTimer;
 
   @override
@@ -31,6 +32,7 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
       if (ctrl.searchResults.isEmpty) {
         ctrl.searchEnterprises('');
       }
+      _searchFocusNode.requestFocus();
     });
   }
 
@@ -38,19 +40,21 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 250), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 200), () {
       if (!mounted) return;
       Get.find<SalesController>().searchEnterprises(query.trim());
+      setState(() {});
     });
   }
 
   void _handleBack() {
-    FocusManager.instance.primaryFocus?.unfocus();
+    _searchFocusNode.unfocus();
     Get.back();
   }
 
@@ -62,185 +66,248 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, _) {
-        FocusManager.instance.primaryFocus?.unfocus();
+        _searchFocusNode.unfocus();
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
-            tooltip: 'Retour',
-            onPressed: _handleBack,
+        backgroundColor: isDark ? AppConstants.backgroundDark : AppConstants.backgroundLight,
+        body: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
-          title: Text(
-            'Recherche Prospects',
-            style: TextStyle(
-              color: isDark ? Colors.white : AppConstants.textDark,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-              letterSpacing: -0.3,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            // 1. Collapsible Large Title (Apple Music Scroll Animation)
+            AppleLargeTitleSliverAppBar(
+              title: 'Recherche',
+              leading: ScaleTap(
+                onTap: _handleBack,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    CupertinoIcons.chevron_back,
+                    color: isDark ? Colors.white : AppConstants.textDark,
+                    size: 20,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-        body: AuroraBackground(
-          child: SafeArea(
-            child: Column(
-              children: [
-                // 1. Barre de Recherche Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg, vertical: 8),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E22) : Colors.white,
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
+
+            // 2. Barre de Recherche Supérieure Épurée (iOS 10px radius)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(AppConstants.paddingLg, 8, AppConstants.paddingLg, 12),
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                      width: 1,
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: _onSearchChanged,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : AppConstants.textDark,
-                        fontWeight: FontWeight.w600,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      decoration: InputDecoration(
-                        hintText: 'Rechercher un prospect...',
-                        hintStyle: TextStyle(
-                          color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
-                          fontSize: 13,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        prefixIcon: Icon(
-                          LucideIcons.search,
-                          color: isDark ? Colors.white70 : AppConstants.textDark,
-                          size: 18,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(LucideIcons.x, color: Colors.grey, size: 18),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  salesController.searchEnterprises('');
-                                },
-                              )
-                            : null,
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    onChanged: _onSearchChanged,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppConstants.textDark,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Rechercher un prospect...',
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF8E8E93),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
                       ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+                      prefixIcon: const Icon(
+                        CupertinoIcons.search,
+                        color: Color(0xFF8E8E93),
+                        size: 18,
+                      ),
+                      suffixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(CupertinoIcons.xmark_circle_fill, color: Color(0xFF8E8E93), size: 16),
+                              onPressed: () {
+                                _searchController.clear();
+                                salesController.searchEnterprises('');
+                                setState(() {});
+                              },
+                            )
+                          : null,
                     ),
                   ),
                 ),
+              ),
+            ),
 
-                // 2. Liste Épurée des Prospects (Nom + Statut Vert OK / Jaune)
-                Expanded(
-                  child: Obx(() {
-                    if (salesController.isSearching.value) {
-                      return const SkeletonListLoader(count: 5);
-                    }
+            // 3. Liste des Résultats Plein Écran
+            Obx(() {
+              if (salesController.isSearching.value) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingLg),
+                    child: SkeletonListLoader(count: 5),
+                  ),
+                );
+              }
 
-                    final results = salesController.searchResults;
+              final results = salesController.searchResults;
 
-                    if (results.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'Aucun prospect trouvé',
-                          style: TextStyle(
-                            color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+              if (results.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(CupertinoIcons.search, size: 36, color: Color(0xFF8E8E93)),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Aucun prospect trouvé',
+                            style: AppConstants.headlineStyle(isDark),
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Essayez un autre nom d\'entreprise ou un secteur.',
+                            style: AppConstants.subheadStyle(isDark),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppConstants.paddingLg,
+                  0,
+                  AppConstants.paddingLg,
+                  40,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final enterprise = results[index];
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      physics: const ClampingScrollPhysics(),
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg, vertical: 6),
-                      itemCount: results.length,
-                      itemBuilder: (context, index) {
-                        final enterprise = results[index];
-
-                        return RepaintBoundary(
-                          child: GlassCard(
-                            margin: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            _searchFocusNode.unfocus();
+                            salesController.selectEnterprise(enterprise);
+                            AiBriefModal.show(context, enterprise);
+                          },
+                          child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
-                            onTap: () {
-                              salesController.selectEnterprise(enterprise);
-                              AiBriefModal.show(context, enterprise);
-                            },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Nom du prospect
+                                // Nom du prospect + Secteur / Localisation
                                 Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        enterprise.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: isDark ? Colors.white : AppConstants.textDark,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${enterprise.sector ?? 'Entreprise'} • ${enterprise.location ?? 'Kinshasa'}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+
+                                // Badge de Solvabilité
+                                CreditRiskBadge(rating: enterprise.creditRating, compact: true),
+                                const SizedBox(width: 6),
+
+                                // Statut Converti / À convertir
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: enterprise.isConverted
+                                        ? AppConstants.successGreen.withValues(alpha: 0.15)
+                                        : AppConstants.accentYellow.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                                  ),
                                   child: Text(
-                                    enterprise.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    enterprise.isConverted ? 'OK' : 'À convertir',
                                     style: TextStyle(
-                                      fontSize: 15,
+                                      color: enterprise.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
                                       fontWeight: FontWeight.w800,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                      fontSize: 10,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-
-                                // Badge Vert OK (Converti) ou Jaune (À convertir)
-                                if (enterprise.isConverted)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppConstants.successGreen.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                      border: Border.all(color: AppConstants.successGreen, width: 1.0),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Icon(LucideIcons.checkCircle2, color: AppConstants.successGreen, size: 13),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'OK',
-                                          style: TextStyle(
-                                            color: AppConstants.successGreen,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppConstants.accentYellow.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                      border: Border.all(color: AppConstants.accentYellow, width: 1.0),
-                                    ),
-                                    child: const Text(
-                                      'À convertir',
-                                      style: TextStyle(
-                                        color: Color(0xFFD97706),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    );
-                  }),
+                        ),
+                      );
+                    },
+                    childCount: results.length,
+                  ),
                 ),
-              ],
-            ),
-          ),
+              );
+            }),
+          ],
         ),
       ),
     );

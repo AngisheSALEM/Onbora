@@ -107,6 +107,12 @@ class EnterpriseBriefDTO(BaseDTO):
     target_offer: str = ""
     golden_questions: List[str] = field(default_factory=list)
     competitor_alert: str = ""
+    bant_status: str = "QUALIFIED"
+    bant_score: int = 85
+    is_disqualified: bool = False
+    disqualification_reason: Optional[str] = None
+    roi_pitch: str = ""
+    coi_estimated_monthly: float = 0.0
 
 
 @dataclass
@@ -140,6 +146,12 @@ class PostVisitReportResultDTO(BaseDTO):
     objections_raised: List[str]
     actions_todo: List[str]
     follow_up_email_draft: str
+    bant_score: Dict[str, Any] = field(default_factory=dict)
+    coi_metrics: Dict[str, Any] = field(default_factory=dict)
+    tiered_packages: List[Dict[str, Any]] = field(default_factory=list)
+    email_j1: str = ""
+    email_j4: str = ""
+    technical_handover_specs: Dict[str, Any] = field(default_factory=dict)
     status: str = "TRANSMITTED_TO_KAM"
 
 

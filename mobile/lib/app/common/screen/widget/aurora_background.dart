@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 
-/// Minimalist Orange Brand Stage (Eco-Branding Digital)
-/// - Dark Mode: Pure Obsidian Black (#000000) with subtle ambient Orange (#FF7900 @ 14%)
-/// - Light Mode: Clean Studio Off-White (#F7F7F7) with soft ambient Orange (#FF7900 @ 6%)
-/// Pure 120 FPS performance with zero unnecessary GPU shader passes.
+/// Pure Apple OLED Dark / Studio Light Canvas
+/// - Dark Mode: Pure Obsidian OLED Black (#121212) for razor-sharp typography and contrast
+/// - Light Mode: Clean Apple Studio Off-White (#F7F7F8)
 class AuroraBackground extends StatelessWidget {
   final Widget child;
 
@@ -17,46 +16,14 @@ class AuroraBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Eco-Branding Background Canvas
-        RepaintBoundary(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Solid Black or Studio Light
-              ColoredBox(
-                color: isDark ? AppConstants.pureBlack : AppConstants.backgroundLight,
-              ),
-
-              // Signature Orange Ambient Highlight (Top Center)
-              Positioned(
-                top: -120,
-                left: 0,
-                right: 0,
-                height: 320,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        center: Alignment.topCenter,
-                        radius: 0.9,
-                        colors: [
-                          isDark ? AppConstants.glowOrangeDark : AppConstants.glowOrangeLight,
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        // Solid OLED Black or Studio Light Canvas
+        ColoredBox(
+          color: isDark ? AppConstants.pureBlack : AppConstants.backgroundLight,
         ),
-
-        // 2. Foreground Dynamic Content
+        // Foreground Dynamic Content
         child,
       ],
     );
   }
 }
+

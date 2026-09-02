@@ -1,15 +1,27 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
+  static const String defaultRenderUrl = 'https://onbora-backend.onrender.com';
+
   /// Default backend URL from .env file or fallback to Render
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'https://onbora-backend.onrender.com';
+  static String get baseUrl {
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env['API_BASE_URL'] ?? defaultRenderUrl;
+      }
+    } catch (_) {}
+    return defaultRenderUrl;
+  }
   
   /// Default API Token from .env file
-  static String get apiToken => dotenv.env['API_TOKEN'] ?? '';
+  static String get apiToken {
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env['API_TOKEN'] ?? '';
+      }
+    } catch (_) {}
+    return '';
+  }
 
-  static String _activeUrl = '';
-
-  static String get activeBaseUrl => _activeUrl.isNotEmpty ? _activeUrl : baseUrl;
-
-  static void setBaseUrl(String url) => _activeUrl = url;
+  static String get activeBaseUrl => baseUrl;
 }

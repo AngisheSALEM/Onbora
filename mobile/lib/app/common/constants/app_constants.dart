@@ -1,23 +1,70 @@
 import 'package:flutter/material.dart';
 
-/// Centralized Application Constants (Orange Brand & Apple-grade Glassmorphism Guidelines)
-/// Implements the official Orange Design System + Apple Glass Aesthetics:
-/// - 80/20 Rule: 80% Core Black (#000000) & Pure White (#FFFFFF), 20% Signature Orange (#FF7900).
-/// - Eco-Branding: Deep Black (#000000 / #121212) for OLED screens, Pure White (#FFFFFF) for light surfaces.
-/// - Apple-style Squircle Radii: 22px-26px for cards, 16px for buttons, translucent frosted glass.
-/// - Typography 75: Thick, direct, essential (Bold 700 / Black 900 / ExtraBold 800).
+/// Centralized Application Constants & Apple Typography Hierarchy
 abstract class AppConstants {
-  // --- Fonts & Typography (75 - Épaisse, Directe, Essentielle) ---
-  static const String fontFamilyPrimary = 'Inter';
+  // --- Fonts & Typography System ---
+  static const String fontFamilyPrimary = 'SFPro';
   
+  // Standard sizes
+  static const double fontSizeOverline = 11.0;  // Surtitre / Eyebrow (11-12px)
+  static const double fontSizeSubhead = 13.0;   // Métadonnées / Footnote (13-14px)
+  static const double fontSizeBody = 16.0;      // Titre Primaire / Headline (16px)
+  static const double fontSizeTitle2 = 22.0;    // Titre de Section / Title 2 (22px)
+  static const double fontSizeLargeTitle = 34.0;// Grand Titre iOS (34px)
+
   static const double fontSizeXs = 11.0;
   static const double fontSizeSm = 12.0;
   static const double fontSizeMd = 14.0;
   static const double fontSizeLg = 16.0;
   static const double fontSizeXl = 18.0;
-  static const double fontSizeTitle = 20.0;
-  static const double fontSizeHeader = 24.0;
-  static const double fontSizeHero = 28.0;
+  static const double fontSizeTitle = 22.0;
+  static const double fontSizeHeader = 26.0;
+  static const double fontSizeHero = 34.0;
+
+  // --- Strict Typography Hierarchy Getters (Max 2 Bold Levels Per Screen) ---
+  
+  /// 1. Grand Titre iOS (Large Title) : 34px | Bold | #FFFFFF (Dark) / #121212 (Light)
+  static TextStyle largeTitleStyle(bool isDark) => TextStyle(
+    fontSize: fontSizeLargeTitle,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.7,
+    height: 1.18,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
+  );
+
+  /// 2. Titre de Section (Title 2) : 22px | Bold | #FFFFFF (Dark) / #121212 (Light)
+  static TextStyle title2Style(bool isDark) => TextStyle(
+    fontSize: fontSizeTitle2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.4,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
+  );
+
+  /// 3. Surtitre / Tag de Catégorie (Overline / Eyebrow) : 11px | SemiBold | #8E8E93 (Gris Apple)
+  static TextStyle overlineStyle(bool isDark) => const TextStyle(
+    fontSize: fontSizeOverline,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+    color: Color(0xFF8E8E93),
+  );
+
+  /// 4. Titre d'Élément Primaire (Headline) : 16px | Semi-Bold | #FFFFFF (Dark) / #121212 (Light)
+  static TextStyle headlineStyle(bool isDark) => TextStyle(
+    fontSize: fontSizeBody,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.25,
+    height: 1.25,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
+  );
+
+  /// 5. Métadonnées / Secondary Label (Subhead) : 13px | Regular | #8E8E93 (Gris Apple)
+  static TextStyle subheadStyle(bool isDark) => const TextStyle(
+    fontSize: fontSizeSubhead,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.1,
+    height: 1.25,
+    color: Color(0xFF8E8E93),
+  );
 
   // --- Paddings & Margins ---
   static const double paddingXs = 4.0;
@@ -33,7 +80,7 @@ abstract class AppConstants {
   static const double marginXl = 20.0;
   static const double marginXxL = 24.0;
 
-  // --- Apple Liquid Glass Concentric Geometry (Concentricity Rule) ---
+  // --- Apple Liquid Glass Concentric Geometry ---
   static const double borderRadiusSm = 8.0;
   static const double borderRadiusMd = 14.0;
   static const double borderRadiusLg = 20.0;
@@ -42,85 +89,25 @@ abstract class AppConstants {
   static const double borderRadiusAppleButton = 16.0;
   static const double borderRadiusPill = 999.0;
 
-  /// Calculates nested inner radius by subtracting parent padding to prevent pinched or distorted corners:
-  /// r_inner = max(fallback, parentRadius - padding)
-  static double concentricRadius(double parentRadius, double padding, {double fallback = 12.0}) {
-    final computed = parentRadius - padding;
-    return computed > 4.0 ? computed : fallback;
-  }
-
-  static BorderRadius concentricBorderRadius(double parentRadius, double padding, {double fallback = 12.0}) {
-    return BorderRadius.circular(concentricRadius(parentRadius, padding, fallback: fallback));
-  }
-
-  // --- Brand Accent Colors (Electric Blue #2563EB) ---
-  static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color orangeOfficial = Color(0xFF2563EB); // Electric Blue Signature #2563EB
-  static const Color accentOrange = Color(0xFF2563EB);
-  
-  // --- 4-Color Personality Palette (Maho Quartet avec Bleu Électrique) ---
-  static const Color accentBlue = Color(0xFF2563EB);      // Accent 1: Pure Electric Blue (CTA & Sélection)
-  static const Color accentAmber = Color(0xFFF59E0B);     // Accent 2: Warm Amber / Tangerine (Attention & Alertes)
-  static const Color accentGreen = Color(0xFF10B981);     // Accent 3: Emerald / Mint Green (Succès & Validation)
-  static const Color accentPurple = Color(0xFF8B5CF6);    // Accent 4: Velvet Berry / Purple (IA Copilot & Diagnostic Cible)
-  
-  /// Apple Semantic Surfaces - Dark Mode (Noir OLED #000000 & Cartes surélevées #1C1C1E)
+  // --- Brand & High-Contrast Monochrome Colors ---
+  static const Color primaryBlack = Color(0xFF111111);
   static const Color pureBlack = Color(0xFF000000);
-  static const Color primaryNavy = Color(0xFF000000);
-  static const Color backgroundDark = Color(0xFF000000);
-  static const Color primaryDark = Color(0xFF1C1C1E);
-  static const Color cardDark = Color(0xFF1C1C1E);
-  static const Color cardDarkGrey = Color(0xFF1C1C1E);
-  static const Color cardDarkSurface = Color(0xFF1C1C1E);
-  static const Color subcardDark = Color(0xFF2C2C2E);
-  static const Color surfaceTertiaryDark = Color(0xFF3A3A3C);
-  static const Color cardDarkBorder = Colors.transparent;
-
-  /// Apple Semantic Surfaces - Light Mode (Canvas Gris Clair #F2F2F7 & Cartes Blanc Pur #FFFFFF)
   static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color backgroundLight = Color(0xFFF2F2F7);  // Gris clair système Apple (Grouped background)
-  static const Color cardLight = Color(0xFFFFFFFF);        // Blanc pur pour les cartes (Détachement net du fond)
-  static const Color cardLightGrey = Color(0xFFF2F2F7);    // Sous-cartes / Chips gris doux
-  static const Color subcardLight = Color(0xFFF2F2F7);
-  static const Color surfaceTertiaryLight = Color(0xFFE5E5EA);
-  static const Color borderLight = Color(0x0A000000);      // Bordure subtile de séparation
+  static const Color primaryNavy = Color(0xFF000000);
 
-  /// Card Surface Tokens
-  static const Color glassDarkSurface = Color(0xFF1C1C1E);
-  static const Color glassLightSurface = Color(0xFFFFFFFF);
-  static const Color glassDarkBorder = Color(0x1AFFFFFF);
-  static const Color glassLightBorder = Color(0x0F000000);
-
-  /// Status & Secondary Colors
-  static const Color successGreen = Color(0xFF10B981); // Emerald 500
-  static const Color errorRed = Color(0xFFEF4444); // Red 500
-  static const Color infoBlue = Color(0xFF2563EB); // Electric Blue #2563EB
-
-  // --- Subtle Digital Lighting ---
-  static const Color glowBlueDark = Color(0x282563EB);
-  static const Color glowBlueLight = Color(0x162563EB);
-  static const Color glowOrangeDark = Color(0x282563EB);
-  static const Color glowOrangeLight = Color(0x162563EB);
-
-  // --- High-Contrast Typography (Semantic Labels Hierarchy) ---
-  static const Color textDark = Color(0xFF000000);           // Primary Label Light: 100% Noir
-  static const Color textLight = Color(0xFFFFFFFF);          // Primary Label Dark: 100% Blanc
-  static const Color textSecondaryLight = Color(0xFF6E6E73); // Secondary Label Light: 60% Gris moyen
-  static const Color textSecondaryDark = Color(0xFF8E8E93);  // Secondary Label Dark: 60% Gris clair
-  static const Color textMuted = Color(0xFFAEAEB2);          // Tertiary Label
-  static const Color textTertiaryLight = Color(0xFFAEAEB2);  // Tertiary Label Light
-  static const Color textTertiaryDark = Color(0xFF636366);   // Tertiary Label Dark
-
-  static Color getTextSecondary(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? textSecondaryDark
-        : textSecondaryLight;
-  }
-
-  // --- Yellow Palette (Accents fonctionnels / IA) ---
+  // Status & Semantic Colors (Slightly more saturated for dark mode)
+  static const Color accentGreen = Color(0xFF10B981);
+  static const Color successGreen = Color(0xFF10B981);
+  static const Color accentAmber = Color(0xFFF59E0B);
+  static const Color accentRed = Color(0xFFEF4444);
+  static const Color errorRed = Color(0xFFEF4444);
+  static const Color accentPurple = Color(0xFF8B5CF6);
+  static const Color primaryBlue = Color(0xFF111111);
+  static const Color accentBlue = Color(0xFF111111);
+  static const Color orangeOfficial = Color(0xFF111111);
+  static const Color accentYellow = Color(0xFFFBBF24);
   static const Color accentYellowDark = Color(0xFFFBBF24);
   static const Color accentYellowLight = Color(0xFFB45309);
-  static const Color accentYellow = Color(0xFFFBBF24);
 
   static Color getAccentYellow(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
@@ -132,6 +119,58 @@ abstract class AppConstants {
     return Theme.of(context).brightness == Brightness.dark
         ? accentYellowDark.withValues(alpha: 0.16)
         : accentYellowLight.withValues(alpha: 0.12);
+  }
+  
+  // High-Contrast Button Helpers
+  static Color primaryBtnColor(bool isDark) => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
+  static Color primaryBtnTextColor(bool isDark) => isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+  static Color secondaryBtnColor(bool isDark) => isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
+  static Color secondaryBtnTextColor(bool isDark) => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
+  static Color secondaryBtnBorderColor(bool isDark) => isDark ? const Color(0x28FFFFFF) : const Color(0xFFE5E5EA);
+
+  /// Semantic Surfaces - Dark Mode
+  static const Color backgroundDark = Color(0xFF000000);
+  static const Color tabBackgroundDark = Color(0xFF121214);
+  static const Color primaryDark = Color(0xFF1C1C1E);
+  static const Color cardDark = Color(0xFF1C1C1E);
+  static const Color cardDarkGrey = Color(0xFF1C1C1E);
+  static const Color cardDarkSurface = Color(0xFF1C1C1E);
+  static const Color subcardDark = Color(0xFF2C2C2E);
+  static const Color surfaceTertiaryDark = Color(0xFF3A3A3C);
+  static const Color cardDarkBorder = Color(0x1FFFFFFF);
+
+  /// Semantic Surfaces - Light Mode (Off-white background #F4F4F6 + Pure White cards)
+  static const Color backgroundLight = Color(0xFFF4F4F6);
+  static const Color tabBackgroundLight = Color(0xFFEAEAEC);
+  static const Color cardLight = Color(0xFFFFFFFF);
+  static const Color cardLightGrey = Color(0xFFF8F8FA);
+  static const Color subcardLight = Color(0xFFF2F2F7);
+  static const Color surfaceTertiaryLight = Color(0xFFE5E5EA);
+  static const Color borderLight = Color(0xFFE5E5EA);
+
+  /// Card Surface Tokens
+  static const Color glassDarkSurface = Color(0xFF1C1C1E);
+  static const Color glassLightSurface = Color(0xFFFFFFFF);
+  static const Color glassDarkBorder = Color(0x1AFFFFFF);
+  static const Color glassLightBorder = Color(0xFFE5E5EA);
+
+  // --- High-Contrast Typography ---
+  static const Color textDark = Color(0xFF111111);
+  static const Color textLight = Color(0xFFFFFFFF);
+  static const Color textSecondaryLight = Color(0xFF6B7280);
+  static const Color textSecondaryDark = Color(0xFFA1A1AA);
+  static const Color textMuted = Color(0xFF8E8E93);
+  static const Color textTertiaryLight = Color(0xFFAEAEB2);
+  static const Color textTertiaryDark = Color(0xFF636366);
+
+  /// Séparateur de liste (Divider)
+  static const Color dividerDark = Color(0x1FFFFFFF);
+  static const Color dividerLight = Color(0xFFE5E5EA);
+
+  static Color getTextSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textSecondaryDark
+        : textSecondaryLight;
   }
 
   // --- Brand & Solution Naming ---
@@ -147,18 +186,19 @@ abstract class AppConstants {
   static const String loginDemoHint = 'Identifiant : sales1 / Mot de passe : sales1pass';
 
   // Map & Plaque Home texts
-  static const String mapHomeTitle = 'Carte & Plaques Terrain';
+  static const String mapHomeTitle = 'Map';
   static const String mapHomeSub = 'Secteurs territoriaux & Opportunités à qualifier';
   static const String readyToConvertTitle = 'Entreprises Prêtes pour Qualification';
   static const String viewAiBriefBtn = 'Consulter le brief';
   static const String startVisitBtn = 'Démarrer la visite';
 
-  // Sales Home texts (Cleaned up, no redundant marketing slogan)
-  static const String salesVisitsTitle = 'Visites & Rendez-vous';
+  // Sales Home texts (Rendez-vous épuré)
+  static const String salesVisitsTitle = 'Rendez-vous';
+  static const String navHomeTitle = 'Accueil';
   static const String homeSearchProspectBtn = 'Rechercher un prospect';
-  static const String homeSearchPlaceholder = 'Rechercher un prospect, entreprise, secteur...';
-  static const String homeActiveMeetingTitle = 'Rendez-vous Client en Cours';
-  static const String recentVisitsTitle = 'Historique des Visites';
+  static const String homeSearchPlaceholder = 'Rechercher un prospect...';
+  static const String homeActiveMeetingTitle = 'Rendez-vous';
+  static const String recentVisitsTitle = 'Visites récentes';
 
   // Search Prospect texts
   static const String searchProspectTitle = 'Recherche Prospects';
@@ -172,9 +212,12 @@ abstract class AppConstants {
   static const String dictaphoneIdleState = 'Appuyez pour démarrer l\'enregistrement';
   static const String dictaphoneGenerateBtn = 'Rédiger le compte-rendu';
 
-  // Catalog texts (Orange B2B replacement)
-  static const String catalogTitle = 'Catalogue Solutions Orange B2B';
-  static const String catalogSearchHint = 'Rechercher une offre Orange B2B (Fibre, Cloud, Sécurité...)';
+  // Catalog texts
+  static const String catalogTitle = 'Catalogue';
+  static const String catalogSearchHint = 'Rechercher une offre (Fibre, Cloud, Sécurité...)';
+
+  // Notifications
+  static const String notificationsTitle = 'Notifications';
 
   // MapLibre & MapTiler Vector Tiles Config
   static const String mapTilerApiKey = 'YOUR_MAPTILER_KEY';

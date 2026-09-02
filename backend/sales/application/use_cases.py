@@ -36,6 +36,9 @@ from twin.models import BusinessTwin
 from catalog.models import ServiceCatalog
 from reporting.utils import log_demo_event
 from shared.application.use_case import BaseUseCase
+from sales.services.qualification_service import BANTQualificationService
+from sales.services.follow_up_service import FollowUpEmailService
+from twin.services.roi_calculator_service import ROICalculatorService
 
 class ListPlaquesUseCase(BaseUseCase[Any, List[PlaqueDTO]]):
     def execute(self, request: Any = None) -> List[PlaqueDTO]:
@@ -347,18 +350,19 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
         if not transcript:
             transcript = f"Rendez-vous commercial avec la direction de {prep.enterprise.name} pour qualifier les besoins de connectivité et collaboration."
 
-        # 1. Appel Core AI pour synthèse complète
-        ai_client = CoreAISalesClient()
-        salesperson_name = f"{user.first_name} {user.last_name}".strip() if (user and user.is_authenticated) else "Commercial Orange"
-        ai_report = ai_client.generate_post_visit_report(
-            full_transcript=transcript,
-            enterprise_name=prep.enterprise.name,
-            prep_objective=prep.meeting_objective,
-            salesperson_name=salesperson_name
-        )
+        # 1. Traitement via BANTQualificationService et intelligence de rentabilité
+        qualification_service = BANTQualificationService()
+        enterprise_dict = {
+            'name': prep.enterprise.name,
+            'sector': prep.enterprise.sector or 'Services',
+            'approximate_size': prep.enterprise.approximate_size or '10',
+            'location': prep.enterprise.location or prep.enterprise.plaque,
+            'contact_name': f"{user.first_name} {user.last_name}".strip() if (user and user.is_authenticated) else "Le Dirigeant",
+        }
+        qual_res = qualification_service.process_visit_transcription(transcript, enterprise_dict)
 
         # 2. Fusionner les offres cochées en direct par le commercial avec les besoins confirmés
-        confirmed_needs = list(ai_report.get("confirmed_needs", []))
+        confirmed_needs = list(qual_res.detected_needs)
         if live_session and isinstance(live_session.live_proposition, dict):
             live_pkgs = live_session.live_proposition.get("recommended_packages", [])
             for pkg in live_pkgs:
@@ -366,26 +370,66 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
                 if pkg.get("checked", True) and pkg_name and pkg_name not in confirmed_needs:
                     confirmed_needs.append(pkg_name)
 
+        # Préparation du payload enrichi
+        ai_payload = {
+            "bant": {
+                "budget_score": qual_res.bant.budget_score,
+                "authority_score": qual_res.bant.authority_score,
+                "need_score": qual_res.bant.need_score,
+                "timeline_score": qual_res.bant.timeline_score,
+                "total_score": qual_res.bant.total_score,
+                "status": qual_res.bant.status,
+                "disqualification_reason": qual_res.bant.disqualification_reason,
+            },
+            "coi": {
+                "impacted_employees": qual_res.coi.impacted_employees,
+                "downtime_hours_per_month": qual_res.coi.downtime_hours_per_month,
+                "hourly_wage_usd": qual_res.coi.hourly_wage_usd,
+                "monthly_payroll_loss_usd": qual_res.coi.monthly_payroll_loss_usd,
+                "monthly_lost_sales_usd": qual_res.coi.monthly_lost_sales_usd,
+                "total_monthly_coi_usd": qual_res.coi.total_monthly_coi_usd,
+                "annual_coi_usd": qual_res.coi.annual_coi_usd,
+            },
+            "packages": [
+                {
+                    "tier": p.tier,
+                    "name": p.name,
+                    "monthly_price_usd": p.monthly_price_usd,
+                    "estimated_msp_cost_usd": p.estimated_msp_cost_usd,
+                    "gross_margin_percent": p.gross_margin_percent,
+                    "monthly_net_gain_usd": p.monthly_net_gain_usd,
+                    "roi_percent": p.roi_percent,
+                    "key_features": p.key_features,
+                    "pitch": p.pitch,
+                    "objection_killer": p.objection_killer,
+                }
+                for p in qual_res.packages
+            ],
+            "email_j1": qual_res.email_follow_up_j1,
+            "email_j4": qual_res.email_follow_up_j4,
+            "technical_handover_specs": qual_res.technical_handover_specs,
+        }
+
         # Création / Mise à jour du VisitReport
         report, _ = VisitReport.objects.get_or_create(
             preparation=prep,
             defaults={
                 "raw_transcript": transcript,
-                "executive_summary": ai_report.get("executive_summary", ""),
+                "executive_summary": qual_res.executive_summary,
                 "confirmed_needs": confirmed_needs,
-                "objections_raised": ai_report.get("objections_raised", []),
-                "actions_todo": ai_report.get("actions_todo", []),
-                "follow_up_email_draft": ai_report.get("follow_up_email_draft", ""),
-                "original_ai_output": ai_report.get("raw_ai_payload", {})
+                "objections_raised": qual_res.detected_objections,
+                "actions_todo": [f"Envoyer proposition {qual_res.recommended_tier}", "Bloquer date raccordement technique"],
+                "follow_up_email_draft": qual_res.email_follow_up_j1,
+                "original_ai_output": ai_payload
             }
         )
         report.raw_transcript = transcript
-        report.executive_summary = ai_report.get("executive_summary", report.executive_summary)
+        report.executive_summary = qual_res.executive_summary
         report.confirmed_needs = confirmed_needs
-        report.objections_raised = ai_report.get("objections_raised", report.objections_raised)
-        report.actions_todo = ai_report.get("actions_todo", report.actions_todo)
-        report.follow_up_email_draft = ai_report.get("follow_up_email_draft", report.follow_up_email_draft)
-        report.original_ai_output = ai_report.get("raw_ai_payload", report.original_ai_output)
+        report.objections_raised = qual_res.detected_objections
+        report.actions_todo = [f"Envoyer proposition {qual_res.recommended_tier}", "Bloquer date raccordement technique"]
+        report.follow_up_email_draft = qual_res.email_follow_up_j1
+        report.original_ai_output = ai_payload
         report.save()
 
         # Marquer la session live comme terminée
@@ -399,7 +443,7 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
 
         log_demo_event(
             'REPORT_GENERATED_AI',
-            f"Rapport de visite généré par Core AI et transmis au backoffice KAM pour : {prep.enterprise.name}",
+            f"Rapport de visite généré et transmis au backoffice KAM pour : {prep.enterprise.name}",
             user=user if (user and user.is_authenticated) else None,
             metadata={"report_id": report.id, "dossier_id": dossier_id}
         )
@@ -412,7 +456,13 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
             confirmed_needs=report.confirmed_needs,
             objections_raised=report.objections_raised,
             actions_todo=report.actions_todo,
-            follow_up_email_draft=report.follow_up_email_draft
+            follow_up_email_draft=report.follow_up_email_draft,
+            bant_score=ai_payload["bant"],
+            coi_metrics=ai_payload["coi"],
+            tiered_packages=ai_payload["packages"],
+            email_j1=qual_res.email_follow_up_j1,
+            email_j4=qual_res.email_follow_up_j4,
+            technical_handover_specs=qual_res.technical_handover_specs,
         )
 
 
@@ -698,6 +748,14 @@ class GetEnterpriseBriefUseCase(BaseUseCase[Tuple[int, Any], EnterpriseBriefDTO]
             for s in services
         ]
 
+        # 2. Évaluation BANT & Coût de l'Inaction pré-visite
+        bant_eval = BANTQualificationService().evaluate_enterprise_brief(enterprise)
+        coi_eval = ROICalculatorService.calculate_custom_coi(
+            impacted_employees=12 if "santé" in sector_lower or "clinique" in (enterprise.name).lower() else 6,
+            downtime_hours_per_month=6.0,
+            hourly_wage_usd=12.0
+        )
+
         return EnterpriseBriefDTO(
             enterprise_id=enterprise.id,
             enterprise_name=enterprise.name,
@@ -717,6 +775,12 @@ class GetEnterpriseBriefUseCase(BaseUseCase[Tuple[int, Any], EnterpriseBriefDTO]
             target_offer=target_offer,
             golden_questions=golden_questions,
             competitor_alert=competitor_alert,
+            bant_status=bant_eval['status'],
+            bant_score=bant_eval['total_score'],
+            is_disqualified=bant_eval['is_disqualified'],
+            disqualification_reason=bant_eval['disqualification_reason'],
+            roi_pitch=bant_eval['action_recommendation'],
+            coi_estimated_monthly=coi_eval['total_monthly_coi_usd'],
         )
 
 
@@ -855,26 +919,54 @@ class TransmitVisitReportUseCase(BaseUseCase[Tuple[int, Any], int]):
             "company_name": enterprise.name
         }
 
+        ai_out = report.original_ai_output or {}
+        raw_conv_data = {
+            "profile": profile,
+            "executive_summary": report.executive_summary,
+            "bant": ai_out.get("bant", {}),
+            "coi": ai_out.get("coi", {}),
+            "packages": ai_out.get("packages", []),
+            "technical_handover_specs": ai_out.get("technical_handover_specs", {}),
+            "email_j1": ai_out.get("email_j1", ""),
+            "email_j4": ai_out.get("email_j4", ""),
+        }
+
         dossier, created = ProspectDossier.objects.get_or_create(
             visit_report=report,
             defaults={
                 "source": ProspectDossier.OUTBOUND_VISIT,
                 "status": ProspectDossier.NEW,
-                "raw_conversation_data": {
-                    "profile": profile,
-                    "executive_summary": report.executive_summary
-                }
+                "contact_name": enterprise.name,
+                "raw_conversation_data": raw_conv_data
             }
         )
+        if not created:
+            dossier.raw_conversation_data = raw_conv_data
+            dossier.save()
 
         from kam.dispatch_engine import dispatch_dossier
         dispatch_dossier(dossier)
 
-        recommended_services_data = []
-        current_state = [report.executive_summary]
-        proposed_state = ["Mise en place des solutions Orange Business B2B"]
-        roadmap = ["Étape 1: Audit technique", "Étape 2: Raccordement Fibre Orange", "Étape 3: Déploiement Cloud"]
+        # 2. Enrichissement du Business Twin avec métriques financières chiffrées (COI & Gains)
+        coi_data = ai_out.get("coi", {})
+        monthly_coi = coi_data.get("total_monthly_coi_usd", 740.0)
+        annual_coi = coi_data.get("annual_coi_usd", monthly_coi * 12)
+        
+        current_state = [
+            f"Pertes de productivité et ventes : {monthly_coi:,.0f} $/mois ({annual_coi:,.0f} $/an) dues aux coupures et lenteurs.",
+            report.executive_summary
+        ]
+        proposed_state = [
+            "Garantie de continuité d'activité 99.9% avec Fibre Dédiée Orange & Secours 4G.",
+            f"Gain net de productivité estimé : +{monthly_coi - 320:,.0f} $/mois dès le premier mois."
+        ]
+        roadmap = [
+            "Étape 1 : Cession technique (Technical Handover Pack) et test d'adduction",
+            "Étape 2 : Raccordement Fibre Optique Pro & bascule de nuit",
+            "Étape 3 : Déploiement suite collaborative sécurisée & suivi d'adoption"
+        ]
 
+        recommended_services_data = []
         for need_name in report.confirmed_needs:
             try:
                 s = ServiceCatalog.objects.get(name__icontains=need_name[:10])

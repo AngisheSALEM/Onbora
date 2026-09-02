@@ -25,6 +25,31 @@ class EnterpriseModel {
   final List<String> aiKeyQuestions;
   final List<String> aiPotentialObjections;
 
+  String get creditRating {
+    final s = (sector ?? '').toLowerCase();
+    if (s.contains('banque') || s.contains('finance') || s.contains('assurance') || conversionScore >= 90) {
+      return 'AAA';
+    } else if (s.contains('industrie') || s.contains('télécom') || conversionScore >= 80) {
+      return 'AA';
+    } else if (conversionScore >= 65) {
+      return 'BBB';
+    }
+    return 'B';
+  }
+
+  String get creditRecommendation {
+    switch (creditRating) {
+      case 'AAA':
+        return 'Solvable • Paiement à terme 30j';
+      case 'AA':
+        return 'Solvable • Facturation standard';
+      case 'BBB':
+        return 'PME Solide • Acompte 30%';
+      default:
+        return 'Vigilance • Paiement d\'avance requis';
+    }
+  }
+
   EnterpriseModel({
     required this.id,
     required this.name,

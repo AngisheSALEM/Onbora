@@ -5,8 +5,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app/common/binding/common_binding.dart';
 import 'app/common/constants/app_constants.dart';
 import 'app/core/services/notification_service.dart';
+import 'app/core/storage/session_storage.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/routes/app_pages.dart';
+import 'app/routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +17,23 @@ void main() async {
 
   final notifService = Get.put(NotificationService(), permanent: true);
   await notifService.init();
+
+  // Détermination instantanée de la route initiale sans flash de l'écran de connexion
+  final token = await SessionStorage.getToken();
+  final role = await SessionStorage.getUserRole();
+  String initialRoute = Routes.LOGIN;
+  if (token != null && token.isNotEmpty) {
+    initialRoute = (role?.toUpperCase() == 'KAM')
+        ? Routes.KAM_NAVIGATION
+        : Routes.MAIN_NAVIGATION;
+  }
   
-  runApp(const OnboraSalesApp());
+  runApp(OnboraSalesApp(initialRoute: initialRoute));
 }
 
 class OnboraSalesApp extends StatelessWidget {
-  const OnboraSalesApp({super.key});
+  final String initialRoute;
+  const OnboraSalesApp({super.key, this.initialRoute = Routes.LOGIN});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +43,7 @@ class OnboraSalesApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       initialBinding: CommonBinding(),
-      initialRoute: AppPages.INITIAL,
+      initialRoute: initialRoute,
       getPages: AppPages.routes,
     );
   }

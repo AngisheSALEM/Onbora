@@ -27,6 +27,15 @@ import '../modules/sales/screen/field_intelligence_screen.dart';
 import '../modules/sales/screen/document_scan_screen.dart';
 import '../modules/sales/screen/visit_form_screen.dart';
 
+// Modules KAM (Grands Comptes)
+import '../modules/kam/binding/kam_binding.dart';
+import '../modules/kam/binding/kam_navigation_binding.dart';
+import '../modules/kam/screen/kam_main_navigation_screen.dart';
+import '../modules/kam/screen/kam_home_screen.dart';
+import '../modules/kam/screen/kam_briefing_screen.dart';
+import '../modules/kam/screen/kam_debrief_screen.dart';
+import '../modules/kam/screen/kam_account_detail_screen.dart';
+
 class AppPages {
   static const INITIAL = Routes.LOGIN;
 
@@ -118,6 +127,38 @@ class AppPages {
       name: Routes.PROFILE,
       page: () => const ProfileScreen(),
       binding: ProfileBinding(),
+    ),
+    // Routes KAM (Grands Comptes)
+    GetPage(
+      name: Routes.KAM_NAVIGATION,
+      page: () => const KamMainNavigationScreen(),
+      binding: KamNavigationBinding(),
+    ),
+    GetPage(
+      name: Routes.KAM_HOME,
+      page: () => const KamHomeScreen(),
+      binding: KamBinding(),
+    ),
+    GetPage(
+      name: Routes.KAM_BRIEFING,
+      page: () => const KamBriefingScreen(),
+      binding: KamBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.KAM_DEBRIEF,
+      page: () => const KamDebriefScreen(),
+      binding: KamBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.KAM_ACCOUNT_DETAIL,
+      page: () => const KamAccountDetailScreen(),
+      binding: KamBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
     ),
   ];
 }

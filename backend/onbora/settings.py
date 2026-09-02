@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'twin',
     'training',
     'reporting',
+    'apps.ai_core.apps.AiCoreConfig',
+    'apps.reports.apps.ReportsConfig',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -198,5 +200,14 @@ FIREBASE_CREDENTIALS_PATH = os.getenv(
     'FIREBASE_CREDENTIALS_PATH',
     str(BASE_DIR / 'firebase-service-account.json')
 )
+
+# Onbora Core AI Configuration (Direct Modular Integration)
+ONBORA_CATALOG_PATH = os.getenv(
+    'ONBORA_CATALOG_PATH',
+    str(BASE_DIR / 'catalog_ai' / 'versions' / 'v1' / 'catalog.json')
+)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash-lite')
+ONBORA_AI_PROVIDER = os.getenv('ONBORA_AI_PROVIDER', 'gemini')
 
 

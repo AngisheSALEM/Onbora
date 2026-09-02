@@ -12,7 +12,7 @@ class ApiException implements Exception {
   ApiException(this.message, {this.statusCode});
 
   @override
-  String toString() => 'ApiException: $message (Status $statusCode)';
+  String toString() => statusCode != null ? '$message (Code $statusCode)' : message;
 }
 
 class ApiClient {
@@ -56,11 +56,13 @@ class ApiClient {
       final response = await _httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de se connecter au serveur backend. Vérifiez votre connexion ou l'adresse du serveur.");
+      throw ApiException("Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez votre connexion ou l'adresse du serveur.");
     } on TimeoutException {
       throw ApiException("Le serveur Render prend du temps à démarrer (Cold Start). Veuillez réessayer dans 15 secondes.");
+    } on http.ClientException catch (e) {
+      throw ApiException("Erreur réseau: ${e.message}");
     } on Exception catch (e) {
-      throw ApiException("Erreur réseau: ${e.toString()}");
+      throw ApiException("Erreur: ${e.toString()}");
     }
   }
 
@@ -73,11 +75,13 @@ class ApiClient {
       final response = await _httpClient.post(uri, headers: headers, body: jsonBody).timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de joindre le serveur Onbora sur ${ApiConfig.activeBaseUrl}. Le serveur s'initialise ou votre connexion est coupée.");
+      throw ApiException("Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez que le serveur est démarré ou l'adresse configurée.");
     } on TimeoutException {
-      throw ApiException("Délai d'attente dépassé (Cold Start Render). Réessayez la connexion.");
+      throw ApiException("Délai d'attente dépassé pour ${ApiConfig.activeBaseUrl} (Cold Start Render). Réessayez.");
+    } on http.ClientException catch (e) {
+      throw ApiException("Erreur réseau: ${e.message}");
     } on Exception catch (e) {
-      throw ApiException("Erreur connexion: ${e.toString()}");
+      throw ApiException("Erreur: ${e.toString()}");
     }
   }
 
@@ -96,7 +100,7 @@ class ApiClient {
     if (statusCode >= 200 && statusCode < 300) {
       return responseData;
     } else if (statusCode == 401) {
-      throw ApiException("Session expirée ou non autorisée. Veuillez vous reconnecter.", statusCode: 401);
+      throw ApiException("Identifiants incorrects ou session expirée.", statusCode: 401);
     } else if (statusCode == 403) {
       throw ApiException("Accès refusé. Privilèges insuffisants pour cette action.", statusCode: 403);
     } else if (statusCode == 404) {
@@ -107,6 +111,8 @@ class ApiClient {
         msg = responseData['detail'].toString();
       } else if (responseData is Map && responseData.containsKey('error')) {
         msg = responseData['error'].toString();
+      } else if (responseData is Map && responseData.containsKey('message')) {
+        msg = responseData['message'].toString();
       }
       throw ApiException(msg, statusCode: statusCode);
     }

@@ -5,6 +5,7 @@ class SessionStorage {
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserRole = 'user_role';
   static const String _keyUserName = 'user_name';
+  static const String _keyServerUrl = 'custom_server_url';
 
   static Future<void> saveSession({
     required String token,
@@ -37,6 +38,16 @@ class SessionStorage {
   static Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyUserName);
+  }
+
+  static Future<void> saveServerUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyServerUrl, url);
+  }
+
+  static Future<String?> getServerUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyServerUrl);
   }
 
   static Future<void> clearSession() async {

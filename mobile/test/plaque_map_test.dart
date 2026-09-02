@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onbora_sales/app/common/constants/app_constants.dart';
 import 'package:onbora_sales/app/common/controller/theme_controller.dart';
 import 'package:onbora_sales/app/core/api/api_client.dart';
@@ -16,9 +18,12 @@ import 'package:onbora_sales/app/modules/sales/screen/plaque_map_home_screen.dar
 import 'package:onbora_sales/app/modules/sales/screen/sales_home_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/enterprise_search_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/leaderboard_screen.dart';
+import 'package:onbora_sales/app/modules/sales/screen/widget/credit_risk_badge.dart';
+import 'package:onbora_sales/app/modules/catalog/screen/widget/roi_simulator_modal.dart';
 
 void main() {
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     Get.testMode = true;
     Get.reset();
     Get.put<ApiClient>(ApiClient());
@@ -31,43 +36,40 @@ void main() {
     Get.put<MainNavigationController>(MainNavigationController());
   });
 
-  testWidgets('MainNavigationScreen displays 4 navigation tabs', (WidgetTester tester) async {
+  testWidgets('MainNavigationScreen displays navigation bar', (WidgetTester tester) async {
     await tester.pumpWidget(
       const GetMaterialApp(
         home: MainNavigationScreen(),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Carte & Plaques'), findsOneWidget);
+    expect(find.text('Accueil'), findsOneWidget);
+    expect(find.text('Map'), findsWidgets);
+    expect(find.text('Catalogue'), findsWidgets);
+    expect(find.text('Profil'), findsWidgets);
   });
 
-  testWidgets('PlaqueMapHomeScreen renders map header and plaque pills', (WidgetTester tester) async {
+  testWidgets('PlaqueMapHomeScreen renders Map title', (WidgetTester tester) async {
     await tester.pumpWidget(
       const GetMaterialApp(
         home: PlaqueMapHomeScreen(),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Carte Territoire Orange B2B'), findsOneWidget);
-    expect(find.text('KIN-GOMBE'), findsWidgets);
+    expect(find.text('Map'), findsOneWidget);
   });
 
-  testWidgets('SalesHomeScreen renders clean header without marketing slogan', (WidgetTester tester) async {
+  testWidgets('SalesHomeScreen renders clean header without redundant search bar', (WidgetTester tester) async {
     await tester.pumpWidget(
       const GetMaterialApp(
         home: SalesHomeScreen(),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
-    expect(find.text(AppConstants.salesVisitsTitle), findsOneWidget);
-    expect(find.text(AppConstants.homeSearchProspectBtn), findsOneWidget);
-    expect(find.text(AppConstants.homeActiveMeetingTitle), findsOneWidget);
+    expect(find.text('Rendez-vous'), findsOneWidget);
     expect(find.text(AppConstants.recentVisitsTitle), findsOneWidget);
   });
 
@@ -77,10 +79,10 @@ void main() {
         home: CatalogScreen(),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
-    expect(find.text(AppConstants.catalogTitle), findsOneWidget);
+    expect(find.text(AppConstants.catalogTitle), findsWidgets);
+    expect(find.text('Rechercher une offre...'), findsOneWidget);
   });
 
   testWidgets('ProfileScreen renders 2 clean lists and OLED switch', (WidgetTester tester) async {
@@ -92,7 +94,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Profil'), findsOneWidget);
+    expect(find.text('Profil'), findsWidgets);
     expect(find.text('Comptes-rendus de visite'), findsOneWidget);
     expect(find.text('Rendez-vous terrain'), findsOneWidget);
     expect(find.text('Mode Sombre (OLED)'), findsOneWidget);
@@ -107,13 +109,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Recherche Prospects'), findsOneWidget);
+    expect(find.text('Recherche'), findsWidgets);
     expect(find.text('RAWBANK RDC'), findsOneWidget);
     expect(find.text('OK'), findsWidgets);
     expect(find.text('À convertir'), findsWidgets);
   });
 
   testWidgets('LeaderboardScreen renders podium, points and incentive guide', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     await tester.pumpWidget(
       const GetMaterialApp(
         home: LeaderboardScreen(),
@@ -122,8 +128,35 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Classement des Dénicheurs'), findsOneWidget);
+    expect(find.text('Classement'), findsWidgets);
     expect(find.text('Barème des Primes & Points'), findsOneWidget);
     expect(find.text('Pré-conversion réussie (RCCM / KYC)'), findsOneWidget);
+  });
+
+  testWidgets('CreditRiskBadge renders AAA rating label', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const GetMaterialApp(
+        home: Scaffold(
+          body: CreditRiskBadge(rating: 'AAA'),
+        ),
+      ),
+    );
+    expect(find.textContaining('AAA'), findsOneWidget);
+    expect(find.textContaining('Solvable'), findsOneWidget);
+  });
+
+  testWidgets('RoiSimulatorModal renders sliders and pricing calculation', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const GetMaterialApp(
+        home: Scaffold(
+          body: RoiSimulatorModal(),
+        ),
+      ),
+    );
+    expect(find.text('Simulateur ROI Express'), findsOneWidget);
+    expect(find.text('Collaborateurs / Postes'), findsOneWidget);
+    expect(find.text('Débit Fibre Optique Pro'), findsOneWidget);
+    expect(find.text('Partager WhatsApp'), findsOneWidget);
+    expect(find.text('Signer l\'Accord'), findsOneWidget);
   });
 }

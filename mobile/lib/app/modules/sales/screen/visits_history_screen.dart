@@ -1,10 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
 import '../model/visit_history_item.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/aurora_background.dart';
-import '../../../common/screen/widget/glass_card.dart';
 
 class VisitsHistoryScreen extends StatefulWidget {
   const VisitsHistoryScreen({super.key});
@@ -26,7 +26,7 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
     final month = (dt.month >= 1 && dt.month <= 12) ? _frenchMonths[dt.month] : '${dt.month}';
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day $month ${dt.year} à ${hour}h$minute';
+    return '$day $month à ${hour}h$minute';
   }
 
   @override
@@ -46,78 +46,104 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final salesController = Get.find<SalesController>();
 
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : AppConstants.textDark),
-            tooltip: 'Retour',
-            onPressed: () => Get.back(),
-          ),
-          title: Text(
-            'Historique des Visites',
-            style: TextStyle(
-              color: isDark ? Colors.white : AppConstants.textDark,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.chevron_back, color: isDark ? Colors.white : AppConstants.textDark, size: 22),
+          tooltip: 'Retour',
+          onPressed: () => Get.back(),
+        ),
+      ),
+      body: AuroraBackground(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Grand Titre iOS (34px Bold)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppConstants.paddingLg, 4, AppConstants.paddingLg, 6),
+                child: Text(
+                  'Historique',
+                  style: AppConstants.largeTitleStyle(isDark),
+                ),
               ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  color: isDark ? Colors.white : const Color(0xFF18181B),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg),
+                child: Divider(
+                  height: 16,
+                  thickness: 0.5,
+                  color: isDark ? const Color(0x22FFFFFF) : const Color(0x15000000),
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // 2. Segmented / Tab Bar
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLg, vertical: 6),
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                labelColor: isDark ? const Color(0xFF121214) : Colors.white,
-                unselectedLabelColor: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                tabs: const [
-                  Tab(text: "Aujourd'hui (Journalier)"),
-                  Tab(text: "Ce Mois-ci (Mensuel)"),
-                ],
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  indicator: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: isDark
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                  ),
+                  labelColor: isDark ? Colors.white : AppConstants.textDark,
+                  unselectedLabelColor: const Color(0xFF8E8E93),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  tabs: const [
+                    Tab(text: "Aujourd'hui"),
+                    Tab(text: "Ce Mois-ci"),
+                  ],
+                ),
               ),
-            ),
+
+              // 3. Liste des Visites
+              Expanded(
+                child: Obx(() {
+                  if (salesController.isLoadingVisits.value) {
+                    return Center(child: CircularProgressIndicator(color: isDark ? Colors.white : AppConstants.textDark));
+                  }
+
+                  final allVisits = salesController.visitsHistory;
+                  final todayVisits = allVisits.where((v) => v.isToday).toList();
+                  final monthlyVisits = allVisits.where((v) => v.isThisMonth).toList();
+
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildVisitsList(context, todayVisits, "Aucune visite effectuée aujourd'hui"),
+                      _buildVisitsList(context, monthlyVisits, "Aucune visite enregistrée ce mois-ci"),
+                    ],
+                  );
+                }),
+              ),
+            ],
           ),
         ),
-        body: AuroraBackground(
-          child: SafeArea(
-            child: Obx(() {
-              if (salesController.isLoadingVisits.value) {
-                return Center(child: CircularProgressIndicator(color: isDark ? Colors.white : AppConstants.textDark));
-              }
-
-              final allVisits = salesController.visitsHistory;
-              final todayVisits = allVisits.where((v) => v.isToday).toList();
-              final monthlyVisits = allVisits.where((v) => v.isThisMonth).toList();
-
-              return TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildVisitsList(context, todayVisits, "Aucune visite effectuée aujourd'hui"),
-                  _buildVisitsList(context, monthlyVisits, "Aucune visite enregistrée ce mois-ci"),
-                ],
-              );
-            }),
-          ),
-        ),
-      );
+      ),
+    );
   }
 
   Widget _buildVisitsList(BuildContext context, List<VisitHistoryItem> visits, String emptyMessage) {
@@ -130,16 +156,12 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.event_busy_rounded, size: 54, color: AppConstants.textMuted),
-              const SizedBox(height: 16),
+              const Icon(CupertinoIcons.calendar_badge_minus, size: 48, color: Color(0xFF8E8E93)),
+              const SizedBox(height: 14),
               Text(
                 emptyMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : AppConstants.textDark,
-                ),
+                style: AppConstants.headlineStyle(isDark),
               ),
             ],
           ),
@@ -147,96 +169,81 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(AppConstants.paddingLg, 16, AppConstants.paddingLg, AppConstants.paddingXl),
+      padding: const EdgeInsets.fromLTRB(AppConstants.paddingLg, 10, AppConstants.paddingLg, 100),
       itemCount: visits.length,
+      separatorBuilder: (_, __) => Divider(
+        color: isDark ? const Color(0x1FFFFFFF) : const Color(0x15000000),
+        height: 1,
+        thickness: 0.5,
+        indent: 56,
+      ),
       itemBuilder: (context, index) {
         final visit = visits[index];
         final isTransmitted = visit.status == 'TRANSMIS';
 
-        return GlassCard(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
             children: [
-              // Header: Company Name & Status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
+              // Vignette 44x44 style Apple Music
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  isTransmitted ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.doc_text_fill,
+                  size: 20,
+                  color: isTransmitted ? const Color(0xFF10B981) : const Color(0xFF8E8E93),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Contenu Textuel : Nom + Métadonnées
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       visit.enterpriseName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppConstants.textDark,
-                      ),
+                      style: AppConstants.headlineStyle(isDark),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isTransmitted
-                          ? AppConstants.successGreen.withValues(alpha: 0.15)
-                          : (isDark ? const Color(0xFF2E2E36) : const Color(0xFFE2E8F0)),
-                      borderRadius: BorderRadius.circular(6),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${visit.sector} • ${visit.location} • ${_formatFrenchDate(visit.visitDate)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppConstants.subheadStyle(isDark),
                     ),
-                    child: Text(
-                      isTransmitted ? 'Transmis au KAM' : 'Effectuée',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: isTransmitted
-                            ? AppConstants.successGreen
-                            : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 6),
 
-              // Sector & Location
-              Text(
-                '${visit.sector} • ${visit.location}',
-                style: TextStyle(color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-
-              // Date, Time & Confidentiality Tag
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today_rounded, size: 14, color: isDark ? AppConstants.textSecondaryDark : AppConstants.textDark),
-                      const SizedBox(width: 6),
-                      Text(
-                        _formatFrenchDate(visit.visitDate),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppConstants.textSecondaryDark : AppConstants.textDark,
-                        ),
-                      ),
-                    ],
+              // Trailing Status Tag
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isTransmitted
+                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                      : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  isTransmitted ? 'KAM' : 'Fait',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: isTransmitted
+                        ? const Color(0xFF10B981)
+                        : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.lock_rounded, size: 12, color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Confidentiel',
-                        style: TextStyle(fontSize: 10, color: isDark ? AppConstants.textSecondaryDark : AppConstants.textMuted, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -245,3 +252,4 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
     );
   }
 }
+

@@ -1,55 +1,96 @@
-import os
-import requests
+from __future__ import annotations
+
+import logging
+import time
+import uuid
 from typing import Dict, Any, Optional
 
-CORE_AI_URL = os.getenv("CORE_AI_URL", "http://localhost:8001/api/v1")
+from apps.ai_core.providers import build_chat_model
+from apps.ai_core.services.conversation import ConversationService, ServiceError
+
+logger = logging.getLogger(__name__)
+
+
+def _get_service() -> ConversationService:
+    return ConversationService(model=build_chat_model())
 
 
 def is_core_ai_available() -> bool:
-    """Check if the external Core AI microservice is online."""
+    """Core AI is directly integrated in-memory in the Django backend."""
+    return True
+
+
+def call_core_ai_turn(
+    conversation_id: int, message: str, idempotency_key: str = ""
+) -> Optional[Dict[str, Any]]:
+    """Execute a conversation turn in-memory via Didier's ConversationService."""
+    if not idempotency_key:
+        idempotency_key = f"turn-{conversation_id}-{int(time.time()*1000)}-{uuid.uuid4().hex[:6]}"
+
     try:
-        response = requests.get(f"{CORE_AI_URL}/health/", timeout=2)
-        return response.status_code == 200
-    except Exception:
-        return False
-
-
-import time
-import uuid
-
-def call_core_ai_turn(conversation_id: int, message: str, idempotency_key: str = "") -> Optional[Dict[str, Any]]:
-    """Send a turn message to Core AI microservice."""
-    try:
-        url = f"{CORE_AI_URL}/conversations/{conversation_id}/turn/"
-        if not idempotency_key:
-            idempotency_key = f"turn-{conversation_id}-{int(time.time()*1000)}-{uuid.uuid4().hex[:6]}"
-        payload = {
-            "message": message,
-            "idempotency_key": idempotency_key
+        service = _get_service()
+        result = service.process_conversation_turn(
+            conversation_id=conversation_id,
+            text=message,
+            idempotency_key=idempotency_key,
+        )
+        return {
+            "assistant_message": result.assistant_message,
+            "next_question": result.assistant_message,
+            "readiness": {
+                "is_ready": result.ready_for_analysis,
+                "reason": result.readiness_reason,
+            },
+            "profile_patch": result.profile.model_dump(mode="json") if result.profile else None,
         }
-        res = requests.post(url, json=payload, timeout=20)
-        if res.status_code == 200:
-            return res.json()
-        print(f"[CoreAI Client Error] Status {res.status_code}: {res.text}")
-        return None
     except Exception as exc:
-        print(f"[CoreAI Client Exception] {exc}")
+        logger.exception(f"[CoreAI In-Memory Turn Error] {exc}")
         return None
 
 
-def call_core_ai_quick_match(sector: str, needs: list, locations: list, company_name: str = "Entreprise") -> Optional[Dict[str, Any]]:
-    """Perform quick profile matching against Orange catalog via Core AI service."""
+def call_core_ai_quick_match(
+    sector: str,
+    needs: list,
+    locations: list,
+    company_name: str = "Entreprise",
+    size: int = 20,
+    activities: list | None = None,
+    constraints: list | None = None,
+) -> Optional[Dict[str, Any]]:
+    """Perform quick profile matching & business twin generation in-memory."""
     try:
-        url = f"{CORE_AI_URL}/quick-match/"
-        payload = {
-            "sector": sector,
-            "needs": needs,
-            "locations": locations,
-            "company_name": company_name
+        from django.conf import settings
+        from apps.ai_core.catalog import load_catalog
+        from apps.ai_core.contracts.profile import CompanyProfile, CompanyProfilePatch, Fact, FactStatus
+        from apps.ai_core.domain import merge_profile, recommend_services
+        from apps.reports.services import ReportBuilder
+
+        catalog = load_catalog(settings.ONBORA_CATALOG_PATH)
+        
+        def _make_fact(val: Any) -> Fact:
+            return Fact(value=val, status=FactStatus.CONFIRMED, confidence=1.0, requires_confirmation=False, source_refs=["quick_match"])
+
+        patch = CompanyProfilePatch(
+            name=_make_fact(company_name or "Entreprise"),
+            sector=_make_fact(sector or "Services B2B"),
+            size=_make_fact(size or 20),
+            activities=[_make_fact(a) for a in (activities or [])],
+            locations=[_make_fact(loc) for loc in (locations or ["Kinshasa"])],
+            needs=[_make_fact(n) for n in (needs or [])],
+            constraints=[_make_fact(c) for c in (constraints or [])],
+        )
+        
+        profile = merge_profile(CompanyProfile(), patch, catalog=catalog)
+        recommendations = recommend_services(profile, catalog)
+        builder = ReportBuilder(catalog)
+        twin_bundle = builder.build_business_twin(profile, recommendations)
+
+        return {
+            "recommendations": recommendations.model_dump(mode="json"),
+            "business_twin": twin_bundle.report.model_dump(mode="json"),
         }
-        res = requests.post(url, json=payload, timeout=15)
-        if res.status_code == 200:
-            return res.json()
+    except Exception as exc:
+        logger.exception(f"[CoreAI In-Memory QuickMatch Error] {exc}")
         return None
-    except Exception:
-        return None
+
+

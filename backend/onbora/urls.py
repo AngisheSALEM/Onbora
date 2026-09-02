@@ -44,6 +44,7 @@ urlpatterns = [
     path('api/sales/', include('sales.urls')),
     path('api/reporting/', include('reporting.urls')),
     path('api/catalog/', include('catalog.urls')),
+    path('api/twin/', include('twin.urls')),
     
     # Aliases v1
     path('api/v1/auth/', include('accounts.urls')),
@@ -53,6 +54,7 @@ urlpatterns = [
     path('api/v1/sales/', include('sales.urls')),
     path('api/v1/reporting/', include('reporting.urls')),
     path('api/v1/catalog/', include('catalog.urls')),
+    path('api/v1/twin/', include('twin.urls')),
 ]
 
 from django.conf import settings

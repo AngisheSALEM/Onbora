@@ -15,4 +15,11 @@ abstract class Routes {
   static const FIELD_INTELLIGENCE = '/field-intelligence';
   static const DOCUMENT_SCAN = '/document-scan';
   static const VISIT_FORM = '/visit-form';
+  
+  // Routes KAM (Grands Comptes)
+  static const KAM_NAVIGATION = '/kam-navigation';
+  static const KAM_HOME = '/kam-home';
+  static const KAM_BRIEFING = '/kam-briefing';
+  static const KAM_DEBRIEF = '/kam-debrief';
+  static const KAM_ACCOUNT_DETAIL = '/kam-account-detail';
 }

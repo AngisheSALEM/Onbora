@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -147,13 +148,21 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     });
                     await dictController.startRecording();
                   },
-                  icon: const Icon(LucideIcons.mic, size: 18, color: Colors.white),
-                  label: const Text(
+                  icon: Icon(
+                    LucideIcons.mic,
+                    size: 18,
+                    color: AppConstants.primaryBtnTextColor(isDark),
+                  ),
+                  label: Text(
                     'Client d\'accord — Enregistrer l\'Audio',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                    style: TextStyle(
+                      color: AppConstants.primaryBtnTextColor(isDark),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: AppConstants.primaryBtnColor(isDark),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
@@ -202,9 +211,10 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
 
     return Scaffold(
         extendBodyBehindAppBar: true,
+        backgroundColor: isDark ? AppConstants.backgroundDark : AppConstants.backgroundLight,
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
+            icon: Icon(CupertinoIcons.chevron_back, color: isDark ? Colors.white : AppConstants.textDark, size: 22),
             tooltip: 'Retour',
             onPressed: () => Get.back(),
           ),
@@ -216,6 +226,38 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
               letterSpacing: -0.3,
             ),
           ),
+          actions: [
+            ScaleTap(
+              onTap: () => Get.toNamed(Routes.VISIT_FORM),
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.square_pencil,
+                      size: 15,
+                      color: isDark ? Colors.white : AppConstants.textDark,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Formulaire',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppConstants.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -445,7 +487,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(LucideIcons.fileEdit, color: Color(0xFF2563EB), size: 18),
+                              Icon(LucideIcons.fileEdit, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
                               const SizedBox(width: 8),
                               Text(
                                 'Prise de Notes Rapide & Mémo',

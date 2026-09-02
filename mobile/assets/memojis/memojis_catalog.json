@@ -1,0 +1,1022 @@
+[
+  {
+    "id": 42,
+    "filename": "memoji_042.png",
+    "assetPath": "assets/memojis/memoji_042.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 100,
+    "isGrayHair": true,
+    "skinBrightness": 138.78440476190477
+  },
+  {
+    "id": 30,
+    "filename": "memoji_030.png",
+    "assetPath": "assets/memojis/memoji_030.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 50,
+    "isGrayHair": false,
+    "skinBrightness": 99.19547619047619
+  },
+  {
+    "id": 80,
+    "filename": "memoji_080.png",
+    "assetPath": "assets/memojis/memoji_080.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 50,
+    "isGrayHair": false,
+    "skinBrightness": 110.27952380952381
+  },
+  {
+    "id": 87,
+    "filename": "memoji_087.png",
+    "assetPath": "assets/memojis/memoji_087.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 50,
+    "isGrayHair": false,
+    "skinBrightness": 112.47571428571429
+  },
+  {
+    "id": 8,
+    "filename": "memoji_008.png",
+    "assetPath": "assets/memojis/memoji_008.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 50,
+    "isGrayHair": false,
+    "skinBrightness": 125.73785714285714
+  },
+  {
+    "id": 45,
+    "filename": "memoji_045.png",
+    "assetPath": "assets/memojis/memoji_045.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 50,
+    "isGrayHair": false,
+    "skinBrightness": 133.36964285714285
+  },
+  {
+    "id": 1,
+    "filename": "memoji_001.png",
+    "assetPath": "assets/memojis/memoji_001.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 89.40035714285715
+  },
+  {
+    "id": 2,
+    "filename": "memoji_002.png",
+    "assetPath": "assets/memojis/memoji_002.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 83.71940476190476
+  },
+  {
+    "id": 3,
+    "filename": "memoji_003.png",
+    "assetPath": "assets/memojis/memoji_003.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 116.51714285714286
+  },
+  {
+    "id": 4,
+    "filename": "memoji_004.png",
+    "assetPath": "assets/memojis/memoji_004.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 102.29869047619047
+  },
+  {
+    "id": 5,
+    "filename": "memoji_005.png",
+    "assetPath": "assets/memojis/memoji_005.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 90.33571428571429
+  },
+  {
+    "id": 7,
+    "filename": "memoji_007.png",
+    "assetPath": "assets/memojis/memoji_007.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 94.61488095238096
+  },
+  {
+    "id": 9,
+    "filename": "memoji_009.png",
+    "assetPath": "assets/memojis/memoji_009.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 87.94666666666667
+  },
+  {
+    "id": 10,
+    "filename": "memoji_010.png",
+    "assetPath": "assets/memojis/memoji_010.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 103.68738095238095
+  },
+  {
+    "id": 12,
+    "filename": "memoji_012.png",
+    "assetPath": "assets/memojis/memoji_012.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 94.2252380952381
+  },
+  {
+    "id": 13,
+    "filename": "memoji_013.png",
+    "assetPath": "assets/memojis/memoji_013.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 89.07202380952381
+  },
+  {
+    "id": 14,
+    "filename": "memoji_014.png",
+    "assetPath": "assets/memojis/memoji_014.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 92.16380952380952
+  },
+  {
+    "id": 15,
+    "filename": "memoji_015.png",
+    "assetPath": "assets/memojis/memoji_015.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 86.99583333333334
+  },
+  {
+    "id": 16,
+    "filename": "memoji_016.png",
+    "assetPath": "assets/memojis/memoji_016.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 94.94904761904762
+  },
+  {
+    "id": 17,
+    "filename": "memoji_017.png",
+    "assetPath": "assets/memojis/memoji_017.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 88.32154761904762
+  },
+  {
+    "id": 18,
+    "filename": "memoji_018.png",
+    "assetPath": "assets/memojis/memoji_018.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 108.91392857142857
+  },
+  {
+    "id": 19,
+    "filename": "memoji_019.png",
+    "assetPath": "assets/memojis/memoji_019.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 111.83952380952381
+  },
+  {
+    "id": 21,
+    "filename": "memoji_021.png",
+    "assetPath": "assets/memojis/memoji_021.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 114.10309523809524
+  },
+  {
+    "id": 22,
+    "filename": "memoji_022.png",
+    "assetPath": "assets/memojis/memoji_022.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 115.31083333333333
+  },
+  {
+    "id": 23,
+    "filename": "memoji_023.png",
+    "assetPath": "assets/memojis/memoji_023.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 104.79988095238095
+  },
+  {
+    "id": 25,
+    "filename": "memoji_025.png",
+    "assetPath": "assets/memojis/memoji_025.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 116.86083333333333
+  },
+  {
+    "id": 26,
+    "filename": "memoji_026.png",
+    "assetPath": "assets/memojis/memoji_026.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 110.75166666666667
+  },
+  {
+    "id": 27,
+    "filename": "memoji_027.png",
+    "assetPath": "assets/memojis/memoji_027.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 109.86988095238095
+  },
+  {
+    "id": 29,
+    "filename": "memoji_029.png",
+    "assetPath": "assets/memojis/memoji_029.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 113.21321428571429
+  },
+  {
+    "id": 32,
+    "filename": "memoji_032.png",
+    "assetPath": "assets/memojis/memoji_032.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 90.61154761904761
+  },
+  {
+    "id": 33,
+    "filename": "memoji_033.png",
+    "assetPath": "assets/memojis/memoji_033.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 82.60869047619047
+  },
+  {
+    "id": 34,
+    "filename": "memoji_034.png",
+    "assetPath": "assets/memojis/memoji_034.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 113.39190476190477
+  },
+  {
+    "id": 56,
+    "filename": "memoji_056.png",
+    "assetPath": "assets/memojis/memoji_056.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 78.72535714285715
+  },
+  {
+    "id": 57,
+    "filename": "memoji_057.png",
+    "assetPath": "assets/memojis/memoji_057.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 82.47011904761905
+  },
+  {
+    "id": 58,
+    "filename": "memoji_058.png",
+    "assetPath": "assets/memojis/memoji_058.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 78.05178571428571
+  },
+  {
+    "id": 59,
+    "filename": "memoji_059.png",
+    "assetPath": "assets/memojis/memoji_059.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 82.64964285714285
+  },
+  {
+    "id": 60,
+    "filename": "memoji_060.png",
+    "assetPath": "assets/memojis/memoji_060.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 76.33714285714285
+  },
+  {
+    "id": 61,
+    "filename": "memoji_061.png",
+    "assetPath": "assets/memojis/memoji_061.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 77.53595238095238
+  },
+  {
+    "id": 62,
+    "filename": "memoji_062.png",
+    "assetPath": "assets/memojis/memoji_062.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 75.34797619047619
+  },
+  {
+    "id": 63,
+    "filename": "memoji_063.png",
+    "assetPath": "assets/memojis/memoji_063.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 86.26964285714286
+  },
+  {
+    "id": 64,
+    "filename": "memoji_064.png",
+    "assetPath": "assets/memojis/memoji_064.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 80.84130952380953
+  },
+  {
+    "id": 65,
+    "filename": "memoji_065.png",
+    "assetPath": "assets/memojis/memoji_065.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 88.03642857142857
+  },
+  {
+    "id": 66,
+    "filename": "memoji_066.png",
+    "assetPath": "assets/memojis/memoji_066.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 88.22440476190476
+  },
+  {
+    "id": 67,
+    "filename": "memoji_067.png",
+    "assetPath": "assets/memojis/memoji_067.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 89.19071428571428
+  },
+  {
+    "id": 68,
+    "filename": "memoji_068.png",
+    "assetPath": "assets/memojis/memoji_068.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 85.61345238095238
+  },
+  {
+    "id": 69,
+    "filename": "memoji_069.png",
+    "assetPath": "assets/memojis/memoji_069.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 77.27857142857142
+  },
+  {
+    "id": 70,
+    "filename": "memoji_070.png",
+    "assetPath": "assets/memojis/memoji_070.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 79.29416666666667
+  },
+  {
+    "id": 71,
+    "filename": "memoji_071.png",
+    "assetPath": "assets/memojis/memoji_071.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 89.82035714285715
+  },
+  {
+    "id": 72,
+    "filename": "memoji_072.png",
+    "assetPath": "assets/memojis/memoji_072.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 90.25714285714285
+  },
+  {
+    "id": 73,
+    "filename": "memoji_073.png",
+    "assetPath": "assets/memojis/memoji_073.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 82.58
+  },
+  {
+    "id": 74,
+    "filename": "memoji_074.png",
+    "assetPath": "assets/memojis/memoji_074.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 88.03809523809524
+  },
+  {
+    "id": 75,
+    "filename": "memoji_075.png",
+    "assetPath": "assets/memojis/memoji_075.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 85.9075
+  },
+  {
+    "id": 76,
+    "filename": "memoji_076.png",
+    "assetPath": "assets/memojis/memoji_076.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 84.28428571428572
+  },
+  {
+    "id": 77,
+    "filename": "memoji_077.png",
+    "assetPath": "assets/memojis/memoji_077.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 91.26345238095239
+  },
+  {
+    "id": 78,
+    "filename": "memoji_078.png",
+    "assetPath": "assets/memojis/memoji_078.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 80.38535714285715
+  },
+  {
+    "id": 79,
+    "filename": "memoji_079.png",
+    "assetPath": "assets/memojis/memoji_079.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 88.05940476190476
+  },
+  {
+    "id": 88,
+    "filename": "memoji_088.png",
+    "assetPath": "assets/memojis/memoji_088.png",
+    "gender": "femme",
+    "ethnicity": "noir",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 116.7175
+  },
+  {
+    "id": 6,
+    "filename": "memoji_006.png",
+    "assetPath": "assets/memojis/memoji_006.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 136.97964285714286
+  },
+  {
+    "id": 11,
+    "filename": "memoji_011.png",
+    "assetPath": "assets/memojis/memoji_011.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 120.38583333333334
+  },
+  {
+    "id": 20,
+    "filename": "memoji_020.png",
+    "assetPath": "assets/memojis/memoji_020.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 120.43595238095239
+  },
+  {
+    "id": 24,
+    "filename": "memoji_024.png",
+    "assetPath": "assets/memojis/memoji_024.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 135.62440476190477
+  },
+  {
+    "id": 28,
+    "filename": "memoji_028.png",
+    "assetPath": "assets/memojis/memoji_028.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 123.21464285714286
+  },
+  {
+    "id": 31,
+    "filename": "memoji_031.png",
+    "assetPath": "assets/memojis/memoji_031.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 140.56428571428572
+  },
+  {
+    "id": 35,
+    "filename": "memoji_035.png",
+    "assetPath": "assets/memojis/memoji_035.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 151.75619047619048
+  },
+  {
+    "id": 36,
+    "filename": "memoji_036.png",
+    "assetPath": "assets/memojis/memoji_036.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 149.6627380952381
+  },
+  {
+    "id": 37,
+    "filename": "memoji_037.png",
+    "assetPath": "assets/memojis/memoji_037.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 146.18178571428572
+  },
+  {
+    "id": 38,
+    "filename": "memoji_038.png",
+    "assetPath": "assets/memojis/memoji_038.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 138.54369047619048
+  },
+  {
+    "id": 39,
+    "filename": "memoji_039.png",
+    "assetPath": "assets/memojis/memoji_039.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 147.70785714285714
+  },
+  {
+    "id": 40,
+    "filename": "memoji_040.png",
+    "assetPath": "assets/memojis/memoji_040.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 143.9284523809524
+  },
+  {
+    "id": 41,
+    "filename": "memoji_041.png",
+    "assetPath": "assets/memojis/memoji_041.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 141.8670238095238
+  },
+  {
+    "id": 43,
+    "filename": "memoji_043.png",
+    "assetPath": "assets/memojis/memoji_043.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 144.26380952380953
+  },
+  {
+    "id": 44,
+    "filename": "memoji_044.png",
+    "assetPath": "assets/memojis/memoji_044.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 151.41369047619048
+  },
+  {
+    "id": 46,
+    "filename": "memoji_046.png",
+    "assetPath": "assets/memojis/memoji_046.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 134.64416666666668
+  },
+  {
+    "id": 47,
+    "filename": "memoji_047.png",
+    "assetPath": "assets/memojis/memoji_047.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 144.9663095238095
+  },
+  {
+    "id": 48,
+    "filename": "memoji_048.png",
+    "assetPath": "assets/memojis/memoji_048.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 146.07369047619048
+  },
+  {
+    "id": 49,
+    "filename": "memoji_049.png",
+    "assetPath": "assets/memojis/memoji_049.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 140.67416666666668
+  },
+  {
+    "id": 50,
+    "filename": "memoji_050.png",
+    "assetPath": "assets/memojis/memoji_050.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 154.21369047619046
+  },
+  {
+    "id": 51,
+    "filename": "memoji_051.png",
+    "assetPath": "assets/memojis/memoji_051.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 146.9807142857143
+  },
+  {
+    "id": 52,
+    "filename": "memoji_052.png",
+    "assetPath": "assets/memojis/memoji_052.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 144.34071428571428
+  },
+  {
+    "id": 53,
+    "filename": "memoji_053.png",
+    "assetPath": "assets/memojis/memoji_053.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 150.14940476190475
+  },
+  {
+    "id": 54,
+    "filename": "memoji_054.png",
+    "assetPath": "assets/memojis/memoji_054.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 144.18547619047618
+  },
+  {
+    "id": 55,
+    "filename": "memoji_055.png",
+    "assetPath": "assets/memojis/memoji_055.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 152.33488095238096
+  },
+  {
+    "id": 81,
+    "filename": "memoji_081.png",
+    "assetPath": "assets/memojis/memoji_081.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 138.26214285714286
+  },
+  {
+    "id": 82,
+    "filename": "memoji_082.png",
+    "assetPath": "assets/memojis/memoji_082.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.2397619047619
+  },
+  {
+    "id": 83,
+    "filename": "memoji_083.png",
+    "assetPath": "assets/memojis/memoji_083.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 138.55440476190475
+  },
+  {
+    "id": 84,
+    "filename": "memoji_084.png",
+    "assetPath": "assets/memojis/memoji_084.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.22035714285714
+  },
+  {
+    "id": 85,
+    "filename": "memoji_085.png",
+    "assetPath": "assets/memojis/memoji_085.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 132.91333333333333
+  },
+  {
+    "id": 86,
+    "filename": "memoji_086.png",
+    "assetPath": "assets/memojis/memoji_086.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 125.84
+  },
+  {
+    "id": 89,
+    "filename": "memoji_089.png",
+    "assetPath": "assets/memojis/memoji_089.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 131.25440476190477
+  },
+  {
+    "id": 90,
+    "filename": "memoji_090.png",
+    "assetPath": "assets/memojis/memoji_090.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.0297619047619
+  },
+  {
+    "id": 91,
+    "filename": "memoji_091.png",
+    "assetPath": "assets/memojis/memoji_091.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 124.81285714285714
+  },
+  {
+    "id": 92,
+    "filename": "memoji_092.png",
+    "assetPath": "assets/memojis/memoji_092.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 122.8672619047619
+  },
+  {
+    "id": 93,
+    "filename": "memoji_093.png",
+    "assetPath": "assets/memojis/memoji_093.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.98083333333334
+  },
+  {
+    "id": 94,
+    "filename": "memoji_094.png",
+    "assetPath": "assets/memojis/memoji_094.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 132.51214285714286
+  },
+  {
+    "id": 95,
+    "filename": "memoji_095.png",
+    "assetPath": "assets/memojis/memoji_095.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 127.9925
+  },
+  {
+    "id": 96,
+    "filename": "memoji_096.png",
+    "assetPath": "assets/memojis/memoji_096.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.82523809523809
+  },
+  {
+    "id": 97,
+    "filename": "memoji_097.png",
+    "assetPath": "assets/memojis/memoji_097.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 123.36416666666666
+  },
+  {
+    "id": 98,
+    "filename": "memoji_098.png",
+    "assetPath": "assets/memojis/memoji_098.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 133.9061904761905
+  },
+  {
+    "id": 99,
+    "filename": "memoji_099.png",
+    "assetPath": "assets/memojis/memoji_099.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 123.29964285714286
+  },
+  {
+    "id": 100,
+    "filename": "memoji_100.png",
+    "assetPath": "assets/memojis/memoji_100.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 132.4025
+  },
+  {
+    "id": 101,
+    "filename": "memoji_101.png",
+    "assetPath": "assets/memojis/memoji_101.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 126.21488095238095
+  },
+  {
+    "id": 102,
+    "filename": "memoji_102.png",
+    "assetPath": "assets/memojis/memoji_102.png",
+    "gender": "femme",
+    "ethnicity": "arabe",
+    "ageScore": 20,
+    "isGrayHair": false,
+    "skinBrightness": 131.0665476190476
+  }
+]

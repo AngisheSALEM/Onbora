@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                          color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
@@ -77,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'assets/icons/app_icon.png',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFF2563EB),
+                          color: isDark ? const Color(0xFF2C2C2E) : AppConstants.primaryBlack,
                           child: const Icon(Icons.directions_run_rounded, color: Colors.white, size: 36),
                         ),
                       ),
@@ -298,26 +299,98 @@ class _LoginScreenState extends State<LoginScreen> {
                               )),
                           const SizedBox(height: AppConstants.marginLg),
 
-                          // Demo Info Footer
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: isDark ? AppConstants.primaryDark : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                                border: Border.all(
-                                  color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                                ),
-                              ),
-                              child: Text(
-                                AppConstants.loginDemoHint,
+                          // Boutons d'accès rapide Démo : Commercial Terrain & KAM
+                          Column(
+                            children: [
+                              Text(
+                                'Accès Démonstration Rapide :',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
                                 ),
                               ),
-                            ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  ScaleTap(
+                                    onTap: () {
+                                      _usernameController.text = 'sales1';
+                                      _passwordController.text = 'sales1pass';
+                                      authController.login('sales1', 'sales1pass');
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                                        border: Border.all(
+                                          color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.person_fill,
+                                            size: 13,
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            'Commercial Terrain',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark ? Colors.white : AppConstants.textDark,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  ScaleTap(
+                                    onTap: () {
+                                      _usernameController.text = 'kam1';
+                                      _passwordController.text = 'kam1pass';
+                                      authController.login('kam1', 'kam1pass');
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                                        border: Border.all(
+                                          color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.building_2_fill,
+                                            size: 13,
+                                            color: isDark ? Colors.white : AppConstants.textDark,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            'KAM Grands Comptes',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark ? Colors.white : AppConstants.textDark,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),

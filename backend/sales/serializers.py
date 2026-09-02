@@ -157,6 +157,12 @@ class EnterpriseBriefSerializer(serializers.Serializer):
     target_offer = serializers.CharField(required=False, default="")
     golden_questions = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     competitor_alert = serializers.CharField(required=False, default="")
+    bant_status = serializers.CharField(required=False, default="QUALIFIED")
+    bant_score = serializers.IntegerField(required=False, default=85)
+    is_disqualified = serializers.BooleanField(required=False, default=False)
+    disqualification_reason = serializers.CharField(required=False, allow_null=True, default=None)
+    roi_pitch = serializers.CharField(required=False, default="")
+    coi_estimated_monthly = serializers.FloatField(required=False, default=0.0)
 
 
 class SalespersonActivitySerializer(serializers.Serializer):

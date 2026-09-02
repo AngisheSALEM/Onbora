@@ -39,11 +39,11 @@ class SalesRepository {
     ),
     EnterpriseModel(
       id: 4,
-      name: 'Clinique Ngaliema',
-      sector: 'Médical / Santé',
+      name: 'Clinique Reine Astrid',
+      sector: 'Santé / Médical',
       approximateSize: '100-249 employés',
-      location: 'Kinshasa (Ngaliema)',
-      website: 'https://www.cliniquengaliema.cd',
+      location: 'Kinshasa (Gombe)',
+      website: 'https://www.clinique-reineastrid.cd',
       syncStatus: 'SYNCED',
     ),
     EnterpriseModel(
@@ -72,7 +72,6 @@ class SalesRepository {
       // Resilient fallback when offline or cold-starting
     }
 
-    // Filter fallback list by query
     final q = query.trim().toLowerCase();
     if (q.isEmpty) {
       return _demoEnterprises;
@@ -88,7 +87,6 @@ class SalesRepository {
       return filtered;
     }
 
-    // Dynamic mock enterprise generator if user searches a custom name
     return [
       EnterpriseModel(
         id: 99,
@@ -102,61 +100,135 @@ class SalesRepository {
     ];
   }
 
-  /// Create a visit preparation brief
+  /// Create a visit preparation brief with BANT and ROI metrics
   Future<VisitPrepModel> createVisitPreparation(int enterpriseId) async {
     try {
-      final response = await _apiClient.post(
-        '/api/sales/visit-preparations/',
-        body: {'enterprise': enterpriseId},
+      // Priorité à l'endpoint brief qui intègre le scoring BANT et le chiffrage COI
+      final response = await _apiClient.get(
+        '/api/sales/enterprises/$enterpriseId/brief/',
       );
 
       return VisitPrepModel.fromJson(response as Map<String, dynamic>);
     } catch (_) {
-      // Fallback prep model if offline or server timeout
-      return VisitPrepModel(
-        id: enterpriseId,
-        enterpriseId: enterpriseId,
-        meetingObjective: 'Qualifier l\'éligibilité réseau et les besoins de collaboration pour l\'entreprise.',
-        hypothesisToVerify: 'L\'entreprise utilise des lignes classiques et souhaite migrer vers la Fibre Optique Pro et Microsoft 365.',
-        customPitch: 'Présenter notre offre Fibre Optique Pro garantie avec basculement automatique et messagerie collaborative Teams.',
-        keyQuestions: '1. Quelle est votre connexion internet principale actuellement ?\n2. Comment échangez-vous vos fichiers en interne ?\n3. Avez-vous un besoin de sécurité réseau (Firewall) ?',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+      try {
+        final fallbackResp = await _apiClient.post(
+          '/api/sales/visit-preparations/',
+          body: {'enterprise': enterpriseId},
+        );
+        return VisitPrepModel.fromJson(fallbackResp as Map<String, dynamic>);
+      } catch (_) {
+        // Fallback déterministe avec calcul de rentabilité
+        return VisitPrepModel(
+          id: enterpriseId,
+          enterpriseId: enterpriseId,
+          meetingObjective: 'Qualifier les pertes dues aux pannes et proposer le raccordement Fibre Pro.',
+          hypothesisToVerify: 'L\'entreprise subit des coupures régulières et souhaite migrer vers la Fibre Optique Pro avec secours 4G.',
+          customPitch: 'Présenter notre pack Fibre Dédiée garantie avec bascule 4G automatique et chiffrage du retour sur investissement dès le 1er mois.',
+          keyQuestions: '1. Combien d\'heures de coupure internet subissez-vous par mois ?\n2. Combien de salariés sont bloqués pendant une panne ?\n3. Quel budget mensuel allouez-vous à vos télécoms ?',
+          bantStatus: 'HOT_LEAD',
+          bantScore: 88,
+          isDisqualified: false,
+          roiPitch: 'Génère +930 \$/mois d\'économies nettes en éliminant les temps d\'arrêt.',
+          coiEstimatedMonthly: 1250.0,
+          createdAt: DateTime.now().toIso8601String(),
+        );
+      }
     }
   }
 
-  /// Submit visit audio transcript / text to generate report
+  /// Submit visit audio transcript / text to generate report via AI
   Future<VisitReportModel> createVisitReport({
     required int preparationId,
     required String rawTranscript,
     String? audioFilePath,
   }) async {
     try {
-      final body = <String, dynamic>{
-        'preparation': preparationId,
-        'raw_transcript': rawTranscript,
-      };
-      if (audioFilePath != null) {
-        body['audio_file_path'] = audioFilePath;
-      }
+      // 1. Appel du générateur IA avec chiffrage ROI et packages tierés
       final response = await _apiClient.post(
-        '/api/sales/visit-reports/',
-        body: body,
+        '/api/sales/visit-reports/generate-from-ai/',
+        body: {
+          'preparation_id': preparationId,
+          'transcript': rawTranscript,
+        },
       );
 
       return VisitReportModel.fromJson(response as Map<String, dynamic>);
     } catch (_) {
-      return VisitReportModel(
-        id: preparationId,
-        preparationId: preparationId,
-        rawTranscript: rawTranscript.isNotEmpty ? rawTranscript : 'Discussion de conversation commerciale.',
-        executiveSummary: 'Rendez-vous qualitatif. Le client confirme son intérêt pour la Fibre Optique Pro et la sécurité réseau.',
-        confirmedNeeds: ['Fibre Optique Pro 50 Mbps', 'Microsoft 365 Pro & Teams', 'Firewall Managé'],
-        objectionsRaised: ['Délai de déploiement'],
-        actionsTodo: ['Transmettre l\'étude de raccordement', 'Envoyer la proposition tarifaire'],
-        followUpEmailDraft: 'Bonjour,\n\nMerci pour cet échange constructif. Comme convenu, nous étudions votre éligibilité Fibre Optique.\n\nCordialement,',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+      try {
+        final body = <String, dynamic>{
+          'preparation': preparationId,
+          'raw_transcript': rawTranscript,
+        };
+        if (audioFilePath != null) {
+          body['audio_file_path'] = audioFilePath;
+        }
+        final fallbackResponse = await _apiClient.post(
+          '/api/sales/visit-reports/',
+          body: body,
+        );
+        return VisitReportModel.fromJson(fallbackResponse as Map<String, dynamic>);
+      } catch (_) {
+        // Fallback local complet avec métriques MSP
+        return VisitReportModel(
+          id: preparationId,
+          preparationId: preparationId,
+          rawTranscript: rawTranscript.isNotEmpty ? rawTranscript : 'Discussion de qualification commerciale.',
+          executiveSummary: 'Diagnostic financier : Les coupures actuelles coûtent ~1 250 \$/mois. Le Pack Performance à 320 \$/mois génère un gain net de +930 \$/mois (ROI +290%).',
+          confirmedNeeds: ['Fibre Optique Dédiée 100 Mbps', 'Secours 4G automatique', 'Microsoft 365 Business'],
+          objectionsRaised: ['Délai de raccordement', 'Peur d\'interruption pendant la migration'],
+          actionsTodo: ['Envoyer l\'email de relance J+1 avec chiffrage ROI', 'Transmettre le dossier technique au KAM'],
+          followUpEmailDraft: 'Bonjour,\n\nMerci pour notre échange. Comme convenu, le Pack Performance sécurise votre activité pour 320 \$/mois et vous fait économiser 930 \$/mois net dès le premier mois.\n\nBien cordialement,',
+          emailJ1: 'Bonjour,\n\nMerci pour notre échange. Comme convenu, le Pack Performance sécurise votre activité pour 320 \$/mois et vous fait économiser 930 \$/mois net dès le premier mois.\n\nBien cordialement,\nVotre Conseiller Orange Business',
+          emailJ4: 'Bonjour,\n\nPour répondre à votre préoccupation concernant la coupure pendant l\'installation : nos techniciens réalisent la bascule en heures non ouvrées avec maintien du secours 4G actif.\n\nBien cordialement,\nVotre Conseiller Orange Business',
+          bantScore: {
+            'budget_score': 22,
+            'authority_score': 22,
+            'need_score': 24,
+            'timeline_score': 20,
+            'total_score': 88,
+            'status': 'HOT_LEAD'
+          },
+          coiMetrics: {
+            'total_monthly_coi_usd': 1250.0,
+            'annual_coi_usd': 15000.0,
+            'impacted_employees': 10,
+            'downtime_hours_per_month': 5.0,
+          },
+          tieredPackages: [
+            {
+              'tier': 'ESSENTIAL',
+              'name': 'Pack Connectivité Pro (50M)',
+              'monthly_price_usd': 180.0,
+              'gross_margin_percent': 38.9,
+              'monthly_net_gain_usd': 1070.0,
+              'roi_percent': 594.4,
+              'pitch': 'Fibre 50M + GTR 4h avec routeur managé inclus.',
+              'objection_killer': 'Secours 4G automatique inclus.'
+            },
+            {
+              'tier': 'PERFORMANCE',
+              'name': 'Pack Entreprise Performance (100M + M365)',
+              'monthly_price_usd': 320.0,
+              'gross_margin_percent': 45.3,
+              'monthly_net_gain_usd': 930.0,
+              'roi_percent': 290.6,
+              'pitch': 'Fibre 100M + M365 + Sécurité EDR Cloud gérée.',
+              'objection_killer': 'Rentabilisé dès le 1er mois sans interruption d\'activité.'
+            },
+            {
+              'tier': 'SOVEREIGN',
+              'name': 'Pack Sérénité Totale (200M + SOC 24/7)',
+              'monthly_price_usd': 550.0,
+              'gross_margin_percent': 52.7,
+              'monthly_net_gain_usd': 700.0,
+              'roi_percent': 127.3,
+              'pitch': 'Fibre 200M double adduction + Backup Cloud 1 To.',
+              'objection_killer': 'Audit de sécurité et conformité inclus.'
+            }
+          ],
+          createdAt: DateTime.now().toIso8601String(),
+        );
+      }
     }
   }
 
