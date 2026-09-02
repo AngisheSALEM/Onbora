@@ -98,8 +98,24 @@ WSGI_APPLICATION = 'onbora.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_HOST = os.getenv('DB_HOST', '')
-if DB_HOST:
+import urllib.parse
+
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+DB_HOST = os.getenv('DB_HOST', '').strip()
+
+if DATABASE_URL:
+    parsed_db = urllib.parse.urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed_db.path.lstrip('/'),
+            'USER': urllib.parse.unquote(parsed_db.username or ''),
+            'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
+            'HOST': parsed_db.hostname,
+            'PORT': parsed_db.port or 5432,
+        }
+    }
+elif DB_HOST:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
