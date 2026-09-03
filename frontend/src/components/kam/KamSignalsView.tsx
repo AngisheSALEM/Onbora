@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { StrategicVisit, TriggerSignal } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 
@@ -36,7 +36,7 @@ export default function KamSignalsView({
       accountName: 'bled IT - Consortium Tech RDC',
       members: [
         { name: 'YENGO Geyser', role: 'Responsable de gestion de projets.' },
-        { name: 'YAMBA Japhet', role: ': Gestionnaire comptable financier.' },
+        { name: 'YAMBA Japhet', role: 'Gestionnaire comptable financier.' },
         { name: 'KALANGA Christian', role: 'Responsable de la communication digitale.' },
         { name: 'MUANGALA Jonathan', role: 'Responsable en prospection et en étude de faisabilité.' },
         { name: 'MAVUELA Steve', role: 'Responsable technique & Logiciel,' }
@@ -92,6 +92,13 @@ export default function KamSignalsView({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAiInsights, setShowAiInsights] = useState(true);
 
+  // Update active note title (editable inline by user)
+  const handleUpdateActiveDocTitle = (newTitle: string) => {
+    setDocNotes((prev) =>
+      prev.map((d) => (d.id === activeDoc.id ? { ...d, title: newTitle } : d))
+    );
+  };
+
   const handleUpdateMember = (index: number, field: 'name' | 'role', value: string) => {
     const updated = [...activeDoc.members];
     updated[index][field] = value;
@@ -118,85 +125,119 @@ export default function KamSignalsView({
     );
   };
 
+  const handleCreateNewDoc = () => {
+    const newDoc: DocNote = {
+      id: `doc-${Date.now()}`,
+      title: 'Nouvelle Note Stratégique',
+      accountName: 'Nouveau Compte Client',
+      members: [
+        { name: 'Nom du Contact', role: 'Fonction / Poste' }
+      ],
+      notesList: [
+        'Point 1 de la discussion...',
+        'Point 2 : Décision stratégique...'
+      ],
+      extractedOpportunity: null
+    };
+    setDocNotes((prev) => [newDoc, ...prev]);
+    setActiveDocId(newDoc.id);
+  };
+
   const handleRunAiAnalysis = () => {
     setIsAnalyzing(true);
     setTimeout(() => {
       setIsAnalyzing(false);
       setShowAiInsights(true);
-    }, 1200);
+    }, 1000);
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0D0D11] text-zinc-100 select-none overflow-hidden font-sans">
+    <div className="flex-1 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white select-none overflow-hidden font-sans transition-colors duration-300">
       
-      {/* 1. TOP DOCUMENT NAVIGATION HEADER (Matching Screenshot 1) */}
-      <div className="h-14 px-6 bg-[#16161B] border-b border-white/5 flex items-center justify-between shrink-0">
+      {/* 1. TOP DOCUMENT NAVIGATION HEADER (Brand Colors & No Borders) */}
+      <div className="h-14 px-6 bg-[#F6F5F2] dark:bg-[#2D2A2D] shadow-sm flex items-center justify-between shrink-0">
         
-        {/* Left : Back button & Document Title */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => {
-              const nextIndex = (docNotes.findIndex((d) => d.id === activeDoc.id) + 1) % docNotes.length;
-              setActiveDocId(docNotes[nextIndex].id);
-            }}
-            title="Changer de document"
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <Icons.ChevronLeft size={20} />
-          </button>
+        {/* Left : Note switcher & Editable Title */}
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            {docNotes.map((d) => {
+              const isSelected = d.id === activeDoc.id;
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => setActiveDocId(d.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#4F6CE8] text-white shadow-md'
+                      : 'bg-[#E4E1DB] dark:bg-[#363336] text-zinc-600 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
+                  }`}
+                >
+                  {d.title}
+                </button>
+              );
+            })}
+            
+            <button
+              onClick={handleCreateNewDoc}
+              title="Créer une nouvelle note"
+              className="p-1.5 bg-[#E4E1DB] dark:bg-[#363336] text-zinc-600 dark:text-zinc-300 hover:text-[#4F6CE8] rounded-full transition-all cursor-pointer"
+            >
+              <Icons.Plus size={14} />
+            </button>
+          </div>
 
-          {/* Centered Document Title with Red Spellcheck / Squiggle indicator */}
-          <div className="relative group">
-            <span className="text-base font-black text-white tracking-wide cursor-text">
-              {activeDoc.title}
-            </span>
-            {/* Red wavy spellcheck line like in user screenshot */}
-            <div className="h-[2px] w-8 bg-red-500 rounded-full mt-0.5" />
+          <div className="h-5 w-px bg-zinc-300 dark:bg-zinc-700 mx-1 hidden sm:block shrink-0" />
+
+          {/* Editable Note Name input */}
+          <div className="relative flex-1 max-w-sm">
+            <input
+              type="text"
+              value={activeDoc.title}
+              onChange={(e) => handleUpdateActiveDocTitle(e.target.value)}
+              placeholder="Nom de la note..."
+              className="w-full bg-transparent text-sm md:text-base font-black text-zinc-900 dark:text-white outline-none tracking-tight focus:bg-[#E4E1DB]/50 dark:focus:bg-[#363336]/50 px-2 py-0.5 rounded-lg transition-colors"
+            />
           </div>
         </div>
 
-        {/* Right : Search & Overflow Menu */}
-        <div className="flex items-center gap-3">
+        {/* Right : AI Action & Overflow */}
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
-            onClick={() => handleRunAiAnalysis()}
-            className="px-3.5 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-full text-xs font-bold border border-blue-500/30 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+            onClick={handleRunAiAnalysis}
+            className="px-3.5 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-black shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Icons.Sparkles size={13} className={isAnalyzing ? 'animate-spin' : ''} />
             <span>{isAnalyzing ? 'Analyse IA...' : 'Extraction IA'}</span>
           </button>
 
-          <button className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
-            <Icons.Search size={18} />
-          </button>
-          
-          <button className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
+          <button className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#E4E1DB] dark:hover:bg-[#363336] rounded-xl transition-colors cursor-pointer">
             <Icons.MoreVertical size={18} />
           </button>
         </div>
       </div>
 
-      {/* 2. FORMATTING TOOLBAR (Exact matching of Screenshot 1 Toolbar) */}
-      <div className="h-12 px-6 bg-[#1A1A20] border-b border-white/5 flex items-center justify-between shrink-0 overflow-x-auto">
-        <div className="flex items-center gap-2">
+      {/* 2. FORMATTING TOOLBAR (No borders, Royal Iris #4F6CE8 active pills) */}
+      <div className="h-12 px-6 bg-[#E4E1DB] dark:bg-[#363336] flex items-center justify-between shrink-0 overflow-x-auto shadow-inner">
+        <div className="flex items-center gap-1.5">
           
           {/* Undo */}
           <button
             title="Annuler"
-            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
           >
             <Icons.RotateCcw size={15} />
           </button>
 
-          <div className="h-5 w-[1px] bg-white/10 mx-1" />
+          <div className="h-4 w-px bg-zinc-400/30 dark:bg-zinc-600/30 mx-1" />
 
-          {/* Bold Button (Active Blue Pill from Screenshot 1) */}
+          {/* Bold Button (Royal Iris Blue #4F6CE8 Pill) */}
           <button
             onClick={() => setIsBold(!isBold)}
             title="Gras"
             className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
               isBold
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             B
@@ -208,8 +249,8 @@ export default function KamSignalsView({
             title="Italique"
             className={`px-3 py-1 rounded-lg text-xs font-serif italic transition-all cursor-pointer ${
               isItalic
-                ? 'bg-[#2563EB] text-white shadow-md font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             I
@@ -221,8 +262,8 @@ export default function KamSignalsView({
             title="Souligné"
             className={`px-3 py-1 rounded-lg text-xs underline transition-all cursor-pointer ${
               isUnderline
-                ? 'bg-[#2563EB] text-white shadow-md font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             U
@@ -234,8 +275,8 @@ export default function KamSignalsView({
             title="Titre"
             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               isHeading
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             H
@@ -247,20 +288,20 @@ export default function KamSignalsView({
             title="Citation"
             className={`px-3 py-1 rounded-lg text-xs font-serif transition-all cursor-pointer ${
               isQuote
-                ? 'bg-[#2563EB] text-white shadow-md font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             ❝
           </button>
 
-          <div className="h-5 w-[1px] bg-white/10 mx-1" />
+          <div className="h-4 w-px bg-zinc-400/30 dark:bg-zinc-600/30 mx-1" />
 
           {/* Zoom / Font Size +/- */}
           <button
             onClick={() => setFontSize((prev) => Math.min(prev + 1, 20))}
             title="Agrandir texte"
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
           >
             <Icons.PlusCircle size={16} />
           </button>
@@ -268,21 +309,21 @@ export default function KamSignalsView({
           <button
             onClick={() => setFontSize((prev) => Math.max(prev - 1, 11))}
             title="Réduire texte"
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
           >
             <Icons.MinusCircle size={16} />
           </button>
 
-          <div className="h-5 w-[1px] bg-white/10 mx-1" />
+          <div className="h-4 w-px bg-zinc-400/30 dark:bg-zinc-600/30 mx-1" />
 
-          {/* Text Alignment Group (Active Blue Pill for selected mode) */}
+          {/* Text Alignment Group (Active Royal Iris Blue Pill) */}
           <button
             onClick={() => setAlignment('left')}
             title="Aligner à gauche"
             className={`px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
               alignment === 'left'
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             <Icons.AlignLeft size={15} />
@@ -293,8 +334,8 @@ export default function KamSignalsView({
             title="Centrer"
             className={`px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
               alignment === 'center'
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             <Icons.AlignCenter size={15} />
@@ -305,8 +346,8 @@ export default function KamSignalsView({
             title="Aligner à droite"
             className={`px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
               alignment === 'right'
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             <Icons.AlignRight size={15} />
@@ -317,28 +358,28 @@ export default function KamSignalsView({
             title="Justifier"
             className={`px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
               alignment === 'justify'
-                ? 'bg-[#2563EB] text-white shadow-md'
-                : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                ? 'bg-[#4F6CE8] text-white shadow-md'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
             }`}
           >
             <Icons.AlignJustify size={15} />
           </button>
 
-          <div className="h-5 w-[1px] bg-white/10 mx-1" />
+          <div className="h-4 w-px bg-zinc-400/30 dark:bg-zinc-600/30 mx-1" />
 
           {/* Bulleted & Numbered Lists */}
           <button
             onClick={handleAddNoteItem}
-            title="Liste à puces"
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title="Ajouter un point à la liste"
+            className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
           >
             <Icons.List size={16} />
           </button>
 
           <button
             onClick={handleAddNoteItem}
-            title="Liste numérotée"
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title="Ajouter une note numérotée"
+            className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
           >
             <Icons.ListOrdered size={16} />
           </button>
@@ -346,15 +387,15 @@ export default function KamSignalsView({
         </div>
 
         {/* Right side indicator */}
-        <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">
+        <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 hidden sm:inline">
           {fontSize}px · {activeDoc.accountName}
         </span>
       </div>
 
-      {/* 3. CENTERED DOCUMENT CANVAS (Exact visual replication of Screenshot 1) */}
-      <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[#0D0D11]">
+      {/* 3. CENTERED DOCUMENT CANVAS (Soft Alabaster #F6F5F2 in Light, Charcoal #2D2A2D in Dark - No Borders) */}
+      <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[#ECEAE5] dark:bg-[#242124]">
         <div
-          className={`w-full max-w-4xl bg-[#18181D] rounded-2xl p-12 shadow-2xl border border-white/5 space-y-8 min-h-[700px] transition-all ${
+          className={`w-full max-w-4xl bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[32px] p-12 shadow-xl dark:shadow-2xl space-y-8 min-h-[700px] transition-all ${
             alignment === 'center'
               ? 'text-center'
               : alignment === 'right'
@@ -368,65 +409,76 @@ export default function KamSignalsView({
           
           {/* SECTION 1 : Membres : Postes */}
           <div className="space-y-4">
-            <h2 className="text-base font-black text-white tracking-tight">
+            <h2 className="text-base font-black text-zinc-900 dark:text-white tracking-tight">
               Membres : Postes
             </h2>
 
-            <div className="space-y-2.5 font-normal leading-relaxed text-zinc-200">
+            <div className="space-y-2.5 font-normal leading-relaxed text-zinc-800 dark:text-zinc-200">
               {activeDoc.members.map((member, idx) => (
                 <div key={idx} className="flex flex-wrap items-baseline gap-1 group">
-                  {/* Name with subtle spellcheck wave highlight */}
-                  <span className="font-bold text-white relative">
-                    {member.name}
-                    <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-red-500/80 rounded-full" />
-                  </span>
-                  <span className="text-zinc-300">
-                    : {member.role.replace(/^:\s*/, '')}
-                  </span>
+                  <input
+                    type="text"
+                    value={member.name}
+                    onChange={(e) => handleUpdateMember(idx, 'name', e.target.value)}
+                    className="font-bold text-zinc-900 dark:text-white bg-transparent outline-none underline decoration-red-500/80 decoration-wavy cursor-text shrink-0"
+                    style={{ width: `${Math.max(member.name.length * 10, 120)}px` }}
+                  />
+                  <span className="text-zinc-500 dark:text-zinc-400">:</span>
+                  <input
+                    type="text"
+                    value={member.role}
+                    onChange={(e) => handleUpdateMember(idx, 'role', e.target.value)}
+                    className="flex-1 min-w-[200px] text-zinc-700 dark:text-zinc-300 bg-transparent outline-none cursor-text focus:bg-[#E4E1DB]/40 dark:focus:bg-[#363336]/40 px-1 rounded"
+                  />
                 </div>
               ))}
             </div>
           </div>
 
           {/* SECTION 2 : Notes : (Numbered list) */}
-          <div className="space-y-4 pt-4 border-t border-white/5">
-            <h2 className="text-base font-black text-white tracking-tight">
+          <div className="space-y-4 pt-6">
+            <h2 className="text-base font-black text-zinc-900 dark:text-white tracking-tight">
               Notes :
             </h2>
 
-            <ol className="space-y-3 font-normal leading-relaxed text-zinc-200 list-none pl-0">
+            <ol className="space-y-3 font-normal leading-relaxed text-zinc-800 dark:text-zinc-200 list-none pl-0">
               {activeDoc.notesList.map((noteText, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <span className="font-black text-zinc-400 shrink-0">{idx + 1}.</span>
-                  <span className="text-zinc-200">{noteText}</span>
+                  <input
+                    type="text"
+                    value={noteText}
+                    onChange={(e) => handleUpdateNote(idx, e.target.value)}
+                    className="flex-1 text-zinc-800 dark:text-zinc-200 bg-transparent outline-none cursor-text focus:bg-[#E4E1DB]/40 dark:focus:bg-[#363336]/40 px-1.5 py-0.5 rounded transition-colors"
+                  />
                 </li>
               ))}
             </ol>
           </div>
 
-          {/* SECTION 3 : AI Extraction Capsule (Liquid Glass Pill) */}
+          {/* SECTION 3 : AI Extraction Capsule (Brand Royal Iris #4F6CE8 - No Borders) */}
           {activeDoc.extractedOpportunity && showAiInsights && (
-            <div className="mt-8 p-6 rounded-2xl bg-blue-950/30 border border-blue-500/20 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="mt-8 p-6 rounded-[24px] bg-[#E4E1DB] dark:bg-[#363336] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2]">
                     {activeDoc.extractedOpportunity.category}
                   </span>
-                  <span className="text-xs font-bold text-emerald-400">
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     +{activeDoc.extractedOpportunity.estimatedMrr.toLocaleString()} $ / mois
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-white">
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
                   {activeDoc.extractedOpportunity.title}
                 </h4>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   {activeDoc.extractedOpportunity.painPoint}
                 </p>
               </div>
 
               <button
                 onClick={() => onOpenBriefingForAccount(visits[0])}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-black rounded-xl shadow-md shadow-[#4F6CE8]/20 shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <span>Insérer dans le Briefing</span>
                 <Icons.ArrowRight size={14} />

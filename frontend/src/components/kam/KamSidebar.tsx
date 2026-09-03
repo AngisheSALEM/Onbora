@@ -55,7 +55,7 @@ export default function KamSidebar({
 
   return (
     <aside
-      className={`m-4 mr-0 rounded-[32px] bg-white/70 dark:bg-[#1C1B20]/80 backdrop-blur-3xl border border-black/5 dark:border-white/10 shadow-2xl flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 select-none transition-all duration-300 ${
+      className={`m-4 mr-0 rounded-[32px] bg-[#F6F5F2]/90 dark:bg-[#2D2A2D]/90 backdrop-blur-3xl shadow-xl dark:shadow-2xl flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 select-none transition-all duration-300 ${
         isCollapsed ? 'w-20 p-3' : 'w-72 p-5'
       }`}
     >
@@ -86,7 +86,7 @@ export default function KamSidebar({
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
-            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#E4E1DB] dark:hover:bg-[#363336] transition-colors cursor-pointer"
           >
             <Icons.Sidebar size={18} />
           </button>
@@ -105,8 +105,8 @@ export default function KamSidebar({
                 title={isCollapsed ? item.label : undefined}
                 className={`group flex items-center ${isCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 font-bold'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-blue-400'
+                    ? 'bg-[#4F6CE8] text-white shadow-lg shadow-[#4F6CE8]/25 font-bold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#4F6CE8] dark:hover:text-[#7B92F2]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -115,12 +115,12 @@ export default function KamSidebar({
                     className={
                       isActive
                         ? 'text-white'
-                        : 'text-zinc-400 dark:text-zinc-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'
+                        : 'text-zinc-400 dark:text-zinc-500 group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'
                     }
                   />
                   {!isCollapsed && (
                     <div>
-                      <span className={`block text-xs font-bold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'}`}>
+                      <span className={`block text-xs font-bold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'}`}>
                         {item.label}
                       </span>
                       <span className={`text-[10px] block mt-0.5 ${isActive ? 'text-blue-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'}`}>
@@ -134,8 +134,8 @@ export default function KamSidebar({
                   <span
                     className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                       isActive
-                        ? 'bg-white text-blue-600'
-                        : 'bg-blue-600/10 text-blue-600 dark:bg-blue-600/20 dark:text-blue-400'
+                        ? 'bg-white text-[#4F6CE8]'
+                        : 'bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2]'
                     }`}
                   >
                     {item.badge}
@@ -148,11 +148,11 @@ export default function KamSidebar({
       </div>
 
       {/* Bottom : Profile Capsule */}
-      <div className={`p-3 bg-black/5 dark:bg-white/5 rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+      <div className={`p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed ? (
           <>
             <div className="flex items-center gap-2.5 truncate">
-              <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-black text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm border border-white/10">
+              <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-black text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <div className="truncate">
