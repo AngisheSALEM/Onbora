@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -70,7 +70,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             'Rapport de Visite Synthétisé',
             style: TextStyle(
               color: isDark ? Colors.white : AppConstants.textDark,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.3,
             ),
           ),
@@ -205,7 +205,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     style: TextStyle(
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                       fontSize: 18,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -268,7 +268,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w600,
                                             fontSize: 14,
                                             color: isDark ? Colors.white : AppConstants.textDark,
                                           ),
@@ -289,7 +289,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     style: TextStyle(
                                       color: AppConstants.primaryBlue,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -345,7 +345,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 15,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
@@ -392,7 +392,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 15,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
@@ -410,7 +410,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   side: BorderSide.none,
                                   label: Text(
                                     need,
-                                    style: const TextStyle(color: AppConstants.successGreen, fontWeight: FontWeight.w800, fontSize: 13),
+                                    style: const TextStyle(color: AppConstants.successGreen, fontWeight: FontWeight.w600, fontSize: 13),
                                   ),
                                   avatar: const Icon(LucideIcons.check, color: AppConstants.successGreen, size: 15),
                                 );
@@ -446,7 +446,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 15,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
@@ -512,7 +512,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w600,
                                             fontSize: 14,
                                             color: isDark ? Colors.white : AppConstants.textDark,
                                           ),
@@ -606,7 +606,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                       'Intelligence Terrain & Réseau',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w600,
                                         color: isDark ? Colors.white : AppConstants.textDark,
                                       ),
                                     ),
@@ -632,7 +632,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   style: TextStyle(
                                     color: isDark ? Colors.white : AppConstants.textDark,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -659,7 +659,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                                   'Compléter l\'Intelligence Terrain',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: isDark ? const Color(0xFF121214) : Colors.white,
                                   ),
                                 ),
@@ -696,7 +696,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                             salesController.isTransmitting.value
                                 ? 'Transmission au KAM en cours...'
                                 : 'Transmettre le Dossier au KAM',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF121214) : Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
@@ -826,7 +826,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             Text(
               'Devis & Formules Tarifaires Packagées',
               style: TextStyle(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: isDark ? Colors.white : AppConstants.textDark,
               ),

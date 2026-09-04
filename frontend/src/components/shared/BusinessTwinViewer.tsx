@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { BarChart2, Calendar, Briefcase, AlertTriangle, Check } from 'lucide-react';
 
 interface Service {
   service_id?: number;
@@ -191,33 +192,36 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
         <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-850 shrink-0">
           <button
             onClick={() => setActiveTab('impact')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'impact'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
-            📊 Impacts & Comparatif
+            <BarChart2 className="w-3.5 h-3.5" />
+            <span>Impacts & Comparatif</span>
           </button>
           <button
             onClick={() => setActiveTab('roadmap')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'roadmap'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
-            🗓️ Chronologie Déploiement
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Chronologie Déploiement</span>
           </button>
           <button
             onClick={() => setActiveTab('services')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'services'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
             }`}
           >
-            💼 Services Recommandés
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>Services Recommandés</span>
           </button>
         </div>
       </div>
@@ -273,7 +277,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
               <ul className="flex flex-col gap-2.5">
                 {(twin.current_state || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-500 dark:text-zinc-400">
-                    <span className="text-red-500 shrink-0 font-bold mt-0.5">⚠️</span>
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
                     <span className="leading-relaxed">{item}</span>
                   </li>
                 ))}
@@ -289,7 +293,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
               <ul className="flex flex-col gap-2.5">
                 {(twin.proposed_state || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-700 dark:text-zinc-300">
-                    <span className="text-blue-600 dark:text-blue-400 shrink-0 font-black mt-0.5">✓</span>
+                    <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <span className="leading-relaxed">{item}</span>
                   </li>
                 ))}

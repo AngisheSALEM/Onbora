@@ -8,8 +8,13 @@ import '../model/memoji_model.dart';
 class ProfileController extends GetxController {
   static const String _avatarStorageKey = 'onbora_user_memoji_avatar';
 
-  final AuthController authController = Get.find<AuthController>();
-  final ThemeController themeController = Get.find<ThemeController>();
+  AuthController get authController => Get.isRegistered<AuthController>()
+      ? Get.find<AuthController>()
+      : Get.put(AuthController(), permanent: true);
+
+  ThemeController get themeController => Get.isRegistered<ThemeController>()
+      ? Get.find<ThemeController>()
+      : Get.put(ThemeController(), permanent: true);
 
   final RxString currentAvatar = MemojiData.defaultMemoji.obs;
 

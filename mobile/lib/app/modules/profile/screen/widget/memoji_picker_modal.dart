@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -96,7 +96,7 @@ class _MemojiPickerModalState extends State<MemojiPickerModal> with SingleTicker
                           'Choisir un Memoji',
                           style: AppConstants.headlineStyle(isDark).copyWith(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 2),

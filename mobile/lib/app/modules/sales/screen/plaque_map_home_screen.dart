@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -333,7 +333,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                             child: Text(
                               'Map',
                               style: TextStyle(
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 16,
                                 color: isDark ? Colors.white : AppConstants.textDark,
                               ),
@@ -420,7 +420,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 9,
-                                            fontWeight: FontWeight.w900,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ),
@@ -475,7 +475,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                       color: isSelected
                                           ? (isDark ? const Color(0xFF121214) : Colors.white)
                                           : (isDark ? Colors.white : AppConstants.textDark),
-                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w600,
                                       fontSize: 11,
                                     ),
                                   ),
@@ -532,7 +532,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                     style: TextStyle(
                                       color: AppConstants.primaryBtnTextColor(isDark),
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -686,7 +686,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                               selected.isConverted ? 'Converti' : 'À convertir',
                               style: TextStyle(
                                 color: selected.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 10,
                               ),
                             ),
@@ -733,7 +733,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                     style: TextStyle(
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -758,7 +758,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                     'Démarrer Visite',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: AppConstants.primaryBtnTextColor(isDark),
                                     ),
                                   ),

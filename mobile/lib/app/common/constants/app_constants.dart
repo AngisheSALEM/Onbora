@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Centralized Application Constants & Apple Typography Hierarchy
+/// Centralized Application Constants & Apple Typography Hierarchy (SF Pro Native)
 abstract class AppConstants {
-  // --- Fonts & Typography System ---
+  // --- Native Apple SF Pro Typography System ---
   static const String fontFamilyPrimary = 'SFPro';
+  static const String fontFamilySecondary = 'SFPro';
   
   // Standard sizes
   static const double fontSizeOverline = 11.0;  // Surtitre / Eyebrow (11-12px)
@@ -21,49 +22,55 @@ abstract class AppConstants {
   static const double fontSizeHeader = 26.0;
   static const double fontSizeHero = 34.0;
 
-  // --- Strict Typography Hierarchy Getters (Max 2 Bold Levels Per Screen) ---
+  // --- Strict Typography Hierarchy Getters (700 Large Titles, 600 Sub-elements/Headlines, 500 Badges, 400 Body) ---
   
-  /// 1. Grand Titre iOS (Large Title) : 34px | Bold | #FFFFFF (Dark) / #121212 (Light)
+  /// 1. Grand Titre iOS (Large Title) : 34px | Bold | #FFFFFF (Dark) / #111111 (Light)
   static TextStyle largeTitleStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
     fontSize: fontSizeLargeTitle,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.7,
-    height: 1.18,
-    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
+    letterSpacing: -0.6,
+    height: 1.15,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
-  /// 2. Titre de Section (Title 2) : 22px | Bold | #FFFFFF (Dark) / #121212 (Light)
+  /// 2. Titre de Section (Title 2) : 22px | SemiBold | #FFFFFF (Dark) / #111111 (Light)
   static TextStyle title2Style(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
     fontSize: fontSizeTitle2,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
-    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-  );
-
-  /// 3. Surtitre / Tag de Catégorie (Overline / Eyebrow) : 11px | SemiBold | #8E8E93 (Gris Apple)
-  static TextStyle overlineStyle(bool isDark) => const TextStyle(
-    fontSize: fontSizeOverline,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
-    color: Color(0xFF8E8E93),
+    letterSpacing: -0.3,
+    height: 1.22,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
-  /// 4. Titre d'Élément Primaire (Headline) : 16px | Semi-Bold | #FFFFFF (Dark) / #121212 (Light)
+  /// 3. Surtitre / Tag de Catégorie (Overline / Eyebrow) : 11px | Medium | #8E8E93 (Gris Apple)
+  static TextStyle overlineStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeOverline,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.4,
+    color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF8E8E93),
+  );
+
+  /// 4. Titre d'Élément Primaire (Headline) : 16px | SemiBold | #FFFFFF (Dark) / #111111 (Light)
   static TextStyle headlineStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
     fontSize: fontSizeBody,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.25,
+    letterSpacing: -0.2,
     height: 1.25,
-    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
   /// 5. Métadonnées / Secondary Label (Subhead) : 13px | Regular | #8E8E93 (Gris Apple)
-  static TextStyle subheadStyle(bool isDark) => const TextStyle(
+  static TextStyle subheadStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
     fontSize: fontSizeSubhead,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.1,
-    height: 1.25,
-    color: Color(0xFF8E8E93),
+    height: 1.35,
+    color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF8E8E93),
   );
 
   // --- Paddings & Margins ---
@@ -80,31 +87,31 @@ abstract class AppConstants {
   static const double marginXl = 20.0;
   static const double marginXxL = 24.0;
 
-  // --- Apple Liquid Glass Concentric Geometry ---
+  // --- Apple Concentric Geometry ---
   static const double borderRadiusSm = 8.0;
   static const double borderRadiusMd = 14.0;
   static const double borderRadiusLg = 20.0;
   static const double borderRadiusXl = 24.0;
-  static const double borderRadiusAppleCard = 22.0;
+  static const double borderRadiusAppleCard = 20.0;
   static const double borderRadiusAppleButton = 16.0;
   static const double borderRadiusPill = 999.0;
 
-  // --- Brand & High-Contrast Monochrome Colors ---
-  static const Color primaryBlack = Color(0xFF111111);
-  static const Color pureBlack = Color(0xFF000000);
-  static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color primaryNavy = Color(0xFF000000);
+  // --- Brand & High-Contrast Colors ---
+  static const Color primaryBlack = Color(0xFF242124);
+  static const Color pureBlack = Color(0xFF242124);
+  static const Color pureWhite = Color(0xFFF6F5F2);
+  static const Color primaryNavy = Color(0xFF242124);
 
-  // Status & Semantic Colors (Slightly more saturated for dark mode)
+  // Status & Semantic Colors
   static const Color accentGreen = Color(0xFF10B981);
   static const Color successGreen = Color(0xFF10B981);
   static const Color accentAmber = Color(0xFFF59E0B);
   static const Color accentRed = Color(0xFFEF4444);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color accentPurple = Color(0xFF8B5CF6);
-  static const Color primaryBlue = Color(0xFF111111);
-  static const Color accentBlue = Color(0xFF111111);
-  static const Color orangeOfficial = Color(0xFF111111);
+  static const Color primaryBlue = Color(0xFF4F6CE8);
+  static const Color accentBlue = Color(0xFF4F6CE8);
+  static const Color orangeOfficial = Color(0xFFFF7900);
   static const Color accentYellow = Color(0xFFFBBF24);
   static const Color accentYellowDark = Color(0xFFFBBF24);
   static const Color accentYellowLight = Color(0xFFB45309);
@@ -122,50 +129,50 @@ abstract class AppConstants {
   }
   
   // High-Contrast Button Helpers
-  static Color primaryBtnColor(bool isDark) => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
-  static Color primaryBtnTextColor(bool isDark) => isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
-  static Color secondaryBtnColor(bool isDark) => isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
-  static Color secondaryBtnTextColor(bool isDark) => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
-  static Color secondaryBtnBorderColor(bool isDark) => isDark ? const Color(0x28FFFFFF) : const Color(0xFFE5E5EA);
+  static Color primaryBtnColor(bool isDark) => isDark ? const Color(0xFFF6F5F2) : const Color(0xFF242124);
+  static Color primaryBtnTextColor(bool isDark) => isDark ? const Color(0xFF242124) : const Color(0xFFF6F5F2);
+  static Color secondaryBtnColor(bool isDark) => isDark ? const Color(0xFF3B373D) : const Color(0xFFECEAE5);
+  static Color secondaryBtnTextColor(bool isDark) => isDark ? const Color(0xFFF6F5F2) : const Color(0xFF242124);
+  static Color secondaryBtnBorderColor(bool isDark) => Colors.transparent;
 
-  /// Semantic Surfaces - Dark Mode
-  static const Color backgroundDark = Color(0xFF000000);
-  static const Color tabBackgroundDark = Color(0xFF121214);
-  static const Color primaryDark = Color(0xFF1C1C1E);
-  static const Color cardDark = Color(0xFF1C1C1E);
-  static const Color cardDarkGrey = Color(0xFF1C1C1E);
-  static const Color cardDarkSurface = Color(0xFF1C1C1E);
-  static const Color subcardDark = Color(0xFF2C2C2E);
-  static const Color surfaceTertiaryDark = Color(0xFF3A3A3C);
-  static const Color cardDarkBorder = Color(0x1FFFFFFF);
+  /// Semantic Surfaces - Dark Mode (Noir #242124 + Cartes Harmonieuses)
+  static const Color backgroundDark = Color(0xFF242124);
+  static const Color tabBackgroundDark = Color(0xFF1B191B);
+  static const Color primaryDark = Color(0xFF2F2C30);
+  static const Color cardDark = Color(0xFF2F2C30);
+  static const Color cardDarkGrey = Color(0xFF2F2C30);
+  static const Color cardDarkSurface = Color(0xFF2F2C30);
+  static const Color subcardDark = Color(0xFF3B373D);
+  static const Color surfaceTertiaryDark = Color(0xFF48434B);
+  static const Color cardDarkBorder = Colors.transparent;
 
-  /// Semantic Surfaces - Light Mode (Off-white background #F4F4F6 + Pure White cards)
-  static const Color backgroundLight = Color(0xFFF4F4F6);
-  static const Color tabBackgroundLight = Color(0xFFEAEAEC);
+  /// Semantic Surfaces - Light Mode (Blanc Craie #F6F5F2 + Gris Chauds Harmonieux)
+  static const Color backgroundLight = Color(0xFFF6F5F2);
+  static const Color tabBackgroundLight = Color(0xFFE7E5DF);
   static const Color cardLight = Color(0xFFFFFFFF);
-  static const Color cardLightGrey = Color(0xFFF8F8FA);
-  static const Color subcardLight = Color(0xFFF2F2F7);
-  static const Color surfaceTertiaryLight = Color(0xFFE5E5EA);
-  static const Color borderLight = Color(0xFFE5E5EA);
+  static const Color cardLightGrey = Color(0xFFFFFFFF);
+  static const Color subcardLight = Color(0xFFECEAE5);
+  static const Color surfaceTertiaryLight = Color(0xFFDFDCD6);
+  static const Color borderLight = Colors.transparent;
 
   /// Card Surface Tokens
-  static const Color glassDarkSurface = Color(0xFF1C1C1E);
+  static const Color glassDarkSurface = Color(0xFF2F2C30);
   static const Color glassLightSurface = Color(0xFFFFFFFF);
-  static const Color glassDarkBorder = Color(0x1AFFFFFF);
-  static const Color glassLightBorder = Color(0xFFE5E5EA);
+  static const Color glassDarkBorder = Colors.transparent;
+  static const Color glassLightBorder = Colors.transparent;
 
   // --- High-Contrast Typography ---
-  static const Color textDark = Color(0xFF111111);
-  static const Color textLight = Color(0xFFFFFFFF);
-  static const Color textSecondaryLight = Color(0xFF6B7280);
+  static const Color textDark = Color(0xFF242124);
+  static const Color textLight = Color(0xFFF6F5F2);
+  static const Color textSecondaryLight = Color(0xFF6E6C67);
   static const Color textSecondaryDark = Color(0xFFA1A1AA);
   static const Color textMuted = Color(0xFF8E8E93);
-  static const Color textTertiaryLight = Color(0xFFAEAEB2);
-  static const Color textTertiaryDark = Color(0xFF636366);
+  static const Color textTertiaryLight = Color(0xFF9C9993);
+  static const Color textTertiaryDark = Color(0xFF565D6D);
 
   /// Séparateur de liste (Divider)
   static const Color dividerDark = Color(0x1FFFFFFF);
-  static const Color dividerLight = Color(0xFFE5E5EA);
+  static const Color dividerLight = Color(0x14242124);
 
   static Color getTextSecondary(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark

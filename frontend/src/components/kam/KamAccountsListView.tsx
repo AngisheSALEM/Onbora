@@ -19,8 +19,6 @@ export default function KamAccountsListView({
   onOpenDebrief,
   onOpenCreateAccount
 }: KamAccountsListViewProps) {
-  const featuredVisit = visits[0]; // SGB is the priority today
-
   // Group visits by sector / industry
   const sectors = [
     {
@@ -39,64 +37,7 @@ export default function KamAccountsListView({
 
   return (
     <div className="flex-1 flex flex-col gap-8 p-8 overflow-y-auto select-none">
-      
-      {/* 1. FEATURED HERO BANNER (Elegant Deep Charcoal / Cobalt Blue 10% CTA) */}
-      <div className="relative rounded-[32px] overflow-hidden bg-[#191816] dark:bg-[#2D2A2D] text-[#F6F5F2] p-8 md:p-10 shadow-xl border border-black/5 dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        
-        {/* Left : Content */}
-        <div className="relative z-10 max-w-2xl">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 bg-blue-600/20 text-blue-400 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-wider">
-              Visite Prioritaire du Jour
-            </span>
-            <span className="text-xs font-semibold text-zinc-400">
-              Rendez-vous à {featuredVisit.meeting_time} ({featuredVisit.duration_minutes} min)
-            </span>
-          </div>
-
-          <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-tight mt-2 text-white">
-            {featuredVisit.account_name}
-          </h2>
-
-          <p className="text-xs md:text-sm text-zinc-300 mt-2 leading-relaxed font-medium">
-            {featuredVisit.meeting_title}
-          </p>
-
-          <div className="flex items-center gap-4 mt-5 text-xs">
-            <span className="px-3.5 py-1.5 bg-[#282624] dark:bg-[#363336] rounded-xl font-bold text-zinc-200">
-              MRR : {featuredVisit.briefing.orange_relationship.mrr_current.toLocaleString()} € / m
-            </span>
-            <span className="px-3.5 py-1.5 bg-[#282624] dark:bg-[#363336] rounded-xl font-bold text-blue-400">
-              Part Portefeuille : {featuredVisit.briefing.orange_relationship.wallet_share_percentage}%
-            </span>
-            <span className="px-3.5 py-1.5 bg-[#282624] dark:bg-[#363336] rounded-xl font-bold text-zinc-200">
-              Sites : {featuredVisit.briefing.firmographics.locations_count} agences
-            </span>
-          </div>
-        </div>
-
-        {/* Right : Action CTA Button (Cobalt Blue 10% Accent) */}
-        <div className="relative z-10 flex flex-col gap-3 shrink-0">
-          <button
-            onClick={() => onOpenBriefing(featuredVisit)}
-            className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-full text-xs font-black shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-          >
-            <Icons.FileText size={16} />
-            <span>Consulter le Briefing 360°</span>
-          </button>
-
-          <button
-            onClick={() => onOpenDebrief(featuredVisit)}
-            className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-zinc-200 active:scale-95 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 backdrop-blur-md"
-          >
-            <Icons.Mic size={15} />
-            <span>Débriefing Vocal</span>
-          </button>
-        </div>
-
-      </div>
-
-      {/* 2. GROUPED SECTORAL GRIDS */}
+      {/* GROUPED SECTORAL GRIDS */}
       <div className="space-y-8">
         {sectors.map((sec) => {
           if (sec.accounts.length === 0) return null;

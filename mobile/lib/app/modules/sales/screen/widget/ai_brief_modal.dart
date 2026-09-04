@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../model/enterprise_model.dart';
@@ -83,7 +83,7 @@ class AiBriefModal extends StatelessWidget {
                         enterprise.name.isNotEmpty ? enterprise.name[0].toUpperCase() : 'E',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           fontSize: 20,
                         ),
                       ),
@@ -98,7 +98,7 @@ class AiBriefModal extends StatelessWidget {
                           enterprise.name,
                           style: TextStyle(
                             fontSize: 17,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: -0.3,
                             color: isDark ? Colors.white : AppConstants.textDark,
                           ),
@@ -130,7 +130,7 @@ class AiBriefModal extends StatelessWidget {
                       enterprise.isConverted ? 'Converti' : 'À convertir',
                       style: TextStyle(
                         color: enterprise.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         fontSize: 11,
                       ),
                     ),
@@ -144,7 +144,7 @@ class AiBriefModal extends StatelessWidget {
                 'Diagnostic du Compte',
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : AppConstants.textDark,
                 ),
               ),
@@ -168,7 +168,7 @@ class AiBriefModal extends StatelessWidget {
                 'Solutions Recommandées Orange B2B',
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : AppConstants.textDark,
                 ),
               ),
@@ -205,7 +205,7 @@ class AiBriefModal extends StatelessWidget {
                   'Pitch Commercial Conseillé',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
                 ),
@@ -241,7 +241,7 @@ class AiBriefModal extends StatelessWidget {
                           'Démarrer Visite',
                           style: TextStyle(
                             color: isDark ? const Color(0xFF121214) : Colors.white,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
                         ),

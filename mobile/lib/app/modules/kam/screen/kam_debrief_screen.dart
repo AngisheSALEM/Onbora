@@ -104,7 +104,7 @@ class KamDebriefScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.4,
               color: isDark ? Colors.white : AppConstants.textDark,
             ),
@@ -117,6 +117,7 @@ class KamDebriefScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.5,
+              fontWeight: FontWeight.w400,
               height: 1.4,
               color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
             ),
@@ -128,7 +129,7 @@ class KamDebriefScreen extends StatelessWidget {
             controller.formattedDuration,
             style: TextStyle(
               fontSize: 48,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               fontFeatures: const [FontFeature.tabularFigures()],
               color: isRecording ? const Color(0xFFEF4444) : (isDark ? Colors.white : AppConstants.textDark),
             ),

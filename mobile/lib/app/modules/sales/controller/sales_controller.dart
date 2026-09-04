@@ -1385,7 +1385,7 @@ class SalesController extends GetxController {
 
     final notif = SalesNotificationModel(
       id: DateTime.now().millisecondsSinceEpoch,
-      title: 'Accord de Principe Signé ✍️',
+      title: 'Accord de Principe Signé',
       message: 'Félicitations ! ${enterprise.name} a validé l\'offre $offerName (${monthlyPrice.toStringAsFixed(0)} \$/mois). +20 points crédités !',
       notificationType: 'AGREEMENT_SIGNED',
       createdAt: DateTime.now(),
@@ -1407,7 +1407,7 @@ class SalesController extends GetxController {
   void trackProposalSent(String enterpriseName) {
     final notif = SalesNotificationModel(
       id: DateTime.now().millisecondsSinceEpoch,
-      title: 'Proposition Partagée 📤',
+      title: 'Proposition Partagée',
       message: 'Proposition transmise pour $enterpriseName. Suivi d\'ouverture activé en temps réel.',
       notificationType: 'PROPOSAL_SHARED',
       createdAt: DateTime.now(),
@@ -1419,7 +1419,7 @@ class SalesController extends GetxController {
   void simulateClientOpeningProposal(String enterpriseName) {
     final notif = SalesNotificationModel(
       id: DateTime.now().millisecondsSinceEpoch,
-      title: 'Consultation en direct 🔥',
+      title: 'Consultation en direct',
       message: 'Le décideur de $enterpriseName consulte actuellement votre proposition. C\'est le moment idéal pour le relancer !',
       notificationType: 'PROPOSAL_VIEWED',
       createdAt: DateTime.now(),
@@ -1428,7 +1428,7 @@ class SalesController extends GetxController {
     unreadNotificationsCount.value += 1;
 
     Get.snackbar(
-      'Consultation en direct 🔥',
+      'Consultation en direct',
       'Le décideur de $enterpriseName consulte actuellement votre proposition. Relancez-le !',
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppConstants.primaryBlack,
@@ -1443,7 +1443,7 @@ class SalesController extends GetxController {
     final count = pendingSyncCount.value;
     pendingSyncCount.value = 0;
     Get.snackbar(
-      'Synchronisation terminée ☁️',
+      'Synchronisation terminée',
       '$count dossier(s) hors-ligne synchronisé(s) avec succès avec le serveur.',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: const Color(0xFF10B981),

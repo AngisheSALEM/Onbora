@@ -188,7 +188,7 @@ class KamProfileScreen extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w500,
                                   letterSpacing: 0.2,
                                   color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF4B5563),
                                 ),
@@ -207,7 +207,7 @@ class KamProfileScreen extends StatelessWidget {
                   'Portefeuille & Stratégie C-Level',
                   style: TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
                 ),

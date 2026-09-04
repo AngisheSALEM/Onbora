@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     AppConstants.appName,
                     style: theme.textTheme.displayLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 1.0,
                       color: isDark ? Colors.white : AppConstants.textDark,
                     ),
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Orange Business • Copilote Terrain',
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w500,
                             color: isDark ? Colors.white : AppConstants.textDark,
                           ),
                         ),
@@ -143,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             AppConstants.loginTitle,
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: isDark ? Colors.white : AppConstants.textDark,
                             ),
                           ),
@@ -280,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             const SizedBox(width: 10),
                                             Text(
                                               'Connexion en cours...',
-                                              style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF121214) : Colors.white, fontWeight: FontWeight.bold),
+                                              style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF121214) : Colors.white, fontWeight: FontWeight.w600),
                                             ),
                                           ],
                                         )
@@ -289,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           children: [
                                             Text(
                                               AppConstants.loginButton,
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
+                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF121214) : Colors.white),
                                             ),
                                             const SizedBox(width: 8),
                                             const Icon(Icons.arrow_forward_rounded, size: 18),
@@ -306,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Accès Démonstration Rapide :',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w400,
                                   color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
                                 ),
                               ),
@@ -344,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             'Commercial Terrain',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight: FontWeight.w500,
                                               color: isDark ? Colors.white : AppConstants.textDark,
                                             ),
                                           ),
@@ -380,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             'KAM Grands Comptes',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight: FontWeight.w500,
                                               color: isDark ? Colors.white : AppConstants.textDark,
                                             ),
                                           ),

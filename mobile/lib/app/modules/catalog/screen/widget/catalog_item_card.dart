@@ -39,15 +39,13 @@ class CatalogItemCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Surtitre / Catégorie (11px Bold Majuscule) avec protection responsive
+              // Surtitre / Catégorie (11px Medium Majuscule) avec protection responsive
               Expanded(
                 child: Text(
                   item.category.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppConstants.overlineStyle(isDark).copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppConstants.overlineStyle(isDark),
                 ),
               ),
               const SizedBox(width: 8),
@@ -56,7 +54,7 @@ class CatalogItemCard extends StatelessWidget {
                 '${item.monthlyPrice.toStringAsFixed(0)} \$ / mois',
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : AppConstants.textDark,
                 ),
               ),
@@ -68,7 +66,7 @@ class CatalogItemCard extends StatelessWidget {
             item.name,
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
               color: isDark ? Colors.white : AppConstants.textDark,
             ),
@@ -79,6 +77,7 @@ class CatalogItemCard extends StatelessWidget {
             item.description,
             style: TextStyle(
               fontSize: 13,
+              fontWeight: FontWeight.w400,
               height: 1.4,
               color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
             ),
@@ -89,7 +88,7 @@ class CatalogItemCard extends StatelessWidget {
               'Mise en service : ${item.setupPrice.toStringAsFixed(0)} \$',
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
                 color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
               ),
             ),

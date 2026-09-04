@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
@@ -86,7 +86,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : AppConstants.textDark,
                 ),
               ),
@@ -186,7 +186,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                   '1. Présentation de l\'entreprise',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
@@ -303,7 +303,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                   '2. Objectifs du RDV',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
@@ -324,7 +324,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                   '3. Points clés à valider',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
@@ -448,7 +448,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                   '4. Offres cibles',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
@@ -511,7 +511,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                               prep.targetOffer,
                               style: TextStyle(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 color: isDark ? Colors.white : AppConstants.textDark,
                               ),
                             ),
@@ -711,7 +711,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                             "Remplir le formulaire",
                             style: TextStyle(
                               fontSize: 14.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: AppConstants.primaryBtnTextColor(isDark),
                             ),
                           ),

@@ -11,6 +11,7 @@ import '../screen/kam_profile_screen.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
+import '../../../routes/app_routes.dart';
 
 class _NavItem {
   final IconData? icon;
@@ -122,142 +123,180 @@ class _KamMainNavigationScreenState extends State<KamMainNavigationScreen> {
                 return AnimatedPositioned(
                   duration: const Duration(milliseconds: 280),
                   curve: Curves.easeOutCubic,
-                  left: 20,
-                  right: 20,
+                  left: 16,
+                  right: 16,
                   bottom: isVisible ? bottomPadding : -100,
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOut,
                     opacity: isVisible ? 1.0 : 0.0,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                        child: Container(
-                          height: 68,
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xCC18181C)
-                                : const Color(0xE6FFFFFF),
+                    child: Row(
+                      children: [
+                        // Pilule de Navigation Principale KAM
+                        Expanded(
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(34),
-                            border: Border.all(
-                              color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: List.generate(_kamNavItems.length, (index) {
-                              final item = _kamNavItems[index];
-                              final isSelected = controller.currentIndex.value == index;
-
-                              return Expanded(
-                                child: ScaleTap(
-                                  onTap: () => controller.changePage(index),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeOutCubic,
-                                    padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? (isDark
-                                              ? const Color(0x38FFFFFF)
-                                              : const Color(0x18000000))
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(22),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                              child: Container(
+                                height: 68,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xCC18181C)
+                                      : const Color(0xE6FFFFFF),
+                                  borderRadius: BorderRadius.circular(34),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
                                     ),
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          if (item.isProfile)
-                                            GetBuilder<ProfileController>(
-                                              init: Get.isRegistered<ProfileController>()
-                                                  ? Get.find<ProfileController>()
-                                                  : Get.put(ProfileController()),
-                                              builder: (profileCtrl) {
-                                                return Obx(() {
-                                                  final avatarPath = profileCtrl.currentAvatar.value;
-                                                  return Container(
-                                                    width: 25,
-                                                    height: 25,
-                                                    padding: const EdgeInsets.all(1.2),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      border: isSelected
-                                                          ? Border.all(
-                                                              color: isDark
-                                                                  ? Colors.white
-                                                                  : AppConstants.primaryBlack,
-                                                              width: 1.8,
-                                                            )
-                                                          : Border.all(
-                                                              color: Colors.transparent,
-                                                              width: 1.8,
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: List.generate(_kamNavItems.length, (index) {
+                                    final item = _kamNavItems[index];
+                                    final isSelected = controller.currentIndex.value == index;
+
+                                    return Expanded(
+                                      child: ScaleTap(
+                                        onTap: () => controller.changePage(index),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          curve: Curves.easeOutCubic,
+                                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? (isDark
+                                                    ? const Color(0x38FFFFFF)
+                                                    : const Color(0x18000000))
+                                                : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(22),
+                                          ),
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                if (item.isProfile)
+                                                  GetBuilder<ProfileController>(
+                                                    init: Get.isRegistered<ProfileController>()
+                                                        ? Get.find<ProfileController>()
+                                                        : Get.put(ProfileController()),
+                                                    builder: (profileCtrl) {
+                                                      return Obx(() {
+                                                        final avatarPath = profileCtrl.currentAvatar.value;
+                                                        return Container(
+                                                          width: 28,
+                                                          height: 28,
+                                                          padding: const EdgeInsets.all(1.5),
+                                                          decoration: BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            border: isSelected
+                                                                ? Border.all(
+                                                                    color: isDark
+                                                                        ? Colors.white
+                                                                        : AppConstants.primaryBlack,
+                                                                    width: 2.0,
+                                                                  )
+                                                                : Border.all(
+                                                                    color: Colors.transparent,
+                                                                    width: 2.0,
+                                                                  ),
+                                                          ),
+                                                          child: ClipOval(
+                                                            child: Image.asset(
+                                                              avatarPath,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (_, __, ___) => Icon(
+                                                                CupertinoIcons.person_crop_circle_fill,
+                                                                size: 24,
+                                                                color: isSelected
+                                                                    ? (isDark
+                                                                        ? Colors.white
+                                                                        : AppConstants.primaryBlack)
+                                                                    : const Color(0xFF8E8E93),
+                                                              ),
                                                             ),
-                                                    ),
-                                                    child: ClipOval(
-                                                      child: Image.asset(
-                                                        avatarPath,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (_, __, ___) => Icon(
-                                                          CupertinoIcons.person_crop_circle_fill,
-                                                          size: 22,
-                                                          color: isSelected
-                                                              ? (isDark
-                                                                  ? Colors.white
-                                                                  : AppConstants.primaryBlack)
-                                                              : const Color(0xFF8E8E93),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                });
-                                              },
-                                            )
-                                          else
-                                            Icon(
-                                              item.icon!,
-                                              size: 22,
-                                              color: isSelected
-                                                  ? (isDark ? Colors.white : AppConstants.textDark)
-                                                  : const Color(0xFF8E8E93),
-                                            ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            item.label,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 10.5,
-                                              height: 1.1,
-                                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                              letterSpacing: -0.2,
-                                              color: isSelected
-                                                  ? (isDark ? Colors.white : AppConstants.textDark)
-                                                  : const Color(0xFF8E8E93),
+                                                          ),
+                                                        );
+                                                      });
+                                                    },
+                                                  )
+                                                else
+                                                  Icon(
+                                                    item.icon!,
+                                                    size: 24,
+                                                    color: isSelected
+                                                        ? (isDark ? Colors.white : AppConstants.textDark)
+                                                        : const Color(0xFF8E8E93),
+                                                  ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  item.label,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                                    letterSpacing: -0.2,
+                                                    color: isSelected
+                                                        ? (isDark ? Colors.white : AppConstants.textDark)
+                                                        : const Color(0xFF8E8E93),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  }),
                                 ),
-                              );
-                            }),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+
+                        // Bouton de Recherche Autonome Circulaire KAM
+                        const SizedBox(width: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(32),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                            child: ScaleTap(
+                              onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xCC18181C)
+                                      : const Color(0xE6FFFFFF),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    CupertinoIcons.search,
+                                    size: 26,
+                                    color: isDark ? Colors.white : AppConstants.textDark,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );

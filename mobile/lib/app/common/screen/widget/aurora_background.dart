@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 
 /// Pure Apple OLED Dark / Studio Light Canvas
-/// - Dark Mode: Pure Obsidian OLED Black (#121212) for razor-sharp typography and contrast
+/// - Dark Mode: Pure Obsidian OLED Black (#181F20) for razor-sharp typography and contrast
 /// - Light Mode: Clean Apple Studio Off-White (#F7F7F8)
 class AuroraBackground extends StatelessWidget {
   final Widget child;

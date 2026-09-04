@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -291,7 +291,7 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
                                     enterprise.isConverted ? 'OK' : 'À convertir',
                                     style: TextStyle(
                                       color: enterprise.isConverted ? AppConstants.successGreen : const Color(0xFFD97706),
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 10,
                                     ),
                                   ),

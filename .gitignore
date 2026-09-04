@@ -27,9 +27,10 @@ Thumbs.db
 .vscode/
 *.log
 
-# Exclude all markdown files except README.md
+# Exclude all markdown files except README.md and DESIGN.md
 **/*.md
 !README.md
+!DESIGN.md
 
 # Documentation local files
 doc_backend.md
@@ -43,4 +44,14 @@ Uml.txt
 Taches.txt
 amelioration .txt
 onbora_poubelle/
+
+# Mockup screenshots & temp assets
+*.png
+*.jpg
+*.jpeg
+*.mp4
+frontend/*.png
+frontend/capture_signals.js
+memojis/
+onbora interface probleme/
 

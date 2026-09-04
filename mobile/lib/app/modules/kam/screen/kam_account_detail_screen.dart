@@ -239,7 +239,7 @@ class KamAccountDetailScreen extends StatelessWidget {
                     '${account.walletSharePercentage.toInt()}%',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : AppConstants.textDark,
                     ),
                   ),
@@ -487,7 +487,7 @@ class KamAccountDetailScreen extends StatelessWidget {
                       contract.monthlyRevenue,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : AppConstants.textDark,
                       ),
                     ),

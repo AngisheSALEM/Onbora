@@ -153,9 +153,6 @@ class DealShareModal extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isDark ? AppConstants.dividerDark : AppConstants.dividerLight,
-                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

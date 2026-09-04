@@ -93,7 +93,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                           'Consentement Légal',
                           style: TextStyle(
                             color: isDark ? Colors.white : AppConstants.textDark,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             fontSize: 16,
                             letterSpacing: -0.2,
                           ),
@@ -157,7 +157,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     'Client d\'accord — Enregistrer l\'Audio',
                     style: TextStyle(
                       color: AppConstants.primaryBtnTextColor(isDark),
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
@@ -184,7 +184,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     'Client refuse — Mode Prise de Notes / Mémo',
                     style: TextStyle(
                       color: isDark ? Colors.white : AppConstants.textDark,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
                   ),
@@ -222,7 +222,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
             AppConstants.dictaphoneTitle,
             style: TextStyle(
               color: isDark ? Colors.white : AppConstants.textDark,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.3,
             ),
           ),
@@ -249,7 +249,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                       'Formulaire',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : AppConstants.textDark,
                       ),
                     ),
@@ -291,7 +291,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isDark ? Colors.white : AppConstants.textDark,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
                             ),
@@ -335,7 +335,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                     'Audio Consenti',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: !_isNoAudioMode ? (isDark ? Colors.white : AppConstants.textDark) : (isDark ? Colors.white60 : AppConstants.textMuted),
                                     ),
                                   ),
@@ -371,7 +371,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                     'Sans Audio / Mémo',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: _isNoAudioMode ? (isDark ? Colors.white : AppConstants.textDark) : (isDark ? Colors.white60 : AppConstants.textMuted),
                                     ),
                                   ),
@@ -392,7 +392,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                           style: TextStyle(
                             color: isDark ? Colors.white : AppConstants.textDark,
                             fontSize: 56,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 2,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
@@ -415,7 +415,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                               ? AppConstants.errorRed
                               : (isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight),
                           fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 1.1,
                         ),
                       );
@@ -493,7 +493,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 'Prise de Notes Rapide & Mémo',
                                 style: TextStyle(
                                   color: isDark ? Colors.white : AppConstants.textDark,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
                               ),
@@ -559,7 +559,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 }
                               },
                               icon: const Icon(LucideIcons.sparkles, size: 16, color: Colors.white),
-                              label: const Text('Générer le Compte-Rendu IA', style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+                              label: const Text('Générer le Compte-Rendu IA', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
                                 foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
@@ -597,7 +597,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: isSpeaking ? const Color(0xFF10B981) : (isDark ? Colors.white : AppConstants.textDark),
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                     ),
                                   ),
@@ -626,7 +626,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                           style: TextStyle(
                                             color: isDark ? Colors.white : AppConstants.textDark,
                                             fontSize: 10,
-                                            fontWeight: FontWeight.w900,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ],
@@ -657,7 +657,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
 
                   const SizedBox(height: 20),
 
-                  // 💡 Live Offers Section (Minimalist Circular Checkbox Cards + Skeleton Loader)
+                  // Live Offers Section (Minimalist Circular Checkbox Cards + Skeleton Loader)
                   Obx(() {
                     final copilot = salesController.currentLiveCopilot.value;
                     final packages = copilot?.realtimeProposition.recommendedPackages ?? [];
@@ -771,7 +771,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                 : Icon(LucideIcons.sparkles, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
                             label: Text(
                               isProcessing ? 'Rédaction en cours...' : AppConstants.dictaphoneGenerateBtn,
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? const Color(0xFF121214) : Colors.white),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF121214) : Colors.white),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),

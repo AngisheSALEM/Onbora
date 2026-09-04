@@ -79,7 +79,7 @@ class NotificationsModal {
                         'Tout marquer lu',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : AppConstants.textDark,
                         ),
                       ),
@@ -164,12 +164,6 @@ class NotificationsModal {
                           decoration: BoxDecoration(
                             color: isDark ? const Color(0xFF18181B) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? (item.isRead ? const Color(0x22FFFFFF) : const Color(0x44FFFFFF))
-                                  : (item.isRead ? AppConstants.borderLight : const Color(0xFFCBD5E1)),
-                              width: 1,
-                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
@@ -191,17 +185,13 @@ class NotificationsModal {
                                         decoration: BoxDecoration(
                                           color: isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9),
                                           borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                                            width: 0.8,
-                                          ),
                                         ),
                                         child: Text(
                                           item.plaqueCode.isNotEmpty ? item.plaqueCode : 'ONBORA',
                                           style: TextStyle(
                                             color: isDark ? Colors.white : AppConstants.textDark,
                                             fontSize: 10,
-                                            fontWeight: FontWeight.w900,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ),
@@ -211,7 +201,7 @@ class NotificationsModal {
                                           width: 8,
                                           height: 8,
                                           decoration: const BoxDecoration(
-                                            color: Color(0xFFEF4444),
+                                            color: AppConstants.accentBlue,
                                             shape: BoxShape.circle,
                                           ),
                                         ),
@@ -234,7 +224,7 @@ class NotificationsModal {
                                 item.title,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   color: isDark ? Colors.white : AppConstants.textDark,
                                 ),
                               ),

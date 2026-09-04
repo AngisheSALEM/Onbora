@@ -164,8 +164,9 @@ class _AppleLargeTitleDelegate extends SliverPersistentHeaderDelegate {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
+              fontFamily: AppConstants.fontFamilyPrimary,
               fontSize: fontSize,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: letterSpacing,
               height: 1.15,
               color: isDark ? Colors.white : AppConstants.textDark,

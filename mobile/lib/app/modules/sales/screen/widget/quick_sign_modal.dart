@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../common/constants/app_constants.dart';
@@ -134,7 +134,7 @@ class _QuickSignModalState extends State<QuickSignModal> {
                   '${widget.monthlyPrice.toStringAsFixed(0)} \$ / mois',
                   style: TextStyle(
                     color: isDark ? Colors.white : AppConstants.textDark,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
@@ -154,9 +154,6 @@ class _QuickSignModalState extends State<QuickSignModal> {
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark ? AppConstants.dividerDark : AppConstants.dividerLight,
-                ),
               ),
               child: Stack(
                 children: [

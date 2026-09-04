@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -256,7 +256,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   'Cartographiez l\'écosystème local',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: isDark ? Colors.white : AppConstants.textDark,
                                   ),
                                 ),
@@ -294,7 +294,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                     'Scanner un document (RCCM / Facture)',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
                                   ),
@@ -319,7 +319,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                 style: TextStyle(
                                   color: isDark ? const Color(0xFF121214) : Colors.white,
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -500,7 +500,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                         children: [
                           Text(
                             'Voisin #1 (Rayon 50-100m)',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppConstants.textDark),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppConstants.textDark),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -555,7 +555,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
 
                           Text(
                             'Voisin #2 (Rayon 50-100m)',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppConstants.textDark),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppConstants.textDark),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -785,7 +785,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   Expanded(
                                     child: Text(
                                       'Alerte Friction : Lead qualifié prioritaire pour le KAM.',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFFEF4444)),
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFFEF4444)),
                                     ),
                                   ),
                                 ],
@@ -864,7 +864,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   : 'Valider le Rapport Terrain',
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w600,
                                 color: isDark ? const Color(0xFF121214) : Colors.white,
                               ),
                             ),
@@ -906,7 +906,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : AppConstants.textDark,
             ),
           ),
@@ -923,7 +923,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
             badge,
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: badgeColor,
             ),
           ),

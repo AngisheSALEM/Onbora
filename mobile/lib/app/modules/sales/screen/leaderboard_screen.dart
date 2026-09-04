@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
@@ -260,7 +260,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                     '$points pts',
                                     style: TextStyle(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
                                   ),
@@ -305,7 +305,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   'Barème des Primes & Points',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
                 ),
@@ -376,7 +376,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   'Classement Général',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),
                 ),
@@ -491,7 +491,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 '${entry.totalPoints} pts',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   color: isDark ? Colors.white : AppConstants.textDark,
                                 ),
                               ),

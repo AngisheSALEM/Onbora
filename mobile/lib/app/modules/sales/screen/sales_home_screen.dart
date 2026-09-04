@@ -223,7 +223,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 8,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -346,7 +346,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 20,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: -0.4,
                                   color: isDark ? Colors.white : AppConstants.textDark,
                                 ),
@@ -599,7 +599,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 19,
-                                              fontWeight: FontWeight.w800,
+                                              fontWeight: FontWeight.w600,
                                               letterSpacing: -0.4,
                                               color: isDark ? Colors.white : AppConstants.textDark,
                                             ),
@@ -636,7 +636,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                                   'Voir le brief',
                                                   style: TextStyle(
                                                     fontSize: 11,
-                                                    fontWeight: FontWeight.w700,
+                                                    fontWeight: FontWeight.w500,
                                                     color: isDark ? Colors.white : AppConstants.textDark,
                                                   ),
                                                 ),
@@ -678,7 +678,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                     AppConstants.recentVisitsTitle,
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : AppConstants.textDark,
                     ),
                   ),

@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -193,7 +193,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
           'Numérisation de Document',
           style: TextStyle(
             color: isDark ? Colors.white : AppConstants.textDark,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             letterSpacing: -0.3,
             fontSize: 18,
           ),
@@ -229,7 +229,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                               Text(
                                 'Récupération rapide des données',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 13,
                                   color: isDark ? Colors.white : AppConstants.textDark,
                                 ),
@@ -256,7 +256,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                     'Type de Document',
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : AppConstants.textDark,
                     ),
                   ),
@@ -352,7 +352,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                                   'Cadrez le document dans le viseur',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: isDark ? Colors.white : AppConstants.textDark,
                                   ),
                                 ),
@@ -385,7 +385,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                                     'Prendre une photo',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: isDark ? const Color(0xFF121214) : Colors.white,
                                     ),
                                   ),
@@ -408,7 +408,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                                     'Galerie',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: isDark ? Colors.white : AppConstants.textDark,
                                     ),
                                   ),
@@ -429,7 +429,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                           icon: Icon(LucideIcons.sparkles, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
                           label: Text(
                             'Tester avec un modèle de document type',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? Colors.white70 : AppConstants.textDark),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : AppConstants.textDark),
                           ),
                         ),
                       ],
@@ -445,7 +445,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                         'Données Extraites',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : AppConstants.textDark,
                         ),
                       ),
@@ -458,7 +458,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                           ),
                           child: const Text(
                             'Prêt à valider',
-                            style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.w900),
+                            style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.w600),
                           ),
                         ),
                     ],
@@ -536,7 +536,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                           'Valider et Insérer dans le Dossier',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             color: isDark ? const Color(0xFF121214) : Colors.white,
                           ),
                         ),
@@ -590,7 +590,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w700,
                 color: isSelected
                     ? (isDark ? const Color(0xFF121214) : Colors.white)
                     : (isDark ? Colors.white : AppConstants.textDark),

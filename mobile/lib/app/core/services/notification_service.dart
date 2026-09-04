@@ -204,7 +204,7 @@ class NotificationService extends GetxService {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null && token.isNotEmpty) {
         fcmToken.value = token;
-        debugPrint("🔥 Synchronisation Jeton FCM avec Onbora Backend: $token");
+        debugPrint("[FCM] Synchronisation Jeton FCM avec Onbora Backend: $token");
 
         if (Get.isRegistered<ApiClient>()) {
           final apiClient = Get.find<ApiClient>();

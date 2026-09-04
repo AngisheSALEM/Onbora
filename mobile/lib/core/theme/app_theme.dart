@@ -28,8 +28,8 @@ class AppTheme {
         onSurface: textDark,
       ),
       textTheme: GoogleFonts.interTextTheme().copyWith(
-        displayLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: textDark),
-        titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: textDark),
+        displayLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: textDark),
+        titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, color: textDark),
         titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: textDark),
         bodyLarge: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.normal, color: textDark),
         bodyMedium: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.normal, color: textMuted),
@@ -39,7 +39,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.white),
-        titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -92,8 +92,8 @@ class AppTheme {
         onSurface: Colors.white,
       ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white),
-        titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        displayLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white),
+        titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
         titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
         bodyLarge: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.white),
         bodyMedium: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.normal, color: Color(0xFF94A3B8)),
@@ -103,7 +103,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.white),
-        titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),
       cardTheme: CardThemeData(
         color: const Color(0xFF1E293B),

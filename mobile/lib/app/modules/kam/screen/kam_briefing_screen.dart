@@ -42,13 +42,13 @@ class KamBriefingScreen extends StatelessWidget {
                 return IndexedStack(
                   index: controller.selectedTab.value,
                   children: [
-                    // Onglet 0 : ⚡ L'Essentiel (Flash 30s)
+                    // Onglet 0 : L'Essentiel (Flash 30s)
                     _buildTabEssential(briefing, isDark),
 
-                    // Onglet 1 : 🏢 Contexte & SLA
+                    // Onglet 1 : Contexte & SLA
                     _buildTabContextAndSla(briefing, isDark),
 
-                    // Onglet 2 : 🎯 Plan de RDV & Playbook
+                    // Onglet 2 : Plan de RDV & Playbook
                     _buildTabMeetingPlan(briefing, isDark),
                   ],
                 );
@@ -187,21 +187,24 @@ class KamBriefingScreen extends StatelessWidget {
         return Row(
           children: [
             _buildTabButton(
-              label: "⚡ L'Essentiel",
+              icon: CupertinoIcons.sparkles,
+              label: "L'Essentiel",
               index: 0,
               isSelected: activeTab == 0,
               onTap: () => controller.setTab(0),
               isDark: isDark,
             ),
             _buildTabButton(
-              label: '🏢 Contexte',
+              icon: CupertinoIcons.building_2_fill,
+              label: 'Contexte',
               index: 1,
               isSelected: activeTab == 1,
               onTap: () => controller.setTab(1),
               isDark: isDark,
             ),
             _buildTabButton(
-              label: '🎯 Plan RDV',
+              icon: CupertinoIcons.scope,
+              label: 'Plan RDV',
               index: 2,
               isSelected: activeTab == 2,
               onTap: () => controller.setTab(2),
@@ -214,12 +217,16 @@ class KamBriefingScreen extends StatelessWidget {
   }
 
   Widget _buildTabButton({
+    required IconData icon,
     required String label,
     required int index,
     required bool isSelected,
     required VoidCallback onTap,
     required bool isDark,
   }) {
+    final activeColor = isDark ? Colors.black : Colors.white;
+    final inactiveColor = isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280);
+
     return Expanded(
       child: ScaleTap(
         onTap: onTap,
@@ -243,22 +250,37 @@ class KamBriefingScreen extends StatelessWidget {
                 : null,
           ),
           alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected
-                  ? (isDark ? Colors.black : Colors.white)
-                  : (isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280)),
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? activeColor : inactiveColor,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyPrimary,
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? activeColor : inactiveColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // --- ONGLET 0 : ⚡ L'ESSENTIEL (Flash 30s) ---
+  // --- ONGLET 0 : L'ESSENTIEL (Flash 30s) ---
   Widget _buildTabEssential(dynamic briefing, bool isDark) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -271,17 +293,17 @@ class KamBriefingScreen extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          // 🔴 LE PIÈGE À ÉVITER AUJOURD'HUI (Warning Callout)
+          // LE PIÈGE À ÉVITER AUJOURD'HUI (Warning Callout)
           _buildTrapsCard(briefing, isDark),
 
           const SizedBox(height: 14),
 
-          // 👥 LES DÉCIDEURS DANS LA SALLE
+          // LES DÉCIDEURS DANS LA SALLE
           _buildEssentialStakeholdersCard(briefing, isDark),
 
           const SizedBox(height: 14),
 
-          // 💡 L'OPPORTUNITÉ ORANGE À PITCHER
+          // L'OPPORTUNITÉ ORANGE À PITCHER
           _buildOpportunityHighlightCard(briefing, isDark),
 
           const SizedBox(height: 100),
@@ -290,7 +312,7 @@ class KamBriefingScreen extends StatelessWidget {
     );
   }
 
-  // --- ONGLET 1 : 🏢 CONTEXTE & SANTÉ ORANGE ---
+  // --- ONGLET 1 : CONTEXTE & SANTÉ ORANGE ---
   Widget _buildTabContextAndSla(dynamic briefing, bool isDark) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -317,7 +339,7 @@ class KamBriefingScreen extends StatelessWidget {
     );
   }
 
-  // --- ONGLET 2 : 🎯 PLAN DE RDV & DÉROULÉ ---
+  // --- ONGLET 2 : PLAN DE RDV & DÉROULÉ ---
   Widget _buildTabMeetingPlan(dynamic briefing, bool isDark) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -427,7 +449,7 @@ class KamBriefingScreen extends StatelessWidget {
                 'PIÈGE DU JOUR À ÉVITER',
                 style: AppConstants.overlineStyle(isDark).copyWith(
                   color: const Color(0xFFEF4444),
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -787,7 +809,7 @@ class KamBriefingScreen extends StatelessWidget {
                       contract.monthlyRevenue,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : AppConstants.textDark,
                       ),
                     ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../common/constants/app_constants.dart';
@@ -129,7 +129,7 @@ class _RoiSimulatorModalState extends State<RoiSimulatorModal> {
                       'Simulateur ROI Express',
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : AppConstants.textDark,
                       ),
                     ),
@@ -302,7 +302,7 @@ class _RoiSimulatorModalState extends State<RoiSimulatorModal> {
                               '${_monthlyPrice.toStringAsFixed(0)} \$ / mois',
                               style: TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 color: isDark ? Colors.white : AppConstants.textDark,
                               ),
                             ),
@@ -323,7 +323,7 @@ class _RoiSimulatorModalState extends State<RoiSimulatorModal> {
                               '~${_monthlySavings.toStringAsFixed(0)} \$ / mois',
                               style: const TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 color: AppConstants.successGreen,
                               ),
                             ),

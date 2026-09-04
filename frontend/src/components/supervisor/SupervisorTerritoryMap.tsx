@@ -1997,7 +1997,7 @@ export default function SupervisorTerritoryMap({
                               : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                           }`}
                         >
-                          <span>📐</span> Mode Linéaire (Points & Segments)
+                          <Icons.Maximize2 size={13} /> Mode Linéaire (Points & Segments)
                         </button>
                         <button
                           type="button"
@@ -2008,7 +2008,7 @@ export default function SupervisorTerritoryMap({
                               : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                           }`}
                         >
-                          <span>✏️</span> Main Levée
+                          <Icons.Edit3 size={13} /> Main Levée
                         </button>
                       </div>
 
@@ -2086,8 +2086,8 @@ export default function SupervisorTerritoryMap({
                           }}
                           className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
                         >
-                          <Icons.CheckCircle size={13} />
-                          💾 Enregistrer ce polygone
+                          <Icons.Save size={13} />
+                          Enregistrer ce polygone
                         </button>
                       )}
                     </div>
@@ -2450,7 +2450,7 @@ export default function SupervisorTerritoryMap({
                       ? 'badge-success'
                       : 'badge-warning'
                   }`}>
-                    {selectedEnterprise.is_ready_for_conversion ? 'Converti 🟢' : 'À Prospecter'}
+                    {selectedEnterprise.is_ready_for_conversion ? 'Converti' : 'À Prospecter'}
                   </span>
                 </div>
 
@@ -2506,8 +2506,9 @@ export default function SupervisorTerritoryMap({
                   {selectedPlaque.assigned_salespersons_names && selectedPlaque.assigned_salespersons_names.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                       {selectedPlaque.assigned_salespersons_names.map((name, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
-                          👤 {name}
+                        <span key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
+                          <Icons.User size={10} />
+                          <span>{name}</span>
                         </span>
                       ))}
                     </div>
