@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StrategicVisit, TriggerSignal } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 
@@ -75,7 +75,7 @@ export default function KamSignalsView({
         <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="font-weight: 700;">Patricia Lumumba</span> : Directrice des Achats & Moyens Généraux</p>
         <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="font-weight: 700;">Alain Kabasele</span> : Responsable Infrastructure Réseaux</p>
         <br/>
-        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Relevé des Décisions Stratégiques :</h3>
+        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Relevé des Décisions :</h3>
         <p style="margin-bottom: 0.4rem; line-height: 1.6;">1. Renouvellement impératif du lien Fibre Dédiée 200 Mbps avant la fin du trimestre.</p>
         <p style="margin-bottom: 0.4rem; line-height: 1.6;">2. Lancement d'un appel d'offres restreint pour le raccordement SD-WAN de 18 agences provinciales (Lubumbashi, Goma, Matadi).</p>
         <p style="margin-bottom: 0.4rem; line-height: 1.6;">3. Exigence de haute disponibilité 99,99% avec bascule automatique sur lien satellite et 4G/5G de secours.</p>
@@ -95,21 +95,35 @@ export default function KamSignalsView({
   // Editor Toolbar State
   const [fontSize, setFontSize] = useState<number>(14);
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify'>('left');
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAiInsights, setShowAiInsights] = useState(true);
 
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // Execute formatting command on text selection
-  const executeCommand = (command: string, value: string = '') => {
-    document.execCommand(command, false, value);
-    if (editorRef.current) {
-      handleDocContentChange(editorRef.current.innerHTML);
+  // Sync content into DOM only when active note changes or switching to editor view
+  useEffect(() => {
+    if (editorRef.current && viewMode === 'editor') {
+      editorRef.current.innerHTML = activeDoc.contentHtml;
     }
-  };
+  }, [activeDocId, viewMode]);
 
-  const handleDocContentChange = (newHtml: string) => {
-    const plainText = newHtml.replace(/<[^>]+>/g, ' ').slice(0, 160);
+  // Check active formatting (bold, italic, underline) on selection change
+  const updateActiveFormats = useCallback(() => {
+    try {
+      setIsBold(document.queryCommandState('bold'));
+      setIsItalic(document.queryCommandState('italic'));
+      setIsUnderline(document.queryCommandState('underline'));
+    } catch {}
+  }, []);
+
+  // Save content to state WITHOUT re-injecting into DOM (prevents cursor jumping backwards!)
+  const handleEditorInput = () => {
+    if (!editorRef.current) return;
+    const newHtml = editorRef.current.innerHTML;
+    const plainText = editorRef.current.innerText.slice(0, 160);
     setDocNotes((prev) =>
       prev.map((d) =>
         d.id === activeDoc.id
@@ -117,6 +131,16 @@ export default function KamSignalsView({
           : d
       )
     );
+    updateActiveFormats();
+  };
+
+  // Execute formatting command on text selection
+  const executeCommand = (command: string, value: string = '') => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    document.execCommand(command, false, value);
+    handleEditorInput();
   };
 
   const handleUpdateActiveDocTitle = (newTitle: string) => {
@@ -133,7 +157,7 @@ export default function KamSignalsView({
   const handleCreateNewDoc = () => {
     const newDoc: DocNote = {
       id: `doc-${Date.now()}`,
-      title: 'Nouvelle Note Stratégique',
+      title: 'Nouvelle Note',
       accountName: visits[0]?.account_name || 'Nouveau Compte',
       updatedAt: 'Modifié à l\'instant',
       previewText: 'Nouvelle note vierge. Cliquez pour rédiger votre compte-rendu...',
@@ -189,7 +213,7 @@ export default function KamSignalsView({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                Notes Stratégiques & Comptes-Rendus
+                Notes & Comptes-Rendus
               </h1>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Sélectionnez une note pour l&apos;ouvrir dans l&apos;éditeur ou créez un nouveau document.
@@ -347,6 +371,7 @@ export default function KamSignalsView({
               
               {/* Undo */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('undo')}
                 title="Annuler"
                 className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -358,33 +383,49 @@ export default function KamSignalsView({
 
               {/* Bold Button (B) */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('bold')}
                 title="Gras"
-                className="px-3 py-1 rounded-lg text-xs font-black text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
+                className={`px-3 py-1 rounded-lg text-xs font-black transition-colors cursor-pointer ${
+                  isBold
+                    ? 'bg-[#4F6CE8] text-white shadow-md'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
+                }`}
               >
                 B
               </button>
 
               {/* Italic Button (I) */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('italic')}
                 title="Italique"
-                className="px-3 py-1 rounded-lg text-xs font-serif italic text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
+                className={`px-3 py-1 rounded-lg text-xs font-serif italic transition-colors cursor-pointer ${
+                  isItalic
+                    ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
+                }`}
               >
                 I
               </button>
 
               {/* Underline Button (U) */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('underline')}
                 title="Souligné"
-                className="px-3 py-1 rounded-lg text-xs underline text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
+                className={`px-3 py-1 rounded-lg text-xs underline transition-colors cursor-pointer ${
+                  isUnderline
+                    ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
+                }`}
               >
                 U
               </button>
 
               {/* Heading (H) */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('formatBlock', '<h3>')}
                 title="Titre de section"
                 className="px-3 py-1 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -394,6 +435,7 @@ export default function KamSignalsView({
 
               {/* Quote */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('formatBlock', '<blockquote>')}
                 title="Citation"
                 className="px-3 py-1 rounded-lg text-xs font-serif text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -405,7 +447,8 @@ export default function KamSignalsView({
 
               {/* Font Size +/- */}
               <button
-                onClick={() => setFontSize((prev) => Math.min(prev + 1, 20))}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setFontSize((prev) => Math.min(prev + 1, 22))}
                 title="Agrandir texte"
                 className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
               >
@@ -413,6 +456,7 @@ export default function KamSignalsView({
               </button>
 
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setFontSize((prev) => Math.max(prev - 1, 11))}
                 title="Réduire texte"
                 className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -424,6 +468,7 @@ export default function KamSignalsView({
 
               {/* Text Alignments */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   setAlignment('left');
                   executeCommand('justifyLeft');
@@ -439,6 +484,7 @@ export default function KamSignalsView({
               </button>
 
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   setAlignment('center');
                   executeCommand('justifyCenter');
@@ -454,6 +500,7 @@ export default function KamSignalsView({
               </button>
 
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   setAlignment('right');
                   executeCommand('justifyRight');
@@ -469,6 +516,7 @@ export default function KamSignalsView({
               </button>
 
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   setAlignment('justify');
                   executeCommand('justifyFull');
@@ -487,6 +535,7 @@ export default function KamSignalsView({
 
               {/* Lists */}
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('insertUnorderedList')}
                 title="Liste à puces"
                 className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -495,6 +544,7 @@ export default function KamSignalsView({
               </button>
 
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('insertOrderedList')}
                 title="Liste numérotée"
                 className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
@@ -513,15 +563,16 @@ export default function KamSignalsView({
           <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[#ECEAE5] dark:bg-[#242124]">
             <div className="w-full max-w-4xl bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[32px] p-12 shadow-xl dark:shadow-2xl space-y-8 min-h-[720px]">
               
-              {/* Zone d'Édition WYSIWYG Réelle & Continue */}
+              {/* Zone d'Édition WYSIWYG Réelle & Continue (Sans dangerouslySetInnerHTML sur les re-renders = Plus d'écriture inversée !) */}
               <div
                 ref={editorRef}
                 contentEditable={true}
                 suppressContentEditableWarning={true}
-                onInput={(e) => handleDocContentChange(e.currentTarget.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: activeDoc.contentHtml }}
+                onInput={handleEditorInput}
+                onKeyUp={updateActiveFormats}
+                onMouseUp={updateActiveFormats}
                 style={{ fontSize: `${fontSize}px` }}
-                className="outline-none min-h-[500px] text-zinc-900 dark:text-white leading-relaxed font-sans cursor-text selection:bg-[#4F6CE8]/30"
+                className="outline-none min-h-[500px] text-zinc-900 dark:text-white leading-relaxed font-sans cursor-text selection:bg-[#4F6CE8]/30 focus:outline-none"
               />
 
               {/* Capsule d'Opportunité IA Détectée (Zéro Bordure, Zéro Emoji) */}
