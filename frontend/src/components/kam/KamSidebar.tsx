@@ -5,22 +5,25 @@ import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 
-export type KamView = 'accounts' | 'briefing' | 'signals' | 'debrief';
+export type KamView = 'accounts' | 'briefing' | 'agenda' | 'visits' | 'directives' | 'signals' | 'settings';
 
 interface KamSidebarProps {
   activeView: KamView;
   onViewChange: (view: KamView) => void;
   unreadSignalsCount?: number;
+  unreadDirectivesCount?: number;
 }
 
 export default function KamSidebar({
   activeView,
   onViewChange,
-  unreadSignalsCount = 3
+  unreadSignalsCount = 0,
+  unreadDirectivesCount = 0,
 }: KamSidebarProps) {
   const { user, logout } = useAuth();
   const displayName = user ? `${user.first_name || user.username}` : 'Salem';
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const navItems = [
     {
@@ -31,17 +34,38 @@ export default function KamSidebar({
       badge: null
     },
     {
+      id: 'agenda' as KamView,
+      label: 'Agenda & Rendez-vous',
+      description: 'Planning visites & meets',
+      icon: Icons.Calendar,
+      badge: null
+    },
+    {
+      id: 'visits' as KamView,
+      label: 'Historique des Visites',
+      description: 'Rapports réels & closing',
+      icon: Icons.FileText,
+      badge: null
+    },
+    {
+      id: 'directives' as KamView,
+      label: 'Directives & Messages',
+      description: 'Instructions reçues & réponses',
+      icon: Icons.MessageSquare,
+      badge: unreadDirectivesCount > 0 ? `${unreadDirectivesCount}` : null
+    },
+    {
       id: 'signals' as KamView,
-      label: 'Notes & Éditeur Document',
-      description: 'Éditeur riche & synthèse IA',
+      label: 'Notes & Ingestion',
+      description: 'Éditeur riche & synthèse',
       icon: Icons.FileEdit,
       badge: unreadSignalsCount > 0 ? `${unreadSignalsCount}` : null
     },
     {
-      id: 'debrief' as KamView,
-      label: 'Débriefing & CR Vocal',
-      description: 'Génération email & engagements',
-      icon: Icons.Mic,
+      id: 'settings' as KamView,
+      label: 'Paramètres & FAQ',
+      description: 'Profil, Bitmoji & base savoir',
+      icon: Icons.Settings,
       badge: null
     }
   ];
@@ -52,7 +76,7 @@ export default function KamSidebar({
         isCollapsed ? 'w-20 p-3' : 'w-72 p-5'
       }`}
     >
-      {/* Top Header : Logo & Sidebar Toggle Icon (Apple iPadOS / visionOS style) */}
+      {/* Top Header : Logo & Sidebar Toggle Icon */}
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-1 py-1">
           {!isCollapsed && (
@@ -140,43 +164,89 @@ export default function KamSidebar({
         </nav>
       </div>
 
-      {/* Bottom : Profile Capsule */}
-      <div className={`p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-        {!isCollapsed ? (
-          <>
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-black text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">
-                {displayName.charAt(0).toUpperCase()}
+      {/* Bottom : Profile Capsule with 3D Bitmoji & Dedicated Logout Button */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+        <div className={`p-2.5 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!isCollapsed ? (
+            <button
+              onClick={() => onViewChange('settings')}
+              className="flex items-center gap-2.5 truncate text-left cursor-pointer hover:opacity-85 transition-opacity w-full"
+              title="Voir mon profil & paramètres"
+            >
+              <div className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden border border-black/5 dark:border-white/5">
+                <img
+                  src={`/memojis/${(user?.avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
+                  alt="Bitmoji KAM"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="truncate">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-white block leading-tight truncate">
                   {displayName}
                 </span>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block truncate">
-                  Directeur Grands Comptes
+                  Key Account Manager
                 </span>
               </div>
-            </div>
-
-            <button
-              onClick={() => logout()}
-              title="Déconnexion"
-              className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
-            >
-              <Icons.LogOut size={16} />
             </button>
-          </>
-        ) : (
-          <button
-            onClick={() => logout()}
-            title="Déconnexion"
-            className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
-          >
-            <Icons.LogOut size={18} />
-          </button>
-        )}
+          ) : (
+            <button
+              onClick={() => onViewChange('settings')}
+              title="Profil & Paramètres"
+              className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center overflow-hidden border border-black/5 dark:border-white/5 cursor-pointer"
+            >
+              <img
+                src={`/memojis/${(user?.avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
+                alt="Bitmoji KAM"
+                className="w-full h-full object-cover"
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Dedicated "Se déconnecter" button at bottom of sidebar */}
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          title="Se déconnecter"
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-4 py-2.5'} rounded-2xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border border-black/5 dark:border-white/5`}
+        >
+          <Icons.LogOut size={16} className="text-rose-500 shrink-0" />
+          {!isCollapsed && <span>Se déconnecter</span>}
+        </button>
       </div>
 
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] w-full max-w-sm rounded-[28px] border border-black/10 dark:border-white/10 p-6 shadow-2xl space-y-4 animate-scale-up">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center mx-auto">
+              <Icons.LogOut size={22} />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="font-extrabold text-base text-zinc-900 dark:text-white">
+                Confirmer la déconnexion
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Êtes-vous certain de vouloir vous déconnecter de votre espace KAM ?
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-black/10 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => logout()}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-xs font-semibold text-white transition-all cursor-pointer shadow-md shadow-rose-600/20"
+              >
+                Déconnexion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

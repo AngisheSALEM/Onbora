@@ -102,12 +102,12 @@ export default function KamDebriefView({
       });
 
       if (res && res.visit) {
-        setSuccessFeedback(`✓ Données enregistrées en base ! Le compte ${selectedVisit.account_name} est synchronisé avec la Direction KAM Office.`);
+        setSuccessFeedback(`Données enregistrées en base ! Le compte ${selectedVisit.account_name} est synchronisé avec la Direction KAM Office.`);
         if (onDebriefSaved) {
           onDebriefSaved(res.visit);
         }
       } else {
-        setSuccessFeedback(`✓ Débriefing transmis avec succès au KAM Office !`);
+        setSuccessFeedback(`Débriefing transmis avec succès au KAM Office !`);
       }
     } catch (err: any) {
       console.error("Erreur lors de la transmission du débriefing:", err);
@@ -273,7 +273,7 @@ export default function KamDebriefView({
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             {[
-              { id: 'PROSPECT', label: 'Prospect non converti', icon: Icons.Clock, color: 'text-amber-500' },
+              { id: 'PROSPECT', label: 'Prospect non converti', icon: Icons.Clock, color: 'text-zinc-500' },
               { id: 'IN_NEGOTIATION', label: 'En cours de négociation', icon: Icons.Layers, color: 'text-blue-500' },
               { id: 'CONVERTED', label: 'Converti / Contrat Signé', icon: Icons.CheckCircle, color: 'text-emerald-500' },
               { id: 'LOST', label: 'Perdu / Non retenu', icon: Icons.AlertCircle, color: 'text-rose-500' },

@@ -21,49 +21,60 @@ export default function KamHeader({
   const getTitle = () => {
     switch (activeView) {
       case 'accounts':
-        return 'Portefeuille des Comptes Clés';
+        return ''; // Retiré car le grand titre est affiché dans le corps de page
       case 'briefing':
-        return accountName ? `Fiche Briefing 360° — ${accountName}` : 'Fiche Briefing 360°';
+        return accountName ? `Info — ${accountName}` : 'Info Client';
+      case 'agenda':
+        return 'Agenda & Planification des Rendez-vous';
+      case 'visits':
+        return 'Historique des Visites & Rapports Exécutifs';
       case 'signals':
-        return 'Notes & Ingestion IA (G-Notes Desk)';
-      case 'debrief':
-        return accountName ? `Débriefing & Compte-Rendu — ${accountName}` : 'Débriefing & Compte-Rendu';
+        return 'Notes & Ingestion (Desk G-Notes)';
+      case 'directives':
+        return 'Directives & Messages Stratégiques';
+      case 'settings':
+        return 'Paramètres & Base de Connaissances FAQ';
       default:
-        return 'Espace de Travail KAM';
+        return 'Cockpit Grands Comptes';
     }
   };
 
+  const showHeaderSearch = activeView === 'accounts';
+
   return (
-    <header className="h-18 px-8 flex items-center justify-between shrink-0 select-none">
-      {/* Left : Page Title */}
+    <header className="h-16 px-8 flex items-center justify-between shrink-0 select-none border-b border-black/5 dark:border-white/5">
+      {/* Left : Page Title (empty for accounts to avoid duplicate with large body title) */}
       <div className="flex items-center gap-3">
-        <h1 className="text-sm md:text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
-          {getTitle()}
-        </h1>
+        {getTitle() && (
+          <h1 className="text-sm md:text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            {getTitle()}
+          </h1>
+        )}
       </div>
 
-      {/* Right : Direct Live Search Input (No Modal Popup) & Theme Toggle */}
+      {/* Right : Direct Live Search Input (shown only on relevant views) & Theme Toggle */}
       <div className="flex items-center gap-3">
-        {/* Live Search Input Capsule */}
-        <div className="flex items-center gap-2.5 px-4 py-2 bg-[#F6F5F2]/90 dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full shadow-sm backdrop-blur-md text-xs font-550 w-64 md:w-80 border border-black/5 dark:border-white/5 transition-all focus-within:ring-2 focus-within:ring-blue-600 focus-within:w-72 md:focus-within:w-96">
-          <Icons.Search size={14} className="text-zinc-400 shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Rechercher un compte, un décideur..."
-            className="bg-transparent outline-none w-full text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-xs"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange('')}
-              className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
-              title="Effacer la recherche"
-            >
-              <Icons.Close size={13} />
-            </button>
-          )}
-        </div>
+        {showHeaderSearch && (
+          <div className="flex items-center gap-2.5 px-4 py-1.5 bg-[#F6F5F2]/90 dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full shadow-xs backdrop-blur-md text-xs font-550 w-64 md:w-80 border border-black/5 dark:border-white/5 transition-all focus-within:ring-2 focus-within:ring-[#4F6CE8] focus-within:w-72 md:focus-within:w-96">
+            <Icons.Search size={14} className="text-zinc-400 shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Rechercher un compte, un décideur..."
+              className="bg-transparent outline-none w-full text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-xs"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
+                title="Effacer la recherche"
+              >
+                <Icons.Close size={13} />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Theme Toggle Sun / Moon */}
         <ThemeToggle />

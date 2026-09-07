@@ -8,8 +8,11 @@ import KamSidebar, { KamView } from '@/components/kam/KamSidebar';
 import KamHeader from '@/components/kam/KamHeader';
 import KamAccountsListView from '@/components/kam/KamAccountsListView';
 import KamBriefingView from '@/components/kam/KamBriefingView';
+import KamAgendaView from '@/components/kam/KamAgendaView';
+import KamVisitsHistoryView from '@/components/kam/KamVisitsHistoryView';
 import KamSignalsView from '@/components/kam/KamSignalsView';
-import KamDebriefView from '@/components/kam/KamDebriefView';
+import KamDirectivesView from '@/components/kam/KamDirectivesView';
+import KamSettingsView from '@/components/kam/KamSettingsView';
 import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
@@ -20,6 +23,7 @@ export default function KamCommandCenterPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
   const [activeView, setActiveView] = useState<KamView>('accounts');
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadDirectivesCount, setUnreadDirectivesCount] = useState(0);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +64,7 @@ export default function KamCommandCenterPage() {
 
   const handleOpenDebriefForAccount = (visit: StrategicVisit) => {
     setSelectedVisitId(visit.id);
-    setActiveView('debrief');
+    setActiveView('agenda');
   };
 
   const handleAddNewAccount = (newAccount: StrategicVisit) => {
@@ -81,7 +85,8 @@ export default function KamCommandCenterPage() {
         <KamSidebar
           activeView={activeView}
           onViewChange={setActiveView}
-          unreadSignalsCount={visits.filter(v => v.dot_color === 'orange').length || 1}
+          unreadSignalsCount={visits.length > 0 ? 1 : 0}
+          unreadDirectivesCount={unreadDirectivesCount}
         />
 
         {/* 2. MAIN WORKSPACE CONTENT AREA */}
@@ -108,35 +113,14 @@ export default function KamCommandCenterPage() {
           ) : error ? (
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="p-8 max-w-md bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 text-center space-y-3">
-                <Icons.AlertTriangle size={32} className="text-amber-500 mx-auto" />
+                <Icons.AlertTriangle size={32} className="text-rose-500 mx-auto" />
                 <h3 className="font-extrabold text-sm text-zinc-900 dark:text-white">Portefeuille indisponible</h3>
                 <p className="text-xs text-zinc-500">{error}</p>
                 <button
                   onClick={loadAssignedAccounts}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-all"
+                  className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] text-white rounded-xl text-xs font-semibold cursor-pointer transition-all"
                 >
                   Réessayer
-                </button>
-              </div>
-            </div>
-          ) : visits.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="p-12 max-w-lg bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[32px] border border-black/5 dark:border-white/5 text-center space-y-4 shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-600 mx-auto flex items-center justify-center">
-                  <Icons.Folder size={28} />
-                </div>
-                <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
-                  Aucun compte assigné pour le moment
-                </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                  Votre superviseur du <strong className="text-zinc-800 dark:text-zinc-200">KAM Office</strong> n&apos;a pas encore affecté de comptes Grands Comptes ou PME à votre profil (<span className="font-mono text-blue-600">{user?.username}</span>). Dès qu&apos;une attribution est effectuée dans le tableau de bord Direction, vos comptes s&apos;afficheront ici en direct.
-                </p>
-                <button
-                  onClick={loadAssignedAccounts}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-full text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-2"
-                >
-                  <Icons.RefreshCw size={14} />
-                  <span>Actualiser mon portefeuille</span>
                 </button>
               </div>
             </div>
@@ -144,14 +128,37 @@ export default function KamCommandCenterPage() {
             /* Dynamic Active View Rendering */
             <div className="flex-1 flex overflow-hidden">
               {activeView === 'accounts' && (
-                <KamAccountsListView
-                  visits={visits}
-                  searchQuery={searchQuery}
-                  onSelectAccount={handleOpenBriefingForAccount}
-                  onOpenBriefing={handleOpenBriefingForAccount}
-                  onOpenDebrief={handleOpenDebriefForAccount}
-                  onOpenCreateAccount={() => setIsCreateAccountOpen(true)}
-                />
+                visits.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center p-8">
+                    <div className="p-12 max-w-lg bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[32px] border border-black/5 dark:border-white/5 text-center space-y-4 shadow-sm">
+                      <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-[#4F6CE8] mx-auto flex items-center justify-center">
+                        <Icons.Folder size={28} />
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
+                        Aucun compte assigné pour le moment
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                        Votre superviseur du <strong className="text-zinc-800 dark:text-zinc-200">KAM Office</strong> n&apos;a pas encore affecté de comptes Grands Comptes ou PME à votre profil (<span className="font-mono text-[#4F6CE8]">{user?.username}</span>). Dès qu&apos;une attribution est effectuée dans le tableau de bord Direction, vos comptes s&apos;afficheront ici en direct.
+                      </p>
+                      <button
+                        onClick={loadAssignedAccounts}
+                        className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-2"
+                      >
+                        <Icons.RefreshCw size={14} />
+                        <span>Actualiser mon portefeuille</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <KamAccountsListView
+                    visits={visits}
+                    searchQuery={searchQuery}
+                    onSelectAccount={handleOpenBriefingForAccount}
+                    onOpenBriefing={handleOpenBriefingForAccount}
+                    onOpenDebrief={handleOpenDebriefForAccount}
+                    onOpenCreateAccount={() => setIsCreateAccountOpen(true)}
+                  />
+                )
               )}
 
               {activeView === 'briefing' && selectedVisit && (
@@ -159,8 +166,22 @@ export default function KamCommandCenterPage() {
                   visits={visits}
                   selectedVisitId={selectedVisit.id}
                   onSelectVisitId={setSelectedVisitId}
-                  onLaunchDebrief={handleOpenDebriefForAccount}
+                  onLaunchDebrief={() => setActiveView('agenda')}
                   onBackToAccounts={() => setActiveView('accounts')}
+                  onAccountUpdated={handleDebriefSaved}
+                />
+              )}
+
+              {activeView === 'agenda' && (
+                <KamAgendaView
+                  assignedAccounts={visits}
+                  onOpenVisitsHistory={() => setActiveView('visits')}
+                />
+              )}
+
+              {activeView === 'visits' && (
+                <KamVisitsHistoryView
+                  onScheduleMeeting={() => setActiveView('agenda')}
                 />
               )}
 
@@ -171,13 +192,12 @@ export default function KamCommandCenterPage() {
                 />
               )}
 
-              {activeView === 'debrief' && selectedVisit && (
-                <KamDebriefView
-                  visits={visits}
-                  selectedVisitId={selectedVisit.id}
-                  onSelectVisitId={setSelectedVisitId}
-                  onDebriefSaved={handleDebriefSaved}
-                />
+              {activeView === 'directives' && (
+                <KamDirectivesView onDirectivesCountChange={setUnreadDirectivesCount} />
+              )}
+
+              {activeView === 'settings' && (
+                <KamSettingsView />
               )}
             </div>
           )}

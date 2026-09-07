@@ -381,12 +381,12 @@ export default function KamAccountsListView({
                                   ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20'
                                   : visit.conversion_status === 'LOST'
                                   ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                                  : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  : 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20'
                               }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${
                                   visit.conversion_status === 'CONVERTED' ? 'bg-emerald-500' :
                                   visit.conversion_status === 'IN_NEGOTIATION' ? 'bg-blue-500' :
-                                  visit.conversion_status === 'LOST' ? 'bg-rose-500' : 'bg-amber-500'
+                                  visit.conversion_status === 'LOST' ? 'bg-rose-500' : 'bg-zinc-400'
                                 }`} />
                                 <span>
                                   {visit.conversion_status === 'CONVERTED' ? 'Contrat Signé' :
@@ -434,9 +434,10 @@ export default function KamAccountsListView({
                               e.stopPropagation();
                               onOpenBriefing(visit);
                             }}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
                           >
-                            Briefing 360°
+                            <Icons.Info size={14} />
+                            <span>Info</span>
                           </button>
                         </div>
 

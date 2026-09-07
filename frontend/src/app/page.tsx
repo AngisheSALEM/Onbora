@@ -15,6 +15,8 @@ export default function Home() {
           case 'CLIENT_B2B': router.push('/client'); break;
           case 'SALESPERSON': router.push('/sales'); break;
           case 'KAM': router.push('/kam'); break;
+          case 'KAM_MANAGER': router.push('/kamoffice'); break;
+          case 'SUPERVISOR': router.push('/backoffice'); break;
           case 'ADMIN': router.push('/admin'); break;
           default: router.push('/login');
         }

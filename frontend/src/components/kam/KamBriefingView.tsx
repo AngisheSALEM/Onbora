@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StrategicVisit } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
+import { fetchAPI } from '@/lib/api';
 
 interface KamBriefingViewProps {
   visits: StrategicVisit[];
@@ -10,6 +11,7 @@ interface KamBriefingViewProps {
   onSelectVisitId: (id: string) => void;
   onLaunchDebrief: (visit: StrategicVisit) => void;
   onBackToAccounts?: () => void;
+  onAccountUpdated?: (updatedVisit: StrategicVisit) => void;
 }
 
 export default function KamBriefingView({
@@ -17,16 +19,94 @@ export default function KamBriefingView({
   selectedVisitId,
   onSelectVisitId,
   onLaunchDebrief,
-  onBackToAccounts
+  onBackToAccounts,
+  onAccountUpdated
 }: KamBriefingViewProps) {
   const selectedVisit = visits.find((v) => v.id === selectedVisitId) || visits[0];
   const briefing = selectedVisit.briefing;
 
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editSuccessMsg, setEditSuccessMsg] = useState('');
+  const [editErrorMsg, setEditErrorMsg] = useState('');
+
+  // Primary decision-maker form
+  const [primaryContact, setPrimaryContact] = useState({
+    name: briefing.stakeholders_mapping[0]?.full_name || '',
+    role: briefing.stakeholders_mapping[0]?.job_title || 'Directeur Général',
+    phone: selectedVisit.briefing.stakeholders_mapping[0]?.key_notes?.match(/(\+?\d[\d\s-]{6,})/)?.[1] || '',
+    email: '',
+  });
+
+  // Enterprise details form
+  const [enterpriseDetails, setEnterpriseDetails] = useState({
+    employee_count: briefing.firmographics.headcount || 25,
+    site_count: briefing.firmographics.locations_count || 1,
+    annual_revenue: briefing.firmographics.estimated_annual_revenue || '',
+    current_operator: briefing.technical_environment.current_competitors[0] || 'Vodacom',
+    current_connectivity: 'Fibre Dédiée',
+  });
+
+  useEffect(() => {
+    const stk = selectedVisit.briefing.stakeholders_mapping[0];
+    setPrimaryContact({
+      name: stk?.full_name || '',
+      role: stk?.job_title || 'Directeur Général',
+      phone: stk?.key_notes?.match(/(\+?\d[\d\s-]{6,})/)?.[1] || '',
+      email: '',
+    });
+    setEnterpriseDetails({
+      employee_count: selectedVisit.briefing.firmographics.headcount || 25,
+      site_count: selectedVisit.briefing.firmographics.locations_count || 1,
+      annual_revenue: selectedVisit.briefing.firmographics.estimated_annual_revenue || '',
+      current_operator: selectedVisit.briefing.technical_environment.current_competitors[0] || 'Vodacom',
+      current_connectivity: 'Fibre Dédiée',
+    });
+  }, [selectedVisitId, selectedVisit]);
+
+  const handleSaveClientInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingEdit(true);
+    setEditSuccessMsg('');
+    setEditErrorMsg('');
+    try {
+      const accountId = selectedVisit.account_id || selectedVisit.id.replace('account-', '');
+      const res = await fetchAPI(`/api/kam/accounts/${accountId}/update-info/`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          contact_name: primaryContact.name,
+          contact_role: primaryContact.role,
+          contact_phone: primaryContact.phone,
+          contact_email: primaryContact.email,
+          employee_count: enterpriseDetails.employee_count,
+          site_count: enterpriseDetails.site_count,
+          current_operator: enterpriseDetails.current_operator,
+          current_connectivity: enterpriseDetails.current_connectivity,
+        }),
+      });
+
+      setEditSuccessMsg("Informations du client enregistrées avec succès.");
+      if (res && res.visit) {
+        onAccountUpdated?.(res.visit);
+      }
+      setTimeout(() => {
+        setIsEditModalOpen(false);
+        setEditSuccessMsg('');
+      }, 1000);
+    } catch (err: any) {
+      console.error("Erreur lors de la mise à jour des informations client:", err);
+      setEditErrorMsg("Erreur lors de l'enregistrement des modifications.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     const roles: Record<string, { label: string; color: string }> = {
-      ECONOMIC_BUYER: { label: 'Economic Buyer', color: 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300' },
+      ECONOMIC_BUYER: { label: 'Economic Buyer', color: 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' },
       CHAMPION: { label: 'Champion', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300' },
-      TECHNICAL_BUYER: { label: 'Tech Buyer', color: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300' },
+      TECHNICAL_BUYER: { label: 'Tech Buyer', color: 'bg-[#4F6CE8]/15 text-[#4F6CE8]' },
       INFLUENCER: { label: 'Influenceur', color: 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200' },
       BLOCKER: { label: 'Bloqueur / Risque', color: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300' },
       GATEKEEPER: { label: 'Gatekeeper', color: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300' }
@@ -52,7 +132,7 @@ export default function KamBriefingView({
         );
       case 'NEUTRAL':
         return (
-          <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
+          <span className="text-zinc-600 dark:text-zinc-400 font-semibold flex items-center gap-1.5">
             <Icons.Clock size={13} />
             <span>Pragmatique</span>
           </span>
@@ -85,10 +165,10 @@ export default function KamBriefingView({
           )}
           <div>
             <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-              Fiche Briefing 360° Pré-Visite
+              Fiche Info Client
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Dossier consolidé de préparation (lecture en 5 min) pour le rendez-vous C-Level.
+              Dossier consolidé et vue stratégique pour le pilotage du compte C-Level.
             </p>
           </div>
         </div>
@@ -135,14 +215,23 @@ export default function KamBriefingView({
           </div>
         </div>
 
-        {/* Action Button : Launch Debrief (Cobalt Blue 10% CTA) */}
-        <button
-          onClick={() => onLaunchDebrief(selectedVisit)}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-extrabold rounded-full shadow-md transition-all shrink-0 cursor-pointer"
-        >
-          <Icons.Mic size={16} />
-          <span>Lancer le Débriefing de Réunion</span>
-        </button>
+        {/* Action Buttons : Modifier Fiche & Lancer Débriefing */}
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-white dark:hover:bg-[#403C40] text-zinc-900 dark:text-white text-xs font-semibold rounded-full transition-all cursor-pointer shadow-2xs"
+          >
+            <Icons.Edit size={14} />
+            <span>Modifier Fiche & Décideurs</span>
+          </button>
+          <button
+            onClick={() => onLaunchDebrief(selectedVisit)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold rounded-full shadow-md shadow-[#4F6CE8]/20 transition-all shrink-0 cursor-pointer"
+          >
+            <Icons.Mic size={15} />
+            <span>Lancer Débriefing</span>
+          </button>
+        </div>
       </div>
 
       {/* Règle d'or Cruciale */}
@@ -224,17 +313,24 @@ export default function KamBriefingView({
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 flex flex-col gap-4 shadow-sm border border-black/5 dark:border-white/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Icons.Users size={16} className="text-blue-600" />
+              <Icons.Users size={16} className="text-[#4F6CE8]" />
               <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Comité Décisionnel (MEDDIC)
               </h4>
             </div>
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#4F6CE8] border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
+            >
+              <Icons.Edit size={12} />
+              <span>Modifier</span>
+            </button>
           </div>
 
           {/* Alerte Décideur Manquant */}
           {briefing.missing_stakeholders_alert.length > 0 && (
             <div className="p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-[11px] text-zinc-800 dark:text-zinc-200 space-y-1">
-              <strong className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-extrabold">
+              <strong className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-extrabold">
                 <Icons.AlertTriangle size={14} />
                 <span>Alerte Décisionnelle :</span>
               </strong>
@@ -340,6 +436,169 @@ export default function KamBriefingView({
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* MODALE : ÉDITION DE LA FICHE CLIENT & DÉCIDEURS                            */}
+      {/* ========================================================================= */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="w-full max-w-lg bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Mettre à jour la fiche client & décideurs
+                </h3>
+                <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
+                  {selectedVisit.account_name}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 cursor-pointer"
+              >
+                <Icons.X size={16} />
+              </button>
+            </div>
+
+            {editSuccessMsg && (
+              <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                <Icons.CheckCircle size={15} />
+                <span>{editSuccessMsg}</span>
+              </div>
+            )}
+
+            {editErrorMsg && (
+              <div className="p-3 rounded-2xl bg-red-500/15 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+                <Icons.AlertCircle size={15} />
+                <span>{editErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveClientInfo} className="flex flex-col gap-4">
+              <div className="space-y-3">
+                <span className="text-[11px] font-bold text-[#4F6CE8] uppercase tracking-wider block">
+                  Décisionnaire Principal (C-Level)
+                </span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Nom & Prénom</label>
+                    <input
+                      required
+                      type="text"
+                      value={primaryContact.name}
+                      onChange={(e) => setPrimaryContact({ ...primaryContact, name: e.target.value })}
+                      placeholder="Ex: M. Jean-Marc Kouassi"
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Fonction / Rôle</label>
+                    <input
+                      required
+                      type="text"
+                      value={primaryContact.role}
+                      onChange={(e) => setPrimaryContact({ ...primaryContact, role: e.target.value })}
+                      placeholder="Ex: Directeur Général (DG)"
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Téléphone Direct</label>
+                    <input
+                      type="text"
+                      value={primaryContact.phone}
+                      onChange={(e) => setPrimaryContact({ ...primaryContact, phone: e.target.value })}
+                      placeholder="+243 81 000 0000"
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Email Professionnel</label>
+                    <input
+                      type="email"
+                      value={primaryContact.email}
+                      onChange={(e) => setPrimaryContact({ ...primaryContact, email: e.target.value })}
+                      placeholder="contact@entreprise.cd"
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2 border-t border-black/5 dark:border-white/5">
+                <span className="text-[11px] font-bold text-[#4F6CE8] uppercase tracking-wider block">
+                  Données Structurelles & Concurrence
+                </span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Effectif collaborateurs</label>
+                    <input
+                      type="number"
+                      value={enterpriseDetails.employee_count}
+                      onChange={(e) => setEnterpriseDetails({ ...enterpriseDetails, employee_count: Number(e.target.value) })}
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Nombre de sites</label>
+                    <input
+                      type="number"
+                      value={enterpriseDetails.site_count}
+                      onChange={(e) => setEnterpriseDetails({ ...enterpriseDetails, site_count: Number(e.target.value) })}
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Opérateur actuel</label>
+                    <input
+                      type="text"
+                      value={enterpriseDetails.current_operator}
+                      onChange={(e) => setEnterpriseDetails({ ...enterpriseDetails, current_operator: e.target.value })}
+                      placeholder="Vodacom, Airtel, Africell..."
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Type de liaison actuelle</label>
+                    <input
+                      type="text"
+                      value={enterpriseDetails.current_connectivity}
+                      onChange={(e) => setEnterpriseDetails({ ...enterpriseDetails, current_connectivity: e.target.value })}
+                      placeholder="Fibre, VSAT, 4G..."
+                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white dark:bg-[#363336] text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit}
+                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {savingEdit ? "Enregistrement..." : "Enregistrer les modifications"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

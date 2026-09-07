@@ -26,21 +26,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const defaultKamUser: User = {
-  id: 101,
-  username: 'kam_salem',
-  email: 'salem.kam@orange.com',
-  first_name: 'Salem',
-  last_name: 'Directeur KAM',
-  role: 'KAM',
-  company_name: 'Orange Business',
-  avatar: 'memoji_056.png'
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(defaultKamUser);
-  const [token, setToken] = useState<string | null>('demo-token-kam');
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,12 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clear corrupt data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        setUser(defaultKamUser);
-        setToken('demo-token-kam');
+        setUser(null);
+        setToken(null);
       }
     } else {
-      setUser(defaultKamUser);
-      setToken('demo-token-kam');
+      setUser(null);
+      setToken(null);
     }
     setLoading(false);
   }, []);

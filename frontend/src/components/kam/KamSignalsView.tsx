@@ -33,64 +33,27 @@ export default function KamSignalsView({
   const [viewMode, setViewMode] = useState<'grid' | 'editor'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Initial rich document notes
-  const [docNotes, setDocNotes] = useState<DocNote[]>([
-    {
-      id: 'doc-1',
-      title: 'bled IT',
-      accountName: 'bled IT - Consortium Tech RDC',
-      updatedAt: 'Modifié aujourd\'hui à 11:20',
-      previewText: 'Membres : Postes - YENGO Geyser, YAMBA Japhet, KALANGA Christian, MUANGALA Jonathan, MAVUELA Steve. Notes : 1. Choisir un chef. 2. Compétences managériales. 3. Stratégie de prospection...',
-      contentHtml: `
-        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Membres : Postes</h3>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="text-decoration: underline wavy #EF4444; font-weight: 700;">YENGO Geyser</span> : Responsable de gestion de projets.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="text-decoration: underline wavy #EF4444; font-weight: 700;">YAMBA Japhet</span> : Gestionnaire comptable financier.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="text-decoration: underline wavy #EF4444; font-weight: 700;">KALANGA Christian</span> : Responsable de la communication digitale.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="text-decoration: underline wavy #EF4444; font-weight: 700;">MUANGALA Jonathan</span> : Responsable en prospection et en étude de faisabilité.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="text-decoration: underline wavy #EF4444; font-weight: 700;">MAVUELA Steve</span> : Responsable technique & Logiciel,</p>
-        <br/>
-        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Notes :</h3>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">1. Choisir un chef.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">2. Compétences managériales.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">3. Stratégie de prospection.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">4. Commencer avec des petits tarifs.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">5. Avoir une liste de produits : Gestion des présences par emprunte digitale, logiciel de gestion des étudiants,</p>
-      `,
-      extractedOpportunity: {
-        title: 'Intégration Suite Logicielle Éducative & Biométrie',
-        category: 'LOGICIEL & CLOUD SOUVERAIN',
-        estimatedMrr: 12500,
-        painPoint: 'Besoin de structuration commerciale et de tarification échelonnée.'
-      }
-    },
-    {
-      id: 'doc-2',
-      title: 'Rawbank RDC - Siège',
-      accountName: 'Rawbank RDC',
-      updatedAt: 'Modifié hier à 16:45',
-      previewText: 'Comité de direction IT : Dieudonné Mwembo (DSI), Patricia Lumumba (Achats), Alain Kabasele (Infrastructure). Renouvellement lien Fibre Dédiée 200 Mbps sous 60 jours...',
-      contentHtml: `
-        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Membres du Comité & Décideurs</h3>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="font-weight: 700;">Dieudonné Mwembo</span> : Directeur des Systèmes d'Information (DSI)</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="font-weight: 700;">Patricia Lumumba</span> : Directrice des Achats & Moyens Généraux</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;"><span style="font-weight: 700;">Alain Kabasele</span> : Responsable Infrastructure Réseaux</p>
-        <br/>
-        <h3 style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Relevé des Décisions :</h3>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">1. Renouvellement impératif du lien Fibre Dédiée 200 Mbps avant la fin du trimestre.</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">2. Lancement d'un appel d'offres restreint pour le raccordement SD-WAN de 18 agences provinciales (Lubumbashi, Goma, Matadi).</p>
-        <p style="margin-bottom: 0.4rem; line-height: 1.6;">3. Exigence de haute disponibilité 99,99% avec bascule automatique sur lien satellite et 4G/5G de secours.</p>
-      `,
-      extractedOpportunity: {
-        title: 'SD-WAN Managé & Double Adduction Fibre',
-        category: 'EXPANSION & INFRASTRUCTURE',
-        estimatedMrr: 42500,
-        painPoint: 'Exigence de continuité 99.99% pour les transactions monétiques bancaires.'
-      }
+  // Rich document notes (persisted locally, initialized empty without mocked notes)
+  const [docNotes, setDocNotes] = useState<DocNote[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('onbora_kam_doc_notes');
+        if (saved) return JSON.parse(saved);
+      } catch {}
     }
-  ]);
+    return [];
+  });
 
-  const [activeDocId, setActiveDocId] = useState<string>(docNotes[0].id);
-  const activeDoc = docNotes.find((d) => d.id === activeDocId) || docNotes[0];
+  const [activeDocId, setActiveDocId] = useState<string>(() => docNotes[0]?.id || '');
+  const activeDoc = docNotes.find((d) => d.id === activeDocId) || docNotes[0] || null;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('onbora_kam_doc_notes', JSON.stringify(docNotes));
+      } catch {}
+    }
+  }, [docNotes]);
 
   // Editor Toolbar State
   const [fontSize, setFontSize] = useState<number>(14);
@@ -105,10 +68,10 @@ export default function KamSignalsView({
 
   // Sync content into DOM only when active note changes or switching to editor view
   useEffect(() => {
-    if (editorRef.current && viewMode === 'editor') {
+    if (editorRef.current && viewMode === 'editor' && activeDoc) {
       editorRef.current.innerHTML = activeDoc.contentHtml;
     }
-  }, [activeDocId, viewMode]);
+  }, [activeDocId, viewMode, activeDoc]);
 
   // Check active formatting (bold, italic, underline) on selection change
   const updateActiveFormats = useCallback(() => {
@@ -121,7 +84,7 @@ export default function KamSignalsView({
 
   // Save content to state WITHOUT re-injecting into DOM (prevents cursor jumping backwards!)
   const handleEditorInput = () => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !activeDoc) return;
     const newHtml = editorRef.current.innerHTML;
     const plainText = editorRef.current.innerText.slice(0, 160);
     setDocNotes((prev) =>
@@ -144,6 +107,7 @@ export default function KamSignalsView({
   };
 
   const handleUpdateActiveDocTitle = (newTitle: string) => {
+    if (!activeDoc) return;
     setDocNotes((prev) =>
       prev.map((d) => (d.id === activeDoc.id ? { ...d, title: newTitle } : d))
     );
@@ -178,10 +142,10 @@ export default function KamSignalsView({
   };
 
   const handleDeleteActiveDoc = () => {
-    if (docNotes.length <= 1) return;
+    if (!activeDoc) return;
     const remaining = docNotes.filter((d) => d.id !== activeDoc.id);
     setDocNotes(remaining);
-    setActiveDocId(remaining[0].id);
+    setActiveDocId(remaining[0]?.id || '');
     setViewMode('grid');
   };
 
@@ -309,6 +273,28 @@ export default function KamSignalsView({
               </div>
             ))}
 
+            {/* Empty state when no notes exist */}
+            {filteredDocs.length === 0 && (
+              <div className="col-span-full py-12 flex flex-col items-center justify-center text-center p-8 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+                  <Icons.FileText size={24} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-zinc-900 dark:text-white">Aucune note enregistrée</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 max-w-sm">
+                    Rédigez vos comptes-rendus de visite, préparez vos questions stratégiques et enregistrez vos synthèses.
+                  </p>
+                </div>
+                <button
+                  onClick={handleCreateNewDoc}
+                  className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-full text-xs font-bold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Icons.Plus size={14} />
+                  <span>Rédiger une note</span>
+                </button>
+              </div>
+            )}
+
           </div>
 
         </div>
@@ -318,6 +304,17 @@ export default function KamSignalsView({
       {/* ÉTAPE 2 : INTERFACE D'ÉDITION DE DOCUMENT PLEIN ÉCRAN                     */}
       {/* ========================================================================= */}
       {viewMode === 'editor' && (
+        !activeDoc ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <p className="text-xs text-zinc-500 mb-3">Aucune note sélectionnée.</p>
+            <button
+              onClick={() => setViewMode('grid')}
+              className="px-4 py-2 bg-[#4F6CE8] text-white text-xs font-semibold rounded-full cursor-pointer"
+            >
+              Retour aux notes
+            </button>
+          </div>
+        ) : (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           
           {/* Header de l'Éditeur : Bouton Retour, Titre Éditable, Actions */}
@@ -438,9 +435,9 @@ export default function KamSignalsView({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('formatBlock', '<blockquote>')}
                 title="Citation"
-                className="px-3 py-1 rounded-lg text-xs font-serif text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
               >
-                ❝
+                &ldquo;&rdquo;
               </button>
 
               <div className="h-4 w-px bg-zinc-400/30 dark:bg-zinc-600/30 mx-1" />
@@ -607,9 +604,9 @@ export default function KamSignalsView({
 
             </div>
           </div>
-
         </div>
-      )}
+      )
+    )}
 
     </div>
   );
