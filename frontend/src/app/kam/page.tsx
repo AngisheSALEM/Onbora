@@ -14,6 +14,7 @@ import KamSignalsView from '@/components/kam/KamSignalsView';
 import KamDirectivesView from '@/components/kam/KamDirectivesView';
 import KamSettingsView from '@/components/kam/KamSettingsView';
 import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
+import CopilotChatView from '@/components/shared/CopilotChatView';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
 
@@ -194,6 +195,10 @@ export default function KamCommandCenterPage() {
 
               {activeView === 'directives' && (
                 <KamDirectivesView onDirectivesCountChange={setUnreadDirectivesCount} />
+              )}
+
+              {activeView === 'copilot' && (
+                <CopilotChatView userRole="KAM" />
               )}
 
               {activeView === 'settings' && (

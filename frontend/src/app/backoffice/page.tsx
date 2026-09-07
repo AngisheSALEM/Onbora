@@ -8,6 +8,7 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+import CopilotChatView from '@/components/shared/CopilotChatView';
 
 const SupervisorTerritoryMap = dynamic(
   () => import('@/components/supervisor/SupervisorTerritoryMap'),
@@ -29,6 +30,7 @@ export type BackofficeView =
   | 'plaques_list'
   | 'soho_directory'
   | 'directives'
+  | 'copilot'
   | 'settings';
 
 interface EnterpriseItem {
@@ -921,6 +923,12 @@ export default function BackofficeCommandCenterPage() {
       label: 'Directives & Messages',
       icon: Icons.MessageSquare,
       badge: (Array.isArray(directives) ? directives : []).filter((d) => d.status === 'SENT').length > 0 ? `${(Array.isArray(directives) ? directives : []).filter((d) => d.status === 'SENT').length}` : null,
+    },
+    {
+      id: 'copilot' as BackofficeView,
+      label: 'Copilote IA',
+      icon: Icons.Bot,
+      badge: 'AI',
     },
     {
       id: 'settings' as BackofficeView,
@@ -3213,6 +3221,11 @@ export default function BackofficeCommandCenterPage() {
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* 7. COPILOTE IA CONVERSATIONNEL DÉDIÉ */}
+            {activeView === 'copilot' && (
+              <CopilotChatView userRole="SUPERVISOR" />
             )}
 
           </div>

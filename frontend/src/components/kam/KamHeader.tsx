@@ -32,6 +32,8 @@ export default function KamHeader({
         return 'Notes & Ingestion (Desk G-Notes)';
       case 'directives':
         return 'Directives & Messages Stratégiques';
+      case 'copilot':
+        return 'Copilote IA — Codex B2B';
       case 'settings':
         return 'Paramètres & Base de Connaissances FAQ';
       default:

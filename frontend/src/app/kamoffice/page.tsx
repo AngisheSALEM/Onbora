@@ -7,6 +7,7 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+import CopilotChatView from '@/components/shared/CopilotChatView';
 
 export type KamOfficeView =
   | 'overview'
@@ -14,6 +15,7 @@ export type KamOfficeView =
   | 'grands_comptes'
   | 'pme'
   | 'directives'
+  | 'copilot'
   | 'settings';
 
 interface KamOfficeMetrics {
@@ -674,6 +676,12 @@ export default function KamOfficePage() {
       label: "Directives",
       icon: Icons.FileText,
       badge: directives.filter((d) => d.status !== 'COMPLETED').length || undefined,
+    },
+    {
+      id: 'copilot' as KamOfficeView,
+      label: "Copilote IA",
+      icon: Icons.Bot,
+      badge: 'AI',
     },
     {
       id: 'settings' as KamOfficeView,
@@ -2169,6 +2177,11 @@ export default function KamOfficePage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* 7. COPILOTE IA CONVERSATIONNEL DÉDIÉ */}
+            {activeView === 'copilot' && (
+              <CopilotChatView userRole="KAM_MANAGER" />
             )}
 
           </div>

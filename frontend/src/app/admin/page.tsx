@@ -8,6 +8,7 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
+import CopilotChatView from '@/components/shared/CopilotChatView';
 
 const AdminPlaqueMapOnly = dynamic(
   () => import('@/components/admin/AdminPlaqueMapOnly'),
@@ -231,7 +232,7 @@ export default function AdminCockpitPage() {
 
   // Navigation tabs (Hiérarchie optimisée : 1. Comptes Convertis, 2. Catalogue d'offres, 3. Entreprises CRM...)
   const [activeTab, setActiveTab] = useState<
-    'converted' | 'b2b_catalog' | 'crm_bank' | 'supervisors' | 'kam_managers' | 'field_sales' | 'kams_team' | 'directives' | 'segmentation' | 'settings'
+    'converted' | 'b2b_catalog' | 'crm_bank' | 'supervisors' | 'kam_managers' | 'field_sales' | 'kams_team' | 'directives' | 'segmentation' | 'copilot' | 'settings'
   >('converted');
 
   // Retractable Sidebar State
@@ -1282,6 +1283,12 @@ export default function AdminCockpitPage() {
                   id: 'segmentation',
                   label: 'Règles de Segmentation',
                   icon: <Icons.Sliders size={16} />,
+                },
+                {
+                  id: 'copilot',
+                  label: 'Copilote IA',
+                  icon: <Icons.Bot size={16} />,
+                  count: 'AI',
                 },
                 {
                   id: 'settings',
@@ -3333,6 +3340,11 @@ export default function AdminCockpitPage() {
               </div>
 
             </div>
+          )}
+
+          {/* VUE COPILOTE IA CONVERSATIONNEL DÉDIÉ SUPER ADMIN */}
+          {activeTab === 'copilot' && (
+            <CopilotChatView userRole="ADMIN" />
           )}
 
           </main>

@@ -5,7 +5,7 @@ import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 
-export type KamView = 'accounts' | 'briefing' | 'agenda' | 'visits' | 'directives' | 'signals' | 'settings';
+export type KamView = 'accounts' | 'briefing' | 'agenda' | 'visits' | 'directives' | 'copilot' | 'signals' | 'settings';
 
 interface KamSidebarProps {
   activeView: KamView;
@@ -29,42 +29,42 @@ export default function KamSidebar({
     {
       id: 'accounts' as KamView,
       label: 'Mes Comptes Clés',
-      description: 'Portefeuille 15-30 comptes',
       icon: Icons.Building,
       badge: null
     },
     {
       id: 'agenda' as KamView,
       label: 'Agenda & Rendez-vous',
-      description: 'Planning visites & meets',
       icon: Icons.Calendar,
       badge: null
     },
     {
       id: 'visits' as KamView,
       label: 'Historique des Visites',
-      description: 'Rapports réels & closing',
       icon: Icons.FileText,
       badge: null
     },
     {
       id: 'directives' as KamView,
       label: 'Directives & Messages',
-      description: 'Instructions reçues & réponses',
       icon: Icons.MessageSquare,
       badge: unreadDirectivesCount > 0 ? `${unreadDirectivesCount}` : null
     },
     {
+      id: 'copilot' as KamView,
+      label: 'Copilote IA',
+      icon: Icons.Bot,
+      badge: 'Codex'
+    },
+    {
       id: 'signals' as KamView,
       label: 'Notes & Ingestion',
-      description: 'Éditeur riche & synthèse',
       icon: Icons.FileEdit,
       badge: unreadSignalsCount > 0 ? `${unreadSignalsCount}` : null
     },
     {
       id: 'settings' as KamView,
       label: 'Paramètres & FAQ',
-      description: 'Profil, Bitmoji & base savoir',
       icon: Icons.Settings,
       badge: null
     }
@@ -122,7 +122,7 @@ export default function KamSidebar({
                 title={isCollapsed ? item.label : undefined}
                 className={`group flex items-center ${isCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-lg shadow-[#4F6CE8]/25 font-semibold'
+                    ? 'bg-[#4F6CE8] text-white shadow-none font-semibold'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#4F6CE8] dark:hover:text-[#7B92F2]'
                 }`}
               >
@@ -136,14 +136,9 @@ export default function KamSidebar({
                     }
                   />
                   {!isCollapsed && (
-                    <div>
-                      <span className={`block text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'}`}>
-                        {item.label}
-                      </span>
-                      <span className={`text-[10px] block mt-0.5 ${isActive ? 'text-blue-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                        {item.description}
-                      </span>
-                    </div>
+                    <span className={`text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'}`}>
+                      {item.label}
+                    </span>
                   )}
                 </div>
 
