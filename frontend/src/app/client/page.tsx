@@ -1070,7 +1070,7 @@ export default function ClientDiscoveryPage() {
   const userMessageCount = messages.filter(msg => msg.sender === 'USER').length;
 
   return (
-    <ProtectedRoute allowedRoles={['CLIENT_B2B', 'ADMIN']}>
+    <ProtectedRoute allowedRoles={['CLIENT_B2B']}>
       <div className="h-screen bg-white dark:bg-zinc-950 flex flex-row font-sans text-black dark:text-zinc-50 overflow-hidden">
           {sidebarOpen && (
             <div 
@@ -1093,7 +1093,7 @@ export default function ClientDiscoveryPage() {
                 <div className="flex items-center gap-2.5">
                   <Logo size={28} showBg={true} />
                   <div>
-                    <h2 className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</h2>
+                    <h2 className="text-xs font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</h2>
                     <p className="text-[9px] text-zinc-500 font-medium leading-none">Copilote B2B</p>
                   </div>
                 </div>
@@ -1110,7 +1110,7 @@ export default function ClientDiscoveryPage() {
               {/* Nouvelle conversation Pill-Button */}
               <button
                 onClick={handleStartNewChat}
-                className="w-full py-2 px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-[0_0_20px_rgba(37,99,235,0.20)] hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
+                className="w-full py-2 px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-[0_0_20px_rgba(37,99,235,0.20)] hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-transparent"
               >
                 <span className="text-sm font-light">+</span> Nouvelle conversation
               </button>
@@ -1126,7 +1126,7 @@ export default function ClientDiscoveryPage() {
                 <div className="w-full pb-2 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80">
                   <button
                     onClick={() => setFormationsExpanded(!formationsExpanded)}
-                    className="flex items-center gap-2 text-left font-bold text-[10px] uppercase tracking-wider text-zinc-800 dark:text-zinc-200 cursor-pointer"
+                    className="flex items-center gap-2 text-left font-semibold text-[10px] uppercase tracking-wider text-zinc-800 dark:text-zinc-200 cursor-pointer"
                   >
                     <Icons.Briefcase size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>Formations</span>
@@ -1141,7 +1141,7 @@ export default function ClientDiscoveryPage() {
                         setTrainings(prev => [...prev, { id: String(Date.now()), title }]);
                       }
                     }}
-                    className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 cursor-pointer flex items-center justify-center transition-colors"
+                    className="p-1 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[9px] font-bold text-blue-600 dark:text-blue-400 cursor-pointer flex items-center justify-center transition-colors"
                     title="Ajouter une nouvelle session de formation"
                   >
                     + Nouveau
@@ -1157,7 +1157,7 @@ export default function ClientDiscoveryPage() {
                           setSelectedTrainingId(t.id);
                           setTrainingOpen(true);
                         }}
-                        className="w-full text-left py-1.5 px-2 rounded-lg text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150/40 dark:hover:bg-zinc-900/50 transition-all cursor-pointer truncate"
+                        className="w-full text-left py-1.5 px-2 rounded-lg text-[10px] font-550 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150/40 dark:hover:bg-zinc-900/50 transition-all cursor-pointer truncate"
                         title={t.title}
                       >
                         🎓 {t.title}
@@ -1172,7 +1172,7 @@ export default function ClientDiscoveryPage() {
                 <div className="studio-card p-3 overflow-hidden shadow-sm">
                   <button
                     onClick={() => toggleSection('orders')}
-                    className="w-full pb-2 flex items-center justify-between text-left font-bold text-[10px] uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800/80 hover:opacity-80 transition-all cursor-pointer text-zinc-800 dark:text-zinc-200"
+                    className="w-full pb-2 flex items-center justify-between text-left font-semibold text-[10px] uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800/80 hover:opacity-80 transition-all cursor-pointer text-zinc-800 dark:text-zinc-200"
                   >
                     <span className="flex items-center gap-2">
                       <Icons.Folder size={14} className="text-blue-600 dark:text-blue-400 shrink-0" /> Suivi des Commandes
@@ -1245,10 +1245,10 @@ export default function ClientDiscoveryPage() {
                             className="p-3 rounded-xl studio-subcard hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-1 group"
                           >
                             <div className="flex justify-between items-start gap-1">
-                              <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 transition-colors leading-tight">
+                              <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 transition-colors leading-tight">
                                 {service.name}
                               </h4>
-                              <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-full uppercase shrink-0 scale-90 ${statusColor}`}>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase shrink-0 scale-90 ${statusColor}`}>
                                 {statusLabel}
                               </span>
                             </div>
@@ -1263,13 +1263,13 @@ export default function ClientDiscoveryPage() {
                       <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2.5 flex flex-col gap-2 shrink-0">
                         <button
                           onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/discovery/conversations/${conversationId}/export/`, '_blank')}
-                          className="w-full py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-800 dark:text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-[10px] font-semibold text-zinc-800 dark:text-zinc-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Icons.Download size={12} /> Exporter Twin (PDF)
                         </button>
 
                         {transmissionSuccess ? (
-                          <div className="p-2 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-xl text-[9px] font-semibold text-center animate-fade-in flex flex-col leading-normal">
+                          <div className="p-2 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-xl text-[9px] font-550 text-center animate-fade-in flex flex-col leading-normal">
                             <span>✓ Dossier contractuel transmis !</span>
                             <span className="text-[8px] text-blue-500 dark:text-blue-300">
                               {dossierDetails?.is_complete ? "Dossier complet." : "Le conseiller vous contactera par téléphone."}
@@ -1279,7 +1279,7 @@ export default function ClientDiscoveryPage() {
                           <button
                             onClick={() => setContractModalOpen(true)}
                             disabled={transmitting}
-                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                           >
                             {transmitting ? 'Envoi...' : 'Transmettre au KAM'}
                           </button>
@@ -1292,7 +1292,7 @@ export default function ClientDiscoveryPage() {
 
               {/* Conversations Récentes */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider px-2">Historique Récent</span>
+                <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider px-2">Historique Récent</span>
                 {history.length === 0 ? (
                   <span className="text-[11px] text-zinc-450 italic px-2">Aucune conversation récente</span>
                 ) : (
@@ -1307,7 +1307,7 @@ export default function ClientDiscoveryPage() {
                         onClick={() => handleSelectHistoryConversation(conv.id)}
                         className={`w-full text-left py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-between group cursor-pointer ${
                           isActive
-                            ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold border-l-2 border-blue-600 pl-2.5'
+                            ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold border-l-2 border-blue-600 pl-2.5'
                             : 'text-zinc-655 hover:bg-zinc-150/50 dark:text-zinc-400 dark:hover:bg-zinc-900/50'
                         }`}
                       >
@@ -1315,7 +1315,7 @@ export default function ClientDiscoveryPage() {
                           <Icons.MessageSquare size={12} className="text-zinc-450 dark:text-zinc-500 shrink-0" /> {label}
                         </span>
                         {isTransmitted && (
-                          <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-1 py-0.5 rounded-full uppercase shrink-0 font-extrabold scale-90">
+                          <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-1 py-0.5 rounded-full uppercase shrink-0 font-bold scale-90">
                             Envoi
                           </span>
                         )}
@@ -1331,11 +1331,11 @@ export default function ClientDiscoveryPage() {
             <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/80 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none">
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Photo d'avatar (Initials badge) */}
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-transparent shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm shrink-0 border border-transparent shadow-sm">
                   {user?.first_name ? user.first_name[0].toUpperCase() : 'C'}
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 truncate">
                     {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Client'}
                   </span>
                   <span className="text-[9px] text-zinc-500 truncate">
@@ -1382,7 +1382,7 @@ export default function ClientDiscoveryPage() {
                   </svg>
                 </button>
                 <div>
-                  <h1 className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-55 uppercase leading-none">Onbora</h1>
+                  <h1 className="text-xs font-extrabold tracking-tight text-zinc-900 dark:text-zinc-55 uppercase leading-none">Onbora</h1>
                   <p className="text-[9px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote de Découverte B2B</p>
                 </div>
               </div>
@@ -1398,7 +1398,7 @@ export default function ClientDiscoveryPage() {
                 />
                 <button
                   onClick={startVoiceCall}
-                  className="flex px-3 py-1.5 rounded-xl border border-blue-600 bg-blue-600/10 hover:bg-blue-600 hover:text-white text-xs font-bold text-blue-600 dark:text-blue-400 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                  className="flex px-3 py-1.5 rounded-xl border border-blue-600 bg-blue-600/10 hover:bg-blue-600 hover:text-white text-xs font-semibold text-blue-600 dark:text-blue-400 transition-all cursor-pointer items-center gap-1.5 animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                   title="Commencer un chat vocal direct avec Onbora"
                 >
                   <Icons.Phone size={14} />
@@ -1412,12 +1412,12 @@ export default function ClientDiscoveryPage() {
               <div className="absolute inset-0 z-20 bg-zinc-950/70 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
                 <div className="w-full max-w-2xl relative p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xl flex flex-col gap-4">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-150 dark:border-zinc-850">
-                    <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
+                    <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
                       <Icons.Sparkles size={14} className="text-blue-600 dark:text-blue-400 shrink-0 animate-pulse" /> Présentation du Diagnostic d'Architecture Cible
                     </h3>
                     <button
                       onClick={() => setActiveSlideIndex(null)}
-                      className="py-1 px-3 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[10px] font-extrabold text-zinc-655 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-all border border-zinc-200 dark:border-zinc-700"
+                      className="py-1 px-3 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[10px] font-bold text-zinc-655 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-all border border-zinc-200 dark:border-zinc-700"
                     >
                       <Icons.Close size={10} className="shrink-0" /> Fermer
                     </button>
@@ -1446,7 +1446,7 @@ export default function ClientDiscoveryPage() {
                     msg.sender === 'USER' ? 'ml-auto items-end animate-fade-in' : 'mr-auto items-start animate-fade-in'
                   }`}
                 >
-                  <span className="text-[10px] font-bold text-zinc-500 mb-1">
+                  <span className="text-[10px] font-semibold text-zinc-500 mb-1">
                     {msg.sender === 'USER' ? 'Vous' : 'Onbora Copilot'}
                   </span>
                   <div
@@ -1464,7 +1464,7 @@ export default function ClientDiscoveryPage() {
                       <button
                         type="button"
                         onClick={() => speakText(msg.content, msg.id)}
-                        className={`px-2.5 py-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-semibold ${
                           currentlyPlayingMsgId === msg.id ? 'text-blue-600 dark:text-blue-400 bg-blue-600/10' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                         }`}
                         title={currentlyPlayingMsgId === msg.id ? "Arrêter la lecture" : "Écouter le message (TTS)"}
@@ -1489,7 +1489,7 @@ export default function ClientDiscoveryPage() {
                               sendMessageAPI(msg.retry_payload);
                             }
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-blue-600 text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold shadow-sm"
+                          className="px-2.5 py-1 rounded-lg bg-blue-600 text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-semibold shadow-sm"
                           title="Réessayer de renvoyer le message"
                         >
                           <Icons.Refresh size={11} /> Réessayer
@@ -1519,7 +1519,7 @@ export default function ClientDiscoveryPage() {
               ))}
               {loading && (
                 <div className="mr-auto items-start flex flex-col max-w-[85%]">
-                  <span className="text-[10px] font-bold text-zinc-500 mb-1">Onbora Copilot</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 mb-1">Onbora Copilot</span>
                   <div className="px-4 py-3 rounded-2xl studio-card rounded-tl-none flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                     <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -1565,7 +1565,7 @@ export default function ClientDiscoveryPage() {
                   <button
                     type="submit"
                     disabled={loading || !inputValue.trim()}
-                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-40 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-40 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                   >
                     Envoyer
                   </button>
@@ -1602,8 +1602,8 @@ export default function ClientDiscoveryPage() {
             <div className="flex items-center gap-2">
               <Logo size={24} showBg={true} />
               <div>
-                <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-400">Onbora Copilot</span>
-                <h3 className="text-xs font-bold text-white">Appel Vocal Direct</h3>
+                <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-400">Onbora Copilot</span>
+                <h3 className="text-xs font-semibold text-white">Appel Vocal Direct</h3>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1612,7 +1612,7 @@ export default function ClientDiscoveryPage() {
                 callState === 'thinking' ? 'bg-blue-600 animate-spin' : 
                 'bg-blue-500 animate-pulse'
               }`} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                 {callState === 'listening' ? 'À l\'écoute' : 
                  callState === 'thinking' ? 'Réflexion...' : 
                  callState === 'speaking' ? 'Onbora parle' : 'En ligne'}
@@ -1654,7 +1654,7 @@ export default function ClientDiscoveryPage() {
               
               {callTranscriptAi && (
                 <div className="p-4 rounded-2xl bg-zinc-900/65 border border-zinc-800/80 max-h-40 overflow-y-auto text-left shadow-lg">
-                  <p className="text-[10px] font-bold text-blue-400 mb-1">Onbora :</p>
+                  <p className="text-[10px] font-semibold text-blue-400 mb-1">Onbora :</p>
                   <p className="text-xs text-zinc-200 leading-relaxed">
                     {callTranscriptAi}
                   </p>
@@ -1695,7 +1695,7 @@ export default function ClientDiscoveryPage() {
         <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
           <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col gap-4 animate-scale-in text-black dark:text-zinc-50">
             <div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Engagement Contractuel Client</h3>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Engagement Contractuel Client</h3>
               <p className="text-[11px] text-zinc-505 dark:text-zinc-400 mt-1">
                 Veuillez renseigner les informations réglementaires de signature de contrat pour finaliser votre dossier.
               </p>
@@ -1703,7 +1703,7 @@ export default function ClientDiscoveryPage() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Nom Complet du Signataire</label>
+                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide">Nom Complet du Signataire</label>
                 <input
                   type="text"
                   value={contactName}
@@ -1714,7 +1714,7 @@ export default function ClientDiscoveryPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Numéro de Téléphone Direct</label>
+                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide">Numéro de Téléphone Direct</label>
                 <input
                   type="text"
                   value={contactPhone}
@@ -1725,7 +1725,7 @@ export default function ClientDiscoveryPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Numéro d'Immatriculation RCCM</label>
+                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide">Numéro d'Immatriculation RCCM</label>
                 <input
                   type="text"
                   value={rccm}
@@ -1736,7 +1736,7 @@ export default function ClientDiscoveryPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Adresse de Facturation de l'Entreprise</label>
+                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide">Adresse de Facturation de l'Entreprise</label>
                 <textarea
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
@@ -1751,7 +1751,7 @@ export default function ClientDiscoveryPage() {
               <button
                 type="button"
                 onClick={() => setContractModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-205 dark:border-zinc-850 bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl border border-zinc-205 dark:border-zinc-850 bg-transparent text-xs font-550 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer"
               >
                 Annuler
               </button>
@@ -1759,7 +1759,7 @@ export default function ClientDiscoveryPage() {
                 type="button"
                 onClick={handleTransmit}
                 disabled={transmitting || !contactName.trim() || !contactPhone.trim() || !rccm.trim() || !billingAddress.trim()}
-                className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
               >
                 {transmitting ? 'Transmission...' : 'Valider & Transmettre'}
               </button>

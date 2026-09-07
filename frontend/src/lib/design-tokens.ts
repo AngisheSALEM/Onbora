@@ -27,9 +27,9 @@ export const designTokens = {
     cobaltBlueDarkSubtle: 'rgba(79, 108, 232, 0.20)',
   },
   typography: {
-    display: 'font-sans font-black tracking-tight',
-    body: 'font-sans font-medium leading-relaxed',
-    mono: 'font-mono tabular-nums font-bold',
+    display: 'font-sans font-extrabold tracking-tight',
+    body: 'font-sans font-normal leading-relaxed',
+    mono: 'font-mono tabular-nums font-semibold',
   },
   radii: {
     card: 'rounded-[28px]',

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'ADMIN')[];
+  allowedRoles?: ('CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'KAM_MANAGER' | 'ADMIN')[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -38,10 +38,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return (
       <div className="flex items-center justify-center min-h-screen bg-white dark:bg-zinc-950 p-6">
         <div className="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center shadow-sm">
-          <div className="w-12 h-12 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+          <div className="w-12 h-12 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 font-semibold text-lg">
             !
           </div>
-          <h2 className="text-xl font-semibold mb-2">Accès interdit</h2>
+          <h2 className="text-xl font-550 mb-2">Accès interdit</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
             Votre compte n'a pas les permissions requises pour accéder à cette section.
           </p>

@@ -30,11 +30,11 @@ export default function KamPulseRadar() {
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Supervision Réseau & SLA Live
           </span>
         </div>
-        <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
           Disponibilité: 99.88%
         </span>
       </div>
@@ -65,14 +65,14 @@ export default function KamPulseRadar() {
                 )}
               </div>
 
-              <span className="text-xs font-mono font-bold text-white tracking-tight">
+              <span className="text-xs font-mono font-semibold text-white tracking-tight">
                 {tick.metric}
               </span>
 
               <span
-                className={`text-[10px] font-bold mt-1.5 uppercase ${
+                className={`text-[10px] font-semibold mt-1.5 uppercase ${
                   tick.isNow
-                    ? 'bg-white text-black px-1.5 py-0.2 rounded font-black'
+                    ? 'bg-white text-black px-1.5 py-0.2 rounded font-extrabold'
                     : 'text-zinc-500'
                 }`}
               >
@@ -88,7 +88,7 @@ export default function KamPulseRadar() {
         <div className="flex items-center gap-2.5 truncate">
           <Icons.Activity size={14} className="text-blue-400 shrink-0" />
           <span className="text-zinc-300 truncate">
-            <strong className="text-white font-bold">[{ticks[selectedTick].account}]</strong> {ticks[selectedTick].summary}
+            <strong className="text-white font-semibold">[{ticks[selectedTick].account}]</strong> {ticks[selectedTick].summary}
           </span>
         </div>
         <Icons.ChevronRight size={14} className="text-zinc-500 shrink-0 ml-2" />

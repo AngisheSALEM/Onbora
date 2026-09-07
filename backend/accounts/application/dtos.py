@@ -15,6 +15,7 @@ class UserDTO(BaseDTO):
     last_name: Optional[str] = None
     location: Optional[str] = None
     is_available: bool = True
+    avatar: Optional[str] = "memoji_056.png"
 
 
 @dataclass
@@ -27,6 +28,7 @@ class RegisterRequestDTO(BaseDTO):
     company_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    avatar: Optional[str] = "memoji_056.png"
 
 
 @dataclass

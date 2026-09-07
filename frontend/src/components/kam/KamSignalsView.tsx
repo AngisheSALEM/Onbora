@@ -212,7 +212,7 @@ export default function KamSignalsView({
           {/* Top Bar : Titre, Recherche & Bouton Ajouter */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
                 Notes & Comptes-Rendus
               </h1>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
@@ -236,7 +236,7 @@ export default function KamSignalsView({
               {/* Bouton Ajouter une Note */}
               <button
                 onClick={handleCreateNewDoc}
-                className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-black shadow-md shadow-[#4F6CE8]/20 flex items-center gap-2 transition-all cursor-pointer shrink-0"
+                className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-2 transition-all cursor-pointer shrink-0"
               >
                 <Icons.Plus size={15} />
                 <span>Nouvelle Note</span>
@@ -256,7 +256,7 @@ export default function KamSignalsView({
                 <Icons.Plus size={22} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-zinc-900 dark:text-white">
+                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
                   Créer un document
                 </h3>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
@@ -274,19 +274,19 @@ export default function KamSignalsView({
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black text-[#4F6CE8] dark:text-[#7B92F2] uppercase tracking-wider flex items-center gap-1.5 truncate">
+                    <span className="text-xs font-extrabold text-[#4F6CE8] dark:text-[#7B92F2] uppercase tracking-wider flex items-center gap-1.5 truncate">
                       <Icons.Building size={13} />
                       <span className="truncate">{doc.accountName.split(' - ')[0]}</span>
                     </span>
 
                     {doc.extractedOpportunity && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2] shrink-0">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2] shrink-0">
                         +{doc.extractedOpportunity.estimatedMrr.toLocaleString()} $ / m
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-base font-black text-zinc-900 dark:text-white group-hover:text-[#4F6CE8] transition-colors leading-tight">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white group-hover:text-[#4F6CE8] transition-colors leading-tight">
                     {doc.title}
                   </h3>
 
@@ -301,7 +301,7 @@ export default function KamSignalsView({
                     <span>{doc.updatedAt}</span>
                   </span>
 
-                  <span className="text-[#4F6CE8] font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  <span className="text-[#4F6CE8] font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                     <span>Éditer</span>
                     <Icons.ArrowRight size={12} />
                   </span>
@@ -327,7 +327,7 @@ export default function KamSignalsView({
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className="px-3 py-1.5 bg-[#E4E1DB] dark:bg-[#363336] text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                className="px-3 py-1.5 bg-[#E4E1DB] dark:bg-[#363336] text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               >
                 <Icons.ChevronLeft size={16} />
                 <span>Toutes les notes</span>
@@ -341,7 +341,7 @@ export default function KamSignalsView({
                 value={activeDoc.title}
                 onChange={(e) => handleUpdateActiveDocTitle(e.target.value)}
                 placeholder="Nom du document..."
-                className="w-full max-w-sm bg-transparent text-base font-black text-zinc-900 dark:text-white outline-none tracking-tight focus:bg-[#E4E1DB]/50 dark:focus:bg-[#363336]/50 px-2 py-0.5 rounded-lg transition-colors cursor-text"
+                className="w-full max-w-sm bg-transparent text-base font-extrabold text-zinc-900 dark:text-white outline-none tracking-tight focus:bg-[#E4E1DB]/50 dark:focus:bg-[#363336]/50 px-2 py-0.5 rounded-lg transition-colors cursor-text"
               />
             </div>
 
@@ -349,7 +349,7 @@ export default function KamSignalsView({
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={handleRunAiAnalysis}
-                className="px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-black shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Icons.Sparkles size={14} className={isAnalyzing ? 'animate-spin' : ''} />
                 <span>{isAnalyzing ? 'Analyse en cours...' : 'Extraction IA'}</span>
@@ -386,7 +386,7 @@ export default function KamSignalsView({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('bold')}
                 title="Gras"
-                className={`px-3 py-1 rounded-lg text-xs font-black transition-colors cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-colors cursor-pointer ${
                   isBold
                     ? 'bg-[#4F6CE8] text-white shadow-md'
                     : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
@@ -402,7 +402,7 @@ export default function KamSignalsView({
                 title="Italique"
                 className={`px-3 py-1 rounded-lg text-xs font-serif italic transition-colors cursor-pointer ${
                   isItalic
-                    ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                    ? 'bg-[#4F6CE8] text-white shadow-md font-semibold'
                     : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
                 }`}
               >
@@ -416,7 +416,7 @@ export default function KamSignalsView({
                 title="Souligné"
                 className={`px-3 py-1 rounded-lg text-xs underline transition-colors cursor-pointer ${
                   isUnderline
-                    ? 'bg-[#4F6CE8] text-white shadow-md font-bold'
+                    ? 'bg-[#4F6CE8] text-white shadow-md font-semibold'
                     : 'text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40]'
                 }`}
               >
@@ -428,7 +428,7 @@ export default function KamSignalsView({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('formatBlock', '<h3>')}
                 title="Titre de section"
-                className="px-3 py-1 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
+                className="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-[#DAD7D0] dark:hover:bg-[#403C40] transition-colors cursor-pointer"
               >
                 H
               </button>
@@ -580,14 +580,14 @@ export default function KamSignalsView({
                 <div className="mt-8 p-6 rounded-[24px] bg-[#E4E1DB] dark:bg-[#363336] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2]">
                         {activeDoc.extractedOpportunity.category}
                       </span>
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                         +{activeDoc.extractedOpportunity.estimatedMrr.toLocaleString()} $ / mois
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">
                       {activeDoc.extractedOpportunity.title}
                     </h4>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -597,7 +597,7 @@ export default function KamSignalsView({
 
                   <button
                     onClick={() => onOpenBriefingForAccount(visits[0])}
-                    className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-black rounded-xl shadow-md shadow-[#4F6CE8]/20 shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-md shadow-[#4F6CE8]/20 shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <span>Insérer dans le Briefing</span>
                     <Icons.ArrowRight size={14} />

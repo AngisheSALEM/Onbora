@@ -199,7 +199,7 @@ export default function BackOfficeDashboard({
     return (
       <div className="w-full h-80 rounded-2xl flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-900/40 text-zinc-400 gap-3">
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs font-semibold">Chargement des indicateurs et graphiques Back-Office...</span>
+        <span className="text-xs font-550">Chargement des indicateurs et graphiques Back-Office...</span>
       </div>
     );
   }
@@ -240,7 +240,7 @@ export default function BackOfficeDashboard({
       {actionSuccessMsg && (
         <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
           <Icons.Check size={18} />
-          <span className="text-xs font-bold">{actionSuccessMsg}</span>
+          <span className="text-xs font-semibold">{actionSuccessMsg}</span>
         </div>
       )}
 
@@ -249,7 +249,7 @@ export default function BackOfficeDashboard({
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-            <h2 className="text-lg font-black text-zinc-950 dark:text-white tracking-tight">
+            <h2 className="text-lg font-extrabold text-zinc-950 dark:text-white tracking-tight">
               Console d'Activité & Entonnoir de Conversion Back-Office
             </h2>
           </div>
@@ -263,7 +263,7 @@ export default function BackOfficeDashboard({
           <div className="flex bg-zinc-200/70 dark:bg-zinc-800/60 p-1 rounded-xl">
             <button
               onClick={() => setActiveSubTab('overview')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeSubTab === 'overview'
                   ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -273,7 +273,7 @@ export default function BackOfficeDashboard({
             </button>
             <button
               onClick={() => setActiveSubTab('funnel')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeSubTab === 'funnel'
                   ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -283,7 +283,7 @@ export default function BackOfficeDashboard({
             </button>
             <button
               onClick={() => setActiveSubTab('dropoffs')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all relative ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all relative ${
                 activeSubTab === 'dropoffs'
                   ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -291,14 +291,14 @@ export default function BackOfficeDashboard({
             >
               Abandons
               {data.drop_off_metrics && data.drop_off_metrics.critical_abandon_count > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.2 bg-red-500 text-white rounded-full text-[9px] font-black">
+                <span className="ml-1.5 px-1.5 py-0.2 bg-red-500 text-white rounded-full text-[9px] font-extrabold">
                   {data.drop_off_metrics.critical_abandon_count}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveSubTab('territories')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeSubTab === 'territories'
                   ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -324,23 +324,23 @@ export default function BackOfficeDashboard({
         {/* Total Prospects */}
         <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden group">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Prospects Totaux</span>
             <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Icons.Users size={16} />
             </span>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-zinc-950 dark:text-white">{data.total_dossiers}</span>
-              <span className="text-[11px] font-bold text-emerald-600 flex items-center">
+              <span className="text-3xl font-extrabold text-zinc-950 dark:text-white">{data.total_dossiers}</span>
+              <span className="text-[11px] font-semibold text-emerald-600 flex items-center">
                 <Icons.TrendingUp size={12} className="mr-0.5" /> +24% ce mois
               </span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-[11px] font-medium text-zinc-500">
-              <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold">
                 Inbound: {data.inbound_count}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold">
+              <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold">
                 Outbound: {data.outbound_count}
               </span>
             </div>
@@ -350,14 +350,14 @@ export default function BackOfficeDashboard({
         {/* Global Conversion Rate */}
         <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Taux de Conversion</span>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Taux de Conversion</span>
             <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <Icons.Target size={16} />
             </span>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-zinc-950 dark:text-white">{data.conversion_rate}%</span>
+              <span className="text-3xl font-extrabold text-zinc-950 dark:text-white">{data.conversion_rate}%</span>
               <span className="text-[11px] text-zinc-400 font-medium">Objectif : 25%</span>
             </div>
             <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden mt-3">
@@ -372,17 +372,17 @@ export default function BackOfficeDashboard({
         {/* Unconverted & Recovery Potential */}
         <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Clients Non-Convertis</span>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Clients Non-Convertis</span>
             <span className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
               <Icons.AlertTriangle size={16} />
             </span>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-zinc-950 dark:text-white">
+              <span className="text-3xl font-extrabold text-zinc-950 dark:text-white">
                 {data.drop_off_metrics?.total_unconverted || (data.total_dossiers - data.status_counts.ACCEPTED)}
               </span>
-              <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-extrabold">
+              <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
                 {data.drop_off_metrics?.critical_abandon_count || 4} critiques
               </span>
             </div>
@@ -395,17 +395,17 @@ export default function BackOfficeDashboard({
         {/* Velocity & Deal Size */}
         <div className="studio-card p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Vélocité & Panier Moyen</span>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Vélocité & Panier Moyen</span>
             <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Icons.Zap size={16} />
             </span>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-black text-zinc-950 dark:text-white">
-                {data.kpis?.avg_cycle_days || 3.8} <span className="text-xs font-bold text-zinc-400">jours</span>
+              <span className="text-2xl font-extrabold text-zinc-950 dark:text-white">
+                {data.kpis?.avg_cycle_days || 3.8} <span className="text-xs font-semibold text-zinc-400">jours</span>
               </span>
-              <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+              <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400">
                 {data.kpis?.average_deal_mrr || "750 $"} /m
               </span>
             </div>
@@ -423,7 +423,7 @@ export default function BackOfficeDashboard({
             <div>
               <div className="flex items-center gap-2">
                 <Icons.LineChart size={18} className="text-blue-600" />
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">
+                <h3 className="text-sm font-extrabold text-zinc-950 dark:text-white uppercase tracking-wider">
                   Courbe d'Activité & Déploiement des Visites
                 </h3>
               </div>
@@ -436,7 +436,7 @@ export default function BackOfficeDashboard({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setChartMetric('all')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   chartMetric === 'all'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
@@ -446,7 +446,7 @@ export default function BackOfficeDashboard({
               </button>
               <button
                 onClick={() => setChartMetric('inbound')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   chartMetric === 'inbound'
                     ? 'bg-blue-600 text-white'
                     : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
@@ -456,7 +456,7 @@ export default function BackOfficeDashboard({
               </button>
               <button
                 onClick={() => setChartMetric('outbound')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   chartMetric === 'outbound'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
@@ -466,7 +466,7 @@ export default function BackOfficeDashboard({
               </button>
               <button
                 onClick={() => setChartMetric('conversions')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   chartMetric === 'conversions'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
@@ -605,7 +605,7 @@ export default function BackOfficeDashboard({
                       x={cx}
                       y={svgHeight - 8}
                       textAnchor="middle"
-                      className={`text-[10px] font-bold ${isHovered ? 'fill-blue-600 font-extrabold' : 'fill-zinc-400'}`}
+                      className={`text-[10px] font-semibold ${isHovered ? 'fill-blue-600 font-bold' : 'fill-zinc-400'}`}
                     >
                       {point.date}
                     </text>
@@ -622,9 +622,9 @@ export default function BackOfficeDashboard({
                   left: `${(hoveredPointIndex / (timeline.length - 1)) * 80 + 10}%`
                 }}
               >
-                <div className="font-black text-zinc-300 border-b border-zinc-700 pb-1 flex justify-between gap-4">
+                <div className="font-extrabold text-zinc-300 border-b border-zinc-700 pb-1 flex justify-between gap-4">
                   <span>{timeline[hoveredPointIndex].date} ({timeline[hoveredPointIndex].day})</span>
-                  <span className="text-blue-400 font-bold">{timeline[hoveredPointIndex].volume} activités</span>
+                  <span className="text-blue-400 font-semibold">{timeline[hoveredPointIndex].volume} activités</span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] pt-0.5">
                   <span className="text-blue-400 font-medium">Inbound : <strong>{timeline[hoveredPointIndex].inbound}</strong></span>
@@ -639,22 +639,22 @@ export default function BackOfficeDashboard({
           {/* Timeline Summary Mini-cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
-              <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Pic d'activité</span>
-              <span className="text-sm font-black text-zinc-900 dark:text-white mt-0.5">Vendredi (28 dossiers)</span>
+              <span className="text-[10px] text-zinc-500 font-bold uppercase">Pic d'activité</span>
+              <span className="text-sm font-extrabold text-zinc-900 dark:text-white mt-0.5">Vendredi (28 dossiers)</span>
             </div>
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
-              <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Ratio Inbound / Outbound</span>
-              <span className="text-sm font-black text-blue-600 dark:text-blue-400 mt-0.5">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase">Ratio Inbound / Outbound</span>
+              <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
                 {Math.round((data.inbound_count / (data.inbound_count + data.outbound_count || 1)) * 100)}% / {Math.round((data.outbound_count / (data.inbound_count + data.outbound_count || 1)) * 100)}%
               </span>
             </div>
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
-              <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Génération Devis IA</span>
-              <span className="text-sm font-black text-blue-600 dark:text-blue-400 mt-0.5">94% auto-calculés</span>
+              <span className="text-[10px] text-zinc-500 font-bold uppercase">Génération Devis IA</span>
+              <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">94% auto-calculés</span>
             </div>
             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex flex-col">
-              <span className="text-[10px] text-zinc-500 font-extrabold uppercase">Temps moyen de signature</span>
-              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase">Temps moyen de signature</span>
+              <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                 {data.kpis?.avg_cycle_days || 3.8} jours
               </span>
             </div>
@@ -669,7 +669,7 @@ export default function BackOfficeDashboard({
             <div>
               <div className="flex items-center gap-2">
                 <Icons.Layers size={18} className="text-blue-600" />
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">
+                <h3 className="text-sm font-extrabold text-zinc-950 dark:text-white uppercase tracking-wider">
                   Entonnoir de Conversion & Goulots d'Étranglement (Drop-Off Pipeline)
                 </h3>
               </div>
@@ -677,7 +677,7 @@ export default function BackOfficeDashboard({
                 Visualisez chaque étape de conversion et identifiez précisément où les clients abandonnent leur parcours.
               </p>
             </div>
-            <span className="text-[10px] bg-blue-600/10 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full font-black">
+            <span className="text-[10px] bg-blue-600/10 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full font-extrabold">
               5 Étapes Clés
             </span>
           </div>
@@ -699,7 +699,7 @@ export default function BackOfficeDashboard({
                   className="studio-subcard p-4 rounded-2xl flex flex-col justify-between border border-zinc-200/60 dark:border-zinc-800/60 hover:border-blue-500/40 transition-all cursor-pointer group relative overflow-hidden"
                 >
                   <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-black uppercase text-zinc-500 group-hover:text-blue-600 transition-colors">
+                    <span className="text-[10px] font-extrabold uppercase text-zinc-500 group-hover:text-blue-600 transition-colors">
                       {stage.name}
                     </span>
                     <span
@@ -709,8 +709,8 @@ export default function BackOfficeDashboard({
 
                   <div className="my-4">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-zinc-900 dark:text-white">{stage.count}</span>
-                      <span className="text-xs font-bold text-zinc-400">({stage.percentage}%)</span>
+                      <span className="text-2xl font-extrabold text-zinc-900 dark:text-white">{stage.count}</span>
+                      <span className="text-xs font-semibold text-zinc-400">({stage.percentage}%)</span>
                     </div>
                     <p className="text-[10px] text-zinc-500 line-clamp-2 mt-1 font-medium">{stage.subtitle}</p>
                   </div>
@@ -726,7 +726,7 @@ export default function BackOfficeDashboard({
 
                     {!isLast && stage.drop_rate > 0 && (
                       <div className="mt-2.5 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/50 flex justify-between items-center text-[10px]">
-                        <span className="text-red-500 font-bold flex items-center gap-1">
+                        <span className="text-red-500 font-semibold flex items-center gap-1">
                           <Icons.TrendingDown size={11} /> -{stage.drop_rate}%
                         </span>
                         <span className="text-zinc-400 font-medium">perte à l'étape</span>
@@ -734,7 +734,7 @@ export default function BackOfficeDashboard({
                     )}
 
                     {isLast && (
-                      <div className="mt-2.5 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/50 flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                      <div className="mt-2.5 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/50 flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                         <span>Objectif atteint</span>
                         <Icons.CheckCircle2 size={13} />
                       </div>
@@ -749,7 +749,7 @@ export default function BackOfficeDashboard({
           {data.drop_off_metrics?.top_reasons && (
             <div className="p-4 rounded-2xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/40 flex flex-col gap-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Icons.AlertCircle size={14} className="text-zinc-600 dark:text-zinc-400" />
                   Causes Principales d'Abandons & Points de Blocage
                 </span>
@@ -771,8 +771,8 @@ export default function BackOfficeDashboard({
                     className="p-3 bg-white dark:bg-zinc-900 rounded-xl shadow-xs border border-zinc-200/50 dark:border-zinc-800/50 flex flex-col justify-between hover:border-blue-500/40 cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-start gap-2">
-                      <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 line-clamp-2">{r.reason}</p>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-black shrink-0 ${
+                      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2">{r.reason}</p>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold shrink-0 ${
                         r.severity === 'CRITICAL'
                           ? 'bg-red-500/10 text-red-600 dark:text-red-400'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
@@ -782,7 +782,7 @@ export default function BackOfficeDashboard({
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-zinc-500 mt-2">
                       <span>Impact sur le funnel : <strong>{r.percentage}%</strong></span>
-                      <span className="text-blue-600 font-bold hover:underline flex items-center">
+                      <span className="text-blue-600 font-semibold hover:underline flex items-center">
                         Relancer <Icons.ChevronRight size={10} />
                       </span>
                     </div>
@@ -801,7 +801,7 @@ export default function BackOfficeDashboard({
             <div>
               <div className="flex items-center gap-2">
                 <Icons.UserMinus size={18} className="text-amber-500" />
-                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">
+                <h3 className="text-sm font-extrabold text-zinc-950 dark:text-white uppercase tracking-wider">
                   Centre d'Action : Clients Non-Convertis & Abandons ({filteredClients.length})
                 </h3>
               </div>
@@ -823,7 +823,7 @@ export default function BackOfficeDashboard({
                 />
               </div>
 
-              <div className="flex bg-zinc-200/70 dark:bg-zinc-800/60 p-1 rounded-xl text-[11px] font-bold">
+              <div className="flex bg-zinc-200/70 dark:bg-zinc-800/60 p-1 rounded-xl text-[11px] font-semibold">
                 <button
                   onClick={() => setDropOffFilter('ALL')}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
@@ -871,7 +871,7 @@ export default function BackOfficeDashboard({
           {/* Unconverted Clients Table */}
           <div className="overflow-x-auto rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-500 uppercase text-[10px] font-black tracking-wider">
+              <thead className="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-500 uppercase text-[10px] font-extrabold tracking-wider">
                 <tr>
                   <th className="py-3 px-4">Client / Entreprise</th>
                   <th className="py-3 px-3">Point de Blocage</th>
@@ -895,10 +895,10 @@ export default function BackOfficeDashboard({
                       <td className="py-3.5 px-4">
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-black text-zinc-900 dark:text-zinc-100 text-xs">
+                            <span className="font-extrabold text-zinc-900 dark:text-zinc-100 text-xs">
                               {client.company_name}
                             </span>
-                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold ${
+                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
                               client.source === 'INBOUND'
                                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                 : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
@@ -915,7 +915,7 @@ export default function BackOfficeDashboard({
                       {/* Drop-off reason */}
                       <td className="py-3.5 px-3">
                         <div className="flex flex-col max-w-[260px]">
-                          <span className="font-bold text-zinc-800 dark:text-zinc-200 line-clamp-1">
+                          <span className="font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-1">
                             {client.drop_off_stage}
                           </span>
                           <span className="text-[10px] text-zinc-400 mt-0.5">
@@ -927,7 +927,7 @@ export default function BackOfficeDashboard({
                       {/* Urgency */}
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-1 ${
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold flex items-center gap-1 ${
                             client.urgency === 'CRITICAL'
                               ? 'bg-red-500/10 text-red-600 dark:text-red-400 animate-pulse'
                               : client.urgency === 'WARNING'
@@ -942,10 +942,10 @@ export default function BackOfficeDashboard({
                       {/* AI Propensity & MRR */}
                       <td className="py-3.5 px-3">
                         <div className="flex flex-col">
-                          <span className="font-black text-emerald-600 dark:text-emerald-400">
+                          <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                             {client.estimated_mrr}
                           </span>
-                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                          <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                             Score IA : {client.conversion_score}%
                           </span>
                         </div>
@@ -953,7 +953,7 @@ export default function BackOfficeDashboard({
 
                       {/* KAM */}
                       <td className="py-3.5 px-3">
-                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                        <span className="font-550 text-zinc-700 dark:text-zinc-300">
                           {client.assigned_kam}
                         </span>
                       </td>
@@ -963,7 +963,7 @@ export default function BackOfficeDashboard({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => handleOpenActionModal(client)}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 transition-all shadow-xs"
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] flex items-center gap-1 transition-all shadow-xs"
                             title="Relancer sur WhatsApp"
                           >
                             <Icons.MessageCircle size={12} /> Relancer
@@ -994,7 +994,7 @@ export default function BackOfficeDashboard({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Icons.MapPin size={16} className="text-blue-600" />
-                <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-extrabold text-zinc-950 dark:text-white uppercase tracking-wider">
                   Performance Commerciale par Plaque Territoriale
                 </h3>
               </div>
@@ -1009,8 +1009,8 @@ export default function BackOfficeDashboard({
                 return (
                   <div key={idx} className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-zinc-800/50 flex flex-col gap-1.5">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100">{zone.zone}</span>
-                      <span className="font-black text-emerald-600 dark:text-emerald-400">{zone.mrr} MRR</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">{zone.zone}</span>
+                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{zone.mrr} MRR</span>
                     </div>
 
                     <div className="w-full bg-zinc-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden flex">
@@ -1043,7 +1043,7 @@ export default function BackOfficeDashboard({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Icons.PieChart size={16} className="text-blue-600" />
-                <h3 className="text-xs font-black text-zinc-950 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-extrabold text-zinc-950 dark:text-white uppercase tracking-wider">
                   Répartition des Clients par Secteur d'Activité
                 </h3>
               </div>
@@ -1054,8 +1054,8 @@ export default function BackOfficeDashboard({
               {(data.sector_distribution || []).map((sec, idx) => (
                 <div key={idx} className="flex flex-col gap-1">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200">{sec.sector}</span>
-                    <span className="font-black text-zinc-900 dark:text-white">{sec.count} entreprises ({sec.percentage}%)</span>
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-200">{sec.sector}</span>
+                    <span className="font-extrabold text-zinc-900 dark:text-white">{sec.count} entreprises ({sec.percentage}%)</span>
                   </div>
                   <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
                     <div
@@ -1083,10 +1083,10 @@ export default function BackOfficeDashboard({
           <div className="studio-card w-full max-w-lg p-6 rounded-3xl shadow-2xl flex flex-col gap-4 animate-scaleUp border border-zinc-200 dark:border-zinc-800">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">
+                <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">
                   Relance Client Instantanée
                 </span>
-                <h3 className="text-lg font-black text-zinc-950 dark:text-white mt-0.5">
+                <h3 className="text-lg font-extrabold text-zinc-950 dark:text-white mt-0.5">
                   {selectedClientModal.company_name}
                 </h3>
                 <p className="text-xs text-zinc-500">
@@ -1105,21 +1105,21 @@ export default function BackOfficeDashboard({
             <div className="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 text-xs flex flex-col gap-1.5">
               <div className="flex justify-between">
                 <span className="text-zinc-500">Point de blocage :</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">{selectedClientModal.drop_off_stage}</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">{selectedClientModal.drop_off_stage}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Inactivité :</span>
-                <span className="font-bold text-red-500">{selectedClientModal.days_inactive} jours sans échange</span>
+                <span className="font-semibold text-red-500">{selectedClientModal.days_inactive} jours sans échange</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Action recommandée :</span>
-                <span className="font-bold text-zinc-900 dark:text-white">{selectedClientModal.recommended_action}</span>
+                <span className="font-semibold text-zinc-900 dark:text-white">{selectedClientModal.recommended_action}</span>
               </div>
             </div>
 
             {/* Editable WhatsApp Draft */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Message WhatsApp pré-rédigé :
               </label>
               <textarea
@@ -1134,13 +1134,13 @@ export default function BackOfficeDashboard({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setSelectedClientModal(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Annuler
               </button>
               <button
                 onClick={() => handleSendWhatsApp(selectedClientModal)}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/20"
               >
                 <Icons.MessageCircle size={14} /> Envoyer sur WhatsApp
               </button>

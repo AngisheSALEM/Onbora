@@ -58,11 +58,11 @@ export default function KamSearchPalette({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher un compte, un décideur, un contrat, un signal..."
-            className="flex-1 bg-transparent border-none text-sm md:text-base font-semibold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-0"
+            className="flex-1 bg-transparent border-none text-sm md:text-base font-550 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-0"
           />
           <button
             onClick={onClose}
-            className="px-2 py-1 text-xs font-bold text-zinc-400 hover:text-black dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+            className="px-2 py-1 text-xs font-semibold text-zinc-400 hover:text-black dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg"
           >
             ESC
           </button>
@@ -70,7 +70,7 @@ export default function KamSearchPalette({
 
         {/* Results Feed */}
         <div className="max-h-96 overflow-y-auto p-3 space-y-1.5">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 px-3 py-1">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 px-3 py-1">
             Comptes Clés & Visites Stratégiques ({filteredVisits.length})
           </div>
 
@@ -85,11 +85,11 @@ export default function KamSearchPalette({
                 className="cursor-pointer flex items-center justify-between p-3 rounded-2xl hover:bg-blue-500/10 dark:hover:bg-white/5 transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-semibold text-xs">
                     {v.account_name.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="text-xs md:text-sm font-bold text-zinc-900 dark:text-white group-hover:text-blue-500 transition-colors">
+                    <h4 className="text-xs md:text-sm font-semibold text-zinc-900 dark:text-white group-hover:text-blue-500 transition-colors">
                       {v.account_name}
                     </h4>
                     <p className="text-[11px] text-zinc-500 line-clamp-1">
@@ -98,7 +98,7 @@ export default function KamSearchPalette({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
+                <div className="flex items-center gap-2 text-xs font-550 text-zinc-400">
                   <span>{v.meeting_time}</span>
                   <Icons.ChevronRight size={14} />
                 </div>

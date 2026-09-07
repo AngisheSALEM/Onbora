@@ -11,14 +11,16 @@ class User(AbstractUser):
     SALESPERSON = 'SALESPERSON'
     KAM = 'KAM'
     SUPERVISOR = 'SUPERVISOR'
+    KAM_MANAGER = 'KAM_MANAGER'
     ADMIN = 'ADMIN'
     
     ROLE_CHOICES = [
         (CLIENT_B2B, 'Client B2B'),
-        (SALESPERSON, 'Prospecteur / Commercial'),
+        (SALESPERSON, 'Commercial Terrain'),
         (KAM, 'Key Account Manager'),
-        (SUPERVISOR, 'Superviseur / Gestionnaire Back-office'),
-        (ADMIN, 'Administrateur MSP'),
+        (SUPERVISOR, 'Superviseur Back-Office Terrain'),
+        (KAM_MANAGER, 'Gérant KAM Office / Grands Comptes'),
+        (ADMIN, 'Administrateur Onbora MSP'),
     ]
     
     role = models.CharField(
@@ -30,6 +32,15 @@ class User(AbstractUser):
     company_name = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True, help_text="Ville / Région d'affectation")
     is_available = models.BooleanField(default=True, help_text="Disponibilité immédiate pour affectation")
+    kam_specialization = models.CharField(
+        max_length=20,
+        choices=[('GRAND_COMPTE', 'Grands Comptes (> 1M$)'), ('PME', 'PME (100k$ - 1M$)')],
+        default='GRAND_COMPTE',
+        blank=True,
+        null=True,
+        help_text="Segmentation du KAM dans le KAM Office"
+    )
+    avatar = models.CharField(max_length=255, blank=True, default='memoji_056.png', help_text="Nom du fichier memoji choisi")
     fcm_token = models.TextField(blank=True, null=True, help_text="Jeton FCM de l'appareil principal")
 
     objects = CustomUserManager()

@@ -105,18 +105,18 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
           {/* Header */}
           <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs shadow-sm">
+              <span className="w-7 h-7 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-extrabold text-xs shadow-sm">
                 <Icons.BookOpen size={14} />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Copilote Formation Onbora</h3>
-                <p className="text-[10px] text-zinc-500 font-semibold">Just-in-Time Learning</p>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Copilote Formation Onbora</h3>
+                <p className="text-[10px] text-zinc-500 font-550">Just-in-Time Learning</p>
               </div>
             </div>
             
             <button
               onClick={onClose}
-              className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-semibold cursor-pointer border-none bg-transparent"
+              className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
             >
               Fermer ✕
             </button>
@@ -132,7 +132,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     setSelectedPersona('EMPLOYEE');
                     setViewState('CATALOG');
                   }}
-                  className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
                     selectedPersona === 'EMPLOYEE'
                       ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-sm'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-350'
@@ -146,7 +146,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     setSelectedPersona('MANAGER');
                     setViewState('STATS');
                   }}
-                  className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
                     selectedPersona === 'MANAGER'
                       ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-sm'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-350'
@@ -162,7 +162,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                 <div className="flex gap-2">
                   <button
                     onClick={() => setViewState('STATS')}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer border-none ${
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer border-none ${
                       viewState === 'STATS'
                         ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
@@ -172,7 +172,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                   </button>
                   <button
                     onClick={() => setViewState('CATALOG')}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer border-none ${
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer border-none ${
                       viewState === 'CATALOG'
                         ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
@@ -196,7 +196,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                     <button
                       key={cat}
                       onClick={() => setCategoryFilter(cat)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-pointer capitalize transition-all ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border cursor-pointer capitalize transition-all ${
                         categoryFilter === cat
                           ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-600/20'
                           : 'border-zinc-200 dark:border-zinc-800 text-zinc-650 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950/20'
@@ -217,10 +217,10 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                       >
                         <div className="flex justify-between items-start gap-3">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
+                            <span className="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
                               {module.category === 'collab' ? 'Collab' : module.category === 'phone' ? 'Téléphonie' : module.category} • {module.duration}
                             </span>
-                            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-50 leading-snug">
+                            <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 leading-snug">
                               {module.title}
                             </h4>
                           </div>
@@ -236,13 +236,13 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                         </p>
 
                         <div className="flex items-center justify-between mt-1 pt-3 border-t border-zinc-100 dark:border-zinc-900/50">
-                          <span className="text-[10px] text-zinc-450 font-bold">
+                          <span className="text-[10px] text-zinc-450 font-semibold">
                             {module.steps.length} étapes
                           </span>
                           
                           <button
                             onClick={() => handleStartModule(module)}
-                            className="py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-[10px] font-black text-white transition-all border-none cursor-pointer flex items-center gap-1 group-hover:translate-x-0.5 duration-200 shadow-[0_0_10px_rgba(37,99,235,0.20)]"
+                            className="py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-[10px] font-extrabold text-white transition-all border-none cursor-pointer flex items-center gap-1 group-hover:translate-x-0.5 duration-200 shadow-[0_0_10px_rgba(37,99,235,0.20)]"
                           >
                             Lancer la formation
                             <Icons.ChevronRight size={10} />
@@ -281,7 +281,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
             {viewState === 'STATS' && selectedPersona === 'MANAGER' && (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-0.5">
-                  <h4 className="text-xs uppercase font-extrabold text-blue-600 dark:text-blue-400 tracking-wider">
+                  <h4 className="text-xs uppercase font-bold text-blue-600 dark:text-blue-400 tracking-wider">
                     Tableau de bord d'Adoption
                   </h4>
                   <p className="text-[11px] text-zinc-450 font-medium">
@@ -292,15 +292,15 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                 {/* Team metrics overview card */}
                 <div className="grid grid-cols-2 gap-2.5 studio-subcard p-4 rounded-2xl">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-zinc-500">Taux d'adoption global</span>
-                    <span className="text-xl font-black text-zinc-850 dark:text-zinc-100 mt-1">79%</span>
-                    <span className="text-[9px] text-green-500 font-semibold flex items-center gap-0.5 mt-0.5">
+                    <span className="text-[10px] font-semibold text-zinc-500">Taux d'adoption global</span>
+                    <span className="text-xl font-extrabold text-zinc-850 dark:text-zinc-100 mt-1">79%</span>
+                    <span className="text-[9px] text-green-500 font-550 flex items-center gap-0.5 mt-0.5">
                       +4% ce mois
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-zinc-500">Formations validées</span>
-                    <span className="text-xl font-black text-zinc-850 dark:text-zinc-100 mt-1">14 / 18</span>
+                    <span className="text-[10px] font-semibold text-zinc-500">Formations validées</span>
+                    <span className="text-xl font-extrabold text-zinc-850 dark:text-zinc-100 mt-1">14 / 18</span>
                     <span className="text-[9px] text-zinc-400 font-medium mt-0.5">
                       6 collaborateurs actifs
                     </span>
@@ -309,7 +309,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
 
                 {/* Adoption table listing */}
                 <div className="flex flex-col gap-2.5">
-                  <span className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">
+                  <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
                     Progression par Collaborateur
                   </span>
 
@@ -320,23 +320,23 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                         className="p-3 studio-subcard rounded-xl flex items-center justify-between gap-3 text-[11px]"
                       >
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-zinc-900 dark:text-zinc-150">{stat.user}</span>
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-150">{stat.user}</span>
                           <span className="text-[9px] text-zinc-400 font-medium">{stat.module}</span>
                         </div>
 
                         <div className="flex flex-col items-end gap-1 shrink-0">
                           {stat.status === 'completed' && (
-                            <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-500 font-bold rounded text-[9px]">
+                            <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-500 font-semibold rounded text-[9px]">
                               Validé
                             </span>
                           )}
                           {stat.status === 'in_progress' && (
-                            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 font-bold rounded text-[9px] animate-pulse">
+                            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 font-semibold rounded text-[9px] animate-pulse">
                               {stat.progress}%
                             </span>
                           )}
                           {stat.status === 'not_started' && (
-                            <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 text-zinc-400 font-semibold rounded text-[9px]">
+                            <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 text-zinc-400 font-550 rounded text-[9px]">
                               Non débuté
                             </span>
                           )}

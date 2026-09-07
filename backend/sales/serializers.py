@@ -1,16 +1,32 @@
 from rest_framework import serializers
+from django.db import models
 from accounts.models import User
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission
+from .models import (
+    Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession,
+    ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig,
+    AdminDirective, SalesIncentivePoint
+)
 
 
 class SalespersonUserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     assigned_plaques = serializers.SerializerMethodField()
     reports_count = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    visits_count = serializers.SerializerMethodField()
+    form_submissions_count = serializers.SerializerMethodField()
+    conversions_count = serializers.SerializerMethodField()
+    converted_amount = serializers.SerializerMethodField()
+    incentive_points = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'phone', 'location', 'is_available', 'assigned_plaques', 'reports_count']
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
+            'phone', 'location', 'is_available', 'is_active', 'avatar',
+            'assigned_plaques', 'reports_count', 'visits_count',
+            'form_submissions_count', 'conversions_count', 'converted_amount', 'incentive_points'
+        ]
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip() or obj.username
@@ -19,7 +35,82 @@ class SalespersonUserSerializer(serializers.ModelSerializer):
         return [p.code for p in obj.assigned_plaques.all()]
 
     def get_reports_count(self, obj):
+        from .models import VisitReport
         return VisitReport.objects.filter(preparation__salesperson=obj).count()
+
+    def get_avatar(self, obj):
+        return getattr(obj, 'avatar', 'memoji_056.png') or 'memoji_056.png'
+
+    def get_visits_count(self, obj):
+        from .models import VisitReport
+        return VisitReport.objects.filter(preparation__salesperson=obj).count()
+
+    def get_form_submissions_count(self, obj):
+        from .models import VisitFormSubmission
+        return VisitFormSubmission.objects.filter(salesperson=obj).count()
+
+    def get_conversions_count(self, obj):
+        from .models import Enterprise
+        return Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').count()
+
+    def get_converted_amount(self, obj):
+        from .models import Enterprise
+        return float(Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').aggregate(total=models.Sum('converted_amount'))['total'] or 0.0)
+
+    def get_incentive_points(self, obj):
+        from .models import SalesIncentivePoint, Enterprise, VisitFormSubmission, VisitReport
+        db_points = SalesIncentivePoint.objects.filter(salesperson=obj).aggregate(total=models.Sum('points'))['total'] or 0
+        conversions = Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').count()
+        submissions = VisitFormSubmission.objects.filter(salesperson=obj).count()
+        visits = VisitReport.objects.filter(preparation__salesperson=obj).count()
+        # Barème d'incentive terrain Onbora : 100 pts / compte converti, 20 pts / audit, 10 pts / visite
+        calculated = (conversions * 100) + (submissions * 20) + (visits * 10)
+        return max(db_points, calculated)
+
+
+class AdminDirectiveSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+    sender_username = serializers.CharField(source='sender.username', read_only=True)
+    sender_role = serializers.CharField(source='sender.role', read_only=True)
+    sender_avatar = serializers.SerializerMethodField()
+    recipient_name = serializers.SerializerMethodField()
+    recipient_username = serializers.CharField(source='recipient.username', read_only=True)
+    recipient_role = serializers.CharField(source='recipient.role', read_only=True)
+    recipient_avatar = serializers.SerializerMethodField()
+    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    target_entity_display = serializers.CharField(source='get_target_entity_display', read_only=True)
+
+    class Meta:
+        model = AdminDirective
+        fields = [
+            'id', 'sender', 'sender_name', 'sender_username', 'sender_role', 'sender_avatar',
+            'target_entity', 'target_entity_display',
+            'recipient', 'recipient_name', 'recipient_username', 'recipient_role',
+            'recipient_avatar', 'title', 'instruction', 'priority', 'priority_display',
+            'status', 'status_display', 'target_account_name', 'acknowledgement_note',
+            'created_at', 'updated_at'
+        ]
+
+    def get_sender_name(self, obj):
+        if obj.sender:
+            return f"{obj.sender.first_name} {obj.sender.last_name}".strip() or obj.sender.username
+        return "Super Administration"
+
+    def get_sender_avatar(self, obj):
+        if obj.sender:
+            return getattr(obj.sender, 'avatar', 'memoji_056.png') or 'memoji_056.png'
+        return 'memoji_056.png'
+
+    def get_recipient_name(self, obj):
+        if obj.recipient:
+            return f"{obj.recipient.first_name} {obj.recipient.last_name}".strip() or obj.recipient.username
+        return "Collaborateur"
+
+    def get_recipient_avatar(self, obj):
+        if obj.recipient:
+            return getattr(obj.recipient, 'avatar', 'memoji_056.png') or 'memoji_056.png'
+        return 'memoji_056.png'
 
 
 class PlaqueSerializer(serializers.ModelSerializer):
@@ -75,16 +166,101 @@ class PlaqueSerializer(serializers.ModelSerializer):
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
+    segment_display = serializers.CharField(source='get_segment_display', read_only=True)
+    assigned_entity_display = serializers.CharField(source='get_assigned_entity_display', read_only=True)
+    conversion_status_display = serializers.CharField(source='get_conversion_status_display', read_only=True)
+    assigned_salesperson_name = serializers.SerializerMethodField()
+    plaque_code = serializers.SerializerMethodField()
+
     class Meta:
         model = Enterprise
         fields = [
-            'id', 'plaque_rel', 'plaque', 'name', 'website', 'sector', 'approximate_size', 'location',
-            'latitude', 'longitude', 'scraping_status', 'scraped_data',
+            'id', 'crm_id', 'name', 'website', 'sector', 'approximate_size', 'location',
+            'city', 'commune', 'address', 'plaque', 'plaque_rel', 'plaque_code', 'latitude', 'longitude',
+            'annual_revenue', 'employee_count', 'site_count',
+            'rccm', 'id_nat', 'nif',
+            'contact_name', 'contact_role', 'contact_phone', 'contact_email',
+            'current_operator', 'current_connectivity',
+            'segment', 'segment_display',
+            'assigned_entity', 'assigned_entity_display',
+            'assigned_kam', 'assigned_salesperson', 'assigned_salesperson_name',
+            'is_visited', 'last_visited_at',
+            'conversion_status', 'conversion_status_display',
+            'converted_by_entity', 'converted_amount', 'converted_offer', 'converted_at',
+            'conversion_notes',
+            'scraping_status', 'scraped_data',
             'ai_hypotheses', 'ai_tailored_pitch', 'ai_key_questions', 'ai_potential_objections',
             'is_ready_for_conversion', 'conversion_score', 'recommended_solution',
             'existing_crm_data', 'siren', 'siret', 'kaabu_organization_id',
             'arrowsphere_tenant_id', 'sync_status', 'last_sync_date', 'created_at'
         ]
+
+    def get_assigned_salesperson_name(self, obj):
+        if obj.assigned_salesperson:
+            return f"{obj.assigned_salesperson.first_name} {obj.assigned_salesperson.last_name}".strip() or obj.assigned_salesperson.username
+        return None
+
+    def get_plaque_code(self, obj):
+        if obj.plaque_rel:
+            return obj.plaque_rel.code
+        return obj.plaque or ""
+
+
+class SegmentationConfigSerializer(serializers.ModelSerializer):
+    stats = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SegmentationConfig
+        fields = [
+            'id', 'tpe_max_revenue', 'pme_max_revenue',
+            'backoffice_entity_label', 'kam_entity_label',
+            'updated_at', 'stats'
+        ]
+
+    def get_stats(self, obj):
+        total = Enterprise.objects.count()
+        tpe_count = Enterprise.objects.filter(segment='TPE_INFORMEL').count()
+        pme_count = Enterprise.objects.filter(segment='PME').count()
+        gc_count = Enterprise.objects.filter(segment='GRAND_COMPTE').count()
+        bo_count = Enterprise.objects.filter(assigned_entity='BACK_OFFICE').count()
+        kam_count = Enterprise.objects.filter(assigned_entity='KAM_OFFICE').count()
+        conv_bo = Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_entity='BACK_OFFICE').count()
+        conv_kam = Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_entity='KAM_OFFICE').count()
+        
+        return {
+            'total_enterprises': total,
+            'tpe_count': tpe_count,
+            'pme_count': pme_count,
+            'grand_compte_count': gc_count,
+            'back_office_total': bo_count,
+            'kam_office_total': kam_count,
+            'converted_back_office': conv_bo,
+            'converted_kam_office': conv_kam,
+            'total_converted': conv_bo + conv_kam
+        }
+
+
+class ConvertedAccountSerializer(serializers.ModelSerializer):
+    segment_display = serializers.CharField(source='get_segment_display', read_only=True)
+    converted_by_user_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Enterprise
+        fields = [
+            'id', 'crm_id', 'name', 'sector', 'city', 'commune', 'address',
+            'rccm', 'id_nat', 'nif', 'annual_revenue', 'employee_count',
+            'segment', 'segment_display',
+            'converted_by_entity', 'converted_amount', 'converted_offer',
+            'converted_at', 'conversion_notes',
+            'contact_name', 'contact_role', 'contact_phone', 'contact_email',
+            'converted_by_user_name', 'current_operator', 'recommended_solution'
+        ]
+
+    def get_converted_by_user_name(self, obj):
+        if obj.converted_by_user:
+            return f"{obj.converted_by_user.first_name} {obj.converted_by_user.last_name}".strip() or obj.converted_by_user.username
+        return "Agent Commercial Onbora"
+
 
 
 class PlaqueDetailSerializer(serializers.ModelSerializer):

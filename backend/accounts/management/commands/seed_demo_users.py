@@ -35,19 +35,35 @@ class Command(BaseCommand):
         admin_user.is_superuser = True
         admin_user.save()
 
-        self.stdout.write('1b. Création du compte Superviseur Back-office...')
+        self.stdout.write('1b. Création du compte Superviseur Back-office Terrain...')
         supervisor_user = User.objects.create_user(
             username='supervisor',
             email='supervisor@onbora.cg',
             role=User.SUPERVISOR,
             first_name='Alain',
             last_name='Mabiala',
-            company_name='Direction Commerciale & Superviseur Plaques',
-            phone='+243815555444'
+            company_name='Supervision Commerciale & Plaques Terrain',
+            phone='+243815555444',
+            location='Kinshasa & National'
         )
         supervisor_user.set_password('supervisorpass')
         supervisor_user.is_staff = True
         supervisor_user.save()
+
+        self.stdout.write('1c. Création du compte Gérant KAM Office (Direction Grands Comptes)...')
+        kam_director_user = User.objects.create_user(
+            username='kam_director',
+            email='kam.director@onbora.cg',
+            role=User.KAM_MANAGER,
+            first_name='Dieudonné',
+            last_name='Mavungu',
+            company_name='Direction KAM & Grands Comptes',
+            phone='+243819999001',
+            location='Kinshasa & Grand Katanga'
+        )
+        kam_director_user.set_password('kamdirectorpass')
+        kam_director_user.is_staff = True
+        kam_director_user.save()
 
         self.stdout.write('2. Création des comptes commerciaux (Sales & Prospecteurs)...')
         sales_configs = [

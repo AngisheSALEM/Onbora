@@ -34,7 +34,7 @@ export default function KamAccountPlanModal({
               <Icons.LineChart size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-zinc-900 dark:text-white">
+              <h2 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                 Plan de Compte Stratégique 2026–2027 — {visit.account_name}
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -57,10 +57,10 @@ export default function KamAccountPlanModal({
           {/* Top Row : Share of Wallet Visual Gauge */}
           <div className="p-5 bg-zinc-50 dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                 Analyse de la Part de Portefeuille (Share of Wallet)
               </span>
-              <span className="text-xs font-bold text-zinc-900 dark:text-white">
+              <span className="text-xs font-semibold text-zinc-900 dark:text-white">
                 Dépense Télécom & Cloud Totale Estimée : <strong className="text-blue-600">{totalBudget.toLocaleString()} € / mois</strong>
               </span>
             </div>
@@ -69,13 +69,13 @@ export default function KamAccountPlanModal({
             <div className="w-full h-5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
               <div
                 style={{ width: `${orangeShare}%` }}
-                className="bg-orange-500 h-full flex items-center justify-center text-[10px] font-black text-white"
+                className="bg-orange-500 h-full flex items-center justify-center text-[10px] font-extrabold text-white"
               >
                 Orange {orangeShare}% ({orangeMrr.toLocaleString()} €)
               </div>
               <div
                 style={{ width: `${100 - orangeShare}%` }}
-                className="bg-zinc-400 dark:bg-zinc-600 h-full flex items-center justify-center text-[10px] font-bold text-white"
+                className="bg-zinc-400 dark:bg-zinc-600 h-full flex items-center justify-center text-[10px] font-semibold text-white"
               >
                 Concurrents {100 - orangeShare}% ({competitorMrr.toLocaleString()} €)
               </div>
@@ -83,20 +83,20 @@ export default function KamAccountPlanModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs">
               <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-black/5 dark:border-white/5">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase">Objectif Cible 2027</span>
-                <span className="text-base font-black text-emerald-500">65% Share of Wallet</span>
+                <span className="text-zinc-400 block text-[10px] font-semibold uppercase">Objectif Cible 2027</span>
+                <span className="text-base font-extrabold text-emerald-500">65% Share of Wallet</span>
                 <span className="text-[11px] text-zinc-500 block mt-0.5">+30 000 € / mois MRR visé</span>
               </div>
 
               <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-black/5 dark:border-white/5">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase">Cible Conquête #1</span>
-                <span className="text-sm font-bold text-zinc-900 dark:text-white">Remplacement MPLS Cisco par SD-WAN Orange</span>
+                <span className="text-zinc-400 block text-[10px] font-semibold uppercase">Cible Conquête #1</span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white">Remplacement MPLS Cisco par SD-WAN Orange</span>
                 <span className="text-[11px] text-zinc-500 block mt-0.5">Échéance : Q4 2026</span>
               </div>
 
               <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-black/5 dark:border-white/5">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase">Cible Conquête #2</span>
-                <span className="text-sm font-bold text-zinc-900 dark:text-white">Datacenter Secours Tier III</span>
+                <span className="text-zinc-400 block text-[10px] font-semibold uppercase">Cible Conquête #2</span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white">Datacenter Secours Tier III</span>
                 <span className="text-[11px] text-zinc-500 block mt-0.5">Conformité directive BCEAO</span>
               </div>
             </div>
@@ -108,15 +108,15 @@ export default function KamAccountPlanModal({
               <div key={idx} className="p-4 bg-zinc-50 dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase">
+                    <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase">
                       Opportunité #{idx + 1}
                     </span>
-                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-black">
+                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-extrabold">
                       +{opp.potential_mrr.toLocaleString()} € / mois
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-black text-zinc-900 dark:text-white mt-1">
+                  <h4 className="text-sm font-extrabold text-zinc-900 dark:text-white mt-1">
                     {opp.solution_category}
                   </h4>
 
@@ -127,7 +127,7 @@ export default function KamAccountPlanModal({
 
                 <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-xs">
                   <span className="text-zinc-400">Statut : En qualification</span>
-                  <button className="px-3 py-1 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-[11px] hover:opacity-90 transition-opacity">
+                  <button className="px-3 py-1 bg-black text-white dark:bg-white dark:text-black rounded-lg font-semibold text-[11px] hover:opacity-90 transition-opacity">
                     Intégrer au Devis
                   </button>
                 </div>

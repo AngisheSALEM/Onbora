@@ -38,9 +38,38 @@ from .views import (
     TestPushNotificationView,
     SubmitVisitFormView,
     VisitFormSubmissionListView,
+    SegmentationConfigView,
+    ResegmentEnterprisesView,
+    ConvertedAccountsView,
+    EnterpriseListFullView,
+    AdminDirectivesListView,
+    AdminDirectiveDetailView,
+    AutoDispatchPlaqueView,
+    EnterpriseAssignSalespersonView,
+)
+from .b2b_offers_views import (
+    B2BOffersListView,
+    B2BOfferDetailView,
+    B2BOffersImportView,
 )
 
 urlpatterns = [
+    # Directives & Instructions Super Admin (KAM Office & Back-Office)
+    path('directives/', AdminDirectivesListView.as_view(), name='admin-directives-list'),
+    path('directives/<int:pk>/', AdminDirectiveDetailView.as_view(), name='admin-directive-detail'),
+
+    # Moteur de Segmentation Financière CRM, Comptes Convertis & Base Entreprises
+    path('segmentation-config/', SegmentationConfigView.as_view(), name='segmentation-config'),
+    path('segmentation-config/resegment/', ResegmentEnterprisesView.as_view(), name='segmentation-resegment'),
+    path('converted-accounts/', ConvertedAccountsView.as_view(), name='converted-accounts'),
+    path('enterprises/', EnterpriseListFullView.as_view(), name='enterprise-list-full'),
+    path('enterprises/<int:pk>/assign-salesperson/', EnterpriseAssignSalespersonView.as_view(), name='enterprise-assign-salesperson'),
+
+    # Banque d'Offres B2B & Core AI (Gestion, Edition, Création, Importation)
+    path('b2b-offers/', B2BOffersListView.as_view(), name='b2b-offers-list'),
+    path('b2b-offers/import/', B2BOffersImportView.as_view(), name='b2b-offers-import'),
+    path('b2b-offers/<str:service_id>/', B2BOfferDetailView.as_view(), name='b2b-offer-detail'),
+
     # Notifications Push & In-App Commerciaux
     path('notifications/', SalesNotificationListView.as_view(), name='sales-notifications-list'),
     path('notifications/<int:pk>/mark-read/', SalesNotificationListView.as_view(), name='sales-notification-mark-read'),
@@ -59,6 +88,7 @@ urlpatterns = [
     path('salespersons/', SalespersonListView.as_view(), name='salesperson-list'),
     path('salespersons/<int:pk>/', SalespersonDetailView.as_view(), name='salesperson-detail'),
     path('plaques/<int:pk>/assign/', AssignSalespersonsToPlaqueView.as_view(), name='plaque-assign-salespersons'),
+    path('plaques/<int:pk>/auto-dispatch/', AutoDispatchPlaqueView.as_view(), name='plaque-auto-dispatch'),
     path('plaques/<int:pk>/kml/', PlaqueKMLDownloadView.as_view(), name='plaque-kml-download'),
     path('plaques/draw-zone/', PlaqueDrawAndSaveView.as_view(), name='plaque-draw-save-kml'),
     path('plaques/purge-mock/', PlaquePurgeMockView.as_view(), name='plaque-purge-mock'),

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, MeView, KAMListView, FCMTokenUpdateView
+from .views import RegisterView, LoginView, MeView, KAMListView, FCMTokenUpdateView, ManagersView, ManagerToggleActiveView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -7,5 +7,7 @@ urlpatterns = [
     path('me/', MeView.as_view(), name='me'),
     path('kams/', KAMListView.as_view(), name='kams'),
     path('fcm-token/', FCMTokenUpdateView.as_view(), name='fcm_token_update'),
+    path('managers/', ManagersView.as_view(), name='managers'),
+    path('managers/<int:pk>/toggle-active/', ManagerToggleActiveView.as_view(), name='manager_toggle_active'),
 ]
 

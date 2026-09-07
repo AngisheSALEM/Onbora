@@ -45,7 +45,7 @@ export default function KamOrgChartModal({
               <Icons.Users size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-zinc-900 dark:text-white">
+              <h2 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                 Cartographie Décisionnelle (MEDDIC) — {visit.account_name}
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -63,7 +63,7 @@ export default function KamOrgChartModal({
         </div>
 
         {/* Filter Bar */}
-        <div className="flex flex-wrap items-center gap-2 p-4 bg-zinc-100/60 dark:bg-black/40 border-b border-black/5 dark:border-white/5 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-2 p-4 bg-zinc-100/60 dark:bg-black/40 border-b border-black/5 dark:border-white/5 text-xs font-semibold">
           <span className="text-zinc-400 text-[11px] uppercase mr-2">Filtrer par Rôle :</span>
           {['ALL', 'ECONOMIC_BUYER', 'CHAMPION', 'TECHNICAL_BUYER', 'INFLUENCER', 'BLOCKER'].map((role) => (
             <button
@@ -101,7 +101,7 @@ export default function KamOrgChartModal({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-zinc-900 dark:text-white text-sm">
+                      <h4 className="font-semibold text-zinc-900 dark:text-white text-sm">
                         {stk.full_name}
                       </h4>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
@@ -109,13 +109,13 @@ export default function KamOrgChartModal({
                       </p>
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${styling.bg} ${styling.text} ${styling.border}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${styling.bg} ${styling.text} ${styling.border}`}>
                       {stk.role_in_decision.replace('_', ' ')}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs">
-                    <span className="text-[11px] font-semibold flex items-center gap-1.5">
+                    <span className="text-[11px] font-550 flex items-center gap-1.5">
                       {stk.stance_towards_orange === 'POSITIVE' && (
                         <>
                           <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
@@ -149,8 +149,8 @@ export default function KamOrgChartModal({
             {selectedStakeholder ? (
               <div className="space-y-4">
                 <div>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase">Fiche Décideur</span>
-                  <h3 className="text-base font-black text-zinc-900 dark:text-white mt-0.5">
+                  <span className="text-[10px] font-semibold text-zinc-400 uppercase">Fiche Décideur</span>
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white mt-0.5">
                     {selectedStakeholder.full_name}
                   </h3>
                   <p className="text-xs text-zinc-500 font-medium">
@@ -170,7 +170,7 @@ export default function KamOrgChartModal({
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Notes Clés & Analyse Comportementale :</span>
+                  <span className="text-[10px] font-semibold text-zinc-400 uppercase block mb-1">Notes Clés & Analyse Comportementale :</span>
                   <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed italic">
                     &ldquo;{selectedStakeholder.key_notes}&rdquo;
                   </div>
@@ -185,7 +185,7 @@ export default function KamOrgChartModal({
 
             <button
               onClick={() => alert("Fonctionnalité d'ajout de contact MEDDIC")}
-              className="mt-4 w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-black rounded-xl text-xs font-bold transition-all"
+              className="mt-4 w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-black rounded-xl text-xs font-semibold transition-all"
             >
               + Ajouter un Nouveau Décideur
             </button>

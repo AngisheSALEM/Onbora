@@ -171,11 +171,11 @@ export default function KamCreateAccountModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-zinc-200/80 dark:border-white/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-extrabold">
               <Icons.Building size={18} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-zinc-900 dark:text-white">
+              <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                 Ajouter un Compte Stratégique
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -198,7 +198,7 @@ export default function KamCreateAccountModal({
           {/* Row 1 : Nom + Secteur */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Nom de l&apos;Entreprise / Compte *
               </label>
               <input
@@ -212,7 +212,7 @@ export default function KamCreateAccountModal({
             </div>
 
             <div>
-              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Secteur d&apos;Activité
               </label>
               <select
@@ -232,7 +232,7 @@ export default function KamCreateAccountModal({
           {/* Row 2 : MRR + Nombre de sites + Part de Marché */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 MRR Facturé (€ / m)
               </label>
               <input
@@ -240,12 +240,12 @@ export default function KamCreateAccountModal({
                 value={mrr}
                 onChange={(e) => setMrr(e.target.value)}
                 placeholder="Ex: 35000"
-                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-bold outline-none"
+                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-semibold outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Sites Connectés
               </label>
               <input
@@ -253,12 +253,12 @@ export default function KamCreateAccountModal({
                 value={locationsCount}
                 onChange={(e) => setLocationsCount(e.target.value)}
                 placeholder="25"
-                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-bold outline-none"
+                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-semibold outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Part Marché (%)
               </label>
               <input
@@ -266,20 +266,20 @@ export default function KamCreateAccountModal({
                 value={walletShare}
                 onChange={(e) => setWalletShare(e.target.value)}
                 placeholder="40"
-                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-bold outline-none"
+                className="w-full px-3 py-2 bg-white dark:bg-[#191816] rounded-xl border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white font-mono font-semibold outline-none"
               />
             </div>
           </div>
 
           {/* Row 3 : Décideur Principal (MEDDIC) */}
           <div className="p-4 bg-[#ECEAE5] dark:bg-[#363336] rounded-2xl space-y-3">
-            <span className="font-black text-zinc-900 dark:text-white flex items-center gap-2">
+            <span className="font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
               <Icons.User size={15} className="text-[#4F6CE8]" />
               <span>Décideur Principal (MEDDIC)</span>
             </span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-0.5">
+                <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-0.5">
                   Nom & Prénom
                 </label>
                 <input
@@ -292,7 +292,7 @@ export default function KamCreateAccountModal({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-0.5">
+                <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-0.5">
                   Fonction
                 </label>
                 <input
@@ -305,7 +305,7 @@ export default function KamCreateAccountModal({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-0.5">
+                <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-0.5">
                   Rôle MEDDIC
                 </label>
                 <select
@@ -323,7 +323,7 @@ export default function KamCreateAccountModal({
 
           {/* Row 4 : Règle d'Or Tactique */}
           <div>
-            <label className="flex items-center gap-2 font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="flex items-center gap-2 font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
               <Icons.Shield size={15} className="text-[#4F6CE8]" />
               <span>Règle d&apos;Or Avant d&apos;Entrer en Réunion</span>
             </label>
@@ -341,14 +341,14 @@ export default function KamCreateAccountModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-xl font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all cursor-pointer"
             >
               Annuler
             </button>
 
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
             >
               <Icons.Plus size={16} />
               <span>Créer & Ouvrir le Compte</span>

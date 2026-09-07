@@ -118,6 +118,109 @@ class Enterprise(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     
+    # Données CRM Congolaises & Métriques Financières
+    crm_id = models.CharField(max_length=50, blank=True, null=True, db_index=True, help_text="Identifiant unique CRM (ex: CRM-CD-0001)")
+    annual_revenue = models.DecimalField(
+        max_digits=15, decimal_places=2, default=50000.00, db_index=True,
+        help_text="Chiffre d'affaires annuel en USD (critère maître de segmentation)"
+    )
+    employee_count = models.IntegerField(default=10, help_text="Effectif salarial")
+    site_count = models.IntegerField(default=1, help_text="Nombre d'implantations / agences")
+    
+    # Identifiants légaux RDC & Afrique
+    rccm = models.CharField(max_length=100, blank=True, null=True, help_text="Registre du Commerce et du Crédit Mobilier (ex: CD/KNG/RCCM/...)")
+    id_nat = models.CharField(max_length=100, blank=True, null=True, help_text="Numéro d'Identification Nationale")
+    nif = models.CharField(max_length=100, blank=True, null=True, help_text="Numéro d'Impôt Fiscal")
+    
+    # Adresse & Géographie Détaillée
+    city = models.CharField(max_length=100, default='Kinshasa')
+    commune = models.CharField(max_length=100, blank=True, default='', help_text="Commune (ex: Gombe, Limete, Lingwala...)")
+    address = models.CharField(max_length=255, blank=True, default='')
+    
+    # Contact & Décideur
+    contact_name = models.CharField(max_length=150, blank=True, default='')
+    contact_role = models.CharField(max_length=100, blank=True, default='', help_text="Fonction du décideur (DG, DSI, Gérant...)")
+    contact_phone = models.CharField(max_length=50, blank=True, default='')
+    contact_email = models.EmailField(blank=True, null=True)
+    
+    # Contexte Télécoms & Connectivité Actuelle
+    current_operator = models.CharField(max_length=100, blank=True, default='Vodacom', help_text="Opérateur actuel (Vodacom, Airtel, Africell, Canalbox...)")
+    current_connectivity = models.CharField(max_length=100, blank=True, default='4G LTE', help_text="Type d'accès actuel (Fibre, VSAT, 4G, Aucun)")
+    
+    # Segmentation & Entité Destinataire (Moteur Backend)
+    SEGMENT_CHOICES = [
+        ('GRAND_COMPTE', 'Grand Compte'),
+        ('PME', 'PME'),
+        ('TPE_INFORMEL', 'TPE / Informel'),
+    ]
+    ENTITY_CHOICES = [
+        ('BACK_OFFICE', 'Back-Office Terrain (Commerciaux Terrain & Plaques)'),
+        ('KAM_OFFICE', 'Direction KAM & Grands Comptes (Desk KAM)'),
+    ]
+    segment = models.CharField(max_length=30, choices=SEGMENT_CHOICES, default='TPE_INFORMEL', db_index=True)
+    assigned_entity = models.CharField(max_length=30, choices=ENTITY_CHOICES, default='BACK_OFFICE', db_index=True)
+    
+    # Affectation Individuelle au sein du KAM Office
+    assigned_kam = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_kam_enterprises',
+        help_text="Key Account Manager (KAM) individuel affecté à ce compte par le KAM Office"
+    )
+    assigned_at = models.DateTimeField(null=True, blank=True, help_text="Date d'affectation par le KAM Office")
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dispatched_enterprises',
+        help_text="Gérant KAM Office ayant opéré l'affectation"
+    )
+
+    # Affectation Individuelle au sein du Back-Office Terrain (Commerciaux SOHO)
+    assigned_salesperson = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_soho_enterprises',
+        help_text="Commercial terrain individuel assigné pour la prospection"
+    )
+    assigned_salesperson_at = models.DateTimeField(null=True, blank=True, help_text="Date d'affectation au commercial")
+    is_visited = models.BooleanField(default=False, db_index=True, help_text="Vrai si l'entreprise a déjà été prospectée/visitée")
+    last_visited_at = models.DateTimeField(null=True, blank=True, help_text="Date de la dernière visite terrain")
+    last_visited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='visited_enterprises',
+        help_text="Dernier commercial ayant visité cette entreprise"
+    )
+    
+    # Statut de Conversion & Traçabilité Métier
+    CONVERSION_STATUS_CHOICES = [
+        ('PROSPECT', 'Prospect non converti'),
+        ('IN_NEGOTIATION', 'En cours de négociation'),
+        ('CONVERTED', 'Converti / Signé'),
+        ('LOST', 'Perdu / Non retenu'),
+    ]
+    conversion_status = models.CharField(max_length=30, choices=CONVERSION_STATUS_CHOICES, default='PROSPECT', db_index=True)
+    converted_by_entity = models.CharField(max_length=30, choices=[('BACK_OFFICE', 'Back-Office Terrain'), ('KAM_OFFICE', 'KAM Office')], blank=True, null=True)
+    converted_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Valeur contractuelle signée (USD)")
+    converted_offer = models.CharField(max_length=150, blank=True, default='', help_text="Offre commerciale souscrite")
+    converted_at = models.DateTimeField(null=True, blank=True)
+    converted_by_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='converted_enterprises'
+    )
+    conversion_notes = models.TextField(blank=True, default='')
+
     # Données de Scraping & Profilage
     scraping_status = models.CharField(
         max_length=20,
@@ -157,7 +260,76 @@ class Enterprise(models.Model):
     last_sync_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.plaque})"
+        return f"{self.name} [{self.get_segment_display()}] - {self.city}"
+
+
+class SegmentationConfig(models.Model):
+    """
+    Configuration globale des seuils financiers de segmentation CRM administrables par l'Admin.
+    """
+    tpe_max_revenue = models.DecimalField(
+        max_digits=15, decimal_places=2, default=100000.00,
+        help_text="Seuil CA max pour TPE / Informel (USD). Les entreprises en dessous vont au Back-Office Terrain."
+    )
+    pme_max_revenue = models.DecimalField(
+        max_digits=15, decimal_places=2, default=1000000.00,
+        help_text="Seuil CA max pour PME (USD). Les entreprises au dessus sont des Grands Comptes (KAM Office)."
+    )
+    backoffice_entity_label = models.CharField(
+        max_length=100, default="Back-Office Terrain",
+        help_text="Nom de l'entité dédiée aux commerciaux de terrain et plaques"
+    )
+    kam_entity_label = models.CharField(
+        max_length=100, default="Direction KAM & Grands Comptes",
+        help_text="Nom de l'entité dédiée aux Key Account Managers et comptes stratégiques"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    @classmethod
+    def get_active(cls):
+        config, _ = cls.objects.get_or_create(id=1)
+        return config
+
+    def apply_segmentation_to_all(self):
+        """
+        Recalcule la segmentation et l'affectation d'entité pour l'ensemble des entreprises en base.
+        """
+        enterprises = Enterprise.objects.all()
+        tpe_threshold = float(self.tpe_max_revenue)
+        pme_threshold = float(self.pme_max_revenue)
+        
+        tpe_count = 0
+        pme_count = 0
+        gc_count = 0
+        
+        for ent in enterprises:
+            rev = float(ent.annual_revenue or 0)
+            if rev < tpe_threshold:
+                ent.segment = 'TPE_INFORMEL'
+                ent.assigned_entity = 'BACK_OFFICE'
+                tpe_count += 1
+            elif rev < pme_threshold:
+                ent.segment = 'PME'
+                ent.assigned_entity = 'KAM_OFFICE'
+                pme_count += 1
+            else:
+                ent.segment = 'GRAND_COMPTE'
+                ent.assigned_entity = 'KAM_OFFICE'
+                gc_count += 1
+            ent.save(update_fields=['segment', 'assigned_entity'])
+            
+        return {
+            "total_updated": enterprises.count(),
+            "tpe_informel": tpe_count,
+            "pme": pme_count,
+            "grand_compte": gc_count,
+            "back_office_total": tpe_count,
+            "kam_office_total": pme_count + gc_count
+        }
+
+    def __str__(self):
+        return f"SegmentationConfig (TPE < {self.tpe_max_revenue} $ / PME < {self.pme_max_revenue} $)"
 
 
 class VisitPreparation(models.Model):
@@ -470,5 +642,55 @@ class VisitFormSubmission(models.Model):
 
     def __str__(self):
         return f"Formulaire [{self.target_offer_name}] - {self.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
+
+
+class AdminDirective(models.Model):
+    """
+    Directives & Instructions formelles émises par le Super Administrateur
+    à destination d'un KAM spécifique (KAM Office) ou d'un Commercial / Superviseur (Back-Office).
+    """
+    TARGET_ENTITIES = [
+        ('KAM_OFFICE', 'Direction KAM Office'),
+        ('BACK_OFFICE', 'Back-Office Terrain'),
+    ]
+    PRIORITY_CHOICES = [
+        ('NORMAL', 'Normale'),
+        ('HIGH', 'Urgente'),
+        ('CRITICAL', 'Stratégique'),
+    ]
+    STATUS_CHOICES = [
+        ('SENT', 'Transmise'),
+        ('IN_PROGRESS', 'En cours d\'application'),
+        ('COMPLETED', 'Traitée / Conforme'),
+    ]
+
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_directives'
+    )
+    target_entity = models.CharField(max_length=20, choices=TARGET_ENTITIES, default='KAM_OFFICE')
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='received_directives',
+        help_text="KAM ou Commercial/Superviseur ciblé"
+    )
+    title = models.CharField(max_length=200, help_text="Objet de la directive")
+    instruction = models.TextField(help_text="Contenu des instructions à appliquer")
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='NORMAL')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SENT')
+    target_account_name = models.CharField(max_length=200, blank=True, default='', help_text="Compte client concerné éventuel")
+    acknowledgement_note = models.TextField(blank=True, default='', help_text="Retour d'exécution du destinataire")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Directive #{self.id} [{self.get_priority_display()}] -> {self.recipient.username}: {self.title}"
 
 

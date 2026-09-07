@@ -124,7 +124,7 @@ export default function AdvProvisioningConsole() {
     <div className="flex flex-col gap-6 w-full animate-fade-in font-sans">
       {/* Toast Notification */}
       {statusMessage && (
-        <div className={`p-4 rounded-2xl flex items-center justify-between text-xs font-bold ${
+        <div className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold ${
           statusMessage.type === 'success' ? 'badge-success border-none' : 'badge-error border-none'
         }`}>
           <div className="flex items-center gap-2">
@@ -145,12 +145,12 @@ export default function AdvProvisioningConsole() {
         {/* ZTE ZSmart Gateway */}
         <div className="studio-card p-5 flex flex-col gap-2 shadow-sm border-l-4 border-blue-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase text-zinc-500 tracking-wider">Passerelle BSS Mobile</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-black flex items-center gap-1">
+            <span className="text-[11px] font-extrabold uppercase text-zinc-500 tracking-wider">Passerelle BSS Mobile</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Connecté
             </span>
           </div>
-          <h4 className="text-sm font-black text-zinc-950 dark:text-white flex items-center gap-1.5">
+          <h4 className="text-sm font-extrabold text-zinc-950 dark:text-white flex items-center gap-1.5">
             <Icons.Zap size={16} className="text-blue-600" /> ZTE ZSmart 5G Engine
           </h4>
           <p className="text-[11px] text-zinc-600 dark:text-gray-300">
@@ -161,12 +161,12 @@ export default function AdvProvisioningConsole() {
         {/* Microsoft CSP Gateway */}
         <div className="studio-card p-5 flex flex-col gap-2 shadow-sm border-l-4 border-indigo-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase text-zinc-500 tracking-wider">Passerelle Cloud MSP</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-black flex items-center gap-1">
+            <span className="text-[11px] font-extrabold uppercase text-zinc-500 tracking-wider">Passerelle Cloud MSP</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Connecté
             </span>
           </div>
-          <h4 className="text-sm font-black text-zinc-950 dark:text-white flex items-center gap-1.5">
+          <h4 className="text-sm font-extrabold text-zinc-950 dark:text-white flex items-center gap-1.5">
             <Icons.Cloud size={16} className="text-indigo-600" /> Microsoft Partner Center CSP
           </h4>
           <p className="text-[11px] text-zinc-600 dark:text-gray-300">
@@ -177,12 +177,12 @@ export default function AdvProvisioningConsole() {
         {/* TOM Fibre Gateway */}
         <div className="studio-card p-5 flex flex-col gap-2 shadow-sm border-l-4 border-emerald-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase text-zinc-500 tracking-wider">Passerelle Réseau Fixe</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-black flex items-center gap-1">
+            <span className="text-[11px] font-extrabold uppercase text-zinc-500 tracking-wider">Passerelle Réseau Fixe</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Connecté
             </span>
           </div>
-          <h4 className="text-sm font-black text-zinc-950 dark:text-white flex items-center gap-1.5">
+          <h4 className="text-sm font-extrabold text-zinc-950 dark:text-white flex items-center gap-1.5">
             <Icons.Layers size={16} className="text-emerald-600" /> TOM Fibre Core (FTTO/FTTH)
           </h4>
           <p className="text-[11px] text-zinc-600 dark:text-gray-300">
@@ -195,7 +195,7 @@ export default function AdvProvisioningConsole() {
       <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="text-base font-black text-zinc-950 dark:text-white uppercase tracking-tight flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-zinc-950 dark:text-white uppercase tracking-tight flex items-center gap-2">
               <Icons.FileCheck size={18} className="text-blue-600 dark:text-blue-400" />
               File d'Attente ADV & Provisioning STP
             </h3>
@@ -220,7 +220,7 @@ export default function AdvProvisioningConsole() {
             <div className="flex gap-1">
               <button
                 onClick={() => setStatusFilter('ALL')}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                   statusFilter === 'ALL' ? 'bg-blue-600 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
@@ -228,7 +228,7 @@ export default function AdvProvisioningConsole() {
               </button>
               <button
                 onClick={() => setStatusFilter('READY_FOR_PROVISIONING')}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                   statusFilter === 'READY_FOR_PROVISIONING' ? 'bg-amber-600 text-white' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
                 }`}
               >
@@ -236,7 +236,7 @@ export default function AdvProvisioningConsole() {
               </button>
               <button
                 onClick={() => setStatusFilter('ACTIVE')}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                   statusFilter === 'ACTIVE' ? 'bg-emerald-600 text-white' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                 }`}
               >
@@ -250,7 +250,7 @@ export default function AdvProvisioningConsole() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 font-bold">
+              <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 font-semibold">
                 <th className="py-3 px-3">Dossier / Entreprise</th>
                 <th className="py-3 px-3">Contact & Email</th>
                 <th className="py-3 px-3">RCCM Validé</th>
@@ -275,18 +275,18 @@ export default function AdvProvisioningConsole() {
                 filteredQueue.map((item) => (
                   <tr key={item.id} className="border-b border-zinc-200/50 dark:border-zinc-800/60 hover:bg-white/40 dark:hover:bg-zinc-800/40">
                     <td className="py-3.5 px-3">
-                      <div className="font-black text-sm text-zinc-950 dark:text-white">{item.company_name}</div>
-                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">Dossier #{item.id} • {item.source}</span>
+                      <div className="font-extrabold text-sm text-zinc-950 dark:text-white">{item.company_name}</div>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Dossier #{item.id} • {item.source}</span>
                     </td>
                     <td className="py-3.5 px-3">
-                      <div className="font-bold text-zinc-900 dark:text-zinc-200">{item.contact_name}</div>
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-200">{item.contact_name}</div>
                       <span className="text-[10px] text-zinc-500">{item.email} • {item.phone}</span>
                     </td>
-                    <td className="py-3.5 px-3 font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                    <td className="py-3.5 px-3 font-mono font-semibold text-zinc-700 dark:text-zinc-300">
                       {item.rccm}
                     </td>
                     <td className="py-3.5 px-3 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
                         item.provisioning_status === 'ACTIVE'
                           ? 'badge-success'
                           : item.provisioning_status === 'PROVISIONING'
@@ -316,14 +316,14 @@ export default function AdvProvisioningConsole() {
                             setStpStep(5);
                             setIsTriggering(true);
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-800 dark:text-zinc-200 font-extrabold text-[10px] transition-all cursor-pointer inline-flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-800 dark:text-zinc-200 font-bold text-[10px] transition-all cursor-pointer inline-flex items-center gap-1"
                         >
                           <Icons.Eye size={12} /> Certificat Actif
                         </button>
                       ) : (
                         <button
                           onClick={() => handleTriggerStp(item)}
-                          className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] transition-all cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.25)] inline-flex items-center gap-1.5"
+                          className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] transition-all cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.25)] inline-flex items-center gap-1.5"
                         >
                           <Icons.Zap size={12} /> Provisioning STP 1-Clic
                         </button>
@@ -343,10 +343,10 @@ export default function AdvProvisioningConsole() {
           <div className="studio-card p-6 md:p-8 max-w-2xl w-full flex flex-col gap-5 shadow-2xl border-2 border-blue-600/30">
             <div className="flex justify-between items-start border-b border-zinc-200 dark:border-zinc-800 pb-3">
               <div>
-                <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
+                <span className="text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
                   <Icons.Zap size={12} /> Activation des Services Télécom & Cloud
                 </span>
-                <h3 className="text-base font-black text-zinc-950 dark:text-white">
+                <h3 className="text-base font-extrabold text-zinc-950 dark:text-white">
                   Dossier : {selectedDossier.company_name}
                 </h3>
               </div>
@@ -358,7 +358,7 @@ export default function AdvProvisioningConsole() {
             </div>
 
             {/* Stepper Pipeline */}
-            <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
+            <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-semibold">
               <div className={`p-2.5 rounded-xl transition-all ${
                 stpStep >= 1 ? 'bg-blue-600 text-white' : 'studio-subcard text-zinc-400'
               }`}>
@@ -387,7 +387,7 @@ export default function AdvProvisioningConsole() {
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
                   <Icons.CheckCircle size={24} />
                   <div>
-                    <span className="font-black text-xs block">Activation des services réussie</span>
+                    <span className="font-extrabold text-xs block">Activation des services réussie</span>
                     <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
                       Les services 5G, Microsoft 365 et liaison Fibre sont désormais opérationnels.
                     </span>
@@ -397,22 +397,22 @@ export default function AdvProvisioningConsole() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   {/* ZTE Card */}
                   <div className="studio-subcard p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] font-black uppercase text-blue-600">ZTE ZSmart Mobile</span>
-                    <span className="font-extrabold text-zinc-950 dark:text-white">5 Lignes 5G Pro</span>
+                    <span className="text-[10px] font-extrabold uppercase text-blue-600">ZTE ZSmart Mobile</span>
+                    <span className="font-bold text-zinc-950 dark:text-white">5 Lignes 5G Pro</span>
                     <span className="text-[10px] text-zinc-500">Forfait Flotte Illimité</span>
                   </div>
 
                   {/* Microsoft Card */}
                   <div className="studio-subcard p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] font-black uppercase text-indigo-600">Microsoft CSP</span>
-                    <span className="font-extrabold text-zinc-950 dark:text-white">5 Licences M365 Std</span>
+                    <span className="text-[10px] font-extrabold uppercase text-indigo-600">Microsoft CSP</span>
+                    <span className="font-bold text-zinc-950 dark:text-white">5 Licences M365 Std</span>
                     <span className="text-[10px] text-zinc-500">admin@tenant.onmicrosoft</span>
                   </div>
 
                   {/* TOM Fibre Card */}
                   <div className="studio-subcard p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] font-black uppercase text-emerald-600">TOM Fibre Core</span>
-                    <span className="font-extrabold text-zinc-950 dark:text-white">100 Mbps FTTO</span>
+                    <span className="text-[10px] font-extrabold uppercase text-emerald-600">TOM Fibre Core</span>
+                    <span className="font-bold text-zinc-950 dark:text-white">100 Mbps FTTO</span>
                     <span className="text-[10px] text-zinc-500">IP Fixe Allouée</span>
                   </div>
                 </div>
@@ -423,13 +423,13 @@ export default function AdvProvisioningConsole() {
                       alert(`Le bordereau d'activation officiel d'Onbora pour '${selectedDossier.company_name}' a été généré.`);
                       setIsTriggering(false);
                     }}
-                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)] flex items-center justify-center gap-1.5"
+                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-extrabold text-xs transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)] flex items-center justify-center gap-1.5"
                   >
                     <Icons.Download size={14} /> Télécharger le Bordereau d'Activation (PDF)
                   </button>
                   <button
                     onClick={() => setIsTriggering(false)}
-                    className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-xs hover:opacity-80"
+                    className="py-3 px-5 studio-subcard text-zinc-700 dark:text-zinc-300 rounded-2xl font-semibold text-xs hover:opacity-80"
                   >
                     Fermer
                   </button>
@@ -438,7 +438,7 @@ export default function AdvProvisioningConsole() {
             ) : (
               <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
                 <Icons.RefreshCw size={32} className="text-blue-600 animate-spin" />
-                <span className="text-xs font-black text-zinc-950 dark:text-white">
+                <span className="text-xs font-extrabold text-zinc-950 dark:text-white">
                   Activation des services en cours...
                 </span>
                 <span className="text-[11px] text-zinc-500">

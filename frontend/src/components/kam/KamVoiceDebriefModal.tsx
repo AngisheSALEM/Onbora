@@ -102,7 +102,7 @@ export default function KamVoiceDebriefModal({
               <Icons.Mic size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-zinc-900 dark:text-white">
+              <h2 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                 Dictaphone de Débriefing Post-Visite — {visit.account_name}
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -139,7 +139,7 @@ export default function KamVoiceDebriefModal({
             </div>
 
             {/* Timer */}
-            <div className="text-2xl md:text-3xl font-mono font-black mb-4">
+            <div className="text-2xl md:text-3xl font-mono font-extrabold mb-4">
               {formatTimer(recordingSeconds)}
             </div>
 
@@ -148,7 +148,7 @@ export default function KamVoiceDebriefModal({
               {!isRecording ? (
                 <button
                   onClick={handleStartRecording}
-                  className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-black rounded-full shadow-lg transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-extrabold rounded-full shadow-lg transition-all"
                 >
                   <Icons.Mic size={16} />
                   <span>Démarrer l&apos;enregistrement vocal</span>
@@ -156,7 +156,7 @@ export default function KamVoiceDebriefModal({
               ) : (
                 <button
                   onClick={handleStopAndGenerate}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-zinc-200 active:scale-95 text-xs font-black rounded-full shadow-lg transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-zinc-200 active:scale-95 text-xs font-extrabold rounded-full shadow-lg transition-all"
                 >
                   <Icons.Square size={16} className="text-red-600" />
                   <span>Arrêter et Synthétiser par l&apos;IA</span>
@@ -183,7 +183,7 @@ export default function KamVoiceDebriefModal({
           {isGenerating && (
             <div className="p-8 text-center bg-zinc-50 dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10 animate-pulse">
               <Icons.Sparkles size={32} className="mx-auto text-blue-500 mb-2 animate-spin" />
-              <div className="font-bold text-sm text-zinc-900 dark:text-white">
+              <div className="font-semibold text-sm text-zinc-900 dark:text-white">
                 Synthèse IA en cours par Onbora Intel Engine...
               </div>
               <div className="text-xs text-zinc-400 mt-1">
@@ -201,16 +201,16 @@ export default function KamVoiceDebriefModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Icons.FileText size={16} className="text-blue-500" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                       Compte-Rendu Exécutif C-Level
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                     Risque Détecté : {debriefData.risk_level}
                   </span>
                 </div>
 
-                <p className="text-xs text-zinc-800 dark:text-zinc-200 font-semibold leading-relaxed">
+                <p className="text-xs text-zinc-800 dark:text-zinc-200 font-550 leading-relaxed">
                   {debriefData.executive_summary}
                 </p>
 
@@ -223,7 +223,7 @@ export default function KamVoiceDebriefModal({
               <div className="p-5 bg-zinc-50 dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/10 space-y-3">
                 <div className="flex items-center gap-2">
                   <Icons.CheckCircle size={16} className="text-emerald-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                     Engagements Extraits ({debriefData.commitments_extracted.length})
                   </h3>
                 </div>
@@ -233,12 +233,12 @@ export default function KamVoiceDebriefModal({
                     <div key={c.id} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                        <span className="font-bold text-zinc-900 dark:text-white">{c.action}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white">{c.action}</span>
                       </div>
 
                       <div className="flex items-center gap-3 text-[11px] shrink-0">
                         <span className="text-zinc-500 font-medium">Resp : <strong className="text-zinc-800 dark:text-zinc-200">{c.owner}</strong></span>
-                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-550">
                           Pour le {c.due_date}
                         </span>
                       </div>
@@ -252,14 +252,14 @@ export default function KamVoiceDebriefModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Icons.Mail size={16} className="text-blue-500" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                       Email de Suivi Client (Prêt à Envoyer)
                     </h3>
                   </div>
 
                   <button
                     onClick={handleCopyEmail}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-[11px] font-bold rounded-lg transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-[11px] font-semibold rounded-lg transition-all shadow-sm"
                   >
                     <Icons.FileEdit size={13} />
                     <span>{copiedEmail ? 'Copié !' : 'Copier l\'Email'}</span>

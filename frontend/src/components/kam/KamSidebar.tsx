@@ -31,13 +31,6 @@ export default function KamSidebar({
       badge: null
     },
     {
-      id: 'briefing' as KamView,
-      label: 'Fiche Briefing 360°',
-      description: 'Préparation RDV C-Level',
-      icon: Icons.FileText,
-      badge: 'Prioritaire'
-    },
-    {
       id: 'signals' as KamView,
       label: 'Notes & Éditeur Document',
       description: 'Éditeur riche & synthèse IA',
@@ -66,10 +59,10 @@ export default function KamSidebar({
             <div className="flex items-center gap-3">
               <Logo size={36} />
               <div>
-                <h1 className="text-sm font-black text-zinc-900 dark:text-white tracking-tight">
+                <h1 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">
                   ONBORA KAM
                 </h1>
-                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <span className="text-[11px] font-550 text-zinc-500 dark:text-zinc-400">
                   Cockpit Grands Comptes
                 </span>
               </div>
@@ -105,7 +98,7 @@ export default function KamSidebar({
                 title={isCollapsed ? item.label : undefined}
                 className={`group flex items-center ${isCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-lg shadow-[#4F6CE8]/25 font-bold'
+                    ? 'bg-[#4F6CE8] text-white shadow-lg shadow-[#4F6CE8]/25 font-semibold'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#4F6CE8] dark:hover:text-[#7B92F2]'
                 }`}
               >
@@ -120,7 +113,7 @@ export default function KamSidebar({
                   />
                   {!isCollapsed && (
                     <div>
-                      <span className={`block text-xs font-bold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'}`}>
+                      <span className={`block text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-zinc-800 dark:text-white group-hover:text-[#4F6CE8] dark:group-hover:text-[#7B92F2] transition-colors'}`}>
                         {item.label}
                       </span>
                       <span className={`text-[10px] block mt-0.5 ${isActive ? 'text-blue-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'}`}>
@@ -132,7 +125,7 @@ export default function KamSidebar({
 
                 {!isCollapsed && item.badge && (
                   <span
-                    className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
                       isActive
                         ? 'bg-white text-[#4F6CE8]'
                         : 'bg-[#4F6CE8]/15 text-[#4F6CE8] dark:bg-[#4F6CE8]/25 dark:text-[#7B92F2]'
@@ -152,11 +145,11 @@ export default function KamSidebar({
         {!isCollapsed ? (
           <>
             <div className="flex items-center gap-2.5 truncate">
-              <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-black text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-black text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <div className="truncate">
-                <span className="text-xs font-bold text-zinc-900 dark:text-white block leading-tight truncate">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-white block leading-tight truncate">
                   {displayName}
                 </span>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block truncate">

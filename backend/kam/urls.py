@@ -2,11 +2,12 @@ from django.urls import path
 from .views import (
     DossierListView, DossierDetailView, DossierBusinessTwinView, 
     DossierExportView, DossierProvisionView, DossierHandoverPackView,
-    KamStrategicAccountListView, KamBriefingDetailView
+    KamStrategicAccountListView, KamBriefingDetailView, KamAccountDebriefView
 )
 
 urlpatterns = [
     path('accounts/', KamStrategicAccountListView.as_view(), name='kam-accounts-list'),
+    path('accounts/<int:account_id>/debrief/', KamAccountDebriefView.as_view(), name='kam-account-debrief'),
     path('briefing/<int:account_id>/', KamBriefingDetailView.as_view(), name='kam-briefing-detail'),
     path('dossiers/', DossierListView.as_view(), name='dossier-list'),
     path('dossiers/<int:pk>/', DossierDetailView.as_view(), name='dossier-detail'),
@@ -15,3 +16,4 @@ urlpatterns = [
     path('dossiers/<int:pk>/provision/', DossierProvisionView.as_view(), name='dossier-provision'),
     path('dossiers/<int:pk>/handover-pack/', DossierHandoverPackView.as_view(), name='dossier-handover-pack'),
 ]
+

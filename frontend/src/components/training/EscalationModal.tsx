@@ -52,7 +52,7 @@ export default function EscalationModal({
         <div className="p-5 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between bg-zinc-55/10 dark:bg-zinc-950/20">
           <div className="flex items-center gap-2 text-red-500">
             <Icons.AlertTriangle size={18} />
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Besoin d'aide ? Escalader au Support MSP
             </h3>
           </div>
@@ -69,16 +69,16 @@ export default function EscalationModal({
           <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
             <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-900 flex flex-col gap-2 text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
               <div className="flex justify-between">
-                <span className="font-bold text-zinc-450 uppercase">Contexte Utilisateur :</span>
+                <span className="font-semibold text-zinc-450 uppercase">Contexte Utilisateur :</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">{user?.username || 'Client B2B'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-bold text-zinc-450 uppercase">Entreprise :</span>
+                <span className="font-semibold text-zinc-450 uppercase">Entreprise :</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">{user?.company_name || 'Onbora Client'}</span>
               </div>
               <div className="flex justify-between items-start gap-3">
-                <span className="font-bold text-zinc-450 uppercase shrink-0">Étape bloquante :</span>
-                <span className="font-semibold text-red-500 dark:text-red-400 text-right">{blockedStepTitle}</span>
+                <span className="font-semibold text-zinc-450 uppercase shrink-0">Étape bloquante :</span>
+                <span className="font-550 text-red-500 dark:text-red-400 text-right">{blockedStepTitle}</span>
               </div>
               <div className="border-t border-zinc-200/50 dark:border-zinc-800/50 pt-2 text-[10px] text-zinc-400 italic">
                 Ces métadonnées et logs de navigation seront envoyés automatiquement pour faciliter la résolution de votre problème.
@@ -87,7 +87,7 @@ export default function EscalationModal({
 
             {/* Error Description */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Décrivez votre problème en une phrase
               </label>
               <textarea
@@ -102,7 +102,7 @@ export default function EscalationModal({
 
             {/* Screenshot simulator */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Capture d'écran (optionnel)
               </label>
               
@@ -112,7 +112,7 @@ export default function EscalationModal({
                   className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-600 hover:bg-blue-600/5 rounded-xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all"
                 >
                   <Icons.FileText className="text-zinc-400" size={20} />
-                  <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+                  <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
                     Déposez une image ou cliquez pour simuler
                   </span>
                   <span className="text-[8px] text-zinc-400">Format PNG ou JPG</span>
@@ -126,7 +126,7 @@ export default function EscalationModal({
                   <button 
                     type="button" 
                     onClick={() => setScreenshot(null)}
-                    className="text-red-500 hover:text-red-600 font-bold border-none bg-transparent cursor-pointer text-xs"
+                    className="text-red-500 hover:text-red-600 font-semibold border-none bg-transparent cursor-pointer text-xs"
                   >
                     Supprimer
                   </button>
@@ -138,7 +138,7 @@ export default function EscalationModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 py-3 px-4 rounded-xl text-xs font-bold text-white bg-red-500 hover:bg-red-650 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md shadow-red-500/10 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
+              className="w-full mt-2 py-3 px-4 rounded-xl text-xs font-semibold text-white bg-red-500 hover:bg-red-650 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md shadow-red-500/10 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
             >
               {isSubmitting ? (
                 <>
@@ -160,7 +160,7 @@ export default function EscalationModal({
             </div>
             
             <div className="flex flex-col gap-1.5">
-              <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                 Ticket transmis avec succès !
               </h4>
               <p className="text-xs text-zinc-550 dark:text-zinc-400 max-w-xs leading-relaxed font-medium">
@@ -175,7 +175,7 @@ export default function EscalationModal({
                 setScreenshot(null);
                 onClose();
               }}
-              className="mt-2 py-2 px-6 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-950 text-xs font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all border-none cursor-pointer"
+              className="mt-2 py-2 px-6 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-950 text-xs font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all border-none cursor-pointer"
             >
               Fermer
             </button>

@@ -7,11 +7,12 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  role: 'CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'ADMIN';
+  role: 'CLIENT_B2B' | 'SALESPERSON' | 'KAM' | 'SUPERVISOR' | 'KAM_MANAGER' | 'ADMIN';
   phone?: string;
   company_name?: string;
   first_name?: string;
   last_name?: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -20,6 +21,7 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (updatedFields: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,7 +33,8 @@ const defaultKamUser: User = {
   first_name: 'Salem',
   last_name: 'Directeur KAM',
   role: 'KAM',
-  company_name: 'Orange Business'
+  company_name: 'Orange Business',
+  avatar: 'memoji_056.png'
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -97,8 +100,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
+  const updateUser = (updatedFields: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

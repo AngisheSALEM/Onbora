@@ -42,7 +42,7 @@ export default function TrainingLauncher({
         className="relative p-2 rounded-xl bg-blue-600/10 hover:bg-blue-600/15 border border-blue-600/20 text-blue-600 dark:text-blue-400 transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
       >
         <Icons.BookOpen size={16} className="animate-pulse" />
-        <span className="text-xs font-bold font-sans">
+        <span className="text-xs font-semibold font-sans">
           Apprentissage & Aide
         </span>
         
@@ -66,10 +66,10 @@ export default function TrainingLauncher({
               <Icons.Sparkles size={12} />
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
+              <span className="text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
                 Nouveau Service Activé
               </span>
-              <p className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 leading-snug">
+              <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
                 Le MSP vient d'activer votre double authentification (MFA).
               </p>
             </div>
@@ -82,7 +82,7 @@ export default function TrainingLauncher({
           <div className="flex justify-between items-center gap-3 mt-1.5 pt-2 border-t border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => setShowTooltip(false)}
-              className="text-[9px] font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 border-none bg-transparent cursor-pointer"
+              className="text-[9px] font-550 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 border-none bg-transparent cursor-pointer"
             >
               Plus tard
             </button>
@@ -91,7 +91,7 @@ export default function TrainingLauncher({
                 onClick();
                 setShowTooltip(false);
               }}
-              className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-[9px] font-bold text-white transition-all border-none cursor-pointer shadow-[0_0_10px_rgba(37,99,235,0.20)]"
+              className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-[9px] font-semibold text-white transition-all border-none cursor-pointer shadow-[0_0_10px_rgba(37,99,235,0.20)]"
             >
               Commencer (2 min)
             </button>

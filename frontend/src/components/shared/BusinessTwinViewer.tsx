@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { BarChart2, Calendar, Briefcase, AlertTriangle, Check } from 'lucide-react';
+import { Icons } from '@/components/shared/Icons';
+const BarChart2 = Icons.BarChart;
+const Calendar = Icons.Calendar;
+const Briefcase = Icons.Briefcase;
+const AlertTriangle = Icons.AlertTriangle;
+const Check = Icons.Check;
 
 interface Service {
   service_id?: number;
@@ -184,7 +189,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
       {/* Sub-Header & Switcher */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-900 pb-4 shrink-0">
         <div>
-          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Diagnostic d'Architecture Cible</h3>
+          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic d'Architecture Cible</h3>
           <p className="text-xs text-zinc-400 mt-0.5">Étudiez la cible d'architecture technique et fonctionnelle planifiée pour {companyName}.</p>
         </div>
         
@@ -192,7 +197,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
         <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-850 shrink-0">
           <button
             onClick={() => setActiveTab('impact')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'impact'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
@@ -203,7 +208,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
           </button>
           <button
             onClick={() => setActiveTab('roadmap')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'roadmap'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
@@ -214,7 +219,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
           </button>
           <button
             onClick={() => setActiveTab('services')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'services'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
@@ -235,12 +240,12 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
             {metrics.map((m) => (
               <div key={m.key} className="p-4 rounded-xl studio-subcard flex items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 flex-1">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide">{m.label}</span>
-                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-100">{m.description}</span>
-                  <div className="flex items-center gap-2 mt-1.5 text-[10px] font-semibold text-zinc-500">
+                  <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wide">{m.label}</span>
+                  <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">{m.description}</span>
+                  <div className="flex items-center gap-2 mt-1.5 text-[10px] font-550 text-zinc-500">
                     <span className="line-through text-red-500/80">{m.before}%</span>
                     <span>→</span>
-                    <span className="text-blue-600 dark:text-blue-400 font-extrabold">{m.after}%</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">{m.after}%</span>
                   </div>
                 </div>
                 
@@ -259,7 +264,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
                       strokeDashoffset={strokeDashoffset(m.after)}
                     />
                   </svg>
-                  <span className="absolute text-[10px] font-black text-zinc-700 dark:text-zinc-300">{m.after}%</span>
+                  <span className="absolute text-[10px] font-extrabold text-zinc-700 dark:text-zinc-300">{m.after}%</span>
                 </div>
               </div>
             ))}
@@ -272,7 +277,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
             <div className="p-5 rounded-2xl border border-red-500/10 bg-red-500/[0.02] flex flex-col gap-4">
               <div className="flex items-center gap-2 border-b border-red-500/10 pb-2">
                 <span className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-xs font-black uppercase text-red-500 tracking-wider">État Initial (Avant)</span>
+                <span className="text-xs font-extrabold uppercase text-red-500 tracking-wider">État Initial (Avant)</span>
               </div>
               <ul className="flex flex-col gap-2.5">
                 {(twin.current_state || []).map((item, idx) => (
@@ -288,7 +293,7 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
             <div className="p-5 rounded-2xl border border-blue-600/10 bg-blue-600/[0.02] flex flex-col gap-4">
               <div className="flex items-center gap-2 border-b border-blue-600/10 pb-2">
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
-                <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider">État Cible (Après)</span>
+                <span className="text-xs font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider">État Cible (Après)</span>
               </div>
               <ul className="flex flex-col gap-2.5">
                 {(twin.proposed_state || []).map((item, idx) => (
@@ -316,11 +321,11 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
                 onClick={() => setSelectedStep(idx)}
                 className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all cursor-pointer shrink-0 ${
                   selectedStep === idx
-                    ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold border-l-2 border-blue-600'
+                    ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold border-l-2 border-blue-600'
                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 border-l-2 border-transparent'
                 }`}
               >
-                <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center border shrink-0 ${
+                <span className={`w-5 h-5 rounded-full text-[10px] font-semibold flex items-center justify-center border shrink-0 ${
                   selectedStep === idx
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-750 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700'
@@ -336,17 +341,17 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
           <div className="flex-1 studio-subcard rounded-2xl p-5 flex flex-col gap-4">
             <div className="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800/60 pb-2.5">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase">Phase {selectedStep + 1}</span>
-                <h4 className="text-sm font-black text-zinc-900 dark:text-zinc-50">{currentStepDetails.title}</h4>
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase">Phase {selectedStep + 1}</span>
+                <h4 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-50">{currentStepDetails.title}</h4>
               </div>
-              <span className="px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 text-[10px] font-semibold">
                 {currentStepDetails.duration}
               </span>
             </div>
 
             {/* Tasks checklist */}
             <div className="flex flex-col gap-2">
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wide">Tâches opérationnelles</span>
+              <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wide">Tâches opérationnelles</span>
               <div className="flex flex-col gap-2 mt-1">
                 {currentStepDetails.tasks.map((task, idx) => (
                   <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -374,8 +379,8 @@ export default function BusinessTwinViewer({ twin, companyName = "votre entrepri
               className="p-4 studio-subcard rounded-xl flex flex-col gap-2 hover:shadow-sm transition-all"
             >
               <div className="flex justify-between items-center gap-2">
-                <span className="text-xs font-black text-zinc-900 dark:text-zinc-50">{svc.name}</span>
-                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase shrink-0 ${
+                <span className="text-xs font-extrabold text-zinc-900 dark:text-zinc-50">{svc.name}</span>
+                <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase shrink-0 ${
                   svc.priority.toLowerCase() === 'high'
                     ? 'bg-red-500/10 text-red-500 border-red-500/20'
                     : 'bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'

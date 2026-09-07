@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.models import User
 
 logger = logging.getLogger(__name__)
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission
+from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig
 from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
@@ -28,6 +28,8 @@ from .serializers import (
     SalesNotificationSerializer,
     VisitFormSubmissionSerializer,
     SubmitVisitFormRequestSerializer,
+    SegmentationConfigSerializer,
+    ConvertedAccountSerializer,
 )
 from .application.use_cases import (
     ListPlaquesUseCase,
@@ -1604,6 +1606,415 @@ class VisitFormSubmissionListView(APIView):
             queryset = queryset.filter(enterprise_id=enterprise_id)
         serializer = VisitFormSubmissionSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# SEGMENTATION FINANCIÈRE, COMPTES CONVERTIS & BANQUE DE DONNÉES CRM 400
+# ============================================================================
+
+class SegmentationConfigView(APIView):
+    """
+    GET: Récupère les seuils financiers de segmentation actuels et les statistiques en direct des 400 entreprises.
+    PUT: Met à jour les seuils de segmentation (TPE max revenue, PME max revenue)
+         et ré-applique immédiatement le recalcul à l'ensemble des 400 entreprises.
+    """
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        config = SegmentationConfig.get_active()
+        serializer = SegmentationConfigSerializer(config)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        config = SegmentationConfig.get_active()
+        tpe_max = request.data.get('tpe_max_revenue')
+        pme_max = request.data.get('pme_max_revenue')
+        bo_label = request.data.get('backoffice_entity_label')
+        kam_label = request.data.get('kam_entity_label')
+
+        if tpe_max is not None:
+            config.tpe_max_revenue = tpe_max
+        if pme_max is not None:
+            config.pme_max_revenue = pme_max
+        if bo_label:
+            config.backoffice_entity_label = bo_label
+        if kam_label:
+            config.kam_entity_label = kam_label
+
+        config.save()
+        # Recalcule la segmentation pour l'ensemble des 1 000 entreprises
+        resegment_result = config.apply_segmentation_to_all()
+        
+        serializer = SegmentationConfigSerializer(config)
+        return Response({
+            "config": serializer.data,
+            "resegment_result": resegment_result,
+            "message": "Seuils de segmentation mis à jour et ré-appliqués avec succès aux 1 000 entreprises."
+        }, status=status.HTTP_200_OK)
+
+
+class ResegmentEnterprisesView(APIView):
+    """
+    POST: Déclenche un recalcul immédiat de la segmentation pour les 1 000 comptes en BDD.
+    """
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        config = SegmentationConfig.get_active()
+        result = config.apply_segmentation_to_all()
+        return Response({
+            "status": "success",
+            "message": "Segmentation recalculée avec succès.",
+            "data": result
+        }, status=status.HTTP_200_OK)
+
+
+class ConvertedAccountsView(APIView):
+    """
+    GET: Fournit la liste consolidée et les métriques des comptes convertis (signés)
+         par le Back-Office Terrain et par la Direction KAM & Grands Comptes.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import Sum, Count
+
+        entity = request.query_params.get('entity', 'ALL') # 'BACK_OFFICE', 'KAM_OFFICE', 'ALL'
+        search = request.query_params.get('search', '').strip()
+
+        qs = Enterprise.objects.filter(conversion_status='CONVERTED')
+
+        if entity in ['BACK_OFFICE', 'KAM_OFFICE']:
+            qs = qs.filter(converted_by_entity=entity)
+
+        if search:
+            qs = qs.filter(
+                models.Q(name__icontains=search) |
+                models.Q(rccm__icontains=search) |
+                models.Q(city__icontains=search) |
+                models.Q(commune__icontains=search) |
+                models.Q(converted_offer__icontains=search)
+            )
+
+        # Totaux financiers globaux
+        all_converted = Enterprise.objects.filter(conversion_status='CONVERTED')
+        bo_converted = all_converted.filter(converted_by_entity='BACK_OFFICE')
+        kam_converted = all_converted.filter(converted_by_entity='KAM_OFFICE')
+
+        total_amount = all_converted.aggregate(total=Sum('converted_amount'))['total'] or 0
+        bo_amount = bo_converted.aggregate(total=Sum('converted_amount'))['total'] or 0
+        kam_amount = kam_converted.aggregate(total=Sum('converted_amount'))['total'] or 0
+
+        serializer = ConvertedAccountSerializer(qs.order_by('-converted_at'), many=True)
+
+        return Response({
+            "summary": {
+                "total_count": all_converted.count(),
+                "back_office_count": bo_converted.count(),
+                "kam_office_count": kam_converted.count(),
+                "total_signed_amount_usd": float(total_amount),
+                "back_office_signed_amount_usd": float(bo_amount),
+                "kam_office_signed_amount_usd": float(kam_amount),
+            },
+            "accounts": serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class EnterpriseListFullView(APIView):
+    """
+    GET: Banque de données CRM des 400 entreprises congolaises avec filtrage granulaire :
+    - segment (GRAND_COMPTE, PME, TPE_INFORMEL)
+    - assigned_entity (BACK_OFFICE, KAM_OFFICE)
+    - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
+    - city & recherche textuelle
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        segment = request.query_params.get('segment')
+        assigned_entity = request.query_params.get('assigned_entity')
+        conversion_status = request.query_params.get('conversion_status')
+        assigned_kam = request.query_params.get('assigned_kam')
+        city = request.query_params.get('city')
+        search = request.query_params.get('search', '').strip()
+        limit = int(request.query_params.get('limit', 1000))
+        offset = int(request.query_params.get('offset', 0))
+
+        qs = Enterprise.objects.all()
+
+        if segment:
+            qs = qs.filter(segment=segment)
+        if assigned_entity:
+            qs = qs.filter(assigned_entity=assigned_entity)
+        if conversion_status:
+            qs = qs.filter(conversion_status=conversion_status)
+        if assigned_kam:
+            try:
+                qs = qs.filter(assigned_kam_id=int(assigned_kam))
+            except ValueError:
+                pass
+        if city:
+            qs = qs.filter(city__icontains=city)
+        if search:
+            qs = qs.filter(
+                models.Q(name__icontains=search) |
+                models.Q(crm_id__icontains=search) |
+                models.Q(rccm__icontains=search) |
+                models.Q(sector__icontains=search) |
+                models.Q(city__icontains=search) |
+                models.Q(commune__icontains=search) |
+                models.Q(contact_name__icontains=search)
+            )
+
+        total_matching = qs.count()
+        paged_qs = qs.order_by('-annual_revenue')[offset:offset+limit]
+        serializer = EnterpriseSerializer(paged_qs, many=True)
+
+        return Response({
+            "total": total_matching,
+            "count": len(serializer.data),
+            "offset": offset,
+            "limit": limit,
+            "enterprises": serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class AdminDirectivesListView(APIView):
+    """
+    GET: Liste toutes les directives administratives émises par le Super Admin (filtrables par entité, destinataire, statut, expéditeur).
+    POST: Émission d'une nouvelle directive ciblée vers un KAM ou un commercial/superviseur back-office.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from .models import AdminDirective
+        from .serializers import AdminDirectiveSerializer
+        qs = AdminDirective.objects.select_related('sender', 'recipient').all()
+
+        target_entity = request.query_params.get('target_entity')
+        if target_entity and target_entity != 'ALL':
+            qs = qs.filter(target_entity=target_entity)
+
+        recipient_id = request.query_params.get('recipient_id')
+        if recipient_id:
+            qs = qs.filter(recipient_id=recipient_id)
+
+        sender_id = request.query_params.get('sender_id')
+        if sender_id:
+            qs = qs.filter(sender_id=sender_id)
+
+        status_param = request.query_params.get('status')
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+
+        search = request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                models.Q(title__icontains=search) |
+                models.Q(instruction__icontains=search) |
+                models.Q(recipient__username__icontains=search) |
+                models.Q(recipient__first_name__icontains=search) |
+                models.Q(recipient__last_name__icontains=search) |
+                models.Q(sender__username__icontains=search) |
+                models.Q(sender__first_name__icontains=search) |
+                models.Q(target_account_name__icontains=search)
+            )
+
+        serializer = AdminDirectiveSerializer(qs, many=True)
+        return Response({
+            "total": qs.count(),
+            "directives": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        from .models import AdminDirective, SalesNotification
+        from .serializers import AdminDirectiveSerializer
+        from accounts.models import User
+
+        recipient_id = request.data.get('recipient_id')
+        title = request.data.get('title', '').strip()
+        instruction = request.data.get('instruction', '').strip()
+        priority = request.data.get('priority', 'NORMAL')
+        target_entity = request.data.get('target_entity', 'KAM_OFFICE')
+        target_account_name = request.data.get('target_account_name', '').strip()
+
+        if not recipient_id or not title or not instruction:
+            return Response(
+                {"detail": "Le collaborateur destinataire, l'objet et l'instruction sont obligatoires."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recipient = User.objects.get(pk=recipient_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Collaborateur destinataire introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        sender = request.user if request.user.is_authenticated else None
+
+        directive = AdminDirective.objects.create(
+            sender=sender,
+            target_entity=target_entity,
+            recipient=recipient,
+            title=title,
+            instruction=instruction,
+            priority=priority,
+            target_account_name=target_account_name,
+            status='SENT'
+        )
+
+        # Si le destinataire est un commercial terrain, générer également une notification Sales
+        if recipient.role == User.SALESPERSON:
+            SalesNotification.objects.create(
+                recipient=recipient,
+                title=f"Directive Admin [{priority}]: {title}",
+                message=instruction,
+                notification_type='ALERT',
+                payload={"directive_id": directive.id, "target_account": target_account_name}
+            )
+
+        serializer = AdminDirectiveSerializer(directive)
+        recipient_display = f"{recipient.first_name} {recipient.last_name}".strip() or recipient.username
+        return Response({
+            "message": f"Directive transmise avec succès à {recipient_display}.",
+            "directive": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+
+class AdminDirectiveDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def patch(self, request, pk):
+        from .models import AdminDirective
+        from .serializers import AdminDirectiveSerializer
+        try:
+            directive = AdminDirective.objects.get(pk=pk)
+        except AdminDirective.DoesNotExist:
+            return Response({"detail": "Directive introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        acknowledgement_note = request.data.get('acknowledgement_note')
+
+        if new_status:
+            directive.status = new_status
+        if acknowledgement_note is not None:
+            directive.acknowledgement_note = acknowledgement_note
+        directive.save()
+
+        return Response({
+            "message": "Directive mise à jour.",
+            "directive": AdminDirectiveSerializer(directive).data
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        from .models import AdminDirective
+        try:
+            directive = AdminDirective.objects.get(pk=pk)
+            directive.delete()
+            return Response({"message": "Directive archivée avec succès."}, status=status.HTTP_200_OK)
+        except AdminDirective.DoesNotExist:
+            return Response({"detail": "Directive introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AutoDispatchPlaqueView(APIView):
+    """
+    POST: Déclenche l'algorithme d'affectation automatique intelligente des commerciaux terrain
+    sur les comptes SOHO de la plaque, avec anti-collision stricte et affinité sectorielle.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request, pk):
+        from .application.auto_dispatch_use_case import AutoDispatchPlaqueSalesUseCase
+        try:
+            result = AutoDispatchPlaqueSalesUseCase().execute(plaque_id=pk, user=request.user)
+            return Response(result, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Erreur lors de l'affectation automatique: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class EnterpriseAssignSalespersonView(APIView):
+    """
+    POST: Affecte manuellement (ou désaffecte si salesperson_id est vide) un commercial terrain à une entreprise.
+    Logique automatique : Si l'entreprise est rattachée à une plaque, le commercial est automatiquement
+    assigné à cette plaque cartographique.
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def post(self, request, pk):
+        from .models import Enterprise, VisitPreparation, Plaque
+        from .serializers import EnterpriseSerializer
+        from accounts.models import User
+        from django.utils import timezone
+        from django.db.models import Q
+
+        try:
+            enterprise = Enterprise.objects.get(pk=pk)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        salesperson_id = request.data.get('salesperson_id')
+        salesperson = None
+        if salesperson_id:
+            try:
+                salesperson = User.objects.filter(pk=salesperson_id).filter(
+                    Q(role=User.SALESPERSON) | Q(role='SUPERVISOR') | Q(role='ADMIN')
+                ).first()
+                if not salesperson:
+                    return Response({"detail": "Commercial terrain introuvable."}, status=status.HTTP_404_NOT_FOUND)
+                enterprise.assigned_salesperson = salesperson
+                enterprise.assigned_salesperson_at = timezone.now()
+            except Exception as e:
+                return Response({"detail": f"Erreur sélection commercial: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            enterprise.assigned_salesperson = None
+            enterprise.assigned_salesperson_at = None
+
+        # Logique métier automatique : Si l'entreprise est liée à une plaque,
+        # le commercial est automatiquement assigné à la plaque
+        target_plaque = None
+        if enterprise.plaque_rel:
+            target_plaque = enterprise.plaque_rel
+        elif enterprise.plaque:
+            target_plaque = Plaque.objects.filter(
+                Q(code__iexact=enterprise.plaque) | Q(name__iexact=enterprise.plaque)
+            ).first()
+            if not target_plaque:
+                # Recherche partielle
+                target_plaque = Plaque.objects.filter(name__icontains=enterprise.plaque).first() or Plaque.objects.filter(code__icontains=enterprise.plaque).first()
+
+        if target_plaque:
+            enterprise.plaque_rel = target_plaque
+            if salesperson and not target_plaque.assigned_salespersons.filter(pk=salesperson.pk).exists():
+                target_plaque.assigned_salespersons.add(salesperson)
+
+        enterprise.save(update_fields=['assigned_salesperson', 'assigned_salesperson_at', 'plaque_rel'])
+
+        # Synchroniser la préparation de visite active
+        if enterprise.assigned_salesperson:
+            VisitPreparation.objects.filter(
+                enterprise=enterprise,
+                report__isnull=True
+            ).update(salesperson=enterprise.assigned_salesperson)
+        else:
+            # En cas de désaffectation du commercial, supprimer les préparations non finalisées
+            VisitPreparation.objects.filter(
+                enterprise=enterprise,
+                report__isnull=True
+            ).delete()
+
+        sp_name = f"{enterprise.assigned_salesperson.first_name} {enterprise.assigned_salesperson.last_name}".strip() if enterprise.assigned_salesperson else "Non affecté"
+        plaque_msg = f" (automatiquement déployé sur la plaque {target_plaque.code})" if (target_plaque and salesperson) else ""
+
+        return Response({
+            "message": f"Affectation enregistrée : {sp_name}{plaque_msg}",
+            "enterprise": EnterpriseSerializer(enterprise).data,
+            "plaque_id": target_plaque.id if target_plaque else None,
+            "plaque_code": target_plaque.code if target_plaque else None,
+        }, status=status.HTTP_200_OK)
+
+
+
 
 
 

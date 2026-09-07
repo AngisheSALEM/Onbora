@@ -29,13 +29,13 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
         {/* Title */}
         <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
           <Icons.BookOpen size={16} />
-          <h4 className="text-xs uppercase font-bold tracking-wider">
+          <h4 className="text-xs uppercase font-semibold tracking-wider">
             Quiz de validation
           </h4>
         </div>
 
         {/* Question */}
-        <p className="text-xs font-bold text-zinc-900 dark:text-zinc-50 leading-relaxed bg-zinc-50 dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-900">
+        <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 leading-relaxed bg-zinc-50 dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-900">
           {quiz.question}
         </p>
 
@@ -66,7 +66,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
                 } ${optionStyle}`}
               >
                 <div className="flex items-start gap-3">
-                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[9px] font-bold mt-0.5 ${
+                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[9px] font-semibold mt-0.5 ${
                     selectedOptionIndex === index 
                       ? 'border-blue-600 text-blue-600 dark:text-blue-400' 
                       : 'border-zinc-350 dark:border-zinc-700 text-zinc-400'
@@ -87,7 +87,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
               ? 'border-green-200/50 bg-green-500/5 text-green-700 dark:text-green-400' 
               : 'border-red-200/50 bg-red-500/5 text-red-700 dark:text-red-400'
           }`}>
-            <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5">
               {isCorrect ? (
                 <>
                   <Icons.CheckCircle size={12} /> Explication (Bonne Réponse !)
@@ -111,14 +111,14 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
           <>
             <button
               onClick={onCancel}
-              className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all cursor-pointer bg-transparent"
+              className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all cursor-pointer bg-transparent"
             >
               Annuler
             </button>
             <button
               disabled={selectedOptionIndex === null}
               onClick={handleSubmit}
-              className="flex-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+              className="flex-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
             >
               Valider ma réponse
             </button>
@@ -126,7 +126,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
         ) : (
           <button
             onClick={onSuccess}
-            className="w-full py-2.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-green-500/10"
+            className="w-full py-2.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-green-500/10"
           >
             <Icons.CheckCircle size={14} className="text-white" />
             {isCorrect ? 'Terminer et valider le module' : 'Recommencer ou Terminer'}

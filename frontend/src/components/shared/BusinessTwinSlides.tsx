@@ -93,13 +93,13 @@ export default function BusinessTwinSlides({
         onClick={onOpenFull}
         className="w-full max-w-sm studio-card p-4 hover:shadow-md cursor-pointer flex flex-col gap-3 transition-all relative overflow-hidden group shadow-sm"
       >
-        <div className="absolute top-0 right-0 p-1 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-bl-lg text-[9px] font-bold tracking-wider uppercase">
+        <div className="absolute top-0 right-0 p-1 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-bl-lg text-[9px] font-semibold tracking-wider uppercase">
           Diapositive IA
         </div>
         <div className="flex items-center gap-2.5">
           <Logo size={24} showBg={true} />
           <div>
-            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Diagnostic d'Architecture Cible</h4>
+            <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Diagnostic d'Architecture Cible</h4>
             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{companyName}</p>
           </div>
         </div>
@@ -108,12 +108,12 @@ export default function BusinessTwinSlides({
         <div className="h-24 studio-subcard rounded-xl flex items-center justify-center p-3 relative overflow-hidden">
           <div className="text-center">
             <Icons.Sparkles className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1 animate-pulse" />
-            <span className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">Présentation PowerPoint disponible</span>
+            <span className="text-[10px] font-semibold text-zinc-800 dark:text-zinc-200">Présentation PowerPoint disponible</span>
             <p className="text-[9px] text-zinc-500 mt-0.5">5 diapositives d'impact & roadmap</p>
           </div>
         </div>
 
-        <button className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-bold text-white flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer">
+        <button className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-semibold text-white flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer">
           <Icons.LineChart size={12} />
           Ouvrir le Mode Présentation ➜
         </button>
@@ -132,14 +132,14 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col items-center justify-center text-center h-full gap-4 animate-fade-in p-6">
               <Logo size={60} showBg={true} className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
-              <h2 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
+              <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
                 {slide.title || "Transformation MSP"}
               </h2>
               <div className="h-0.5 w-12 bg-blue-600" />
               <p className="text-sm text-zinc-650 dark:text-zinc-350 max-w-md font-medium leading-relaxed">
                 {slide.content.subtitle || "Diagnostic d'Architecture Cible & Plan de transition technologique pour"}
               </p>
-              <span className="px-3.5 py-1.5 rounded-full border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-bold shadow-sm uppercase tracking-wider">
+              <span className="px-3.5 py-1.5 rounded-full border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-semibold shadow-sm uppercase tracking-wider">
                 {companyName}
               </span>
             </div>
@@ -149,8 +149,8 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col h-full justify-between animate-fade-in p-5">
               <div>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                   <Icons.AlertCircle className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
@@ -160,12 +160,12 @@ export default function BusinessTwinSlides({
                 {(slide.content.items || []).map((state, idx) => (
                   <div key={idx} className="grid grid-cols-2 gap-3 p-3 rounded-xl studio-subcard">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase">Situation Actuelle</span>
+                      <span className="text-[9px] font-semibold text-zinc-500 uppercase">Situation Actuelle</span>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-normal">{state}</p>
                     </div>
                     <div className="flex flex-col gap-1 border-l border-zinc-200 dark:border-zinc-800 pl-3">
-                      <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase">Cible MSP</span>
-                      <p className="text-xs text-zinc-800 dark:text-zinc-200 font-semibold leading-normal">
+                      <span className="text-[9px] font-semibold text-blue-600 dark:text-blue-400 uppercase">Cible MSP</span>
+                      <p className="text-xs text-zinc-800 dark:text-zinc-200 font-550 leading-normal">
                         {slide.content.targetItems?.[idx] || "Solution d'intégration optimisée"}
                       </p>
                     </div>
@@ -183,8 +183,8 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col h-full justify-between animate-fade-in p-5">
               <div>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                   <Icons.LineChart className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
@@ -195,8 +195,8 @@ export default function BusinessTwinSlides({
                 {(slide.content.metrics || []).map((m, idx) => (
                   <div key={idx} className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">{m.label}</span>
-                      <div className="flex gap-2 text-[10px] font-bold">
+                      <span className="font-550 text-zinc-700 dark:text-zinc-300">{m.label}</span>
+                      <div className="flex gap-2 text-[10px] font-semibold">
                         <span className="text-zinc-500">Avant: {m.before}%</span>
                         <span className="text-blue-600 dark:text-blue-400">Après: {m.after}%</span>
                       </div>
@@ -214,7 +214,7 @@ export default function BusinessTwinSlides({
                         style={{ width: `${m.after}%` }}
                       />
                       {/* Labels over bar */}
-                      <span className="relative z-10 text-[9px] font-black text-white pl-2">
+                      <span className="relative z-10 text-[9px] font-extrabold text-white pl-2">
                         +{m.after - m.before}% de performance
                       </span>
                     </div>
@@ -232,8 +232,8 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col h-full justify-between animate-fade-in p-5">
               <div>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                   <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
@@ -243,8 +243,8 @@ export default function BusinessTwinSlides({
                 {(slide.content.services || []).map((s, idx) => (
                   <div key={idx} className="p-3 rounded-xl studio-subcard flex flex-col gap-1">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{s.name}</span>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{s.name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-semibold uppercase ${
                         s.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                         s.priority === 'HIGH' ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20' :
                         'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -267,8 +267,8 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col h-full justify-between animate-fade-in p-5">
               <div>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                   <Icons.Activity className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
@@ -277,11 +277,11 @@ export default function BusinessTwinSlides({
               <div className="my-2 overflow-y-auto max-h-[220px] flex flex-col gap-2 pr-1">
                 {(slide.content.roadmap || []).map((step, idx) => (
                   <div key={idx} className="flex gap-3 items-start p-2.5 rounded-xl studio-subcard">
-                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(37,99,235,0.30)]">
+                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(37,99,235,0.30)]">
                       {idx + 1}
                     </span>
                     <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Étape {idx + 1}</span>
+                      <span className="text-xs font-550 text-zinc-800 dark:text-zinc-200">Étape {idx + 1}</span>
                       <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed mt-0.5">{step}</p>
                     </div>
                   </div>
@@ -299,8 +299,8 @@ export default function BusinessTwinSlides({
           return (
             <div className="flex flex-col h-full justify-between animate-fade-in p-5">
               <div>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                   <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
@@ -324,14 +324,14 @@ export default function BusinessTwinSlides({
         return (
           <div className="flex flex-col items-center justify-center text-center h-full gap-4 animate-fade-in p-6">
             <Logo size={60} showBg={true} className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
-            <h2 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
+            <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
               Transformation MSP
             </h2>
             <div className="h-0.5 w-12 bg-blue-600" />
             <p className="text-sm text-zinc-600 dark:text-zinc-300 max-w-xs font-medium">
               Diagnostic d'Architecture Cible & Plan de transition technologique pour
             </p>
-            <span className="px-3.5 py-1.5 rounded-full border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-bold shadow-sm uppercase tracking-wider">
+            <span className="px-3.5 py-1.5 rounded-full border border-blue-600/20 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-semibold shadow-sm uppercase tracking-wider">
               {companyName}
             </span>
           </div>
@@ -341,8 +341,8 @@ export default function BusinessTwinSlides({
         return (
           <div className="flex flex-col h-full justify-between animate-fade-in p-5">
             <div>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 2</span>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 2</span>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                 <Icons.AlertCircle className="text-blue-600 dark:text-blue-400" size={14} />
                 Diagnostic : Diagnostic de Transition (Avant / Après)
               </h3>
@@ -352,12 +352,12 @@ export default function BusinessTwinSlides({
               {twin.current_state.map((state, idx) => (
                 <div key={idx} className="grid grid-cols-2 gap-3 p-3 rounded-xl studio-subcard">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase">Situation Actuelle</span>
+                    <span className="text-[9px] font-semibold text-zinc-500 uppercase">Situation Actuelle</span>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-normal">{state}</p>
                   </div>
                   <div className="flex flex-col gap-1 border-l border-zinc-200 dark:border-zinc-800 pl-3">
-                    <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase">Cible MSP</span>
-                    <p className="text-xs text-zinc-800 dark:text-zinc-200 font-semibold leading-normal">
+                    <span className="text-[9px] font-semibold text-blue-600 dark:text-blue-400 uppercase">Cible MSP</span>
+                    <p className="text-xs text-zinc-800 dark:text-zinc-200 font-550 leading-normal">
                       {twin.proposed_state[idx] || "Solution d'intégration optimisée"}
                     </p>
                   </div>
@@ -375,8 +375,8 @@ export default function BusinessTwinSlides({
         return (
           <div className="flex flex-col h-full justify-between animate-fade-in p-5">
             <div>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 3</span>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 3</span>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                 <Icons.LineChart className="text-blue-600 dark:text-blue-400" size={14} />
                 Graphique d'Impact de Performance B2B
               </h3>
@@ -387,8 +387,8 @@ export default function BusinessTwinSlides({
               {metrics.map((m, idx) => (
                 <div key={idx} className="flex flex-col gap-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">{m.label}</span>
-                    <div className="flex gap-2 text-[10px] font-bold">
+                    <span className="font-550 text-zinc-700 dark:text-zinc-300">{m.label}</span>
+                    <div className="flex gap-2 text-[10px] font-semibold">
                       <span className="text-zinc-500">Avant: {m.before}%</span>
                       <span className="text-blue-600 dark:text-blue-400">Après: {m.after}%</span>
                     </div>
@@ -406,7 +406,7 @@ export default function BusinessTwinSlides({
                       style={{ width: `${m.after}%` }}
                     />
                     {/* Labels over bar */}
-                    <span className="relative z-10 text-[9px] font-black text-white pl-2">
+                    <span className="relative z-10 text-[9px] font-extrabold text-white pl-2">
                       +{m.after - m.before}% de performance
                     </span>
                   </div>
@@ -424,8 +424,8 @@ export default function BusinessTwinSlides({
         return (
           <div className="flex flex-col h-full justify-between animate-fade-in p-5">
             <div>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 4</span>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 4</span>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                 <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
                 Solutions & Services Recommandés
               </h3>
@@ -435,8 +435,8 @@ export default function BusinessTwinSlides({
               {services.map((s, idx) => (
                 <div key={idx} className="p-3 rounded-xl studio-subcard flex flex-col gap-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{s.name}</span>
-                    <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{s.name}</span>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-semibold uppercase ${
                       s.priority === 'CRITICAL' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                       s.priority === 'HIGH' ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20' :
                       'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -459,8 +459,8 @@ export default function BusinessTwinSlides({
         return (
           <div className="flex flex-col h-full justify-between animate-fade-in p-5">
             <div>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 5</span>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 5</span>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
                 <Icons.Activity className="text-blue-600 dark:text-blue-400" size={14} />
                 Roadmap de Transition & Installation
               </h3>
@@ -469,11 +469,11 @@ export default function BusinessTwinSlides({
             <div className="my-2 overflow-y-auto max-h-[220px] flex flex-col gap-2 pr-1">
               {twin.roadmap.map((step, idx) => (
                 <div key={idx} className="flex gap-3 items-start p-2.5 rounded-xl studio-subcard">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(37,99,235,0.30)]">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(37,99,235,0.30)]">
                     {idx + 1}
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Étape {idx + 1}</span>
+                    <span className="text-xs font-550 text-zinc-800 dark:text-zinc-200">Étape {idx + 1}</span>
                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed mt-0.5">{step}</p>
                   </div>
                 </div>

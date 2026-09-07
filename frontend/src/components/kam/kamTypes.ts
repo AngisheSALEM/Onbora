@@ -120,6 +120,11 @@ export interface StrategicVisit {
   golden_rule: string;
   briefing: KamVisitBriefingData;
   debrief_completed?: boolean;
+  crm_id?: string;
+  conversion_status?: 'PROSPECT' | 'IN_NEGOTIATION' | 'CONVERTED' | 'LOST';
+  converted_amount?: number;
+  converted_offer?: string;
+  conversion_notes?: string;
 }
 
 export interface MeetingDebrief {

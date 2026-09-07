@@ -35,6 +35,7 @@ class RegisterUserUseCase(BaseUseCase[RegisterRequestDTO, AuthResponseDTO]):
             last_name=user.last_name,
             location=user.location,
             is_available=user.is_available,
+            avatar=user.avatar,
         )
         return AuthResponseDTO(token=token.key, user=user_dto)
 
@@ -66,6 +67,7 @@ class LoginUserUseCase(BaseUseCase[LoginRequestDTO, AuthResponseDTO]):
             last_name=user.last_name,
             location=user.location,
             is_available=user.is_available,
+            avatar=user.avatar,
         )
         return AuthResponseDTO(token=token.key, user=user_dto)
 
@@ -83,6 +85,7 @@ class GetMeUseCase(BaseUseCase[User, UserDTO]):
             last_name=user.last_name,
             location=user.location,
             is_available=user.is_available,
+            avatar=user.avatar,
         )
 
 
@@ -101,6 +104,7 @@ class ListKAMsUseCase(BaseUseCase[Any, List[UserDTO]]):
                 last_name=kam.last_name,
                 location=kam.location,
                 is_available=kam.is_available,
+                avatar=kam.avatar,
             )
             for kam in kams
         ]

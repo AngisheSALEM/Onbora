@@ -71,3 +71,25 @@ L'interface Onbora applique une discipline chromatique stricte :
 
 * **INTERDICTION :** Placer une sous-boîte grise `Container(decoration: ...)` à l'intérieur d'une carte déjà grise.
 * **PATTERN :** Utiliser des lignes d'icônes sémantiques directes avec fond transparent et typographie hiérarchisée.
+
+---
+
+## 6. Règle Zéro Ombres Portées Colorées / Fluorescentes (*No Glowing Colored Shadows*)
+
+* **INTERDICTION FORMELLE :** Les ombres colorées artificielles (ex: `shadow-[#4F6CE8]/20`, `shadow-md shadow-[#4F6CE8]/25`, `shadow-emerald-500/10`).
+* **DIRECTIVE :** Les boutons et cartes doivent adopter un style moderne, mat ou plat avec ombres neutres ultra-douces (`shadow-xs`, `shadow-sm`, `shadow-none`). Aucun effet néon ou halo lumineux fluo de type "AI slop".
+
+---
+
+## 7. Règle Zéro Emojis dans l'Interface (*No Unicode Emojis in UI*)
+
+* **INTERDICTION FORMELLE :** Utiliser des émojis Unicode (🥇, 🥈, 🥉, 👑, ⚡, 🏆, 🗺️, ✉️, etc.) dans les boutons, en-têtes, badges ou podiums.
+* **STANDARD :** Utiliser exclusivement des icônes vectorielles SVG soignées depuis le composant partagé `Icons.tsx` (`<Icons.Crown />`, `<Icons.Trophy />`, `<Icons.Award />`, `<Icons.Zap />`, etc.).
+
+---
+
+## 8. UX Podiums & Filtres Déroulants
+
+* **Podiums Discrets :** Les classements Top 3 (Commerciaux ou KAM) ne doivent pas envahir l'espace vertical. Ils sont proposés comme une option en retrait, pliable/dépliable (`[ Icons.Trophy ] Podium Top 3 Performance`), compacte et élégante.
+* **Filtres Déroulants :** Privilégier les menus déroulants sleek `<select>` aux grappes horizontales de boutons-pills pour les filtres complexes (statuts, entités, périmètres).
+

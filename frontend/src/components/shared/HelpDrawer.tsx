@@ -18,13 +18,13 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         return (
           <div className="flex flex-col gap-5">
             <div>
-              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Onboarding Client</h4>
+              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Onboarding Client</h4>
               <p className="text-xs text-zinc-500 mt-1">FAQ & Guide d'utilisation pour le parcours de découverte.</p>
             </div>
 
             <div className="flex flex-col gap-4">
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.Sparkles className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Comment fonctionne le copilote Onbora ?
                 </span>
@@ -34,7 +34,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.LineChart className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Qu'est-ce que le Diagnostic d'Architecture Cible ?
                 </span>
@@ -44,7 +44,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.Mail className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Que se passe-t-il après la transmission de mon dossier ?
                 </span>
@@ -59,15 +59,15 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         return (
           <div className="flex flex-col gap-5">
             <div>
-              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Guide Commercial terrain</h4>
+              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Guide Commercial terrain</h4>
               <p className="text-xs text-zinc-500 mt-1">Apprenez à utiliser le copilote en prospection physique.</p>
             </div>
 
             <div className="flex flex-col gap-4">
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">1</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">1</span>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Ciblage & Recherche</span>
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Ciblage & Recherche</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
                     Saisissez le nom d'un prospect. Le système simule un scraping de son site web et consulte le CRM existant.
                   </p>
@@ -75,9 +75,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">2</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">2</span>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Brief pré-visite</span>
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Brief pré-visite</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
                     Consultez l'objectif de visite suggéré, les hypothèses techniques, et les questions clés d'accroche générées par l'IA.
                   </p>
@@ -85,9 +85,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">3</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">3</span>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Dictaphone Whisper & Notes</span>
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Dictaphone Whisper & Notes</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
                     Pendant la visite, activez le micro pour enregistrer l'échange ou saisissez vos notes au clavier. L'IA en extrait les besoins et objections.
                   </p>
@@ -95,9 +95,9 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">4</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">4</span>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Brouillon d'email & Envoi</span>
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Brouillon d'email & Envoi</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
                     Modifiez le projet d'email pré-rédigé, exportez le rapport en PDF, puis transmettez le dossier qualifié au conseiller.
                   </p>
@@ -110,13 +110,13 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         return (
           <div className="flex flex-col gap-5">
             <div>
-              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Guide de gestion Conseiller</h4>
+              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Guide de gestion Conseiller</h4>
               <p className="text-xs text-zinc-500 mt-1">Optimisez le suivi et la validation de votre portefeuille de prospects.</p>
             </div>
 
             <div className="flex flex-col gap-4">
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.Activity className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Traiter la file d'attente
                 </span>
@@ -126,7 +126,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.Edit className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Annotations et assignation
                 </span>
@@ -136,7 +136,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   <Icons.Download className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
                   Préparation du Pitch Client
                 </span>
@@ -166,12 +166,12 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
         {/* Header */}
         <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs shadow-sm">?</span>
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Centre d'Adoption Onbora</h3>
+            <span className="w-6 h-6 rounded-lg bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-extrabold text-xs shadow-sm">?</span>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Centre d'Adoption Onbora</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-semibold cursor-pointer border-none bg-transparent"
+            className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
           >
             Fermer ✕
           </button>

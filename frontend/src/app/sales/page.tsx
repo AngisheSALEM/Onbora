@@ -473,23 +473,23 @@ export default function SalesDashboard() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['SALESPERSON', 'ADMIN']}>
+    <ProtectedRoute allowedRoles={['SALESPERSON']}>
       <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-50">
         {/* Header */}
         <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3">
             <Logo size={32} showBg={true} />
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
+              <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Onbora</h1>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Copilote Commercial de Terrain</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full text-[9px] font-bold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
+            <span className="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full text-[9px] font-semibold tracking-wide uppercase shrink-0 hidden md:inline-block shadow-sm">
               Intégration simulée pour le MVP
             </span>
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
+              <p className="text-xs font-550 text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial</p>
             </div>
             <ThemeToggle />
@@ -499,7 +499,7 @@ export default function SalesDashboard() {
             />
             <button
               onClick={logout}
-              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-550 transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.LogOut size={14} /> Déconnexion
             </button>
@@ -512,7 +512,7 @@ export default function SalesDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab('workflow')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'workflow'
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
@@ -526,7 +526,7 @@ export default function SalesDashboard() {
               
               <button
                 onClick={() => setActiveTab('slides')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'slides'
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
@@ -539,7 +539,7 @@ export default function SalesDashboard() {
 
             {/* Persistent background recording pill */}
             {isRecording && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] text-red-500 font-bold animate-pulse">
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] text-red-500 font-semibold animate-pulse">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                 <span>Enregistrement en cours ({formatDuration(recordDuration)})</span>
                 <button
@@ -562,10 +562,10 @@ export default function SalesDashboard() {
           {step === 'search' && (
             <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
               <div className="flex flex-col gap-2">
-                <span className="mr-auto px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
+                <span className="mr-auto px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-semibold uppercase tracking-wide">
                   Ciblage
                 </span>
-                <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Sélectionner l'entreprise cible</h2>
+                <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Sélectionner l'entreprise cible</h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">Recherchez une entreprise. Notre outil consultera la base pour pré-remplir la fiche.</p>
               </div>
 
@@ -590,14 +590,14 @@ export default function SalesDashboard() {
                         className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-50 dark:hover:bg-zinc-950/40 transition-all cursor-pointer bg-white dark:bg-zinc-950/10"
                       >
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{ent.name}</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">{ent.name}</span>
                           <div className="flex items-center gap-2 text-[10px] text-zinc-500">
                             <span>{ent.sector}</span>
                             <span>•</span>
                             <span>{ent.location}</span>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Préparer la visite →</span>
+                        <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">Préparer la visite →</span>
                       </button>
                     ))}
                   </div>
@@ -614,7 +614,7 @@ export default function SalesDashboard() {
                   {step === 'brief' && (
                     <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
                       <div className="flex justify-between items-center">
-                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
+                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-semibold uppercase tracking-wide">
                           Brief Pré-Visite
                         </span>
                         <button
@@ -657,11 +657,11 @@ export default function SalesDashboard() {
                       ) : visitPrep ? (
                         <div className="flex flex-col gap-6">
                           <div>
-                            <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                            <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                               {visitPrep.enterprise_details.name}
                             </h2>
                             <div className="flex flex-wrap gap-2 items-center mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
-                              <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 font-semibold">{visitPrep.enterprise_details.sector}</span>
+                              <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 font-550">{visitPrep.enterprise_details.sector}</span>
                               <span>•</span>
                               <span>{visitPrep.enterprise_details.location}</span>
                               <span>•</span>
@@ -671,13 +671,13 @@ export default function SalesDashboard() {
 
                           {/* Objective */}
                           <div className="p-4 bg-blue-600/5 border border-blue-600/10 rounded-xl flex flex-col gap-1">
-                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Objectif de la visite</span>
+                            <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Objectif de la visite</span>
                             <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-normal">{visitPrep.meeting_objective}</p>
                           </div>
 
                           {/* Hypothesis to verify */}
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Hypothèses à vérifier</span>
+                            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Hypothèses à vérifier</span>
                             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium">
                               {visitPrep.hypothesis_to_verify}
                             </p>
@@ -685,7 +685,7 @@ export default function SalesDashboard() {
 
                           {/* Custom pitch */}
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Pitch personnalisé suggéré</span>
+                            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Pitch personnalisé suggéré</span>
                             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium">
                               {visitPrep.custom_pitch}
                             </p>
@@ -693,7 +693,7 @@ export default function SalesDashboard() {
 
                           {/* Key questions */}
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Questions d'accroche clés</span>
+                            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Questions d'accroche clés</span>
                             <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-100 dark:bg-zinc-950/20 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl whitespace-pre-line font-medium">
                               {visitPrep.key_questions}
                             </div>
@@ -701,7 +701,7 @@ export default function SalesDashboard() {
 
                           <button
                             onClick={handleStartVisit}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer"
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-semibold transition-all shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer"
                           >
                             Démarrer le Rendez-vous →
                           </button>
@@ -714,17 +714,17 @@ export default function SalesDashboard() {
                   {step === 'visit' && (
                     <div className="w-full flex flex-col gap-5 studio-card p-6 shadow-sm justify-between animate-fade-in">
                       <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-wide animate-pulse">
+                        <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-semibold uppercase tracking-wide animate-pulse">
                           Rendez-vous en cours
                         </span>
-                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate max-w-[200px]">
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 truncate max-w-[200px]">
                           {selectedEnterprise?.name}
                         </span>
                       </div>
 
                       {/* Dictaphone Audio Recorder */}
                       <div className="studio-subcard rounded-2xl p-6 flex flex-col items-center gap-4 w-full">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
+                        <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Dictaphone Assistant Commercial (Whisper)</span>
                         
                         <div className="flex flex-col items-center gap-4 mt-2">
                           <button
@@ -745,20 +745,20 @@ export default function SalesDashboard() {
                           
                           {isRecording && (
                             <div className="flex flex-col items-center gap-1 text-center">
-                              <span className="text-sm font-black text-red-500">{formatDuration(recordDuration)}</span>
-                              <span className="text-[9px] font-semibold text-zinc-400">Enregistrement audio en cours...</span>
+                              <span className="text-sm font-extrabold text-red-500">{formatDuration(recordDuration)}</span>
+                              <span className="text-[9px] font-550 text-zinc-400">Enregistrement audio en cours...</span>
                             </div>
                           )}
 
                           {isProcessingAudio && (
-                            <div className="flex items-center gap-2 text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                            <div className="flex items-center gap-2 text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
                               <div className="w-3.5 h-3.5 border-2 border-zinc-350 border-t-blue-600 rounded-full animate-spin" />
                               <span>Transcription par Whisper en cours...</span>
                             </div>
                           )}
 
                           {audioFilePath && !isRecording && !isProcessingAudio && (
-                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 px-3 py-1.5 rounded-xl">
+                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 px-3 py-1.5 rounded-xl">
                               <Icons.Check size={14} />
                               <span>Audio enregistré et rattaché avec succès ({audioFilePath.split('/').pop()})</span>
                             </div>
@@ -784,7 +784,7 @@ export default function SalesDashboard() {
 
                       {/* Raw notes input */}
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
                           Notes de réunion & transcription (Éditable)
                         </label>
                         <textarea
@@ -799,14 +799,14 @@ export default function SalesDashboard() {
                       <div className="flex justify-between gap-4 mt-1">
                         <button
                           onClick={() => setStep('brief')}
-                          className="px-5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
+                          className="px-5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
                         >
                           Retour brief
                         </button>
                         <button
                           onClick={handleGenerateReport}
                           disabled={!rawNotes.trim() || generatingReport}
-                          className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                          className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                         >
                           {generatingReport ? 'Analyse par l\'IA...' : 'Générer le Rapport →'}
                         </button>
@@ -818,17 +818,17 @@ export default function SalesDashboard() {
                   {step === 'report' && visitReport && (
                     <div className="w-full flex flex-col gap-5 studio-card p-6 shadow-sm">
                       <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-3">
-                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
+                        <span className="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-semibold uppercase tracking-wide">
                           Rapport Commercial Généré
                         </span>
-                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate max-w-[160px]">
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 truncate max-w-[160px]">
                           {selectedEnterprise?.name}
                         </span>
                       </div>
 
                       {/* Executive Summary */}
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
+                        <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Résumé analytique de l'IA</span>
                         <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed studio-subcard p-3.5 rounded-xl font-medium">
                           {visitReport.executive_summary}
                         </p>
@@ -837,20 +837,20 @@ export default function SalesDashboard() {
                       {/* Needs & Objections */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Besoins validés</span>
+                          <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Besoins validés</span>
                           <div className="flex flex-wrap gap-1">
                             {visitReport.confirmed_needs.map((need, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 text-[9px] font-bold">
+                              <span key={idx} className="px-2 py-0.5 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 text-[9px] font-semibold">
                                 {need}
                               </span>
                             ))}
                           </div>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Objections</span>
+                          <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Objections</span>
                           <div className="flex flex-wrap gap-1">
                             {visitReport.objections_raised.map((obj, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded bg-red-500/5 text-red-650 dark:text-red-400 border border-red-500/10 text-[9px] font-bold">
+                              <span key={idx} className="px-2 py-0.5 rounded bg-red-500/5 text-red-650 dark:text-red-400 border border-red-500/10 text-[9px] font-semibold">
                                 {obj}
                               </span>
                             ))}
@@ -860,7 +860,7 @@ export default function SalesDashboard() {
 
                       {/* Todo actions */}
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Actions recommandées</span>
+                        <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Actions recommandées</span>
                         <ul className="text-xs text-zinc-650 dark:text-zinc-400 list-disc pl-4 space-y-0.5">
                           {visitReport.actions_todo.map((act, idx) => (
                             <li key={idx} className="font-medium">{act}</li>
@@ -870,7 +870,7 @@ export default function SalesDashboard() {
 
                       {/* Follow-up email draft */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
                           Email de suivi (Modifiable)
                         </label>
                         <textarea
@@ -884,20 +884,20 @@ export default function SalesDashboard() {
                       <div className="flex justify-between gap-3 mt-1 border-t border-zinc-100 dark:border-zinc-800/60 pt-3">
                         <button
                           onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sales/visit-reports/${visitReport.id}/export/`, '_blank')}
-                          className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-bold text-zinc-800 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-semibold text-zinc-800 transition-all flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <Icons.Download size={12} /> PDF
                         </button>
                         <button
                           onClick={() => setStep('visit')}
-                          className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-bold text-zinc-800 transition-all cursor-pointer"
+                          className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-850 text-[10px] font-semibold text-zinc-800 transition-all cursor-pointer"
                         >
                           Retour notes
                         </button>
                         <button
                           onClick={handleTransmitToKam}
                           disabled={transmitting}
-                          className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)] flex items-center justify-center gap-1"
+                          className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)] flex items-center justify-center gap-1"
                         >
                           {transmitting ? 'Transmission...' : 'Transmettre'} <Icons.ChevronRight size={12} />
                         </button>
@@ -908,11 +908,11 @@ export default function SalesDashboard() {
                   {/* Step 5: Transmitted screen */}
                   {step === 'transmitted' && (
                     <div className="studio-card p-8 shadow-sm flex flex-col items-center gap-6 text-center animate-fade-in">
-                      <div className="w-14 h-14 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xl font-bold shadow-[0_0_20px_rgba(37,99,235,0.20)]">
+                      <div className="w-14 h-14 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xl font-semibold shadow-[0_0_20px_rgba(37,99,235,0.20)]">
                         ✓
                       </div>
                       <div className="flex flex-col gap-2">
-                        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Dossier transmis avec succès</h2>
+                        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Dossier transmis avec succès</h2>
                         <p className="text-xs text-zinc-400 leading-normal max-w-md mx-auto">
                           Le rapport de visite a été structuré et envoyé à l'espace de suivi sous le dossier **#{createdDossierId}**. Un e-mail de suivi a été préparé pour le prospect.
                         </p>
@@ -920,7 +920,7 @@ export default function SalesDashboard() {
 
                       <button
                         onClick={handleReset}
-                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.20)]"
                       >
                         Prospecter une autre entreprise
                       </button>
@@ -933,10 +933,10 @@ export default function SalesDashboard() {
                 <div className="w-full flex flex-col studio-card p-6 shadow-sm animate-fade-in gap-4">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-zinc-150 dark:border-zinc-850 pb-4 gap-3">
                     <div className="flex flex-col">
-                      <span className="px-2 py-0.5 mr-auto rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wide">
+                      <span className="px-2 py-0.5 mr-auto rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-semibold uppercase tracking-wide">
                         Livrable de Présentation
                       </span>
-                      <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">
+                      <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1">
                         Diapositives commerciales pour {selectedEnterprise?.name}
                       </h3>
                     </div>
@@ -944,7 +944,7 @@ export default function SalesDashboard() {
                     {/* Slide mode toggler button */}
                     <button
                       onClick={() => setIsEditingSlides(!isEditingSlides)}
-                      className="px-4 py-2 rounded-xl border border-blue-600/20 hover:border-blue-600/40 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto shadow-sm"
+                      className="px-4 py-2 rounded-xl border border-blue-600/20 hover:border-blue-600/40 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto shadow-sm"
                     >
                       {isEditingSlides ? (
                         <>

@@ -237,14 +237,14 @@ export default function ClientProfilePage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['CLIENT_B2B', 'ADMIN']}>
+    <ProtectedRoute allowedRoles={['CLIENT_B2B']}>
       <div className="h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans text-black dark:text-zinc-55 overflow-hidden">
         {/* Header App Bar */}
         <header className="border-b border-zinc-200 dark:border-zinc-900 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3">
             <Logo size={32} showBg={true} />
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-55 flex items-center gap-1 select-none">
+              <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-55 flex items-center gap-1 select-none">
                 Onbora
               </h1>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Tableau de Bord & Profil B2B</p>
@@ -254,7 +254,7 @@ export default function ClientProfilePage() {
           <div className="flex items-center gap-4">
             <Link 
               href="/client"
-              className="px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-blue-600/50 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-blue-600/50 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.MessageSquare size={14} />
               <span>Retour au Chat</span>
@@ -274,7 +274,7 @@ export default function ClientProfilePage() {
               {/* Profile Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                     <Icons.Users size={20} className="text-blue-600 dark:text-blue-400 shrink-0" /> Mon Espace Profil & Commandes
                   </h2>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -288,12 +288,12 @@ export default function ClientProfilePage() {
 
                 {/* Column 1: Coordonnées de l'Entreprise & Facturation */}
                 <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                  <h3 className="text-xs font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <Icons.FileText size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Coordonnées Contractuelles
                   </h3>
 
                   {transmissionSuccess && (
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl text-[11px] leading-normal font-semibold flex gap-2 items-start">
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl text-[11px] leading-normal font-550 flex gap-2 items-start">
                       <span className="text-sm">✓</span>
                       <span>Vos coordonnées sont verrouillées car une commande a été validée et transmise à votre conseiller.</span>
                     </div>
@@ -302,7 +302,7 @@ export default function ClientProfilePage() {
                   {/* Inputs */}
                   <div className="flex flex-col gap-4 mt-2">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Nom Complet du Contact</label>
+                      <label className="text-[10px] font-semibold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Nom Complet du Contact</label>
                       <input
                         type="text"
                         disabled={transmissionSuccess || profileSaving}
@@ -314,7 +314,7 @@ export default function ClientProfilePage() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Numéro de Téléphone Direct</label>
+                      <label className="text-[10px] font-semibold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Numéro de Téléphone Direct</label>
                       <input
                         type="text"
                         disabled={transmissionSuccess || profileSaving}
@@ -326,7 +326,7 @@ export default function ClientProfilePage() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Numéro RCCM</label>
+                      <label className="text-[10px] font-semibold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Numéro RCCM</label>
                       <input
                         type="text"
                         disabled={transmissionSuccess || profileSaving}
@@ -338,7 +338,7 @@ export default function ClientProfilePage() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Adresse Complète de Facturation</label>
+                      <label className="text-[10px] font-semibold text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Adresse Complète de Facturation</label>
                       <textarea
                         disabled={transmissionSuccess || profileSaving}
                         value={billingAddress}
@@ -355,13 +355,13 @@ export default function ClientProfilePage() {
                           type="button"
                           onClick={handleSaveProfileOnly}
                           disabled={profileSaving}
-                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           {profileSaving ? 'Enregistrement...' : 'Enregistrer mon Profil'}
                         </button>
                         
                         {profileSaveSuccess && (
-                          <span className="text-[10px] text-emerald-500 font-bold text-center animate-pulse">
+                          <span className="text-[10px] text-emerald-500 font-semibold text-center animate-pulse">
                             ✓ Modifications enregistrées avec succès !
                           </span>
                         )}
@@ -372,7 +372,7 @@ export default function ClientProfilePage() {
 
                 {/* Column 2: Suivi de l'Avancement des Commandes */}
                 <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                  <h3 className="text-xs font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <Icons.Folder size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Avancement de vos Commandes
                   </h3>
 
@@ -406,13 +406,13 @@ export default function ClientProfilePage() {
                             >
                               <div className="flex justify-between items-start gap-1.5">
                                 <div>
-                                  <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 uppercase">{service.category}</span>
-                                  <h4 className="text-[11px] font-bold text-zinc-900 dark:text-zinc-200 leading-tight group-hover:text-blue-600 transition-colors">{service.name}</h4>
+                                  <span className="text-[8px] font-semibold text-blue-600 dark:text-blue-400 uppercase">{service.category}</span>
+                                  <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-200 leading-tight group-hover:text-blue-600 transition-colors">{service.name}</h4>
                                   {!service.isCurrent && (
                                     <span className="text-[7.5px] text-zinc-400 dark:text-zinc-500 font-medium">({service.companyName})</span>
                                   )}
                                 </div>
-                                <span className={`text-[8.5px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0 ${
+                                <span className={`text-[8.5px] font-semibold uppercase px-1.5 py-0.5 rounded-full shrink-0 ${
                                   provStatus === 'COMPLETED' || provStatus === 'ACTIVE' 
                                     ? 'bg-emerald-500/10 text-emerald-500' 
                                     : provStatus === 'PROVISIONING' 
@@ -426,7 +426,7 @@ export default function ClientProfilePage() {
                               <div className="flex md:flex-row flex-col md:items-center items-start justify-between gap-3 text-[8.5px] font-medium text-zinc-550 mt-1 relative px-1 w-full font-sans">
                                 {steps.map((st, sidx) => (
                                   <div key={sidx} className="flex md:flex-col flex-row items-center gap-2 md:gap-1 z-10 relative">
-                                    <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-extrabold border shrink-0 ${
+                                    <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold border shrink-0 ${
                                       st.done 
                                         ? 'bg-blue-600 border-blue-600 text-white' 
                                         : st.active 
@@ -435,7 +435,7 @@ export default function ClientProfilePage() {
                                     }`}>
                                       {st.done ? '✓' : sidx + 1}
                                     </div>
-                                    <span className={st.done || st.active ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-zinc-400'}>{st.label}</span>
+                                    <span className={st.done || st.active ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-zinc-400'}>{st.label}</span>
                                   </div>
                                 ))}
                                 <div className="absolute top-[8px] left-[15%] right-[15%] h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-0 hidden md:block" />
@@ -450,43 +450,43 @@ export default function ClientProfilePage() {
 
                 {/* Column 3: Outils & Besoins transmis au KAM */}
                 <div className="lg:col-span-1 flex flex-col gap-4 studio-card p-6 shadow-sm">
-                  <h3 className="text-xs font-bold text-zinc-855 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                  <h3 className="text-xs font-semibold text-zinc-855 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <Icons.Settings size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Synthèse des Besoins Transmis
                   </h3>
 
                   <div className="flex flex-col gap-4 overflow-y-auto max-h-[500px]">
                     <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Identité & Sites</h4>
+                      <h4 className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Identité & Sites</h4>
                       <ul className="text-xs text-zinc-800 dark:text-zinc-300 space-y-1">
                         <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Secteur :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.sector || 'Non renseigné'}</span>
+                          <span className="font-550 text-zinc-500">Secteur :</span>
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-50">{profile.sector || 'Non renseigné'}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Employés :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.company_size_estimate || 'Non détecté'}</span>
+                          <span className="font-550 text-zinc-500">Employés :</span>
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-50">{profile.company_size_estimate || 'Non détecté'}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span className="font-semibold text-zinc-500">Sites d'exercice :</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.locations_count} site(s)</span>
+                          <span className="font-550 text-zinc-500">Sites d'exercice :</span>
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-50">{profile.locations_count} site(s)</span>
                         </li>
                         {profile.crm && (
                           <li className="flex justify-between">
-                            <span className="font-semibold text-zinc-500">CRM de l'entreprise :</span>
-                            <span className="font-bold text-zinc-900 dark:text-zinc-50">{profile.crm}</span>
+                            <span className="font-550 text-zinc-500">CRM de l'entreprise :</span>
+                            <span className="font-semibold text-zinc-900 dark:text-zinc-50">{profile.crm}</span>
                           </li>
                         )}
                       </ul>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Dysfonctionnements Identifiés</h4>
+                      <h4 className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Dysfonctionnements Identifiés</h4>
                       {profile.current_problems.length === 0 ? (
                         <span className="text-xs text-zinc-400 italic">Aucun problème identifié</span>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {profile.current_problems.map((p, idx) => (
-                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-rose-500/10 text-rose-500 border border-rose-500/10 uppercase tracking-wide flex items-center gap-1">
+                            <span key={idx} className="text-[9px] font-semibold px-2 py-1 rounded bg-rose-500/10 text-rose-500 border border-rose-500/10 uppercase tracking-wide flex items-center gap-1">
                               <Icons.AlertTriangle size={10} className="shrink-0" /> {p}
                             </span>
                           ))}
@@ -495,13 +495,13 @@ export default function ClientProfilePage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <h4 className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Outils & Connectivité Actuelle</h4>
+                      <h4 className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Outils & Connectivité Actuelle</h4>
                       {profile.current_tools.length === 0 ? (
                         <span className="text-xs text-zinc-450 italic">Aucun outil identifié</span>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {profile.current_tools.map((t, idx) => (
-                            <span key={idx} className="text-[9px] font-bold px-2 py-1 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/10 uppercase tracking-wide flex items-center gap-1">
+                            <span key={idx} className="text-[9px] font-semibold px-2 py-1 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/10 uppercase tracking-wide flex items-center gap-1">
                               🎓 {t}
                             </span>
                           ))}
@@ -516,15 +516,15 @@ export default function ClientProfilePage() {
               {/* Settings Section (Theme & Logout) */}
               <div className="studio-card p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xs font-bold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                  <h3 className="text-xs font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <Icons.Settings size={16} className="text-blue-600 dark:text-blue-400 shrink-0" /> Préférences & Paramètres
                   </h3>
                   <div className="flex flex-col gap-3 mt-3">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Thème de l'Application</label>
+                    <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide">Thème de l'Application</label>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleThemeChange('light')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'light'
                             ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
@@ -534,7 +534,7 @@ export default function ClientProfilePage() {
                       </button>
                       <button
                         onClick={() => handleThemeChange('dark')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'dark'
                             ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
@@ -544,7 +544,7 @@ export default function ClientProfilePage() {
                       </button>
                       <button
                         onClick={() => handleThemeChange('system')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                           themePreference === 'system'
                             ? 'bg-blue-600 text-white border-transparent shadow-[0_0_20px_rgba(37,99,235,0.20)]'
                             : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-750'
@@ -564,7 +564,7 @@ export default function ClientProfilePage() {
                 <div className="flex flex-col justify-end self-end sm:self-center">
                   <button
                     onClick={logout}
-                    className="py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-rose-500/10 active:scale-98"
+                    className="py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-rose-500/10 active:scale-98"
                     title="Se déconnecter de votre compte Onbora"
                   >
                     <Icons.LogOut size={14} />

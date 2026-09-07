@@ -70,7 +70,7 @@ export default function KamIntelligenceStacks({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icons.Sparkles size={16} className="text-orange-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Intelligence IA & Signaux d&apos;Affaires
           </span>
         </div>
@@ -83,7 +83,7 @@ export default function KamIntelligenceStacks({
           >
             <Icons.ChevronLeft size={14} />
           </button>
-          <span className="text-[11px] font-mono font-bold text-zinc-300 px-1">
+          <span className="text-[11px] font-mono font-semibold text-zinc-300 px-1">
             {activeIdx + 1} / {intelligenceItems.length}
           </span>
           <button
@@ -99,15 +99,15 @@ export default function KamIntelligenceStacks({
       {/* Main Focus Signal Body (Asymmetric High Impact) */}
       <div className="my-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${current.tagColor}`}>
+          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${current.tagColor}`}>
             {current.category}
           </span>
-          <span className="text-[11px] font-semibold text-zinc-400">
+          <span className="text-[11px] font-550 text-zinc-400">
             {current.account}
           </span>
         </div>
 
-        <h3 className="text-base md:text-lg font-bold text-white tracking-tight leading-snug">
+        <h3 className="text-base md:text-lg font-semibold text-white tracking-tight leading-snug">
           {current.title}
         </h3>
 
@@ -119,17 +119,17 @@ export default function KamIntelligenceStacks({
       {/* Bottom Opportunity Bar & Growth Target */}
       <div className="p-3.5 bg-[#14141A] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
         <div>
-          <span className="text-[10px] uppercase font-bold text-zinc-500 block">Opportunité Orange Associée</span>
-          <span className="text-xs font-bold text-white line-clamp-1">{current.opportunity}</span>
+          <span className="text-[10px] uppercase font-semibold text-zinc-500 block">Opportunité Orange Associée</span>
+          <span className="text-xs font-semibold text-white line-clamp-1">{current.opportunity}</span>
         </div>
 
         <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
-          <span className="text-xs font-mono font-black text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-mono font-extrabold text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-lg">
             {current.potentialMrr}
           </span>
           <button
             onClick={() => onOpenSignalDetail(current)}
-            className="px-3 py-1 bg-white hover:bg-zinc-200 active:scale-95 text-black text-xs font-bold rounded-lg transition-all cursor-pointer"
+            className="px-3 py-1 bg-white hover:bg-zinc-200 active:scale-95 text-black text-xs font-semibold rounded-lg transition-all cursor-pointer"
           >
             Explorer
           </button>

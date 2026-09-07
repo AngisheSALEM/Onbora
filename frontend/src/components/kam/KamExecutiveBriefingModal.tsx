@@ -55,28 +55,28 @@ export default function KamExecutiveBriefingModal({
     switch (stance) {
       case 'POSITIVE':
         return (
-          <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+          <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
             <Icons.CheckCircle size={12} />
             <span>Allié Orange</span>
           </span>
         );
       case 'NEGATIVE':
         return (
-          <span className="text-rose-400 font-bold flex items-center gap-1.5">
+          <span className="text-rose-400 font-semibold flex items-center gap-1.5">
             <Icons.AlertCircle size={12} />
             <span>Bloqueur</span>
           </span>
         );
       case 'NEUTRAL':
         return (
-          <span className="text-amber-400 font-bold flex items-center gap-1.5">
+          <span className="text-amber-400 font-semibold flex items-center gap-1.5">
             <Icons.Clock size={12} />
             <span>Pragmatique</span>
           </span>
         );
       default:
         return (
-          <span className="text-zinc-500 font-bold flex items-center gap-1.5">
+          <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
             <Icons.HelpCircle size={12} />
             <span>Inconnu</span>
           </span>
@@ -91,15 +91,15 @@ export default function KamExecutiveBriefingModal({
         {/* TOP BANNER : Bandeau Haut Exécutif (30 sec de lecture) */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-6 bg-[#121218]">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black text-xl shadow-lg">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-extrabold text-xl shadow-lg">
               {visit.account_name.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
+                <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">
                   {visit.account_name}
                 </h2>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold">
                   {briefing.industry}
                 </span>
               </div>
@@ -112,22 +112,22 @@ export default function KamExecutiveBriefingModal({
           {/* Quick KPI Strip */}
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
             <div className="px-4 py-2 bg-[#1A1A22] rounded-2xl text-center">
-              <span className="block text-[10px] uppercase font-bold text-zinc-500">MRR Orange</span>
-              <span className="text-sm font-mono font-black text-white">
+              <span className="block text-[10px] uppercase font-semibold text-zinc-500">MRR Orange</span>
+              <span className="text-sm font-mono font-extrabold text-white">
                 {briefing.orange_relationship.mrr_current.toLocaleString()} €
               </span>
             </div>
 
             <div className="px-4 py-2 bg-[#1A1A22] rounded-2xl text-center">
-              <span className="block text-[10px] uppercase font-bold text-zinc-500">Part Portefeuille</span>
-              <span className="text-sm font-mono font-black text-blue-400">
+              <span className="block text-[10px] uppercase font-semibold text-zinc-500">Part Portefeuille</span>
+              <span className="text-sm font-mono font-extrabold text-blue-400">
                 {briefing.orange_relationship.wallet_share_percentage}%
               </span>
             </div>
 
             <div className="px-4 py-2 bg-[#1A1A22] rounded-2xl text-center">
-              <span className="block text-[10px] uppercase font-bold text-zinc-500">Dispo SLA 30j</span>
-              <span className="text-sm font-mono font-black text-emerald-400">
+              <span className="block text-[10px] uppercase font-semibold text-zinc-500">Dispo SLA 30j</span>
+              <span className="text-sm font-mono font-extrabold text-emerald-400">
                 99.82%
               </span>
             </div>
@@ -136,8 +136,8 @@ export default function KamExecutiveBriefingModal({
             <div className="flex items-center gap-2 px-3.5 py-2 bg-amber-500/10 rounded-2xl text-amber-400">
               <Icons.Clock size={16} />
               <div className="text-left">
-                <span className="block text-[9px] uppercase font-bold text-amber-500/80">Temps Prépa</span>
-                <span className="text-xs font-mono font-black">{timeFormatted}</span>
+                <span className="block text-[9px] uppercase font-semibold text-amber-500/80">Temps Prépa</span>
+                <span className="text-xs font-mono font-extrabold">{timeFormatted}</span>
               </div>
             </div>
 
@@ -151,11 +151,11 @@ export default function KamExecutiveBriefingModal({
         </div>
 
         {/* SUB-NAVIGATION TABS */}
-        <div className="flex items-center gap-2 px-6 py-3 bg-[#08080C] text-xs font-bold">
+        <div className="flex items-center gap-2 px-6 py-3 bg-[#08080C] text-xs font-semibold">
           <button
             onClick={() => setActiveSubTab('360')}
             className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-              activeSubTab === '360' ? 'bg-white text-black font-black' : 'text-zinc-400 hover:text-white'
+              activeSubTab === '360' ? 'bg-white text-black font-extrabold' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Vue 360° Z-Pattern
@@ -163,7 +163,7 @@ export default function KamExecutiveBriefingModal({
           <button
             onClick={() => setActiveSubTab('meddic')}
             className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-              activeSubTab === 'meddic' ? 'bg-white text-black font-black' : 'text-zinc-400 hover:text-white'
+              activeSubTab === 'meddic' ? 'bg-white text-black font-extrabold' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Comité MEDDIC & Décideurs ({briefing.stakeholders_mapping.length})
@@ -171,7 +171,7 @@ export default function KamExecutiveBriefingModal({
           <button
             onClick={() => setActiveSubTab('playbook')}
             className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-              activeSubTab === 'playbook' ? 'bg-white text-black font-black' : 'text-zinc-400 hover:text-white'
+              activeSubTab === 'playbook' ? 'bg-white text-black font-extrabold' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Playbook Visite & IA
@@ -179,7 +179,7 @@ export default function KamExecutiveBriefingModal({
           <button
             onClick={() => setActiveSubTab('contracts')}
             className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-              activeSubTab === 'contracts' ? 'bg-white text-black font-black' : 'text-zinc-400 hover:text-white'
+              activeSubTab === 'contracts' ? 'bg-white text-black font-extrabold' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Contrats & Incidents
@@ -194,7 +194,7 @@ export default function KamExecutiveBriefingModal({
             <div className="p-5 bg-[#121218] rounded-3xl">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.Building size={16} className="text-blue-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                   Firmographics & Activité
                 </h3>
               </div>
@@ -205,19 +205,19 @@ export default function KamExecutiveBriefingModal({
               <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-[#1C1C24] text-xs">
                 <div>
                   <span className="text-zinc-500 block text-[10px]">Effectif</span>
-                  <span className="font-bold text-white">{briefing.firmographics.headcount.toLocaleString()} employés</span>
+                  <span className="font-semibold text-white">{briefing.firmographics.headcount.toLocaleString()} employés</span>
                 </div>
                 <div>
                   <span className="text-zinc-500 block text-[10px]">Chiffre d&apos;Affaires</span>
-                  <span className="font-bold text-white">{briefing.firmographics.estimated_annual_revenue}</span>
+                  <span className="font-semibold text-white">{briefing.firmographics.estimated_annual_revenue}</span>
                 </div>
                 <div>
                   <span className="text-zinc-500 block text-[10px]">Sites & Agences</span>
-                  <span className="font-bold text-white">{briefing.firmographics.locations_count} sites</span>
+                  <span className="font-semibold text-white">{briefing.firmographics.locations_count} sites</span>
                 </div>
                 <div>
                   <span className="text-zinc-500 block text-[10px]">Présence</span>
-                  <span className="font-bold text-white">{briefing.firmographics.countries.join(', ')}</span>
+                  <span className="font-semibold text-white">{briefing.firmographics.countries.join(', ')}</span>
                 </div>
               </div>
             </div>
@@ -226,17 +226,17 @@ export default function KamExecutiveBriefingModal({
             <div className="p-5 bg-[#121218] rounded-3xl">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.Layers size={16} className="text-indigo-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                   Stack & Concurrents en Place
                 </h3>
               </div>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block">Concurrents installés :</span>
+                  <span className="text-[10px] font-semibold text-zinc-400 uppercase block">Concurrents installés :</span>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {briefing.technical_environment.current_competitors.map((c, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-300 text-[11px] font-semibold">
+                      <span key={i} className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-300 text-[11px] font-550">
                         {c}
                       </span>
                     ))}
@@ -244,7 +244,7 @@ export default function KamExecutiveBriefingModal({
                 </div>
 
                 <div className="pt-2">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block">Stack Télécom & Cloud :</span>
+                  <span className="text-[10px] font-semibold text-zinc-400 uppercase block">Stack Télécom & Cloud :</span>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {briefing.technical_environment.installed_cloud_telecom_stack.map((s, i) => (
                       <span key={i} className="px-2.5 py-1 rounded-lg bg-[#1C1C24] text-zinc-300 text-[11px] font-medium">
@@ -261,7 +261,7 @@ export default function KamExecutiveBriefingModal({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Icons.Sparkles size={16} className="text-orange-400" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-orange-400">
                     Signaux d&apos;Intention IA ({briefing.trigger_signals.length})
                   </h3>
                 </div>
@@ -271,12 +271,12 @@ export default function KamExecutiveBriefingModal({
                 {briefing.trigger_signals.map((sig) => (
                   <div key={sig.id} className="p-3 bg-[#1A1A22] rounded-2xl text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-orange-400 text-[10px] uppercase">
+                      <span className="font-extrabold text-orange-400 text-[10px] uppercase">
                         {sig.category}
                       </span>
                       <span className="text-[10px] text-zinc-500">{sig.date}</span>
                     </div>
-                    <div className="font-bold text-white mt-1">
+                    <div className="font-semibold text-white mt-1">
                       {sig.title}
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-1">
@@ -293,7 +293,7 @@ export default function KamExecutiveBriefingModal({
             {/* Warning Stakeholder Alert */}
             {briefing.missing_stakeholders_alert.length > 0 && (
               <div className="p-4 bg-amber-500/10 rounded-3xl text-xs text-amber-300">
-                <div className="flex items-center gap-2 font-bold mb-1.5">
+                <div className="flex items-center gap-2 font-semibold mb-1.5">
                   <Icons.AlertCircle size={16} className="text-amber-400" />
                   <span>Alerte Décisionnelle</span>
                 </div>
@@ -310,7 +310,7 @@ export default function KamExecutiveBriefingModal({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Icons.Users size={16} className="text-purple-400" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                     Comité d&apos;Achat ({briefing.stakeholders_mapping.length})
                   </h3>
                 </div>
@@ -323,7 +323,7 @@ export default function KamExecutiveBriefingModal({
                     <div key={stk.id} className="p-4 bg-[#1A1A22] rounded-2xl text-xs">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="font-bold text-white text-sm">
+                          <div className="font-semibold text-white text-sm">
                             {stk.full_name}
                           </div>
                           <div className="text-[11px] text-zinc-400 font-medium">
@@ -331,7 +331,7 @@ export default function KamExecutiveBriefingModal({
                           </div>
                         </div>
 
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${roleBadge.color}`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleBadge.color}`}>
                           {roleBadge.label}
                         </span>
                       </div>
@@ -359,7 +359,7 @@ export default function KamExecutiveBriefingModal({
             <div className="p-5 bg-[#121218] rounded-3xl">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.Brain size={16} className="text-purple-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-purple-400">
                   Hypothèses de Douleur Détectées
                 </h3>
               </div>
@@ -367,13 +367,13 @@ export default function KamExecutiveBriefingModal({
               <div className="space-y-3">
                 {briefing.ai_hypotheses_and_playbook.pain_hypotheses.map((p, i) => (
                   <div key={i} className="p-3.5 bg-[#1A1A22] rounded-2xl text-xs">
-                    <div className="font-bold text-white leading-snug">
+                    <div className="font-semibold text-white leading-snug">
                       {i + 1}. {p.hypothesis}
                     </div>
                     <div className="text-[10px] text-zinc-400 mt-1">
                       <strong>Preuve :</strong> {p.trigger_evidence}
                     </div>
-                    <div className="mt-2.5 p-2.5 bg-purple-500/10 rounded-xl text-[11px] text-purple-200 font-semibold">
+                    <div className="mt-2.5 p-2.5 bg-purple-500/10 rounded-xl text-[11px] text-purple-200 font-550">
                       Angle de découverte : {p.discovery_angle}
                     </div>
                   </div>
@@ -385,13 +385,13 @@ export default function KamExecutiveBriefingModal({
             <div className="p-5 bg-[#121218] rounded-3xl flex-1">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.Target size={16} className="text-emerald-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                   Agenda & Pièges de la Visite
                 </h3>
               </div>
 
               <div className="space-y-2.5 text-xs">
-                <div className="font-bold text-white">
+                <div className="font-semibold text-white">
                   Déroulé Recommandé (45 min) :
                 </div>
                 <div className="space-y-1.5 pl-2">
@@ -404,7 +404,7 @@ export default function KamExecutiveBriefingModal({
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-[#1C1C24]">
-                  <span className="font-bold text-red-400 text-[11px] uppercase flex items-center gap-1.5 mb-1">
+                  <span className="font-semibold text-red-400 text-[11px] uppercase flex items-center gap-1.5 mb-1">
                     <Icons.AlertTriangle size={13} />
                     <span>Pièges à Éviter Absolument :</span>
                   </span>
@@ -424,13 +424,13 @@ export default function KamExecutiveBriefingModal({
         {/* BOTTOM ACTION BAR */}
         <div className="flex items-center justify-between p-5 bg-[#121218]">
           <div className="text-xs text-zinc-400">
-            Temps de lecture recommandé : <strong>5–10 min</strong> | Statut : <span className="text-emerald-400 font-bold">Briefing 100% Consolidé</span>
+            Temps de lecture recommandé : <strong>5–10 min</strong> | Statut : <span className="text-emerald-400 font-semibold">Briefing 100% Consolidé</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-[#1A1A22] transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-[#1A1A22] transition-all cursor-pointer"
             >
               Fermer
             </button>
@@ -440,7 +440,7 @@ export default function KamExecutiveBriefingModal({
                 onClose();
                 onLaunchMeetingMode(visit);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-lg transition-all cursor-pointer"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-lg transition-all cursor-pointer"
             >
               <Icons.Mic size={15} />
               <span>Valider ma préparation & Lancer le mode Réunion</span>

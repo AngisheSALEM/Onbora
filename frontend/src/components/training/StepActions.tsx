@@ -39,7 +39,7 @@ export default function StepActions({
         <button
           onClick={() => onDoItForMe(actionConfig)}
           disabled={isExecutingDoItForMe}
-          className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
+          className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.20)] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
         >
           {isExecutingDoItForMe ? (
             <>
@@ -60,7 +60,7 @@ export default function StepActions({
         {hasPrev && (
           <button
             onClick={onPrev}
-            className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 active:scale-[0.98] transition-all cursor-pointer bg-transparent"
+            className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 active:scale-[0.98] transition-all cursor-pointer bg-transparent"
           >
             Précédent
           </button>
@@ -68,7 +68,7 @@ export default function StepActions({
         
         <button
           onClick={onNext}
-          className="flex-3 py-2 px-4 rounded-lg bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.98] transition-all text-xs font-bold text-white dark:text-zinc-900 cursor-pointer border-none flex items-center justify-center gap-1.5"
+          className="flex-3 py-2 px-4 rounded-lg bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.98] transition-all text-xs font-semibold text-white dark:text-zinc-900 cursor-pointer border-none flex items-center justify-center gap-1.5"
         >
           {isLast ? 'Passer au Quiz' : 'Valider & Suivre'}
           <Icons.ChevronRight size={14} />
@@ -79,7 +79,7 @@ export default function StepActions({
       <div className="flex gap-2 w-full">
         <button
           onClick={onBlocked}
-          className="flex-1 py-2 px-3 rounded-lg border border-dashed border-red-250 dark:border-red-900/60 hover:bg-red-500/5 text-xs font-bold text-red-500 hover:text-red-650 dark:hover:text-red-400 active:scale-[0.98] transition-all cursor-pointer bg-transparent"
+          className="flex-1 py-2 px-3 rounded-lg border border-dashed border-red-250 dark:border-red-900/60 hover:bg-red-500/5 text-xs font-semibold text-red-500 hover:text-red-650 dark:hover:text-red-400 active:scale-[0.98] transition-all cursor-pointer bg-transparent"
         >
           J'ai une erreur / Bloqué
         </button>
@@ -87,7 +87,7 @@ export default function StepActions({
         {onAskCopilot && (
           <button
             onClick={onAskCopilot}
-            className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 active:scale-[0.98] transition-all cursor-pointer bg-transparent flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-900 active:scale-[0.98] transition-all cursor-pointer bg-transparent flex items-center justify-center gap-1.5"
           >
             <Icons.MessageSquare size={13} className="text-zinc-500" />
             Demander à l'IA
