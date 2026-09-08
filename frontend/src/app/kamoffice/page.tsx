@@ -2229,7 +2229,7 @@ export default function KamOfficePage() {
                 </select>
 
                 <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] leading-relaxed">
-                  L'affectation délègue l'accès complet au dossier CRM, au brief pré-visite et à l'élaboration du jumeau numérique dans l'espace de ce KAM.
+                  L'affectation délègue l'accès complet au dossier client, au brief pré-visite et à la cartographie d'architecture cible dans l'espace de ce KAM.
                 </div>
               </div>
 

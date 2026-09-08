@@ -276,7 +276,7 @@ class Command(BaseCommand):
             ClientConversationMessage.objects.create(
                 conversation=conv,
                 sender=ClientConversationMessage.AI,
-                content=f"Bonjour ! J'ai bien enregistré les besoins de {client['company_name']}. Votre dossier jumeau numérique a été transmis au KAM pour raccordement."
+                content=f"Bonjour ! J'ai bien enregistré les besoins de {client['company_name']}. Votre dossier technique a été transmis au KAM pour raccordement."
             )
 
             dossier = ProspectDossier.objects.create(

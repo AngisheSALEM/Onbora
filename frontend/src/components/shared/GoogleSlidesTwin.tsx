@@ -647,7 +647,7 @@ export default function GoogleSlidesTwin({
                     </h3>
                   </div>
                   <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-normal">
-                    Collez l'URL de votre document Google Slides existant pour synchroniser et mettre à jour le jumeau numérique avec l'IA d'Onbora.
+                    Collez l'URL de votre document Google Slides existant pour synchroniser et mettre à jour le dossier d'architecture technique avec l'IA d'Onbora.
                   </p>
 
                   {isImporting ? (

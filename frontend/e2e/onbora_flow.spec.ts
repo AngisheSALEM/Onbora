@@ -26,7 +26,7 @@ test.describe('Onbora End-to-End Key Scenarios', () => {
     await expect(page.locator('div.glass-card')).toContainText('clinique');
 
     // 6. Verify that once qualified, the Business Twin mini-preview appears
-    const twinPreview = page.locator('text=Jumeau Numérique');
+    const twinPreview = page.locator('text=Business Twin');
     await expect(twinPreview).toBeVisible({ timeout: 15000 });
   });
 

@@ -1049,7 +1049,7 @@ export default function ClientDiscoveryPage() {
     return allRecs;
   };
 
-  // Toggle Jumeau Numérique slide collapsible panels
+  // Toggle Business Twin slide collapsible panels
   const toggleSlide = (slide: string) => {
     setExpandedSlides(prev => 
       prev.includes(slide) ? prev.filter(s => s !== slide) : [...prev, slide]
