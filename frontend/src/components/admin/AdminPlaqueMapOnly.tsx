@@ -32,49 +32,79 @@ export default function AdminPlaqueMapOnly({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [activePlaque, setActivePlaque] = useState<PlaqueItem | null>(null);
+  const [webglError, setWebglError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapRef.current) return;
+
+    // Check WebGL2
+    const checkWebGL2 = (): boolean => {
+      if (typeof window === 'undefined') return false;
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGL2RenderingContext && (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2')));
+      } catch {
+        return false;
+      }
+    };
+
+    if (!checkWebGL2()) {
+      setWebglError("Accélération graphique WebGL2 indisponible.");
+      return;
+    }
 
     const isDarkMode = document.documentElement.classList.contains('dark');
     const tileUrl = isDarkMode
       ? 'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'base-tiles': {
-            type: 'raster',
-            tiles: [tileUrl],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: mapContainerRef.current,
+        style: {
+          version: 8,
+          sources: {
+            'base-tiles': {
+              type: 'raster',
+              tiles: [tileUrl],
+              tileSize: 256,
+              attribution: '&copy; OpenStreetMap &copy; CARTO',
+            },
           },
+          layers: [
+            {
+              id: 'base-layer',
+              type: 'raster',
+              source: 'base-tiles',
+              minzoom: 0,
+              maxzoom: 19,
+            },
+          ],
         },
-        layers: [
-          {
-            id: 'base-layer',
-            type: 'raster',
-            source: 'base-tiles',
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
-      },
-      center: [15.3136, -4.3276], // Kinshasa centre
-      zoom: 11.5,
-    });
+        center: [15.3136, -4.3276], // Kinshasa centre
+        zoom: 11.5,
+      });
+    } catch (err: any) {
+      console.warn("MapLibre WebGL2 initialization failed:", err);
+      setWebglError(err?.message || "Erreur WebGL2");
+      return;
+    }
 
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current = [];
-      map.remove();
-      mapRef.current = null;
+      try {
+        markersRef.current.forEach((m) => m.remove());
+        markersRef.current = [];
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+      } catch (err) {
+        console.warn("Cleanup error:", err);
+      }
     };
   }, []);
 
@@ -117,6 +147,48 @@ export default function AdminPlaqueMapOnly({
       setActivePlaque(plaques[0]);
     }
   }, [plaques, onSelectPlaque]);
+
+  if (webglError) {
+    return (
+      <div className="flex flex-col gap-4 p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5">
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#4F6CE8]/10 border border-[#4F6CE8]/20">
+          <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/20 text-[#4F6CE8] flex items-center justify-center shrink-0">
+            <span className="font-bold text-xs">3D</span>
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
+              Affichage cartographique désactivé (WebGL2 requis)
+            </h4>
+            <p className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
+              Activez l'accélération graphique matérielle dans les paramètres de votre navigateur pour visualiser la carte interactive.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto">
+          {plaques.map((plaque) => (
+            <div
+              key={plaque.id}
+              onClick={() => {
+                setActivePlaque(plaque);
+                if (onSelectPlaque) onSelectPlaque(plaque.code);
+              }}
+              className="p-3.5 rounded-2xl bg-white dark:bg-[#242124] border border-black/5 dark:border-white/5 hover:border-[#4F6CE8]/40 transition-all cursor-pointer flex flex-col justify-between gap-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-[#4F6CE8]">{plaque.code}</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400">
+                  {plaque.enterprises_count} ent.
+                </span>
+              </div>
+              <h5 className="text-xs font-bold text-zinc-900 dark:text-white">{plaque.name}</h5>
+              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{plaque.city}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-[620px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#ECEAE5] dark:bg-[#242124]">

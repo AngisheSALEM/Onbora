@@ -70,42 +70,67 @@ export default function SupervisorTerritoryMap({
   const [newPlaqueSalespersonIds, setNewPlaqueSalespersonIds] = useState<number[]>([]);
   const [isSavingPlaque, setIsSavingPlaque] = useState(false);
   const [savePlaqueError, setSavePlaqueError] = useState('');
+  const [webglError, setWebglError] = useState<string | null>(null);
+  const [filterQuery, setFilterQuery] = useState('');
 
-  // 1. Initialize MapLibre
+  // 1. Initialize MapLibre with WebGL2 safety check
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapRef.current) return;
+
+    // Verify WebGL2 support before MapLibre instantiates to prevent uncaught GPUInitializationError
+    const checkWebGL2 = (): boolean => {
+      if (typeof window === 'undefined') return false;
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGL2RenderingContext && (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2')));
+      } catch {
+        return false;
+      }
+    };
+
+    if (!checkWebGL2()) {
+      setWebglError("Accélération graphique WebGL2 indisponible dans ce navigateur.");
+      return;
+    }
 
     const isDark = document.documentElement.classList.contains('dark');
     const tileUrl = isDark
       ? 'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'base-tiles': {
-            type: 'raster',
-            tiles: [tileUrl],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: mapContainerRef.current,
+        style: {
+          version: 8,
+          sources: {
+            'base-tiles': {
+              type: 'raster',
+              tiles: [tileUrl],
+              tileSize: 256,
+              attribution: '&copy; OpenStreetMap &copy; CARTO',
+            },
           },
+          layers: [
+            {
+              id: 'base-layer',
+              type: 'raster',
+              source: 'base-tiles',
+              minzoom: 0,
+              maxzoom: 19,
+            },
+          ],
         },
-        layers: [
-          {
-            id: 'base-layer',
-            type: 'raster',
-            source: 'base-tiles',
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
-      },
-      center: [15.3136, -4.3276], // Kinshasa
-      zoom: 12,
-    });
+        center: [15.3136, -4.3276], // Kinshasa
+        zoom: 12,
+      });
+    } catch (err: any) {
+      console.warn("MapLibre WebGL2 initialization failed:", err);
+      setWebglError(err?.message || "Erreur d'initialisation de la carte WebGL2.");
+      return;
+    }
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 
@@ -177,10 +202,16 @@ export default function SupervisorTerritoryMap({
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current = [];
-      map.remove();
-      mapRef.current = null;
+      try {
+        markersRef.current.forEach((m) => m.remove());
+        markersRef.current = [];
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+      } catch (err) {
+        console.warn("Error cleaning up map:", err);
+      }
     };
   }, []);
 
@@ -370,6 +401,210 @@ export default function SupervisorTerritoryMap({
       setIsSavingAssign(false);
     }
   };
+
+  // Fallback view when WebGL2 is not available in user's browser/environment
+  if (webglError) {
+    const filteredPlaques = plaques.filter((p) => {
+      const q = filterQuery.toLowerCase();
+      return (
+        p.code.toLowerCase().includes(q) ||
+        p.name.toLowerCase().includes(q) ||
+        p.city.toLowerCase().includes(q)
+      );
+    });
+
+    return (
+      <div className="flex flex-col gap-4 p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5">
+        {/* Banner Alert WebGL2 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#4F6CE8]/10 border border-[#4F6CE8]/20">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#4F6CE8]/20 text-[#4F6CE8] flex items-center justify-center shrink-0 mt-0.5">
+              <Icons.AlertTriangle size={18} />
+            </div>
+            <div className="flex flex-col">
+              <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
+                Affichage cartographique vectoriel désactivé (WebGL2 requis)
+              </h4>
+              <p className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
+                Votre navigateur n'a pas accès à l'accélération graphique WebGL2. Vous pouvez continuer à gérer et affecter vos plaques ci-dessous.
+              </p>
+              <p className="text-[10px] text-[#4F6CE8] font-medium mt-1">
+                Pour réactiver la carte : accédez à chrome://settings/system (ou edge://settings/system) et activez « Utiliser l'accélération matérielle ».
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative">
+              <Icons.Search size={14} className="absolute left-3 top-2.5 text-[#6E6C67] dark:text-[#A1A1AA]" />
+              <input
+                type="text"
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                placeholder="Filtrer une plaque..."
+                className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-[#242124] border border-black/10 dark:border-white/10 text-zinc-900 dark:text-white outline-none w-44"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Plaques List Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[480px] overflow-y-auto pr-1">
+          {filteredPlaques.map((plaque) => {
+            const isSelected = selectedPlaque?.id === plaque.id;
+            return (
+              <div
+                key={plaque.id}
+                onClick={() => {
+                  setSelectedPlaque(plaque);
+                  setAssigningSalespersonIds(plaque.assigned_salespersons || []);
+                }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                  isSelected
+                    ? 'bg-[#4F6CE8]/5 border-[#4F6CE8] ring-1 ring-[#4F6CE8]'
+                    : 'bg-white dark:bg-[#242124] border-black/5 dark:border-white/5 hover:border-[#4F6CE8]/40'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col">
+                    <span className="font-mono text-xs font-bold text-[#4F6CE8]">
+                      {plaque.code}
+                    </span>
+                    <h5 className="text-xs font-bold text-zinc-900 dark:text-white mt-0.5">
+                      {plaque.name}
+                    </h5>
+                    <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                      {plaque.city}
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300">
+                    {plaque.enterprises_count} entreprises
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1 pt-2 border-t border-black/5 dark:border-white/5">
+                  <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
+                    Commerciaux affectés :
+                  </span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {plaque.assigned_salespersons_names && plaque.assigned_salespersons_names.length > 0 ? (
+                      plaque.assigned_salespersons_names.map((name, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#4F6CE8]/10 text-[#4F6CE8]"
+                        >
+                          {name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[10px] italic text-zinc-400">
+                        Aucun commercial affecté
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPlaque(plaque);
+                      setAssigningSalespersonIds(plaque.assigned_salespersons || []);
+                    }}
+                    className="flex-1 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-[#4F6CE8] hover:text-white text-zinc-700 dark:text-zinc-200 text-[11px] font-semibold transition-colors text-center"
+                  >
+                    Affecter commerciaux
+                  </button>
+                  {onOpenPlaqueDetail && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenPlaqueDetail(plaque);
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-200 text-[11px] font-medium transition-colors"
+                      title="Ouvrir le détail complet"
+                    >
+                      <Icons.ExternalLink size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Popover / Panel d'affectation pour la plaque sélectionnée */}
+        {selectedPlaque && (
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#242124] border border-[#4F6CE8]/30 flex flex-col gap-3 animate-fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#4F6CE8]">{selectedPlaque.code}</span>
+                <span className="text-xs font-bold text-zinc-900 dark:text-white">— Affectation des commerciaux</span>
+              </div>
+              <button
+                onClick={() => setSelectedPlaque(null)}
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-white cursor-pointer"
+              >
+                <Icons.X size={14} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+              {salespersons.map((sp) => {
+                const isAssigned = assigningSalespersonIds.includes(sp.id);
+                return (
+                  <label
+                    key={sp.id}
+                    className={`flex items-center gap-2 p-2 rounded-xl text-xs cursor-pointer border transition-colors ${
+                      isAssigned
+                        ? 'bg-[#4F6CE8]/10 border-[#4F6CE8] text-[#4F6CE8] font-bold'
+                        : 'bg-black/2 dark:bg-white/2 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isAssigned}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setAssigningSalespersonIds((prev) => [...prev, sp.id]);
+                        } else {
+                          setAssigningSalespersonIds((prev) => prev.filter((id) => id !== sp.id));
+                        }
+                      }}
+                      className="accent-[#4F6CE8]"
+                    />
+                    <span className="truncate">{sp.full_name}</span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+              {assignSuccessMsg && (
+                <span className="text-xs font-semibold text-[#10B981] mr-auto">
+                  {assignSuccessMsg}
+                </span>
+              )}
+              <button
+                onClick={() => setSelectedPlaque(null)}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={handleSaveDirectAssignment}
+                disabled={isSavingAssign}
+                className="px-4 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-bold transition-all disabled:opacity-50"
+              >
+                {isSavingAssign ? 'Sauvegarde...' : 'Enregistrer les affectations'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-[650px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#242124]">
