@@ -52,6 +52,11 @@ onbora_poubelle/
 *.mp4
 frontend/*.png
 frontend/capture_signals.js
-memojis/
+/memojis/
 onbora interface probleme/
+
+# Allow frontend public assets
+!frontend/public/memojis/
+!frontend/public/memojis/**
+
 
