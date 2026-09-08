@@ -8,9 +8,13 @@ import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
 import CopilotChatView from '@/components/shared/CopilotChatView';
+import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
+import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
 
 export type KamOfficeView =
   | 'overview'
+  | 'leadscoring'
+  | 'churnradar'
   | 'kams'
   | 'grands_comptes'
   | 'pme'
@@ -654,6 +658,18 @@ export default function KamOfficePage() {
       badge: metrics ? metrics.total_accounts : undefined,
     },
     {
+      id: 'leadscoring' as KamOfficeView,
+      label: "Pipeline & Scoring B2B",
+      icon: Icons.Award,
+      badge: "Priorités",
+    },
+    {
+      id: 'churnradar' as KamOfficeView,
+      label: "Radar Churn & Alertes",
+      icon: Icons.AlertTriangle,
+      badge: undefined,
+    },
+    {
       id: 'kams' as KamOfficeView,
       label: "Équipe KAM & Effectifs",
       icon: Icons.Users,
@@ -848,11 +864,14 @@ export default function KamOfficePage() {
             <div className="flex flex-col">
               <h2 className="text-xl font-550 text-[#242124] dark:text-white tracking-tight">
                 {activeView === 'overview' && "Portefeuille Stratégique & KPIs"}
+                {activeView === 'leadscoring' && "Scoring B2B & Priorisation IA"}
+                {activeView === 'churnradar' && "Radar Churn & Opportunités d'Upsell"}
                 {activeView === 'kams' && (selectedKamDetail ? `Fiche KAM — ${selectedKamDetail.full_name}` : "Équipe Key Account Managers & Pôles")}
                 {activeView === 'grands_comptes' && "Répertoire Grands Comptes (> 1M$)"}
                 {activeView === 'pme' && "Répertoire PME Stratégiques (100k$ - 1M$)"}
                 {activeView === 'directives' && "Directives Stratégiques & Assignations"}
                 {activeView === 'settings' && "Paramètres & Base de Connaissances"}
+                {activeView === 'copilot' && "Copilote Stratégique IA"}
               </h2>
             </div>
 
@@ -1160,6 +1179,20 @@ export default function KamOfficePage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* ========================================================================= */}
+            {/* VUE 1.1 : SCORING B2B & PRIORISATION IA                                  */}
+            {/* ========================================================================= */}
+            {activeView === 'leadscoring' && (
+              <KamLeadScoringView />
+            )}
+
+            {/* ========================================================================= */}
+            {/* VUE 1.2 : RADAR CHURN & OPPORTUNITÉS UPSELL                               */}
+            {/* ========================================================================= */}
+            {activeView === 'churnradar' && (
+              <KamChurnRadarView />
             )}
 
             {/* ========================================================================= */}

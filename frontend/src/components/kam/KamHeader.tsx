@@ -20,6 +20,12 @@ export default function KamHeader({
 }: KamHeaderProps) {
   const getTitle = () => {
     switch (activeView) {
+      case 'precall':
+        return 'Pre-Call Intelligence — Préparation Stratégique';
+      case 'leadscoring':
+        return 'Pipeline & Lead Scoring B2B';
+      case 'churnradar':
+        return 'Radar Churn & Opportunités d\'Upsell';
       case 'accounts':
         return ''; // Retiré car le grand titre est affiché dans le corps de page
       case 'briefing':

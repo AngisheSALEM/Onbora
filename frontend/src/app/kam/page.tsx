@@ -13,6 +13,9 @@ import KamVisitsHistoryView from '@/components/kam/KamVisitsHistoryView';
 import KamSignalsView from '@/components/kam/KamSignalsView';
 import KamDirectivesView from '@/components/kam/KamDirectivesView';
 import KamSettingsView from '@/components/kam/KamSettingsView';
+import KamPreCallView from '@/components/kam/KamPreCallView';
+import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
+import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
 import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
 import CopilotChatView from '@/components/shared/CopilotChatView';
 import { StrategicVisit } from '@/components/kam/kamTypes';
@@ -22,7 +25,7 @@ export default function KamCommandCenterPage() {
   const { user } = useAuth();
   const [visits, setVisits] = useState<StrategicVisit[]>([]);
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
-  const [activeView, setActiveView] = useState<KamView>('accounts');
+  const [activeView, setActiveView] = useState<KamView>('precall');
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadDirectivesCount, setUnreadDirectivesCount] = useState(0);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
@@ -160,6 +163,30 @@ export default function KamCommandCenterPage() {
                     onOpenCreateAccount={() => setIsCreateAccountOpen(true)}
                   />
                 )
+              )}
+
+              {activeView === 'precall' && (
+                <KamPreCallView
+                  assignedAccounts={visits}
+                  initialAccountId={selectedVisitId}
+                  onLaunchMeetingForAccount={(accId) => {
+                    setSelectedVisitId(String(accId));
+                    setActiveView('agenda');
+                  }}
+                />
+              )}
+
+              {activeView === 'leadscoring' && (
+                <KamLeadScoringView
+                  onOpenPreCallForLead={(accId) => {
+                    setSelectedVisitId(String(accId));
+                    setActiveView('precall');
+                  }}
+                />
+              )}
+
+              {activeView === 'churnradar' && (
+                <KamChurnRadarView />
               )}
 
               {activeView === 'briefing' && selectedVisit && (

@@ -160,6 +160,17 @@ class KamVisitReport(models.Model):
     follow_up_email_draft = models.TextField(blank=True, default='')
     bant_scores = models.JSONField(default=dict, blank=True)
     conversion_status = models.CharField(max_length=30, default='IN_NEGOTIATION')
+    crm_sync_status = models.CharField(
+        max_length=30,
+        choices=[
+            ('PENDING', 'En attente'),
+            ('SYNCED_DYNAMICS', 'Synchronisé Dynamics 365'),
+            ('FAILED', 'Erreur de synchronisation'),
+        ],
+        default='PENDING'
+    )
+    crm_payload = models.JSONField(default=dict, blank=True)
+    synced_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -167,3 +178,31 @@ class KamVisitReport(models.Model):
 
     def __str__(self):
         return f"Rapport KAM: {self.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
+
+
+class PreCallBriefing(models.Model):
+    kam = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='pre_call_briefings'
+    )
+    enterprise = models.ForeignKey(
+        'sales.Enterprise',
+        on_delete=models.CASCADE,
+        related_name='pre_call_briefings'
+    )
+    company_overview = models.JSONField(default=dict, blank=True)
+    key_decision_makers = models.JSONField(default=list, blank=True)
+    detected_business_challenges = models.JSONField(default=list, blank=True)
+    custom_pitch_angles = models.JSONField(default=list, blank=True)
+    critical_discovery_questions = models.JSONField(default=list, blank=True)
+    golden_rules = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Briefing Pre-Call: {self.enterprise.name} ({self.kam.username})"
+

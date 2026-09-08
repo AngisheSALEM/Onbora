@@ -5,7 +5,7 @@ import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 
-export type KamView = 'accounts' | 'briefing' | 'agenda' | 'visits' | 'directives' | 'copilot' | 'signals' | 'settings';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'directives' | 'copilot' | 'signals' | 'settings' | 'briefing';
 
 interface KamSidebarProps {
   activeView: KamView;
@@ -27,6 +27,30 @@ export default function KamSidebar({
 
   const navItems = [
     {
+      id: 'precall' as KamView,
+      label: 'Pre-Call Intelligence',
+      icon: Icons.Sparkles,
+      badge: '2 min'
+    },
+    {
+      id: 'visits' as KamView,
+      label: 'Post-Call & Visites',
+      icon: Icons.FileText,
+      badge: null
+    },
+    {
+      id: 'leadscoring' as KamView,
+      label: 'Lead Scoring & Pipeline',
+      icon: Icons.Award,
+      badge: 'B2B'
+    },
+    {
+      id: 'churnradar' as KamView,
+      label: 'Radar Churn & Upsell',
+      icon: Icons.AlertTriangle,
+      badge: null
+    },
+    {
       id: 'accounts' as KamView,
       label: 'Mes Comptes Clés',
       icon: Icons.Building,
@@ -39,32 +63,20 @@ export default function KamSidebar({
       badge: null
     },
     {
-      id: 'visits' as KamView,
-      label: 'Historique des Visites',
-      icon: Icons.FileText,
-      badge: null
-    },
-    {
-      id: 'directives' as KamView,
-      label: 'Directives & Messages',
-      icon: Icons.MessageSquare,
-      badge: unreadDirectivesCount > 0 ? `${unreadDirectivesCount}` : null
-    },
-    {
       id: 'copilot' as KamView,
       label: 'Copilote IA',
       icon: Icons.Bot,
       badge: 'Codex'
     },
     {
-      id: 'signals' as KamView,
-      label: 'Notes & Ingestion',
-      icon: Icons.FileEdit,
-      badge: unreadSignalsCount > 0 ? `${unreadSignalsCount}` : null
+      id: 'directives' as KamView,
+      label: 'Directives',
+      icon: Icons.MessageSquare,
+      badge: unreadDirectivesCount > 0 ? `${unreadDirectivesCount}` : null
     },
     {
       id: 'settings' as KamView,
-      label: 'Paramètres & FAQ',
+      label: 'Paramètres',
       icon: Icons.Settings,
       badge: null
     }

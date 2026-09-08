@@ -7,8 +7,28 @@ from .views import (
     KamAppointmentListCreateView, KamAppointmentDetailView, KamCompleteVocalMeetingView,
     KamVisitHistoryListView, KamVisitReportDetailView
 )
+from .commercial_intelligence_views import (
+    PreCallBriefingDetailView, PreCallBriefingListView,
+    PostCallExecutionDetailView, PostCallSyncCrmView,
+    LeadScoringListView, ChurnRadarView
+)
 
 urlpatterns = [
+    # 1. Pre-Call Intelligence (Briefing pré-RDV en 2 minutes)
+    path('pre-call/<int:account_id>/', PreCallBriefingDetailView.as_view(), name='kam-pre-call-detail'),
+    path('pre-call/list/', PreCallBriefingListView.as_view(), name='kam-pre-call-list'),
+
+    # 2. Post-Call Execution (Email prêt à envoyer & Synchronisation CRM Dynamics)
+    path('post-call/<int:report_id>/', PostCallExecutionDetailView.as_view(), name='kam-post-call-detail'),
+    path('visits/<int:report_id>/sync-crm/', PostCallSyncCrmView.as_view(), name='kam-visit-sync-crm'),
+
+    # 3. Lead Scoring B2B (Priorisation du pipeline)
+    path('lead-scoring/', LeadScoringListView.as_view(), name='kam-lead-scoring'),
+
+    # 4. Radar Churn & Upsell (Détection proactive)
+    path('churn-radar/', ChurnRadarView.as_view(), name='kam-churn-radar'),
+
+    # Comptes & Visites existantes
     path('accounts/', KamStrategicAccountListView.as_view(), name='kam-accounts-list'),
     path('accounts/<int:account_id>/debrief/', KamAccountDebriefView.as_view(), name='kam-account-debrief'),
     path('accounts/<int:account_id>/update-info/', KamAccountUpdateInfoView.as_view(), name='kam-account-update-info'),
@@ -30,4 +50,5 @@ urlpatterns = [
     path('dossiers/<int:pk>/provision/', DossierProvisionView.as_view(), name='dossier-provision'),
     path('dossiers/<int:pk>/handover-pack/', DossierHandoverPackView.as_view(), name='dossier-handover-pack'),
 ]
+
 

@@ -69,6 +69,24 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
     loadVisits();
   }, [loadVisits]);
 
+  const [syncingCrm, setSyncingCrm] = useState(false);
+  const [syncCrmMessage, setSyncCrmMessage] = useState<string | null>(null);
+
+  const handleSyncDynamics = async (reportId: number) => {
+    setSyncingCrm(true);
+    setSyncCrmMessage(null);
+    try {
+      const res = await fetchAPI(`/api/kam/visits/${reportId}/sync-crm/`, { method: 'POST' });
+      setSyncCrmMessage(res.detail || "Synchronisé avec Microsoft Dynamics 365");
+      setTimeout(() => setSyncCrmMessage(null), 4000);
+      loadVisits();
+    } catch {
+      setSyncCrmMessage("Erreur lors de la synchronisation CRM.");
+    } finally {
+      setSyncingCrm(false);
+    }
+  };
+
   const copyEmailToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedEmail(true);
@@ -625,16 +643,35 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
             </div>
 
             {/* Modal Bottom Footer */}
-            <div className="p-4 px-6 border-t border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-center justify-between shrink-0">
-              <span className="text-[11px] text-zinc-500 font-mono">
-                Statut actuel en CRM : <strong className="text-zinc-800 dark:text-zinc-200">{selectedReport.conversion_status}</strong>
-              </span>
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="px-5 py-2 bg-zinc-800 dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-              >
-                Fermer
-              </button>
+            <div className="p-4 px-6 border-t border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleSyncDynamics(selectedReport.id)}
+                  disabled={syncingCrm}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-none"
+                >
+                  <Icons.RefreshCw size={13} className={syncingCrm ? "animate-spin" : ""} />
+                  <span>{syncingCrm ? "Synchronisation en cours..." : "Pousser vers Microsoft Dynamics 365"}</span>
+                </button>
+                {syncCrmMessage && (
+                  <span className="text-xs font-semibold text-[#10B981] flex items-center gap-1">
+                    <Icons.Check size={14} />
+                    {syncCrmMessage}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] text-zinc-500 font-mono hidden md:inline">
+                  Statut : <strong className="text-zinc-800 dark:text-zinc-200">{selectedReport.conversion_status}</strong>
+                </span>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="px-5 py-2 bg-zinc-800 dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
 
           </div>
