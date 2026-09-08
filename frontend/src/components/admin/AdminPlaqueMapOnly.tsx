@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import * as maplibregl from 'maplibre-gl';
+import type L from 'leaflet';
 import { Icons } from '@/components/shared/Icons';
 
 interface PlaqueItem {
@@ -29,118 +29,131 @@ export default function AdminPlaqueMapOnly({
   onSelectPlaque,
 }: AdminPlaqueMapOnlyProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
+  const mapRef = useRef<L.Map | null>(null);
+  const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
+  const markersLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const [activePlaque, setActivePlaque] = useState<PlaqueItem | null>(null);
-  const [webglError, setWebglError] = useState<string | null>(null);
 
+  // 1. Initialize Leaflet Map (0 WebGL dependency, works on all environments)
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapRef.current) return;
 
-    // Check WebGL2
-    const checkWebGL2 = (): boolean => {
-      if (typeof window === 'undefined') return false;
+    let isMounted = true;
+
+    const initMap = async () => {
       try {
-        const canvas = document.createElement('canvas');
-        return !!(window.WebGL2RenderingContext && (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2')));
-      } catch {
-        return false;
+        const L = (await import('leaflet')).default;
+        if (!isMounted || !mapContainerRef.current) return;
+        leafletModuleRef.current = L as any;
+
+        // Clean up default icon paths
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: '',
+          iconUrl: '',
+          shadowUrl: '',
+        });
+
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const tileUrl = isDarkMode
+          ? 'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
+          : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+        const map = L.map(mapContainerRef.current, {
+          center: [-4.3276, 15.3136], // Kinshasa [lat, lng]
+          zoom: 11.5,
+          zoomControl: false,
+          attributionControl: false,
+        });
+
+        L.tileLayer(tileUrl, {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap &copy; CARTO',
+        }).addTo(map);
+
+        const markersGroup = L.layerGroup().addTo(map);
+        markersLayerGroupRef.current = markersGroup;
+
+        mapRef.current = map;
+
+        setTimeout(() => {
+          if (isMounted && map) {
+            map.invalidateSize();
+          }
+        }, 200);
+      } catch (err) {
+        console.error("Leaflet admin map initialization failed:", err);
       }
     };
 
-    if (!checkWebGL2()) {
-      setWebglError("Accélération graphique WebGL2 indisponible.");
-      return;
-    }
-
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    const tileUrl = isDarkMode
-      ? 'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
-      : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-    let map: maplibregl.Map;
-    try {
-      map = new maplibregl.Map({
-        container: mapContainerRef.current,
-        style: {
-          version: 8,
-          sources: {
-            'base-tiles': {
-              type: 'raster',
-              tiles: [tileUrl],
-              tileSize: 256,
-              attribution: '&copy; OpenStreetMap &copy; CARTO',
-            },
-          },
-          layers: [
-            {
-              id: 'base-layer',
-              type: 'raster',
-              source: 'base-tiles',
-              minzoom: 0,
-              maxzoom: 19,
-            },
-          ],
-        },
-        center: [15.3136, -4.3276], // Kinshasa centre
-        zoom: 11.5,
-      });
-    } catch (err: any) {
-      console.warn("MapLibre WebGL2 initialization failed:", err);
-      setWebglError(err?.message || "Erreur WebGL2");
-      return;
-    }
-
-    mapRef.current = map;
+    initMap();
 
     return () => {
-      try {
-        markersRef.current.forEach((m) => m.remove());
-        markersRef.current = [];
-        if (mapRef.current) {
-          mapRef.current.remove();
-          mapRef.current = null;
-        }
-      } catch (err) {
-        console.warn("Cleanup error:", err);
+      isMounted = false;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
       }
     };
   }, []);
 
-  // Update Markers & GeoJSON layers when plaques change
+  // 2. Update Markers & GeoJSON layers when plaques change
   useEffect(() => {
+    const L = leafletModuleRef.current;
+    const markersGroup = markersLayerGroupRef.current;
     const map = mapRef.current;
-    if (!map) return;
+    if (!L || !markersGroup || !map) return;
 
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
+    markersGroup.clearLayers();
 
     plaques.forEach((p) => {
       const lat = p.latitude ?? -4.3276;
       const lng = p.longitude ?? 15.3136;
 
-      const el = document.createElement('div');
-      el.className = 'cursor-pointer group flex flex-col items-center';
-      el.innerHTML = `
-        <div class="px-2.5 py-1 rounded-xl bg-[#4F6CE8] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
-          <span>${p.code}</span>
-        </div>
-        <div class="w-1.5 h-1.5 bg-[#4F6CE8] rounded-full mt-0.5"></div>
-      `;
+      // Optional GeoJSON boundary
+      if (p.boundary_geojson) {
+        try {
+          const geoJsonLayer = L.geoJSON(p.boundary_geojson, {
+            style: {
+              color: '#4F6CE8',
+              weight: 2,
+              fillColor: '#4F6CE8',
+              fillOpacity: 0.15,
+            },
+          });
+          geoJsonLayer.on('click', () => {
+            setActivePlaque(p);
+            if (onSelectPlaque) onSelectPlaque(p.code);
+            map.flyTo([lat, lng], 13.5);
+          });
+          geoJsonLayer.addTo(markersGroup);
+        } catch (e) {
+          // ignore malformed geojson
+        }
+      }
 
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setActivePlaque(p);
-        if (onSelectPlaque) onSelectPlaque(p.code);
-        map.flyTo({ center: [lng, lat], zoom: 13.5, essential: true });
+      // Marker
+      const icon = L.divIcon({
+        className: 'custom-admin-marker',
+        html: `
+          <div class="cursor-pointer group flex flex-col items-center select-none" style="transform: translate(-50%, -50%);">
+            <div class="px-2.5 py-1 rounded-xl bg-[#4F6CE8] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
+              <span>${p.code}</span>
+            </div>
+            <div class="w-1.5 h-1.5 bg-[#4F6CE8] rounded-full mt-0.5"></div>
+          </div>
+        `,
+        iconSize: [0, 0],
       });
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([lng, lat])
-        .addTo(map);
-
-      markersRef.current.push(marker);
+      const marker = L.marker([lat, lng], { icon });
+      marker.on('click', () => {
+        setActivePlaque(p);
+        if (onSelectPlaque) onSelectPlaque(p.code);
+        map.flyTo([lat, lng], 13.5);
+      });
+      marker.addTo(markersGroup);
     });
 
     if (plaques.length > 0 && plaques[0].latitude && plaques[0].longitude) {
@@ -148,52 +161,10 @@ export default function AdminPlaqueMapOnly({
     }
   }, [plaques, onSelectPlaque]);
 
-  if (webglError) {
-    return (
-      <div className="flex flex-col gap-4 p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5">
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#4F6CE8]/10 border border-[#4F6CE8]/20">
-          <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/20 text-[#4F6CE8] flex items-center justify-center shrink-0">
-            <span className="font-bold text-xs">3D</span>
-          </div>
-          <div className="flex flex-col">
-            <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
-              Affichage cartographique désactivé (WebGL2 requis)
-            </h4>
-            <p className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-              Activez l'accélération graphique matérielle dans les paramètres de votre navigateur pour visualiser la carte interactive.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto">
-          {plaques.map((plaque) => (
-            <div
-              key={plaque.id}
-              onClick={() => {
-                setActivePlaque(plaque);
-                if (onSelectPlaque) onSelectPlaque(plaque.code);
-              }}
-              className="p-3.5 rounded-2xl bg-white dark:bg-[#242124] border border-black/5 dark:border-white/5 hover:border-[#4F6CE8]/40 transition-all cursor-pointer flex flex-col justify-between gap-2"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-[#4F6CE8]">{plaque.code}</span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400">
-                  {plaque.enterprises_count} ent.
-                </span>
-              </div>
-              <h5 className="text-xs font-bold text-zinc-900 dark:text-white">{plaque.name}</h5>
-              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{plaque.city}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full h-[620px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#ECEAE5] dark:bg-[#242124]">
       {/* Container de la carte */}
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Boutons de zoom et recentrage */}
       <div className="absolute top-4 right-4 flex flex-col gap-1.5 z-10">
@@ -215,7 +186,7 @@ export default function AdminPlaqueMapOnly({
         </button>
         <button
           type="button"
-          onClick={() => mapRef.current?.flyTo({ center: [15.3136, -4.3276], zoom: 11.5 })}
+          onClick={() => mapRef.current?.flyTo([-4.3276, 15.3136], 11.5)}
           className="w-9 h-9 rounded-xl bg-white/90 dark:bg-[#2D2A2D]/90 backdrop-blur-md text-[#242124] dark:text-white flex items-center justify-center text-xs shadow-sm hover:bg-white dark:hover:bg-[#363336] transition-all cursor-pointer border border-black/5 dark:border-white/5"
           title="Recentrer sur Kinshasa"
         >
