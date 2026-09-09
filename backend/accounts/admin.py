@@ -1,15 +1,35 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from django.contrib.auth.models import Group
+from .models import User, UserDevice
+
+# Désenregistrer la table Group par défaut de Django car Onbora utilise User.role
+try:
+    admin.site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass
+
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ['username', 'email', 'role', 'company_name', 'is_staff']
+    list_display = ['username', 'email', 'role', 'first_name', 'last_name', 'location', 'is_staff', 'is_active']
+    list_filter = ['role', 'is_staff', 'is_active', 'location']
+    search_fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'company_name']
+    ordering = ['username']
+
     fieldsets = UserAdmin.fieldsets + (
-        ('Informations Onbora', {'fields': ('role', 'phone', 'company_name')}),
+        ('Informations Métier Onbora', {'fields': ('role', 'phone', 'company_name', 'location', 'kam_specialization', 'is_available', 'avatar')}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Informations Onbora', {'fields': ('role', 'phone', 'company_name')}),
+        ('Informations Métier Onbora', {'fields': ('role', 'phone', 'company_name', 'location', 'kam_specialization', 'is_available', 'avatar')}),
     )
 
+
 admin.site.register(User, CustomUserAdmin)
+
+
+@admin.register(UserDevice)
+class UserDeviceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'device_type', 'device_name']
+    list_filter = ['device_type']
+    search_fields = ['user__username', 'device_name']
