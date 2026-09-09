@@ -26,24 +26,27 @@ class SegmentationConfigAdmin(admin.ModelAdmin):
 
 @admin.register(Enterprise)
 class EnterpriseAdmin(admin.ModelAdmin):
-    list_display = ['crm_id', 'name', 'segment', 'assigned_entity', 'assigned_kam', 'annual_revenue', 'city', 'plaque', 'conversion_status']
-    list_filter = ['segment', 'assigned_entity', 'conversion_status', 'city']
-    search_fields = ['crm_id', 'name', 'rccm', 'contact_name', 'city', 'sector']
-    list_per_page = 50
+    list_display = ['crm_id', 'name', 'segment', 'assigned_entity', 'assigned_kam', 'annual_revenue', 'city', 'conversion_status']
+    list_select_related = ['assigned_kam', 'plaque_rel']
+    list_filter = ['segment', 'assigned_entity', 'conversion_status']
+    search_fields = ['crm_id', 'name', 'rccm', 'contact_name', 'city']
+    list_per_page = 25
     ordering = ['crm_id']
 
 
 @admin.register(VisitFormSubmission)
 class VisitFormSubmissionAdmin(admin.ModelAdmin):
     list_display = ['id', 'enterprise', 'target_offer_name', 'salesperson', 'qualification_score', 'status', 'created_at']
+    list_select_related = ['enterprise', 'salesperson']
     list_filter = ['status', 'target_offer_name', 'salesperson']
     search_fields = ['enterprise__name', 'target_offer_name', 'ai_summary']
-    list_per_page = 50
+    list_per_page = 25
 
 
 @admin.register(VisitPreparation)
 class VisitPreparationAdmin(admin.ModelAdmin):
     list_display = ['id', 'enterprise', 'salesperson', 'meeting_objective', 'scheduled_date']
+    list_select_related = ['enterprise', 'salesperson']
     list_filter = ['salesperson']
     search_fields = ['enterprise__name']
 
@@ -51,6 +54,7 @@ class VisitPreparationAdmin(admin.ModelAdmin):
 @admin.register(VisitReport)
 class VisitReportAdmin(admin.ModelAdmin):
     list_display = ['id', 'preparation', 'created_at']
+    list_select_related = ['preparation', 'preparation__enterprise']
     search_fields = ['preparation__enterprise__name']
 
 

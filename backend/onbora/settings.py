@@ -114,6 +114,12 @@ if DATABASE_URL:
     elif clean_host and ('neon.tech' in clean_host or 'render.com' in clean_host):
         db_options['sslmode'] = 'require'
 
+    db_options['connect_timeout'] = 10
+    db_options['keepalives'] = 1
+    db_options['keepalives_idle'] = 30
+    db_options['keepalives_interval'] = 10
+    db_options['keepalives_count'] = 5
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -122,6 +128,8 @@ if DATABASE_URL:
             'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
             'HOST': clean_host,
             'PORT': parsed_db.port or 5432,
+            'CONN_MAX_AGE': 0,
+            'CONN_HEALTH_CHECKS': True,
             'OPTIONS': db_options,
         }
     }
