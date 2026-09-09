@@ -7,7 +7,10 @@ class ApiConfig {
   static String get baseUrl {
     try {
       if (dotenv.isInitialized) {
-        return dotenv.env['API_BASE_URL'] ?? defaultRenderUrl;
+        final envUrl = dotenv.env['API_BASE_URL'];
+        if (envUrl != null && envUrl.trim().isNotEmpty) {
+          return envUrl.trim();
+        }
       }
     } catch (_) {}
     return defaultRenderUrl;

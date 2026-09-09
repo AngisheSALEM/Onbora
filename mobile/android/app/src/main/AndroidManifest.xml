@@ -12,7 +12,8 @@
         android:label="Onbora"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        android:usesCleartextTraffic="true">
         
         <!-- Fix Vulkan gralloc4 stalls on MediaTek / Transsion devices by enabling stable rendering -->
         <meta-data

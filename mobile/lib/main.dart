@@ -19,7 +19,11 @@ import 'app/routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Info: .env file loading: $e");
+  }
   await initializeDateFormatting('fr_FR', null);
 
   // Enregistrement immédiat et permanent des contrôleurs de session essentiels
