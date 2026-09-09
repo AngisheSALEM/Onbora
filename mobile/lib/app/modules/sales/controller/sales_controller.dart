@@ -66,145 +66,47 @@ class SalesController extends GetxController {
   final RxString errorMessage = ''.obs;
   final RxString successMessage = ''.obs;
 
-  /// Default mock fallback enterprises
-  final List<EnterpriseModel> _allEnterprises = [
-    EnterpriseModel(
-      id: 1,
-      name: 'RAWBANK RDC',
-      sector: 'Banque & Finance',
-      approximateSize: '1000+ employés',
-      location: 'Kinshasa (Gombe)',
-      address: '3487 Boulevard du 30 Juin, Gombe',
-      website: 'https://www.rawbank.cd',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 96,
-      isConverted: true,
-      keyNeeds: [
-        'Fibre Optique Dédiée 200 Mbps (SLA 99.9%)',
-        'SD-WAN Multi-agences sécurisé',
-        'Cloud Hybride & Sauvegarde',
-      ],
-      aiBriefSummary:
-          'Compte converti : La banque étend ses agences et nécessite une liaison fibre redondante avec basculement automatique 4G/5G et chiffrement IPsec.',
-      customPitch:
-          'Proposer le pack Orange Business Connect Banque : Fibre Garantie 200M + Solution SD-WAN managée avec supervision 24/7.',
-      latitude: -4.3033,
-      longitude: 15.3084,
-    ),
-    EnterpriseModel(
-      id: 2,
-      name: 'Brasserie Simba (Brasimba)',
-      sector: 'Industrie & Agroalimentaire',
-      approximateSize: '500+ employés',
-      location: 'Lubumbashi (Centre)',
-      address: 'Avenue Ndjamena, Lubumbashi',
-      website: 'https://www.brasimba.com',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'LSH-CENTRE',
-      conversionScore: 94,
-      isConverted: true,
-      keyNeeds: [
-        'Interconnexion Usines & Dépôts MPLS 100M',
-        'Flotte Mobile B2B Forfaits Partagés',
-        'Solution Cybersécurité Endpoint',
-      ],
-      aiBriefSummary:
-          'Compte converti : Leader brassicole au Katanga avec 4 sites de production connectés au réseau national Orange.',
-      customPitch:
-          'Proposer l\'extension vers le cloud souverain Orange RDC et la redondance satellitaire pour les centres de distribution isolés.',
-      latitude: -11.6608,
-      longitude: 27.4794,
-    ),
-    EnterpriseModel(
-      id: 3,
-      name: 'Vodacom RDC (Siège Kinshasa)',
-      sector: 'Télécoms & Tech',
-      approximateSize: '1000+ employés',
-      location: 'Kinshasa (Gombe)',
-      address: 'Avenue de la Justice, Gombe',
-      website: 'https://www.vodacom.cd',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 91,
-      isConverted: true,
-      keyNeeds: [
-        'Transit IP International & BGP Peering',
-        'Colocation Datacenter Tier III',
-        'Liaisons Noires Fibre Métropolitaine',
-      ],
-      aiBriefSummary:
-          'Compte converti : Partenariat d\'infrastructure télécom et peering direct sur le point d\'échange national KINIX.',
-      customPitch:
-          'Renforcer la connectivité sur le câble sous-marin 2Africa et proposer des capacités de colocation supplémentaires.',
-      latitude: -4.3080,
-      longitude: 15.3020,
-    ),
-    EnterpriseModel(
-      id: 4,
-      name: 'Clinique Ngaliema',
-      sector: 'Médical / Santé',
-      approximateSize: '100-249 employés',
-      location: 'Kinshasa (Ngaliema)',
-      address: 'Avenue de la Clinique, Ngaliema',
-      website: 'https://www.cliniquengaliema.cd',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 89,
-      isConverted: false,
-      keyNeeds: [
-        'Fibre Optique Symétrique 50 Mbps',
-        'Hébergement Dossier Patient Santé',
-        'Téléphonie VoIP & Centrex Orange',
-      ],
-      aiBriefSummary:
-          'Modernisation du système d\'imagerie médicale PACS nécessitant un débit ascendant garanti pour la téléconsultation.',
-      customPitch:
-          'Présenter la suite Orange Santé : Fibre Pro + VoIP illimitée + Espace Cloud sécurisé conforme données médicales.',
-      latitude: -4.3250,
-      longitude: 15.2600,
-    ),
-    EnterpriseModel(
-      id: 5,
-      name: 'Bracongo',
-      sector: 'Agroalimentaire & Distribution',
-      approximateSize: '500+ employés',
-      location: 'Kinshasa (Kingabwa)',
-      address: 'Avenue des Brasseries, Limeté Kingabwa',
-      website: 'https://www.bracongo.cd',
-      syncStatus: 'SYNCED',
-      plaqueCode: 'KIN-LIMETE',
-      conversionScore: 87,
-      isConverted: false,
-      keyNeeds: [
-        'Liaison Fibre Usine-Dépôts 100M',
-        'Flotte Mobile B2B Forfaits Partagés',
-        'Géolocalisation Camions de Livraison',
-      ],
-      aiBriefSummary:
-          'Besoin d\'optimisation logistique pour la flotte de distribution et interconnexion continue entre le siège et les brasseries.',
-      customPitch:
-          'Pack Orange B2B Supply Chain : Traceurs IoT + Forfaits data flotte entreprise + VPN multipoint sécurisé.',
-      latitude: -4.3450,
-      longitude: 15.3400,
-    ),
-  ];
-
+  /// Enterprise repository loaded dynamically from Backend CRM API
+  final List<EnterpriseModel> _allEnterprises = [];
   List<EnterpriseModel> get allEnterprises => _allEnterprises;
 
   @override
   void onInit() {
     super.onInit();
-    searchResults.value = List.from(_allEnterprises);
-    if (_allEnterprises.isNotEmpty) {
-      selectedMapEnterprise.value = _allEnterprises.first;
-    }
     // Demande d'autorisation pour les notifications push
     _initPushPermissions();
     fetchPlaques();
+    fetchEnterprises();
     fetchNotifications(showBannerOnNew: true);
     fetchDashboardStats();
     fetchVisitsHistory();
+  }
+
+  /// Charge les entreprises réelles depuis la base de données PostgreSQL du backend
+  Future<void> fetchEnterprises() async {
+    try {
+      final response = await _apiClient.get('/api/sales/enterprises/', queryParams: {'limit': '400'});
+      List rawList = [];
+      if (response is Map && response['enterprises'] is List) {
+        rawList = response['enterprises'] as List;
+      } else if (response is List) {
+        rawList = response;
+      }
+
+      if (rawList.isNotEmpty) {
+        final parsed = rawList
+            .map((e) => EnterpriseModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        _allEnterprises.clear();
+        _allEnterprises.addAll(parsed);
+        searchResults.value = List.from(_allEnterprises);
+        if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
+          selectedMapEnterprise.value = _allEnterprises.first;
+        }
+      }
+    } catch (e) {
+      debugPrint("[Enterprises] Erreur lors du chargement des entreprises réelles: $e");
+    }
   }
 
   Future<void> _initPushPermissions() async {
@@ -687,11 +589,11 @@ class SalesController extends GetxController {
       final response = await _apiClient.get('/api/sales/visit-reports/');
       if (response is List) {
         kpiReportsCount.value = response.length;
-        kpiVisitsCount.value = response.isNotEmpty ? response.length + 1 : 3;
+      } else {
+        kpiReportsCount.value = 0;
       }
     } catch (_) {
-      if (kpiReportsCount.value == 0) kpiReportsCount.value = 12;
-      if (kpiVisitsCount.value == 0) kpiVisitsCount.value = 3;
+      kpiReportsCount.value = 0;
     }
   }
 
@@ -700,47 +602,17 @@ class SalesController extends GetxController {
     isLoadingVisits.value = true;
     try {
       final response = await _apiClient.get('/api/sales/visit-preparations/');
-      if (response is List && response.isNotEmpty) {
+      if (response is List) {
         visitsHistory.value = response.map((item) => VisitHistoryItem.fromJson(item as Map<String, dynamic>)).toList();
       } else {
-        _populateDefaultVisits();
+        visitsHistory.value = [];
       }
     } catch (_) {
-      _populateDefaultVisits();
+      visitsHistory.value = [];
     } finally {
       isLoadingVisits.value = false;
+      kpiVisitsCount.value = visitsHistory.length;
     }
-  }
-
-  void _populateDefaultVisits() {
-    final now = DateTime.now();
-    visitsHistory.value = [
-      VisitHistoryItem(
-        id: 101,
-        enterpriseName: 'RAWBANK RDC',
-        sector: 'Banque & Finance',
-        location: 'Kinshasa (Gombe)',
-        visitDate: DateTime(now.year, now.month, now.day, 10, 30),
-        status: 'TRANSMIS',
-      ),
-      VisitHistoryItem(
-        id: 102,
-        enterpriseName: 'Clinique Ngaliema',
-        sector: 'Médical / Santé',
-        location: 'Kinshasa (Ngaliema)',
-        visitDate: DateTime(now.year, now.month, now.day, 14, 15),
-        status: 'EFFECTUEE',
-      ),
-      VisitHistoryItem(
-        id: 103,
-        enterpriseName: 'Vodacom Congo',
-        sector: 'Télécommunications',
-        location: 'Kinshasa (Gombe)',
-        visitDate: DateTime(now.year, now.month, now.day - 2, 11, 00),
-        status: 'TRANSMIS',
-      ),
-    ];
-    kpiVisitsCount.value = visitsHistory.length;
   }
 
   /// Global or Plaque-filtered search across all accounts
@@ -765,9 +637,7 @@ class SalesController extends GetxController {
             item.plaqueCode.toLowerCase().contains(q);
       }).toList();
 
-      if (filtered.isNotEmpty) {
-        searchResults.value = filtered;
-      }
+      searchResults.value = filtered;
     }
 
     // Background server refresh (non-blocking)
@@ -780,7 +650,7 @@ class SalesController extends GetxController {
         },
       );
 
-      if (response is List && response.isNotEmpty) {
+      if (response is List) {
         searchResults.value = response.map((item) => EnterpriseModel.fromJson(item as Map<String, dynamic>)).toList();
       }
     } catch (_) {
@@ -819,19 +689,10 @@ class SalesController extends GetxController {
       currentPrep.value = VisitPrepModel.fromJson(response as Map<String, dynamic>);
       isCreatingPrep.value = false;
       return true;
-    } catch (_) {
-      final ent = selectedEnterprise.value!;
-      currentPrep.value = VisitPrepModel(
-        id: ent.id,
-        enterpriseId: ent.id,
-        meetingObjective: 'Qualifier l\'éligibilité réseau Orange B2B et les besoins de collaboration pour l\'entreprise.',
-        hypothesisToVerify: ent.aiHypotheses.isNotEmpty ? ent.aiHypotheses.join('\n') : ent.aiBriefSummary,
-        customPitch: ent.aiTailoredPitch.isNotEmpty ? ent.aiTailoredPitch : (ent.customPitch ?? 'Présenter l\'offre Fibre Optique Pro Orange.'),
-        keyQuestions: ent.aiKeyQuestions.isNotEmpty ? ent.aiKeyQuestions.join('\n') : '1. Quelle est votre connexion internet principale actuellement ?',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+    } catch (e) {
+      errorMessage.value = "Erreur lors de la préparation de visite: ${e.toString().replaceAll('ApiException: ', '')}";
       isCreatingPrep.value = false;
-      return true;
+      return false;
     }
   }
 
@@ -858,26 +719,10 @@ class SalesController extends GetxController {
       kpiReportsCount.value += 1;
       isGeneratingReport.value = false;
       return true;
-    } catch (_) {
-      final clientName = selectedEnterprise.value?.name ?? "le client";
-      final hasTranscript = transcript.trim().isNotEmpty;
-
-      currentReport.value = VisitReportModel(
-        id: currentPrep.value!.id,
-        preparationId: currentPrep.value!.id,
-        rawTranscript: hasTranscript ? transcript : 'Aucun enregistrement vocal capturé.',
-        executiveSummary: hasTranscript
-            ? 'Échange enregistré avec $clientName : "$transcript". Analyse en cours par le copilote IA.'
-            : 'Rendez-vous qualitatif chez $clientName.',
-        confirmedNeeds: selectedEnterprise.value?.keyNeeds ?? const ['Fibre Optique Pro 50 Mbps', 'Microsoft 365 Pro', 'Firewall Managé Orange'],
-        objectionsRaised: const ['Validation du budget trimestriel'],
-        actionsTodo: const ['Transmettre l\'étude d\'éligibilité Fibre', 'Envoyer le devis officiel Orange B2B'],
-        followUpEmailDraft: 'Bonjour,\n\nMerci pour cet échange constructif. Comme convenu lors de notre visite, nous finalisons votre étude d\'éligibilité aux solutions Orange B2B.\n\nCordialement,\nVotre Commercial Orange B2B',
-        createdAt: DateTime.now().toIso8601String(),
-      );
-      kpiReportsCount.value += 1;
+    } catch (e) {
+      errorMessage.value = "Erreur lors de la génération du compte-rendu: ${e.toString().replaceAll('ApiException: ', '')}";
       isGeneratingReport.value = false;
-      return true;
+      return false;
     }
   }
 
@@ -895,10 +740,10 @@ class SalesController extends GetxController {
       isTransmitting.value = false;
       fetchDashboardStats();
       return true;
-    } catch (_) {
-      successMessage.value = "Rapport transmis au KAM avec succès.";
+    } catch (e) {
+      errorMessage.value = "Erreur lors de la transmission du rapport au KAM.";
       isTransmitting.value = false;
-      return true;
+      return false;
     }
   }
 
@@ -930,21 +775,10 @@ class SalesController extends GetxController {
       isSubmittingFieldIntelligence.value = false;
       fetchLeaderboard();
       return true;
-    } catch (_) {
-      // Fallback local mock simulation (Base 1 à 5 pts)
-      int simulatedPoints = 0;
-      if (report.conversionStatus == 'SUCCESS') simulatedPoints += 5;
-      simulatedPoints += (report.nearbyLeads.length > 2 ? 2 : report.nearbyLeads.length) * 1;
-      simulatedPoints += (report.referrals.length > 2 ? 2 : report.referrals.length) * 1;
-      simulatedPoints += (report.tradeAudits.isNotEmpty ? 1 : 0);
-
-      report.pointsEarned = simulatedPoints;
-      userTotalPoints.value += simulatedPoints;
-      lastFieldIntelligenceReport.value = report;
-
-      successMessage.value = "Rapport Terrain validé ($simulatedPoints pts crédités).";
+    } catch (e) {
+      errorMessage.value = "Erreur lors de l'enregistrement du rapport terrain.";
       isSubmittingFieldIntelligence.value = false;
-      return true;
+      return false;
     }
   }
 
@@ -956,14 +790,11 @@ class SalesController extends GetxController {
         leaderboardList.value = response
             .map((item) => LeaderboardEntryModel.fromJson(item as Map<String, dynamic>))
             .toList();
+      } else {
+        leaderboardList.value = [];
       }
     } catch (_) {
-      // Fallback mock leaderboard if server offline
-      leaderboardList.value = [
-        LeaderboardEntryModel(salespersonId: 1, salespersonName: 'jean_kam', fullName: 'Jean-Marc Tshimanga', totalPoints: 24, successfulConversionsCount: 3, nearbyLeadsCount: 6, referralsCount: 4, tradeAuditsCount: 3, rank: 1),
-        LeaderboardEntryModel(salespersonId: 2, salespersonName: 'dieudonne_mukendi', fullName: 'Dieudonné Mukendi', totalPoints: userTotalPoints.value > 0 ? userTotalPoints.value : 18, successfulConversionsCount: 2, nearbyLeadsCount: 4, referralsCount: 3, tradeAuditsCount: 2, rank: 2),
-        LeaderboardEntryModel(salespersonId: 3, salespersonName: 'sarah_m', fullName: 'Sarah Mbiye', totalPoints: 12, successfulConversionsCount: 1, nearbyLeadsCount: 4, referralsCount: 2, tradeAuditsCount: 1, rank: 3),
-      ];
+      leaderboardList.value = [];
     } finally {
       isLoadingLeaderboard.value = false;
     }
@@ -1003,70 +834,10 @@ class SalesController extends GetxController {
       successMessage.value = "Document numérisé avec succès.";
       isScanningOcr.value = false;
       return model;
-    } catch (_) {
-      // Local fallback parsing
-      final fallback = _simulateLocalOcr(docType, companyHint, rawText);
-      lastOcrResult.value = fallback;
-      successMessage.value = "Document numérisé (mode local).";
+    } catch (e) {
+      errorMessage.value = "Erreur lors de la numérisation du document.";
       isScanningOcr.value = false;
-      return fallback;
-    }
-  }
-
-  OcrDocumentResultModel _simulateLocalOcr(String docType, String hint, String text) {
-    final entName = hint.isNotEmpty
-        ? hint
-        : (selectedEnterprise.value?.name ?? 'ENTREPRISE B2B');
-
-    if (docType == 'RCCM') {
-      return OcrDocumentResultModel(
-        companyName: entName,
-        rccm: 'CD/KIN/RCCM/22-B-01934',
-        nif: 'A0912458X',
-        contactName: 'Patrick Kalombo',
-        contactTitle: 'Directeur Général',
-        phone: '+243 81 555 4321',
-        email: 'direction@textilecongo.cd',
-        address: '14 Avenue du Commerce, Gombe, Kinshasa',
-        detectedType: 'RCCM',
-        rawText: text.isNotEmpty ? text : 'EXTRAIT DU REGISTRE DU COMMERCE ET DU CRÉDIT MOBILIER\nRaison Sociale: $entName\nRCCM: CD/KIN/RCCM/22-B-01934\nNIF: A0912458X\nReprésentant Légal: Patrick Kalombo\nSiège: 14 Av du Commerce, Gombe',
-      );
-    } else if (docType == 'BUSINESS_CARD') {
-      return OcrDocumentResultModel(
-        companyName: entName,
-        contactName: 'Dr. Mireille Mbuyi',
-        contactTitle: 'Directrice des Opérations & IT',
-        phone: '+243 82 400 1234',
-        email: 'm.mbuyi@pharmacentre.cd',
-        address: '32 Blvd du 30 Juin, Gombe',
-        detectedType: 'BUSINESS_CARD',
-        rawText: text.isNotEmpty ? text : '$entName\nDr. Mireille Mbuyi\nDirectrice des Opérations\nTél: +243 82 400 1234\nEmail: m.mbuyi@pharmacentre.cd',
-      );
-    } else if (docType == 'INVOICE') {
-      return OcrDocumentResultModel(
-        companyName: entName,
-        currentProvider: 'Canalbox Pro',
-        currentBandwidth: '100 Mbps FTTO Dédié',
-        monthlySpendEstimated: 850,
-        phone: '+243 81 777 8899',
-        email: 'comptabilite@hotelfleuve.cd',
-        detectedType: 'INVOICE',
-        rawText: text.isNotEmpty ? text : 'FACTURE TÉLÉCOM MENSUELLE\nFournisseur: Canalbox Pro\nClient: $entName\nService: Fibre Pro Dédiée 100 Mbps\nTotal Mensuel: 850 USD HT',
-      );
-    } else {
-      return OcrDocumentResultModel(
-        companyName: entName,
-        rccm: 'CD/KNG/RCCM/2024-B-0512',
-        nif: 'A0812345Z',
-        contactName: 'Alain Ilunga',
-        contactTitle: 'Responsable Logistique & Télécoms',
-        phone: '+243 89 123 4567',
-        email: 'a.ilunga@congologistics.cd',
-        currentProvider: 'Vodacom Business',
-        monthlySpendEstimated: 450,
-        detectedType: 'GENERAL',
-        rawText: text.isNotEmpty ? text : '$entName\nRCCM: CD/KNG/RCCM/2024-B-0512\nContact: Alain Ilunga (+243 89 123 4567)\nFournisseur Actuel: Vodacom Business',
-      );
+      return null;
     }
   }
 
@@ -1081,202 +852,14 @@ class SalesController extends GetxController {
         if (availableQuestionnaires.isNotEmpty && selectedQuestionnaire.value == null) {
           selectedQuestionnaire.value = availableQuestionnaires.first;
         }
+      } else {
+        availableQuestionnaires.clear();
       }
     } catch (e) {
       debugPrint("Error fetching questionnaires: $e");
-      _loadFallbackQuestionnaires();
+      availableQuestionnaires.clear();
     } finally {
       isLoadingQuestionnaires.value = false;
-    }
-  }
-
-  void _loadFallbackQuestionnaires() {
-    availableQuestionnaires.assignAll([
-      OfferQuestionnaireModel(
-        id: 1,
-        title: 'Formulaire Qualification : Fibre Optique Pro Orange',
-        targetOfferName: 'Fibre Optique Pro 50M (GTR 4h)',
-        description: "Questions d'éligibilité technique et dimensionnement des débits Fibre.",
-        questions: [
-          OfferQuestionModel(
-            id: 1,
-            questionText: 'Quel type de connexion Internet utilisez-vous actuellement ?',
-            questionType: 'SINGLE_CHOICE',
-            options: ['Fibre Optique concurrente', 'Faisceau hertzien / BLR', 'Modem 4G / Clé USB', 'Connexion classique ADSL', 'Aucune'],
-            isRequired: true,
-            order: 1,
-            helpText: 'Identifier la technologie en place',
-            scoringWeight: 20,
-          ),
-          OfferQuestionModel(
-            id: 2,
-            questionText: 'Combien de postes et terminaux sont connectés simultanément ?',
-            questionType: 'SINGLE_CHOICE',
-            options: ['1 à 5 postes', '6 à 20 postes', '21 à 50 postes', '50 à 100 postes', 'Plus de 100 postes'],
-            isRequired: true,
-            order: 2,
-            helpText: 'Dimensionnement du débit recommandé',
-            scoringWeight: 25,
-          ),
-          OfferQuestionModel(
-            id: 3,
-            questionText: 'Quel est le nom de votre fournisseur Internet actuel ?',
-            questionType: 'TEXT',
-            options: [],
-            isRequired: true,
-            order: 3,
-            helpText: 'Ex: Vodacom, Liquid Telecom, Canalbox...',
-            scoringWeight: 15,
-          ),
-          OfferQuestionModel(
-            id: 4,
-            questionText: 'Avez-vous une exigence de secours automatique 4G sans coupure ?',
-            questionType: 'BOOLEAN',
-            options: ['Oui', 'Non'],
-            isRequired: true,
-            order: 4,
-            helpText: 'Proposer le backup 4G',
-            scoringWeight: 20,
-          ),
-          OfferQuestionModel(
-            id: 5,
-            questionText: r'Quel est votre budget mensuel alloué à la connectivité ($ USD / mois) ?',
-            questionType: 'SINGLE_CHOICE',
-            options: const ['Moins de 150 \$', '150 \$ à 350 \$', '350 \$ à 700 \$', '700 \$ à 1 500 \$', 'Plus de 1 500 \$'],
-            isRequired: true,
-            order: 5,
-            helpText: 'Validation de l\'enveloppe budgétaire',
-            scoringWeight: 20,
-          ),
-        ],
-      ),
-      OfferQuestionnaireModel(
-        id: 2,
-        title: 'Formulaire Qualification : Microsoft 365 & Outils Collaboratifs',
-        targetOfferName: 'Pack Microsoft 365 Business Standard & Teams',
-        description: 'Qualification des besoins en messagerie professionnelle et outils Office.',
-        questions: [
-          OfferQuestionModel(
-            id: 10,
-            questionText: 'Quel système de messagerie électronique utilisez-vous actuellement ?',
-            questionType: 'SINGLE_CHOICE',
-            options: ['Adresses gratuites (Gmail, Yahoo)', 'Webmail hébergé local', 'Microsoft 365 existant', 'Google Workspace', 'Pas de messagerie'],
-            isRequired: true,
-            order: 1,
-            helpText: 'Maturité digitale',
-            scoringWeight: 25,
-          ),
-          OfferQuestionModel(
-            id: 11,
-            questionText: 'De combien d\'adresses emails professionnelles avez-vous besoin ?',
-            questionType: 'NUMBER',
-            options: [],
-            isRequired: true,
-            order: 2,
-            helpText: 'Nombre de licences M365',
-            scoringWeight: 30,
-          ),
-          OfferQuestionModel(
-            id: 12,
-            questionText: 'Quels usages collaboratifs sont prioritaires pour votre équipe ?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['Réunions en visio Teams', 'Stockage cloud OneDrive 1 To', 'Co-édition Word/Excel', 'Sécurité des emails', 'Standard téléphonique VoIP'],
-            isRequired: true,
-            order: 3,
-            helpText: 'Cocher tous les usages',
-            scoringWeight: 25,
-          ),
-          OfferQuestionModel(
-            id: 13,
-            questionText: 'Souhaitez-vous un accompagnement Orange pour la migration de vos emails ?',
-            questionType: 'BOOLEAN',
-            options: ['Oui', 'Non'],
-            isRequired: false,
-            order: 4,
-            helpText: 'Prestation d\'intégration',
-            scoringWeight: 20,
-          ),
-        ],
-      ),
-      OfferQuestionnaireModel(
-        id: 3,
-        title: 'Formulaire Qualification : Cybersécurité & Sauvegarde Souveraine',
-        targetOfferName: 'Firewall UTM Managé & Cloud Backup Souverain',
-        description: 'Évaluation des risques cyber et protection du réseau.',
-        questions: [
-          OfferQuestionModel(
-            id: 20,
-            questionText: 'Disposez-vous d\'un boîtier pare-feu (Firewall) dédié pour votre réseau ?',
-            questionType: 'BOOLEAN',
-            options: ['Oui', 'Non'],
-            isRequired: true,
-            order: 1,
-            helpText: 'Sécurité périmétrique',
-            scoringWeight: 25,
-          ),
-          OfferQuestionModel(
-            id: 21,
-            questionText: 'Comment sont sauvegardées vos données d\'entreprise critiques ?',
-            questionType: 'SINGLE_CHOICE',
-            options: ['Sauvegarde Cloud automatique', 'Disques durs externes / Clés USB', 'Serveur local non répliqué', 'Aucune sauvegarde régulière'],
-            isRequired: true,
-            order: 2,
-            helpText: 'Risque de perte de données',
-            scoringWeight: 35,
-          ),
-          OfferQuestionModel(
-            id: 22,
-            questionText: 'Avez-vous des collaborateurs travaillant à distance nécessitant un VPN sécurisé ?',
-            questionType: 'BOOLEAN',
-            options: ['Oui', 'Non'],
-            isRequired: true,
-            order: 3,
-            helpText: 'Tunnels VPN',
-            scoringWeight: 20,
-          ),
-        ],
-      ),
-      OfferQuestionnaireModel(
-        id: 4,
-        title: 'Formulaire Qualification : TPE & Paiement Orange Money Pro',
-        targetOfferName: 'Terminaux TPE Connectés 4G + Encaissement Orange Money',
-        description: 'Équipement pour points de vente et encaissement numérique.',
-        questions: [
-          OfferQuestionModel(
-            id: 30,
-            questionText: 'Quels moyens de paiement acceptez-vous aujourd\'hui en caisse ?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['Cash USD/CDF uniquement', 'Cartes bancaires (Visa/Mastercard)', 'Mobile Money (Orange Money, etc.)', 'Virements bancaires'],
-            isRequired: true,
-            order: 1,
-            helpText: 'Moyens d\'encaissement actuels',
-            scoringWeight: 25,
-          ),
-          OfferQuestionModel(
-            id: 31,
-            questionText: 'Combien de caisses ou points d\'encaissement disposez-vous ?',
-            questionType: 'NUMBER',
-            options: [],
-            isRequired: true,
-            order: 2,
-            helpText: 'Nombre de terminaux TPE',
-            scoringWeight: 30,
-          ),
-          OfferQuestionModel(
-            id: 32,
-            questionText: r'Quel est le volume mensuel estimé de vos encaissements par carte/mobile ($) ?',
-            questionType: 'SINGLE_CHOICE',
-            options: const ['Moins de 5 000 \$ / mois', '5 000 \$ à 20 000 \$ / mois', '20 000 \$ à 50 000 \$ / mois', 'Plus de 50 000 \$ / mois'],
-            isRequired: true,
-            order: 3,
-            helpText: 'Volume transactionnel',
-            scoringWeight: 25,
-          ),
-        ],
-      ),
-    ]);
-    if (selectedQuestionnaire.value == null && availableQuestionnaires.isNotEmpty) {
-      selectedQuestionnaire.value = availableQuestionnaires.first;
     }
   }
 
@@ -1340,22 +923,8 @@ class SalesController extends GetxController {
       return false;
     } catch (e) {
       debugPrint("Error submitting form: $e");
-      final fallbackEnt = selectedEnterprise.value?.name ?? 'Entreprise B2B';
-      lastSubmissionResult.value = VisitFormSubmissionModel(
-        submissionId: DateTime.now().millisecondsSinceEpoch,
-        reportId: 999,
-        enterpriseId: enterpriseId,
-        enterpriseName: fallbackEnt,
-        targetOfferName: questionnaire?.targetOfferName ?? 'Fibre Optique Pro Orange 50M',
-        qualificationScore: 85,
-        aiSummary: "Visite de qualification effectuée pour $fallbackEnt. Intérêt confirmé pour l'offre ${questionnaire?.targetOfferName}.",
-        detectedNeeds: [questionnaire?.targetOfferName ?? 'Fibre Optique Pro', 'Backup 4G Automatique'],
-        nextAction: "Étude d'éligibilité technique & Contact KAM sous 24h",
-        status: "QUALIFIED",
-        createdAt: DateTime.now().toIso8601String(),
-      );
-      successMessage.value = "Formulaire enregistré & transmis au Back-Office.";
-      return true;
+      errorMessage.value = "Erreur lors de la soumission du formulaire de visite.";
+      return false;
     } finally {
       isSubmittingForm.value = false;
     }
@@ -1368,25 +937,33 @@ class SalesController extends GetxController {
   final RxInt pendingSyncCount = 0.obs;
   final RxBool isOfflineMode = false.obs;
 
-  void confirmQuickAgreement(EnterpriseModel enterprise, String offerName, double monthlyPrice) {
-    userTotalPoints.value += 20;
-    kpiReportsCount.value += 1;
-    kpiVisitsCount.value += 1;
-
-    final newVisit = VisitHistoryItem(
-      id: DateTime.now().millisecondsSinceEpoch % 10000,
-      enterpriseName: enterprise.name,
-      sector: enterprise.sector ?? 'B2B',
-      location: enterprise.location ?? 'Kinshasa',
-      visitDate: DateTime.now(),
-      status: 'TRANSMIS',
-    );
-    visitsHistory.insert(0, newVisit);
+  Future<void> confirmQuickAgreement(EnterpriseModel enterprise, String offerName, double monthlyPrice) async {
+    try {
+      final payload = {
+        'enterprise_id': enterprise.id,
+        'target_offer_name': offerName,
+        'answers': [
+          {'question_id': 1, 'question_text': 'Offre sélectionnée', 'answer': offerName},
+          {'question_id': 2, 'question_text': 'Montant mensuel (\$ USD)', 'answer': monthlyPrice.toString()},
+          {'question_id': 3, 'question_text': 'Accord de principe', 'answer': 'Signé sur tablette'},
+        ],
+        'objections_noted': 'Accord immédiat du client',
+        'custom_notes': 'Accord de principe signé avec engagement mensuel de $monthlyPrice USD.',
+      };
+      final dynamic response = await _apiClient.post('/api/sales/visit-form/submit/', body: payload);
+      if (response is Map<String, dynamic>) {
+        userTotalPoints.value += 20;
+        await fetchVisitsHistory();
+        await fetchDashboardStats();
+      }
+    } catch (e) {
+      debugPrint("Error confirming quick agreement: $e");
+    }
 
     final notif = SalesNotificationModel(
       id: DateTime.now().millisecondsSinceEpoch,
       title: 'Accord de Principe Signé',
-      message: 'Félicitations ! ${enterprise.name} a validé l\'offre $offerName (${monthlyPrice.toStringAsFixed(0)} \$/mois). +20 points crédités !',
+      message: 'Félicitations ! ${enterprise.name} a validé l\'offre $offerName (${monthlyPrice.toStringAsFixed(0)} \$/mois). Dossier transmis au Back-Office.',
       notificationType: 'AGREEMENT_SIGNED',
       createdAt: DateTime.now(),
     );
@@ -1414,28 +991,6 @@ class SalesController extends GetxController {
     );
     notifications.insert(0, notif);
     unreadNotificationsCount.value += 1;
-  }
-
-  void simulateClientOpeningProposal(String enterpriseName) {
-    final notif = SalesNotificationModel(
-      id: DateTime.now().millisecondsSinceEpoch,
-      title: 'Consultation en direct',
-      message: 'Le décideur de $enterpriseName consulte actuellement votre proposition. C\'est le moment idéal pour le relancer !',
-      notificationType: 'PROPOSAL_VIEWED',
-      createdAt: DateTime.now(),
-    );
-    notifications.insert(0, notif);
-    unreadNotificationsCount.value += 1;
-
-    Get.snackbar(
-      'Consultation en direct',
-      'Le décideur de $enterpriseName consulte actuellement votre proposition. Relancez-le !',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppConstants.primaryBlack,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 5),
-    );
   }
 
   Future<void> syncPendingQueue() async {

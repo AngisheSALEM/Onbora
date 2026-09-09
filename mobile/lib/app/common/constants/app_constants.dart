@@ -102,19 +102,19 @@ abstract class AppConstants {
   static const Color pureWhite = Color(0xFFF6F5F2);
   static const Color primaryNavy = Color(0xFF242124);
 
-  // Status & Semantic Colors
+  // Status & Semantic Colors (Apple 60-30-10 Design System compliant)
   static const Color accentGreen = Color(0xFF10B981);
   static const Color successGreen = Color(0xFF10B981);
-  static const Color accentAmber = Color(0xFFF59E0B);
+  static const Color accentAmber = Color(0xFF64748B); // Apple Slate Neutral
   static const Color accentRed = Color(0xFFEF4444);
   static const Color errorRed = Color(0xFFEF4444);
-  static const Color accentPurple = Color(0xFF8B5CF6);
-  static const Color primaryBlue = Color(0xFF4F6CE8);
-  static const Color accentBlue = Color(0xFF4F6CE8);
-  static const Color orangeOfficial = Color(0xFFFF7900);
-  static const Color accentYellow = Color(0xFFFBBF24);
-  static const Color accentYellowDark = Color(0xFFFBBF24);
-  static const Color accentYellowLight = Color(0xFFB45309);
+  static const Color accentPurple = Color(0xFF2563EB); // Apple Royal Blue
+  static const Color primaryBlue = Color(0xFF007AFF); // Apple System Blue
+  static const Color accentBlue = Color(0xFF007AFF);
+  static const Color orangeOfficial = Color(0xFF0F172A); // Apple Dark Slate
+  static const Color accentYellow = Color(0xFF64748B);
+  static const Color accentYellowDark = Color(0xFF94A3B8);
+  static const Color accentYellowLight = Color(0xFF475569);
 
   static Color getAccentYellow(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark

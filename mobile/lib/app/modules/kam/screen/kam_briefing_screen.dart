@@ -613,7 +613,7 @@ class KamBriefingScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(CupertinoIcons.lightbulb_fill, size: 16, color: Color(0xFFF59E0B)),
+              const Icon(CupertinoIcons.lightbulb_fill, size: 16, color: Color(0xFF007AFF)),
               const SizedBox(width: 8),
               Text(
                 'SOLUTION À PROPOSER (OFFRE ORANGE)',
@@ -755,12 +755,12 @@ class KamBriefingScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                  color: const Color(0xFF007AFF).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
                   'Renouvellement 60j',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B)),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF007AFF)),
                 ),
               ),
             ],

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -817,10 +817,10 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: const Color(0xFFF97316).withValues(alpha: 0.15),
+                color: const Color(0xFF007AFF).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(LucideIcons.packageCheck, color: Color(0xFFF97316), size: 18),
+              child: const Icon(LucideIcons.packageCheck, color: Color(0xFF007AFF), size: 18),
             ),
             const SizedBox(width: 8),
             Text(
@@ -844,11 +844,11 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isRecommended
-                  ? (isDark ? const Color(0xFF2A1C12) : const Color(0xFFFFF7ED))
+                  ? (isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F9FF))
                   : (isDark ? const Color(0xFF18181A) : Colors.white),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isRecommended ? const Color(0xFFF97316) : (isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
+                color: isRecommended ? const Color(0xFF007AFF) : (isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
                 width: isRecommended ? 1.5 : 1.0,
               ),
             ),
@@ -864,14 +864,14 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: isRecommended ? const Color(0xFFEA580C) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                          color: isRecommended ? const Color(0xFF007AFF) : (isDark ? Colors.white : const Color(0xFF0F172A)),
                         ),
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isRecommended ? const Color(0xFFF97316) : const Color(0xFF64748B),
+                        color: isRecommended ? const Color(0xFF007AFF) : const Color(0xFF64748B),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -900,12 +900,12 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                          color: const Color(0xFF007AFF).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           'Recommandé',
-                          style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold, fontSize: 10),
+                          style: TextStyle(color: Color(0xFF007AFF), fontWeight: FontWeight.bold, fontSize: 10),
                         ),
                       ),
                   ],

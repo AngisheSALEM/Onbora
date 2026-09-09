@@ -40,10 +40,10 @@ class CreditRiskBadge extends StatelessWidget {
         icon = LucideIcons.shieldAlert;
         break;
       default:
-        badgeColor = const Color(0xFFF59E0B);
-        badgeBg = const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.15 : 0.10);
+        badgeColor = const Color(0xFF64748B);
+        badgeBg = const Color(0xFF64748B).withValues(alpha: isDark ? 0.15 : 0.10);
         defaultLabel = 'Vigilance • Paiement d\'avance';
-        icon = LucideIcons.alertTriangle;
+        icon = LucideIcons.shieldAlert;
         break;
     }
 

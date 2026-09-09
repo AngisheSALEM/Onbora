@@ -816,6 +816,29 @@ class SalespersonActivityView(APIView):
 class VisitPreparationCreateView(APIView):
     permission_classes = [IsSalespersonOrAdmin]
 
+    def get(self, request):
+        user = request.user
+        if user.is_authenticated and user.role == 'SALESPERSON':
+            preps = VisitPreparation.objects.filter(salesperson=user).select_related('enterprise', 'report').order_by('-created_at')
+        else:
+            preps = VisitPreparation.objects.all().select_related('enterprise', 'report').order_by('-created_at')
+
+        results = []
+        for p in preps:
+            has_report = hasattr(p, 'report') and p.report is not None
+            status_val = 'EFFECTUEE' if has_report else 'EN_COURS'
+            results.append({
+                "id": p.id,
+                "enterprise_id": p.enterprise.id,
+                "enterprise_name": p.enterprise.name,
+                "sector": p.enterprise.sector or "Services B2B",
+                "location": p.enterprise.commune or p.enterprise.city or p.enterprise.location or "Kinshasa",
+                "created_at": p.created_at.isoformat(),
+                "status": status_val,
+                "meeting_objective": p.meeting_objective,
+            })
+        return Response(results, status=status.HTTP_200_OK)
+
     def post(self, request):
         enterprise_id = request.data.get('enterprise')
         if not enterprise_id:
@@ -831,6 +854,29 @@ class VisitPreparationCreateView(APIView):
 
 class VisitReportCreateView(APIView):
     permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        user = request.user
+        if user.is_authenticated and user.role == 'SALESPERSON':
+            reports = VisitReport.objects.filter(preparation__salesperson=user).select_related('preparation__enterprise').order_by('-created_at')
+        else:
+            reports = VisitReport.objects.all().select_related('preparation__enterprise').order_by('-created_at')
+
+        results = []
+        for r in reports:
+            results.append({
+                "id": r.id,
+                "preparation_id": r.preparation.id,
+                "enterprise_id": r.preparation.enterprise.id,
+                "enterprise_name": r.preparation.enterprise.name,
+                "executive_summary": r.executive_summary,
+                "confirmed_needs": r.confirmed_needs,
+                "objections_raised": r.objections_raised,
+                "actions_todo": r.actions_todo,
+                "follow_up_email_draft": r.follow_up_email_draft,
+                "created_at": r.created_at.isoformat(),
+            })
+        return Response(results, status=status.HTTP_200_OK)
 
     def post(self, request):
         prep_id = request.data.get('preparation')
@@ -888,7 +934,7 @@ class VisitReportExportView(APIView):
         title = f"Rapport de Visite Commerciale - {report.preparation.enterprise.name}"
         needs_html = "".join([f'<span class="badge badge-success">{need}</span>' for need in report.confirmed_needs])
         objections_html = "".join([f'<span class="badge badge-danger">{obj}</span>' for obj in report.objections_raised])
-        actions_items = "".join([f"<li>👉 {action}</li>" for action in report.actions_todo])
+        actions_items = "".join([f"<li>• {action}</li>" for action in report.actions_todo])
 
         content_html = f"""
         <h2 class="document-title">COMPTE-RENDU DE VISITE TERRAIN</h2>
@@ -1549,7 +1595,7 @@ class TestPushNotificationView(APIView):
             except User.DoesNotExist:
                 return Response({"detail": "Commercial introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
-        title = request.data.get('title', '🔔 Test Notification Push Onbora')
+        title = request.data.get('title', '[Test] Notification Push Onbora')
         body = request.data.get('body', 'Ceci est un test de notification push Firebase temps réel. L\'application reçoit le message même si elle est fermée.')
 
         from shared.infrastructure.firebase_service import send_push_notification_to_user

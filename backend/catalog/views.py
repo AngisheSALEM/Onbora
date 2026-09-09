@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.permissions import IsAdmin
-from .models import ServiceCatalog
-from .serializers import ServiceCatalogSerializer
+from .models import ServiceCatalog, OfferQuestionnaire
+from .serializers import ServiceCatalogSerializer, OfferQuestionnaireSerializer
 from .application.use_cases import (
     ListServicesUseCase,
     GetServiceDetailUseCase,
@@ -34,6 +34,17 @@ class ServiceCatalogListCreateView(APIView):
                 "description": s.description,
                 "benefits": s.benefits,
                 "technical_requirements": s.technical_requirements,
+                "monthly_price": (
+                    float(s.technical_requirements.get('monthly_price_usd', 0.0))
+                    if isinstance(s.technical_requirements, dict) and s.technical_requirements.get('monthly_price_usd')
+                    else (149.0 if 'Fibre' in s.name else (85.0 if 'Collaboration' in s.name else 45.0))
+                ),
+                "setup_price": (
+                    float(s.technical_requirements.get('setup_price_usd', 0.0))
+                    if isinstance(s.technical_requirements, dict) and s.technical_requirements.get('setup_price_usd')
+                    else 0.0
+                ),
+                "is_eligible_default": True,
             }
             for s in services
         ])

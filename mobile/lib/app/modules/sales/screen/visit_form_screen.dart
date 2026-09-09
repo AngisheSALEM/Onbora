@@ -408,7 +408,7 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
+                      color: const Color(0xFF007AFF).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
@@ -416,7 +416,7 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.orange,
+                        color: Color(0xFF007AFF),
                       ),
                     ),
                   ),

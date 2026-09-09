@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -336,7 +336,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                       icon: LucideIcons.checkCheck,
                       title: '1. Résultat de la Pré-conversion',
                       badge: _conversionStatus == 'SUCCESS' ? 'Pré-converti' : 'En Nurturing',
-                      badgeColor: _conversionStatus == 'SUCCESS' ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                      badgeColor: _conversionStatus == 'SUCCESS' ? const Color(0xFF10B981) : const Color(0xFF007AFF),
                       isDark: isDark,
                     ),
                     const SizedBox(height: 8),
@@ -363,7 +363,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                   label: 'En réflexion',
                                   icon: LucideIcons.clock,
                                   isSelected: _conversionStatus == 'HESITATION',
-                                  activeColor: const Color(0xFFF59E0B),
+                                  activeColor: const Color(0xFF007AFF),
                                   onTap: () => setState(() => _conversionStatus = 'HESITATION'),
                                   isDark: isDark,
                                 ),
@@ -714,7 +714,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                       icon: LucideIcons.shieldAlert,
                       title: '4. Radar Friction & Concurrent',
                       badge: 'Audit FAI',
-                      badgeColor: const Color(0xFFF59E0B),
+                      badgeColor: const Color(0xFF007AFF),
                       isDark: isDark,
                     ),
                     const SizedBox(height: 8),
@@ -760,7 +760,7 @@ class _FieldIntelligenceScreenState extends State<FieldIntelligenceScreen> {
                                       child: Icon(
                                         LucideIcons.star,
                                         size: 18,
-                                        color: star <= _satisfactionScore ? const Color(0xFFF59E0B) : (isDark ? Colors.white24 : Colors.black12),
+                                        color: star <= _satisfactionScore ? const Color(0xFF007AFF) : (isDark ? Colors.white24 : Colors.black12),
                                       ),
                                     ),
                                   );

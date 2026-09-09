@@ -305,7 +305,7 @@ class ConversationVoiceMessageView(APIView):
         ClientConversationMessage.objects.create(
             conversation=conversation,
             sender=ClientConversationMessage.USER,
-            content=f"🎤 [Vocal Whisper] {transcribed_text}"
+            content=f"[Vocal Whisper] {transcribed_text}"
         )
 
         current_profile = conversation.extracted_profile or {}

@@ -544,7 +544,7 @@ class KamDebriefScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isOrange
                               ? (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7))
-                              : const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                              : const Color(0xFF007AFF).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -554,7 +554,7 @@ class KamDebriefScreen extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             color: isOrange
                                 ? (isDark ? Colors.white : AppConstants.textDark)
-                                : const Color(0xFFF59E0B),
+                                : const Color(0xFF007AFF),
                           ),
                         ),
                       ),

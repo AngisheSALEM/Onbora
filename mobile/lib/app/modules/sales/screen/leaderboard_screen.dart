@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
@@ -155,7 +155,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 entry: first,
                                 rank: 1,
                                 height: 130,
-                                color: const Color(0xFFF59E0B),
+                                color: const Color(0xFF10B981),
                                 isDark: isDark,
                                 isWinner: true,
                               ),
@@ -361,7 +361,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         title: 'Audit de friction concurrentielle',
                         points: '+1 pt',
                         prime: '~ \$5',
-                        color: const Color(0xFFF59E0B),
+                        color: const Color(0xFF007AFF),
                         isDark: isDark,
                       ),
                     ],
@@ -419,7 +419,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 height: 28,
                                 decoration: BoxDecoration(
                                   color: entry.rank == 1
-                                      ? const Color(0xFFF59E0B)
+                                      ? const Color(0xFF10B981)
                                       : (isDark ? const Color(0xFF2B2B32) : const Color(0xFFF2F2F7)),
                                   shape: BoxShape.circle,
                                 ),
@@ -561,7 +561,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (isWinner)
-          const Icon(CupertinoIcons.sparkles, color: Color(0xFFF59E0B), size: 20),
+          const Icon(CupertinoIcons.sparkles, color: Color(0xFF10B981), size: 20),
         const SizedBox(height: 4),
         Container(
           width: isWinner ? 48 : 40,

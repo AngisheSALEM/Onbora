@@ -338,17 +338,17 @@ class SendMessageUseCase(BaseUseCase[Tuple[int, str, Any, Any], SendMessageRespo
                         )
                     elif dossier.is_complete:
                         next_question += (
-                            "\n\n📋 Vos informations contractuelles sont complètes ! "
+                            "\n\n[Dossier Complet] Vos informations contractuelles sont complètes ! "
                             "Vous pouvez maintenant soumettre votre commande au conseiller (KAM) depuis le volet de gauche ou votre Espace Profil."
                         )
                     else:
                         next_question += (
-                            "\n\n⚠️ Des informations administratives obligatoires sont manquantes (Nom, Téléphone, RCCM, Facturation) pour signer un contrat Orange Business. "
+                            "\n\n[Information] Des informations administratives obligatoires sont manquantes (Nom, Téléphone, RCCM, Facturation) pour signer un contrat Orange Business. "
                             "Veuillez compléter votre profil dans votre Espace Profil (bouton en haut de la page) afin de pouvoir transmettre votre demande d'achat."
                         )
                 else:
                     next_question += (
-                        "\n\n⚠️ Votre conversation est terminée ! Pour générer le contrat Orange Business, "
+                        "\n\n[Information] Votre conversation est terminée ! Pour générer le contrat Orange Business, "
                         "veuillez renseigner vos coordonnées administratives (Nom, Téléphone, RCCM, Adresse de facturation) dans votre Espace Profil."
                     )
 

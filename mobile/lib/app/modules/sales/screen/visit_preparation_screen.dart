@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
@@ -528,7 +528,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              const Icon(CupertinoIcons.sparkles, color: Color(0xFFF59E0B), size: 16),
+                              const Icon(CupertinoIcons.sparkles, color: Color(0xFF007AFF), size: 16),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -568,16 +568,16 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF261C14) : const Color(0xFFFEF3C7),
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                              color: const Color(0xFF007AFF).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(CupertinoIcons.exclamationmark_triangle_fill, color: Color(0xFFF59E0B), size: 15),
+                              const Icon(CupertinoIcons.exclamationmark_triangle_fill, color: Color(0xFF007AFF), size: 15),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
