@@ -154,7 +154,7 @@ def dispatch_dossier(dossier: ProspectDossier):
                 "opportunity_id": f"OPP-KAABU-{dossier.id}",
                 "organization_id": enterprise.kaabu_organization_id or f"KB-{enterprise.id}",
                 "company_name": enterprise_name,
-                "source": "ONBORA_INBOUND_QUALIFICATION" if dossier.source == ProspectDossier.INBOUND_CHAT else "ONBORA_OUTBOUND_VISIT",
+                "source": "ONBORA_INBOUND_QUALIFICATION" if dossier.source == ProspectDossier.INBOUND_CONVERSATION else "ONBORA_OUTBOUND_VISIT",
                 "status": "QUALIFIED",
                 "estimated_budget": str(getattr(dossier, 'estimated_monthly_budget', 0)),
                 "recommended_services": getattr(dossier, 'recommended_services', []),
