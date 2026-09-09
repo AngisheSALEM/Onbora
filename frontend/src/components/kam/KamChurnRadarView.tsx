@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
+import { fetchAPI } from '@/lib/api';
 
 interface ChurnAlert {
   id: string;
@@ -54,18 +55,10 @@ export default function KamChurnRadarView() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('onbora_token');
-      const res = await fetch('http://127.0.0.1:8000/api/kam/churn-radar/', {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Token ${token}` } : {})
-        }
-      });
-      if (!res.ok) throw new Error("Impossible de charger le radar churn/upsell.");
-      const data = await res.json();
+      const data = await fetchAPI('/api/kam/churn-radar/');
       setRadarData(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erreur de chargement.";
+      const msg = err instanceof Error ? err.message : "Erreur de chargement du radar.";
       setError(msg);
     } finally {
       setLoading(false);

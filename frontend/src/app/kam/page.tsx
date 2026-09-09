@@ -7,7 +7,6 @@ import { fetchAPI } from '@/lib/api';
 import KamSidebar, { KamView } from '@/components/kam/KamSidebar';
 import KamHeader from '@/components/kam/KamHeader';
 import KamAccountsListView from '@/components/kam/KamAccountsListView';
-import KamBriefingView from '@/components/kam/KamBriefingView';
 import KamAgendaView from '@/components/kam/KamAgendaView';
 import KamVisitsHistoryView from '@/components/kam/KamVisitsHistoryView';
 import KamSignalsView from '@/components/kam/KamSignalsView';
@@ -25,7 +24,7 @@ export default function KamCommandCenterPage() {
   const { user } = useAuth();
   const [visits, setVisits] = useState<StrategicVisit[]>([]);
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
-  const [activeView, setActiveView] = useState<KamView>('precall');
+  const [activeView, setActiveView] = useState<KamView>('accounts');
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadDirectivesCount, setUnreadDirectivesCount] = useState(0);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
@@ -165,10 +164,11 @@ export default function KamCommandCenterPage() {
                 )
               )}
 
-              {activeView === 'precall' && (
+              {(activeView === 'briefing' || activeView === 'precall') && (
                 <KamPreCallView
                   assignedAccounts={visits}
                   initialAccountId={selectedVisitId}
+                  onBackToAccounts={() => setActiveView('accounts')}
                   onLaunchMeetingForAccount={(accId) => {
                     setSelectedVisitId(String(accId));
                     setActiveView('agenda');
@@ -180,24 +180,13 @@ export default function KamCommandCenterPage() {
                 <KamLeadScoringView
                   onOpenPreCallForLead={(accId) => {
                     setSelectedVisitId(String(accId));
-                    setActiveView('precall');
+                    setActiveView('briefing');
                   }}
                 />
               )}
 
               {activeView === 'churnradar' && (
                 <KamChurnRadarView />
-              )}
-
-              {activeView === 'briefing' && selectedVisit && (
-                <KamBriefingView
-                  visits={visits}
-                  selectedVisitId={selectedVisit.id}
-                  onSelectVisitId={setSelectedVisitId}
-                  onLaunchDebrief={() => setActiveView('agenda')}
-                  onBackToAccounts={() => setActiveView('accounts')}
-                  onAccountUpdated={handleDebriefSaved}
-                />
               )}
 
               {activeView === 'agenda' && (

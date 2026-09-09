@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
+import { fetchAPI } from '@/lib/api';
 
 interface ScoreDriver {
   factor: string;
@@ -46,18 +47,10 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('onbora_token');
-      const res = await fetch('http://127.0.0.1:8000/api/kam/lead-scoring/', {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Token ${token}` } : {})
-        }
-      });
-      if (!res.ok) throw new Error("Impossible de charger les scores de leads.");
-      const data = await res.json();
-      setLeads(data);
+      const data = await fetchAPI('/api/kam/lead-scoring/');
+      setLeads(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erreur de connexion.";
+      const msg = err instanceof Error ? err.message : "Erreur de connexion au serveur.";
       setError(msg);
     } finally {
       setLoading(false);

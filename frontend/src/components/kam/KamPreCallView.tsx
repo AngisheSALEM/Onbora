@@ -40,16 +40,20 @@ interface PreCallData {
   updated_at: string;
 }
 
+import { fetchAPI } from '@/lib/api';
+
 interface KamPreCallViewProps {
   assignedAccounts: StrategicVisit[];
   initialAccountId?: string | number;
-  onLaunchMeetingForAccount?: (accountId: number) => void;
+  onLaunchMeetingForAccount?: (accountId: number | string) => void;
+  onBackToAccounts?: () => void;
 }
 
 export default function KamPreCallView({
   assignedAccounts,
   initialAccountId,
   onLaunchMeetingForAccount,
+  onBackToAccounts,
 }: KamPreCallViewProps) {
   const [selectedAccountId, setSelectedAccountId] = useState<string>(
     initialAccountId ? String(initialAccountId) : (assignedAccounts[0]?.id || '')
@@ -58,6 +62,13 @@ export default function KamPreCallView({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Synchroniser si initialAccountId change depuis le parent
+  useEffect(() => {
+    if (initialAccountId && String(initialAccountId) !== selectedAccountId) {
+      setSelectedAccountId(String(initialAccountId));
+    }
+  }, [initialAccountId]);
 
   // Charger le briefing dès que le compte sélectionné change
   useEffect(() => {
@@ -69,21 +80,9 @@ export default function KamPreCallView({
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('onbora_token');
+      const cleanId = String(accountId).replace('account-', '');
       const method = forceRegenerate ? 'POST' : 'GET';
-      const res = await fetch(`http://127.0.0.1:8000/api/kam/pre-call/${accountId}/`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Token ${token}` } : {})
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error("Impossible de charger le briefing pre-call pour ce compte.");
-      }
-
-      const data = await res.json();
+      const data = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { method });
       setBriefingData(data);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erreur de connexion au serveur.";
@@ -128,19 +127,31 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
       
       {/* 1. TOP SELECTOR & HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-black/5 dark:border-white/5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#4F6CE8]/10 text-[#4F6CE8]">
-              <Icons.Sparkles size={12} />
-              Pre-Call Intelligence
-            </span>
-            <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
-              Briefing d&apos;attaque en 2 minutes
-            </span>
+        <div className="flex items-center gap-4">
+          {onBackToAccounts && (
+            <button
+              onClick={onBackToAccounts}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E4E1DB] dark:bg-[#363336] hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition-all cursor-pointer shadow-none active:scale-95 shrink-0"
+              title="Retour au portefeuille des comptes"
+            >
+              <Icons.ChevronLeft size={16} />
+              <span>Portefeuille</span>
+            </button>
+          )}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#4F6CE8]/10 text-[#4F6CE8]">
+                <Icons.Sparkles size={12} />
+                Pre-Call Intelligence
+              </span>
+              <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                Briefing d&apos;attaque en 2 minutes
+              </span>
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
+              {briefingData?.enterprise_name ? briefingData.enterprise_name : "Préparation Stratégique Avant Rendez-vous"}
+            </h2>
           </div>
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-            Préparation Stratégique Avant Rendez-vous
-          </h2>
         </div>
 
         {/* Account Selector & Action Buttons */}

@@ -19,17 +19,16 @@ class PreCallBriefingDetailView(APIView):
     permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, account_id):
+        clean_id = str(account_id).replace('account-', '')
         try:
-            enterprise = Enterprise.objects.get(id=account_id)
-        except Enterprise.DoesNotExist:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
             return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        if user.role == User.KAM and enterprise.assigned_kam_id != user.id:
-            return Response({"detail": "Accès refusé : ce compte ne fait pas partie de votre portefeuille."}, status=status.HTTP_403_FORBIDDEN)
-
+        # Permettre l'accès aux KAMs et Admins pour préparer tout compte / prospect
         # Vérifier si un briefing existe déjà
-        briefing = PreCallBriefing.objects.filter(enterprise=enterprise, kam=user).first()
+        briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
         if briefing:
             data = {
                 "id": briefing.id,
@@ -51,15 +50,13 @@ class PreCallBriefingDetailView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, account_id):
+        clean_id = str(account_id).replace('account-', '')
         try:
-            enterprise = Enterprise.objects.get(id=account_id)
-        except Enterprise.DoesNotExist:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
             return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        if user.role == User.KAM and enterprise.assigned_kam_id != user.id:
-            return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
-
         data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
         return Response(data, status=status.HTTP_200_OK)
 

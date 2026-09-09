@@ -27,15 +27,9 @@ export default function KamSidebar({
 
   const navItems = [
     {
-      id: 'precall' as KamView,
-      label: 'Pre-Call Intelligence',
-      icon: Icons.Sparkles,
-      badge: '2 min'
-    },
-    {
-      id: 'visits' as KamView,
-      label: 'Post-Call & Visites',
-      icon: Icons.FileText,
+      id: 'accounts' as KamView,
+      label: 'Mes Comptes Clés',
+      icon: Icons.Building,
       badge: null
     },
     {
@@ -51,15 +45,15 @@ export default function KamSidebar({
       badge: null
     },
     {
-      id: 'accounts' as KamView,
-      label: 'Mes Comptes Clés',
-      icon: Icons.Building,
-      badge: null
-    },
-    {
       id: 'agenda' as KamView,
       label: 'Agenda & Rendez-vous',
       icon: Icons.Calendar,
+      badge: null
+    },
+    {
+      id: 'visits' as KamView,
+      label: 'Post-Call & Visites',
+      icon: Icons.FileText,
       badge: null
     },
     {
