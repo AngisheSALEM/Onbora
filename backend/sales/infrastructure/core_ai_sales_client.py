@@ -24,11 +24,7 @@ class CoreAISalesClient:
         self.timeout = timeout
 
     def is_online(self) -> bool:
-        try:
-            res = requests.get(f"{self.base_url}/health/", timeout=2)
-            return res.status_code == 200
-        except Exception:
-            return False
+        return True
 
     def generate_sales_hypotheses(
         self,
@@ -38,71 +34,20 @@ class CoreAISalesClient:
         scraped_data: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Appelle Core AI pour analyser le profil scrapé et générer :
+        Appelle le moteur Core AI unifié (Gemini / In-process) pour analyser le profil scrapé et générer :
         - Hypothèses de besoins télécoms/cloud
         - Pitch commercial sur-mesure
         - Questions d'accroche stratégiques
         - Objections prévisibles et contre-arguments
         """
-        payload = {
-            "company_name": company_name,
-            "sector": sector,
-            "website": website or "",
-            "scraped_data": scraped_data or {},
-            "task": "SALES_PRE_VISIT_HYPOTHESES"
-        }
-
-        try:
-            res = requests.post(f"{self.base_url}/sales/hypotheses/", json=payload, timeout=self.timeout)
-            if res.status_code == 200:
-                return res.json()
-        except Exception as e:
-            logger.info(f"[CoreAISalesClient] Core AI distant indisponible ({e}), bascule sur le moteur heuristique local.")
-
-        # Moteur heuristique / Mock intelligent local
-        sector_lower = sector.lower() if sector else ""
-        hypotheses = [
-            f"L'entreprise {company_name} s'appuie probablement sur une connexion internet grand public instable (ADSL ou box 4G basique).",
-            "La collaboration interne souffre d'un manque d'outils d'entreprise centralisés (e-mails gratuits, partage de fichiers dispersé).",
-        ]
-        pitch = f"Présenter l'offre Fibre Optique Pro Orange avec garantie de temps de rétablissement (GTR 4h) et le pack Microsoft 365 Pro."
-        questions = [
-            "Quelle est la criticité d'une coupure internet pour votre activité quotidienne ?",
-            "Combien de postes et smartphones professionnels devez-vous interconnecter ?",
-            "Comment gérez-vous actuellement la sécurité et la sauvegarde de vos données clients ?"
-        ]
-        objections = [
-            "Le coût mensuel récurrent est plus élevé qu'une connexion grand public (Argument : ROI immédiat sur la productivité et zéro coupure).",
-            "La complexité perçue de la migration informatique (Argument : Accompagnement clé en main par les équipes techniques Orange Business)."
-        ]
-
-        if "santé" in sector_lower or "médic" in sector_lower or "clinique" in sector_lower or "hôpital" in sector_lower:
-            hypotheses = [
-                f"{company_name} traite des données médicales sensibles nécessitant un hébergement certifié (HDS) et une liaison très haut débit.",
-                "Le standard téléphonique actuel risque la saturation pendant les heures de pointe des consultations."
-            ]
-            pitch = "Proposer la Fibre Pro Sécurisée couplée à l'Hébergement Cloud Données de Santé et la Téléphonie IP d'entreprise."
-            questions = [
-                "Comment assurez-vous la confidentialité et la sauvegarde automatique des dossiers patients ?",
-                "Disposez-vous d'une ligne de secours automatique en cas d'incident sur votre liaison principale ?"
-            ]
-            objections = [
-                "Crainte d'indisponibilité pendant le basculement (Argument : Bascule transparente sans interruption des consultations)."
-            ]
-        elif "mine" in sector_lower or "industr" in sector_lower or "logist" in sector_lower:
-            hypotheses = [
-                f"{company_name} a des besoins critiques d'interconnexion multi-sites et de suivi de flotte en temps réel.",
-                "Nécessité d'une couverture réseau renforcée sur les sites distants."
-            ]
-            pitch = "Mettre en avant nos solutions SD-WAN multi-sites et nos liaisons mixtes Fibre + Satellite avec supervision 24/7."
-
-        return {
-            "hypotheses": hypotheses,
-            "tailored_pitch": pitch,
-            "key_questions": questions,
-            "potential_objections": objections,
-            "provider": "Core-AI-Offline-Engine"
-        }
+        from apps.ai_core.unified_engine import get_unified_core_ai
+        engine = get_unified_core_ai()
+        return engine.generate_sales_hypotheses(
+            company_name=company_name,
+            sector=sector,
+            website=website,
+            scraped_data=scraped_data
+        )
 
     def analyze_live_copilot_turn(
         self,
@@ -363,55 +308,23 @@ class CoreAISalesClient:
         salesperson_name: str = "Commercial"
     ) -> Dict[str, Any]:
         """
-        Génère le compte-rendu exécutif de visite, les besoins confirmés, les objections,
-        les prochaines étapes et le projet d'e-mail de suivi.
+        Génère le compte-rendu exécutif de visite via Core AI (Gemini / In-process),
+        les besoins confirmés, les objections, les prochaines étapes et le projet d'e-mail de suivi.
         """
-        payload = {
-            "transcript": full_transcript,
-            "enterprise_name": enterprise_name,
-            "meeting_objective": prep_objective,
-            "salesperson_name": salesperson_name,
-            "task": "GENERATE_POST_VISIT_REPORT"
-        }
-
-        try:
-            res = requests.post(f"{self.base_url}/sales/reports/generate/", json=payload, timeout=self.timeout)
-            if res.status_code == 200:
-                return res.json()
-        except Exception as e:
-            logger.info(f"[CoreAISalesClient] Génération de rapport via Core AI échouée ({e}), calcul local.")
-
-        # Calcul de synthèse locale
-        text_lower = full_transcript.lower() if full_transcript else ""
-        confirmed_needs = ["Fibre Optique Pro Orange B2B", "Microsoft 365 Pro & Teams"]
-        objections = []
-        actions = [
-            f"Faire parvenir la proposition chiffrée Fibre Pro à la direction de {enterprise_name}",
-            "Coordonner la visite technique d'éligibilité avec les équipes réseau Orange"
-        ]
-
-        if "sécurité" in text_lower or "firewall" in text_lower:
-            confirmed_needs.append("Firewall Managé & EDR")
-        if "téléphone" in text_lower or "standard" in text_lower:
-            confirmed_needs.append("Téléphonie IP Teams")
-        if "prix" in text_lower or "budget" in text_lower or "cher" in text_lower:
-            objections.append("Sensibilité au montant de l'abonnement mensuel")
-            actions.append("Étudier une remise d'engagement 24 mois (10%)")
-
-        exec_summary = (
-            f"Visite commerciale très constructive auprès de {enterprise_name}. Le client a confirmé des difficultés "
-            f"liées à sa connectivité actuelle et recherche un opérateur fiable pour moderniser ses outils de travail. "
-            f"Un intérêt marqué a été exprimé pour nos offres Fibre Pro et suites collaboratives."
+        from apps.ai_core.unified_engine import get_unified_core_ai
+        engine = get_unified_core_ai()
+        ai_res = engine.generate_post_visit_report(
+            full_transcript=full_transcript,
+            enterprise_name=enterprise_name,
+            prep_objective=prep_objective,
+            salesperson_name=salesperson_name
         )
 
-        email_draft = (
-            f"Madame, Monsieur,\n\n"
-            f"Je vous remercie chaleureusement pour l'accueil réservé lors de notre échange d'aujourd'hui au sein de votre établissement {enterprise_name}.\n\n"
-            f"Comme discuté, nous avons bien cerné vos enjeux de connectivité très haut débit et de sécurité informatique. "
-            f"Vous trouverez ci-joint les préconisations techniques de nos offres Orange Business B2B adaptées à vos volumes.\n\n"
-            f"Je reste à votre entière disposition pour planifier l'audit technique d'éligibilité.\n\n"
-            f"Bien cordialement,\n{salesperson_name}\nOrange Business B2B"
-        )
+        exec_summary = ai_res.get("executive_summary", "")
+        confirmed_needs = ai_res.get("confirmed_needs", [])
+        objections = ai_res.get("objections_raised", [])
+        actions = ai_res.get("actions_todo", [])
+        email_draft = ai_res.get("follow_up_email", "")
 
         return {
             "executive_summary": exec_summary,
@@ -421,7 +334,7 @@ class CoreAISalesClient:
             "follow_up_email_draft": email_draft,
             "raw_ai_payload": {
                 "generated_at": datetime.utcnow().isoformat(),
-                "model_version": "gemini-flash-orange-b2b-v1",
+                "model_version": engine.model_name,
                 "summary": exec_summary
             }
         }

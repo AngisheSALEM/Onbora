@@ -31,7 +31,7 @@ services:
       - DB_NAME=${DB_NAME:-onbora_db}
       - DB_USER=${DB_USER:-onbora_user}
       - DB_PASSWORD=${DB_PASSWORD:-onbora_pass}
-      - REDIS_HOST=redis
+      - CORE_AI_URL=${CORE_AI_URL:-http://core-ai:8001}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash-lite}
       - ONBORA_AI_PROVIDER=${ONBORA_AI_PROVIDER:-gemini}
@@ -40,6 +40,18 @@ services:
     depends_on:
       - db
       - redis
+
+  core-ai:
+    build:
+      context: ./core-ai
+      dockerfile: Dockerfile
+    container_name: onbora_core_ai
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - BRAIN_PORT=8001
+    ports:
+      - "8001:8001"
 
   frontend:
     build:

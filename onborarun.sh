@@ -24,9 +24,9 @@ if command -v python3 &>/dev/null; then
     PYTHON_CMD="python3"
 fi
 
-# 1. Lancement du Core AI Service (Port 8001)
-echo "1. Démarrage du Core AI Service (Port 8001)..."
-(cd core-ai && $PYTHON_CMD manage.py runserver 0.0.0.0:8001) &
+# 1. Lancement du Core AI Service (Port 8001 - FastAPI Brain)
+echo "1. Démarrage du Core AI Service (Port 8001 - FastAPI Brain)..."
+(cd core-ai && $PYTHON_CMD -m uvicorn agent_api:app --host 0.0.0.0 --port 8001) &
 PID_CORE_AI=$!
 
 # 2. Lancement du Backend Django (Port 8000)

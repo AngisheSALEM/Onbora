@@ -549,6 +549,53 @@ class KamAccountDebriefView(APIView):
     """
     permission_classes = [IsKAMOrAdmin]
 
+    def get(self, request, account_id):
+        try:
+            enterprise = Enterprise.objects.get(id=account_id)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Compte introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        if user.role == User.KAM and enterprise.assigned_kam_id != user.id:
+            return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
+
+        from apps.ai_core.unified_engine import get_unified_core_ai
+        engine = get_unified_core_ai()
+        default_transcript = enterprise.conversion_notes or f"Entretien stratégique avec {enterprise.contact_name or 'la Direction'} chez {enterprise.name}."
+        ai_data = engine.generate_post_call_execution(enterprise, user, default_transcript)
+
+        debrief_result = {
+            "visit_id": f"account-{enterprise.id}",
+            "account_name": enterprise.name,
+            "date": timezone.now().strftime("%d/%m/%Y %H:%M"),
+            "audio_duration_seconds": 60,
+            "transcript_text": default_transcript,
+            "executive_summary": ai_data.get("executive_summary", enterprise.conversion_notes or ""),
+            "confirmed_needs": ai_data.get("confirmed_needs", []),
+            "objections_raised": ai_data.get("objections_raised", []),
+            "client_followup_email": ai_data.get("client_followup_email", {
+                "subject": f"Suite à notre échange — {enterprise.name} / Orange Business",
+                "body": f"Bonjour {enterprise.contact_name or 'Madame, Monsieur'},\n\nJe vous remercie pour notre échange..."
+            }),
+            "commitments_extracted": [
+                {
+                    "id": t.get("id", f"comm-{idx}"),
+                    "action": t.get("title", ""),
+                    "owner": user.get_full_name() or user.username,
+                    "due_date": t.get("deadline", "J+2"),
+                    "status": "IN_PROGRESS"
+                }
+                for idx, t in enumerate(ai_data.get("action_tasks", []))
+            ],
+            "risk_level": "LOW" if len(ai_data.get("objections_raised", [])) <= 1 else "MEDIUM",
+            "next_step_recommendation": ai_data.get("crm_payload", {}).get("next_step", "Transmettre l'offre technique sous 48h.")
+        }
+
+        return Response({
+            "debrief": debrief_result,
+            "visit": serialize_enterprise_to_kam_visit(enterprise)
+        }, status=status.HTTP_200_OK)
+
     def post(self, request, account_id):
         try:
             enterprise = Enterprise.objects.get(id=account_id)
@@ -564,6 +611,46 @@ class KamAccountDebriefView(APIView):
         converted_amount_val = data.get('converted_amount')
         converted_offer_val = data.get('converted_offer')
         conversion_notes_val = data.get('conversion_notes')
+        transcript_val = data.get('transcript', '').strip()
+        generate_ai = data.get('generate_ai', False)
+
+        from apps.ai_core.unified_engine import get_unified_core_ai
+        engine = get_unified_core_ai()
+        effective_transcript = transcript_val or conversion_notes_val or f"Compte-rendu de réunion d'affaires avec {enterprise.contact_name or 'la Direction'} chez {enterprise.name}."
+        
+        ai_data = None
+        debrief_result = None
+        if generate_ai or transcript_val:
+            ai_data = engine.generate_post_call_execution(enterprise, user, effective_transcript)
+            if not conversion_notes_val and ai_data.get("executive_summary"):
+                conversion_notes_val = ai_data["executive_summary"]
+            
+            debrief_result = {
+                "visit_id": f"account-{enterprise.id}",
+                "account_name": enterprise.name,
+                "date": timezone.now().strftime("%d/%m/%Y %H:%M"),
+                "audio_duration_seconds": int(data.get("audio_duration_seconds", 45)),
+                "transcript_text": effective_transcript,
+                "executive_summary": ai_data.get("executive_summary", ""),
+                "confirmed_needs": ai_data.get("confirmed_needs", []),
+                "objections_raised": ai_data.get("objections_raised", []),
+                "client_followup_email": ai_data.get("client_followup_email", {
+                    "subject": f"Suite à notre échange — {enterprise.name} / Orange Business",
+                    "body": "Merci pour le temps accordé ce jour."
+                }),
+                "commitments_extracted": [
+                    {
+                        "id": t.get("id", f"comm-{idx}"),
+                        "action": t.get("title", ""),
+                        "owner": user.get_full_name() or user.username,
+                        "due_date": t.get("deadline", "J+2"),
+                        "status": "IN_PROGRESS"
+                    }
+                    for idx, t in enumerate(ai_data.get("action_tasks", []))
+                ],
+                "risk_level": "LOW" if len(ai_data.get("objections_raised", [])) <= 1 else "MEDIUM",
+                "next_step_recommendation": ai_data.get("crm_payload", {}).get("next_step", "Transmettre la proposition sous 48h.")
+            }
 
         if conversion_status_val in dict(Enterprise.CONVERSION_STATUS_CHOICES):
             enterprise.conversion_status = conversion_status_val
@@ -598,10 +685,14 @@ class KamAccountDebriefView(APIView):
             }
         )
 
-        return Response({
+        resp_data = {
             "detail": f"Compte {enterprise.name} mis à jour avec succès.",
             "visit": serialize_enterprise_to_kam_visit(enterprise)
-        }, status=status.HTTP_200_OK)
+        }
+        if debrief_result:
+            resp_data["debrief"] = debrief_result
+
+        return Response(resp_data, status=status.HTTP_200_OK)
 
 
 class KamAccountUpdateInfoView(APIView):

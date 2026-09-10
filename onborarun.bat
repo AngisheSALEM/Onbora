@@ -10,8 +10,8 @@ if exist "%~dp0backend\venv\Scripts\activate.bat" (
     call "%~dp0.venv\Scripts\activate.bat"
 )
 
-echo [1/3] Demarrage du Core AI Service (Port 8001 - ONBORA-IA)...
-start /B cmd /c "cd /d %~dp0core-ai && python manage.py runserver 0.0.0.0:8001"
+echo [1/3] Demarrage du Core AI Service (Port 8001 - FastAPI Brain)...
+start /B cmd /c "cd /d %~dp0core-ai && python -m uvicorn agent_api:app --host 0.0.0.0 --port 8001"
 
 echo [2/3] Demarrage du Backend Django (Port 8000)...
 start /B cmd /c "cd /d %~dp0backend && python manage.py runserver 0.0.0.0:8000"

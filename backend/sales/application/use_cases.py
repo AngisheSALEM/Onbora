@@ -561,62 +561,7 @@ class SearchEnterprisesUseCase(BaseUseCase[str, List[Enterprise]]):
             Q(name__icontains=query) | Q(sector__icontains=query) | Q(plaque__icontains=query) | Q(kaabu_organization_id__in=matched_ids)
         )
 
-        # 3. Fallback mock generation if not found
-        if not queryset.exists():
-            self._create_mock_enterprise(query)
-            queryset = Enterprise.objects.filter(name__icontains=query)
-
         return list(queryset)
-
-    def _create_mock_enterprise(self, name: str) -> Enterprise:
-        name_lower = name.lower()
-        website = f"https://www.{name_lower.replace(' ', '')}.cg"
-        sector = "Services aux entreprises"
-        size = "20-99 employés"
-        location = "Kinshasa"
-        plaque = "Kinshasa (Gombe)"
-        lat, lng = -4.3033, 15.3083
-        score = 88
-        sol = "Fibre Optique Pro + Microsoft 365"
-
-        if any(k in name_lower for k in ["médical", "clinique", "cabinet", "hôpital", "médecin", "docteur", "santé"]):
-            sector = "Médical / Santé"
-            location = "Kinshasa (Gombe)"
-            plaque = "Kinshasa (Gombe)"
-            lat, lng = -4.3045, 15.3060
-            score = 92
-            sol = "Fibre Sécurisée + Hébergement HDS"
-        elif any(k in name_lower for k in ["tech", "soft", "digital", "numérique", "mine", "cuivre"]):
-            sector = "Technologie / Mines"
-            location = "Lubumbashi"
-            plaque = "Lubumbashi (Centre)"
-            lat, lng = -11.6609, 27.4794
-            size = "100-499 employés"
-            score = 95
-            sol = "SD-WAN Multi-sites + Cyberdéfense Orange"
-        elif any(k in name_lower for k in ["store", "super", "boutique", "vente", "commerce"]):
-            sector = "Commerce / Retail"
-            location = "Brazzaville"
-            plaque = "Brazzaville (Centre/Plateau)"
-            lat, lng = -4.2634, 15.2832
-            size = "2-19 employés"
-            score = 82
-            sol = "Fibre Pro + Téléphonie Fixe VoIP"
-
-        return Enterprise.objects.create(
-            name=name,
-            website=website,
-            sector=sector,
-            approximate_size=size,
-            location=location,
-            plaque=plaque,
-            latitude=lat,
-            longitude=lng,
-            is_ready_for_conversion=True,
-            conversion_score=score,
-            recommended_solution=sol,
-            existing_crm_data={"crm_status": "PROSPECT", "last_contact": "Jamais"}
-        )
 
 
 

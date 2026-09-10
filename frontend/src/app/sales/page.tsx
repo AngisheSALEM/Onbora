@@ -264,29 +264,37 @@ export default function SalesDashboard() {
 
   const handleStartVisit = () => {
     if (visitPrep) {
-      const mockTwin = {
-        current_state: [
-          "Infrastructures WAN sous-dimensionnées",
-          "Absence de supervision proactive",
-          visitPrep.hypothesis_to_verify || "Diagnostic en attente"
-        ],
+      const hypotheses = (selectedEnterprise as any)?.ai_hypotheses;
+      const initialCurrentState = Array.isArray(hypotheses) && hypotheses.length > 0
+        ? hypotheses.slice(0, 3)
+        : [
+            "Infrastructures WAN sous-dimensionnées",
+            "Absence de supervision proactive",
+            visitPrep.hypothesis_to_verify || "Diagnostic réseau en cours"
+          ];
+
+      const recommendedSol = (selectedEnterprise as any)?.recommended_solution || "Fibre Pro Dédiée Orange";
+      const tailoredPitch = (selectedEnterprise as any)?.ai_tailored_pitch || "Raccordement haut débit garanti avec bascule automatique.";
+
+      const twinData = {
+        current_state: initialCurrentState,
         proposed_state: [
-          "Liaison Fibre Orange Pro",
-          "Firewall de sécurité & WAN optimisé",
-          "Licences collaboratives centralisées"
+          recommendedSol,
+          "Garantie de Temps de Rétablissement (GTR 4h signée)",
+          "Supervision & accompagnement Orange Business B2B"
         ],
         roadmap: [
-          "Phase 1: Raccordement physique de la Fibre (S1)",
-          "Phase 2: Configuration des switchs et pare-feux (S2)",
-          "Phase 3: Migration Cloud et accompagnement utilisateur (S3)"
+          "Phase 1: Test d'éligibilité et adduction Fibre (S1)",
+          "Phase 2: Configuration des équipements et routeur managé (S2)",
+          "Phase 3: Migration Cloud et accompagnement utilisateurs (S3)"
         ],
         recommended_services: [
-          { name: "Fibre Pro Dédiée Orange", priority: "CRITICAL", reasoning: "Remplacement du lien ADSL saturé identifié." },
-          { name: "Firewall managé Fortinet", priority: "HIGH", reasoning: "Filtrage et protection UTM centralisée." }
+          { name: recommendedSol, priority: "CRITICAL", reasoning: tailoredPitch },
+          { name: "CyberSOC & Next-Gen Firewall", priority: "HIGH", reasoning: "Protection périmétrique et filtrage des flux 24/7." }
         ]
       };
-      setSlidesTwinData(mockTwin);
-      setSlides(getInitialSlides(mockTwin, selectedEnterprise?.name || ''));
+      setSlidesTwinData(twinData);
+      setSlides(getInitialSlides(twinData, selectedEnterprise?.name || ''));
     }
     setStep('visit');
     // If not recording in background, reset notes. If already recording, keep it running!
@@ -399,23 +407,23 @@ export default function SalesDashboard() {
       setVisitReport(report);
       setEmailDraft(report.follow_up_email_draft);
 
-      const mockTwin = {
+      const twinData = {
         current_state: [
-          ...report.objections_raised,
+          ...(report.objections_raised || []),
           "Dysfonctionnements d'accès débits constatés"
         ],
         proposed_state: [
-          ...report.confirmed_needs,
-          "Migration vers environnement managé"
+          ...(report.confirmed_needs || []),
+          "Migration vers environnement managé Orange Pro"
         ],
-        roadmap: report.actions_todo.map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
+        roadmap: (report.actions_todo || []).map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
         recommended_services: [
-          { name: "Fibre Optique Pro", priority: "CRITICAL", reasoning: "Offre standard raccordement WAN." },
-          { name: "Licences Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Pour uniformiser les outils collaboratifs." }
+          { name: (selectedEnterprise as any)?.recommended_solution || "Fibre Optique Pro", priority: "CRITICAL", reasoning: (selectedEnterprise as any)?.ai_tailored_pitch || "Raccordement réseau dédié avec SLA 99.99%." },
+          { name: "Pack Collaboration Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Uniformisation des outils collaboratifs d'entreprise." }
         ]
       };
-      setSlidesTwinData(mockTwin);
-      setSlides(getInitialSlides(mockTwin, selectedEnterprise?.name || ''));
+      setSlidesTwinData(twinData);
+      setSlides(getInitialSlides(twinData, selectedEnterprise?.name || ''));
 
       setStep('report');
     } catch (err) {

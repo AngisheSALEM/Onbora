@@ -1,11 +1,19 @@
+import os
 import json
+import logging
+import requests
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from sales.models import Enterprise
 from .models import PreCallBriefing, KamVisitReport
 
+from apps.ai_core.unified_engine import get_unified_core_ai
+
+logger = logging.getLogger(__name__)
 User = get_user_model()
+
+CORE_AI_URL = os.getenv("CORE_AI_URL", "http://127.0.0.1:8001").rstrip("/")
 
 ORANGE_OFFERS_CATALOG = [
     {
@@ -52,7 +60,45 @@ class CommercialIntelligenceService:
     def generate_pre_call_briefing(enterprise: Enterprise, kam_user) -> dict:
         """
         Génère un dossier d'attaque complet pre-call pour un rendez-vous complexe.
+        Appelle le microservice Core AI (Brain) sur /api/core-ai/pre-call avec repli sur le fallback local.
         """
+        engine = get_unified_core_ai()
+        ai_data = engine.generate_pre_call_briefing(enterprise, kam_user)
+
+        golden_rules = ai_data.get("golden_rules") or [
+            f"Ne jamais dénigrer directement {enterprise.current_operator or 'le concurrent'} : valoriser nos engagements SLA 99.99% et notre GTR 4h signée.",
+            "Faire verbaliser la douleur financière avant d'aborder tout chiffre ou prix.",
+            "Identifier dès les 10 premières minutes si le DAF doit être intégré à la réunion de restitution."
+        ]
+        briefing, _ = PreCallBriefing.objects.update_or_create(
+            enterprise=enterprise,
+            kam=kam_user,
+            defaults={
+                "company_overview": ai_data.get("company_overview", {}),
+                "key_decision_makers": ai_data.get("key_decision_makers", []),
+                "detected_business_challenges": ai_data.get("detected_business_challenges", []),
+                "custom_pitch_angles": ai_data.get("custom_pitch_angles", []),
+                "critical_discovery_questions": ai_data.get("critical_discovery_questions", []),
+                "golden_rules": golden_rules,
+            }
+        )
+        return {
+            "id": briefing.id,
+            "enterprise_id": enterprise.id,
+            "enterprise_name": enterprise.name,
+            "company_overview": briefing.company_overview,
+            "key_decision_makers": briefing.key_decision_makers,
+            "detected_business_challenges": briefing.detected_business_challenges,
+            "custom_pitch_angles": briefing.custom_pitch_angles,
+            "critical_discovery_questions": briefing.critical_discovery_questions,
+            "golden_rules": briefing.golden_rules,
+            "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
+            "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
+            "ai_engine": "Unified Core AI (In-Process)"
+        }
+
+    @staticmethod
+    def _fallback_pre_call(enterprise: Enterprise, kam_user) -> dict:
         sector = enterprise.sector or "Services & Industrie"
         employee_count = enterprise.employee_count or 25
         site_count = enterprise.site_count or 1
@@ -178,7 +224,39 @@ class CommercialIntelligenceService:
         - E-mail commercial de suivi prêt à envoyer
         - Payload d'injection CRM Dynamics 365 / Salesforce
         - Tâches d'action immédiates avec rappel 48h
+        Exécution directe in-process via le Core AI unifié.
         """
+        ent = report.enterprise
+        kam = report.kam
+        transcript = report.raw_transcript or report.executive_summary or f"Discussion avec {ent.contact_name} de {ent.name}."
+
+        engine = get_unified_core_ai()
+        ai_data = engine.generate_post_call_execution(ent, kam, transcript)
+
+        email_obj = ai_data.get("client_followup_email", {})
+        email_subject = email_obj.get("subject", f"Suite à notre échange — Accompagnement {ent.name}")
+        email_body = email_obj.get("body", "")
+        crm_payload = ai_data.get("crm_payload", {})
+        action_tasks = ai_data.get("action_tasks", [])
+
+        report.follow_up_email_draft = email_body
+        report.crm_payload = crm_payload
+        report.actions_todo = action_tasks
+        report.save(update_fields=['follow_up_email_draft', 'crm_payload', 'actions_todo'])
+
+        return {
+            "report_id": report.id,
+            "enterprise_name": ent.name,
+            "email_subject": email_subject,
+            "email_body": email_body,
+            "crm_payload": crm_payload,
+            "tasks": action_tasks,
+            "crm_sync_status": report.crm_sync_status,
+            "ai_engine": "Unified Core AI (In-Process)"
+        }
+
+    @staticmethod
+    def _fallback_post_call(report: KamVisitReport) -> dict:
         ent = report.enterprise
         kam = report.kam
         contact_name = ent.contact_name or "Monsieur / Madame"

@@ -270,13 +270,219 @@ Votre Conseiller MSP Orange Business"""
         )
 
 
+class UnifiedAIQualificationAdapter(IAIQualificationProvider):
+    """
+    Adaptateur unifié direct connecté au moteur Core AI (Gemini / In-process).
+    Garantit 0 dépendance envers un microservice distant tout en offrant la pleine puissance de Gemini.
+    """
+    def __init__(self):
+        self.fallback = MockAIQualificationAdapter()
+
+    def qualify_lead_brief(self, enterprise_data: Dict[str, Any]) -> BANTScore:
+        try:
+            from apps.ai_core.unified_engine import get_unified_core_ai
+            engine = get_unified_core_ai()
+            prompt = f"""Tu es l'analyste de qualification B2B Orange Business.
+Évalue le score BANT (Budget, Authority, Need, Timeline) pour ce lead :
+- Nom: {enterprise_data.get('name', 'Entreprise')}
+- Secteur: {enterprise_data.get('sector', 'Services')}
+- Taille/Effectif: {enterprise_data.get('approximate_size', '10')}
+- Localisation: {enterprise_data.get('location', 'Kinshasa')}
+
+Génère un JSON strict avec :
+{{
+  "budget_score": 20,
+  "authority_score": 20,
+  "need_score": 22,
+  "timeline_score": 20
+}}"""
+            ai_res = engine._call_gemini_json(prompt, system_instruction="Évalue le scoring BANT B2B avec rigueur en JSON.")
+            if ai_res and all(k in ai_res for k in ["budget_score", "authority_score", "need_score", "timeline_score"]):
+                score = BANTScore(
+                    budget_score=int(ai_res["budget_score"]),
+                    authority_score=int(ai_res["authority_score"]),
+                    need_score=int(ai_res["need_score"]),
+                    timeline_score=int(ai_res["timeline_score"]),
+                )
+                score.calculate_total()
+                return score
+        except Exception as e:
+            logger.warning(f"Erreur évaluation Gemini BANT ({e}), bascule sur le fallback local.")
+
+        return self.fallback.qualify_lead_brief(enterprise_data)
+
+    def qualify_visit(self, raw_transcript: str, enterprise_data: Dict[str, Any]) -> AIQualificationResult:
+        try:
+            from apps.ai_core.unified_engine import get_unified_core_ai
+            engine = get_unified_core_ai()
+
+            ent_name = enterprise_data.get('name', 'Entreprise B2B')
+            sector = enterprise_data.get('sector', 'Services & PME')
+            contact_name = enterprise_data.get('contact_name', 'Le Dirigeant')
+
+            prompt = f"""Tu es le directeur commercial et avant-vente d'Orange Business B2B.
+Analyse la transcription de l'entretien et les données de l'entreprise :
+- Entreprise: {ent_name}
+- Secteur: {sector}
+- Contact: {contact_name}
+- Transcription de la visite :
+\"\"\"{raw_transcript}\"\"\"
+
+Génère un JSON strict avec exactement cette structure :
+{{
+  "bant": {{
+    "budget_score": 22,
+    "authority_score": 22,
+    "need_score": 23,
+    "timeline_score": 21
+  }},
+  "coi": {{
+    "impacted_employees": 8,
+    "downtime_hours_per_month": 6.0,
+    "hourly_wage_usd": 12.0,
+    "monthly_lost_sales_usd": 600.0
+  }},
+  "detected_needs": ["besoin 1", "besoin 2"],
+  "detected_objections": ["objection 1"],
+  "executive_summary": "synthèse concise du diagnostic et de la valeur apportée par les solutions Orange",
+  "email_follow_up_j1": "email de remerciement et synthèse à J+1",
+  "email_follow_up_j4": "email de relance technique à J+4"
+}}"""
+            ai_res = engine._call_gemini_json(prompt, system_instruction="Analyse commerciale B2B en JSON.")
+            if ai_res and 'bant' in ai_res and 'coi' in ai_res:
+                bant_data = ai_res['bant']
+                bant = BANTScore(
+                    budget_score=int(bant_data.get('budget_score', 20)),
+                    authority_score=int(bant_data.get('authority_score', 20)),
+                    need_score=int(bant_data.get('need_score', 20)),
+                    timeline_score=int(bant_data.get('timeline_score', 20)),
+                )
+                bant.calculate_total()
+
+                coi_data = ai_res['coi']
+                impacted = int(coi_data.get('impacted_employees', 8))
+                downtime = float(coi_data.get('downtime_hours_per_month', 6.0))
+                wage = float(coi_data.get('hourly_wage_usd', 12.0))
+                lost_sales = float(coi_data.get('monthly_lost_sales_usd', 600.0))
+                coi = COIEstimation(
+                    impacted_employees=impacted,
+                    downtime_hours_per_month=downtime,
+                    hourly_wage_usd=wage,
+                    monthly_lost_sales_usd=lost_sales
+                )
+                coi.compute()
+
+                p1_price = 180.0
+                p1_cost = 110.0
+                p1_margin = round(((p1_price - p1_cost) / p1_price) * 100, 1)
+                p1_gain = round(coi.total_monthly_coi_usd - p1_price, 2)
+                p1_roi = round((p1_gain / p1_price) * 100, 0)
+                pack_essential = TieredPackage(
+                    tier="ESSENTIAL",
+                    name="Pack Connectivité Pro Essentiel",
+                    monthly_price_usd=p1_price,
+                    estimated_msp_cost_usd=p1_cost,
+                    gross_margin_percent=p1_margin,
+                    monthly_net_gain_usd=p1_gain,
+                    roi_percent=p1_roi,
+                    key_features=[
+                        "Fibre Optique Dédiée symétrique 50 Mbps",
+                        "Garantie de Temps de Rétablissement (GTR) 4h",
+                        "Routeur managé Cisco/MikroTik inclus",
+                    ],
+                    pitch="Élimine immédiatement les coupures réseau et garantit la stabilité de vos encaissements.",
+                    objection_killer="Secours 4G automatique inclus sans surcoût en cas de coupure physique.",
+                )
+
+                p2_price = 320.0
+                p2_cost = 175.0
+                p2_margin = round(((p2_price - p2_cost) / p2_price) * 100, 1)
+                p2_gain = round(coi.total_monthly_coi_usd - p2_price, 2)
+                p2_roi = round((p2_gain / p2_price) * 100, 0)
+                pack_performance = TieredPackage(
+                    tier="PERFORMANCE",
+                    name="Pack Entreprise Performance (Fibre 100M + M365)",
+                    monthly_price_usd=p2_price,
+                    estimated_msp_cost_usd=p2_cost,
+                    gross_margin_percent=p2_margin,
+                    monthly_net_gain_usd=p2_gain,
+                    roi_percent=p2_roi,
+                    key_features=[
+                        "Fibre Optique Dédiée symétrique 100 Mbps + Backup 4G",
+                        f"Suite Microsoft 365 Business ({impacted} licences)",
+                        "Protection Antivirus EDR Cloud gérée par le MSP",
+                        "Support technique prioritaire 6j/7",
+                    ],
+                    pitch=f"Garantit 0 interruption pour vos {impacted} collaborateurs et préserve {coi.total_monthly_coi_usd:,.0f} $/mois de chiffre d'affaires.",
+                    objection_killer=f"Pour 320 $/mois, vous récupérez {p2_gain:,.0f} $/mois net de productivité immédiatement mesurable.",
+                )
+
+                p3_price = 550.0
+                p3_cost = 260.0
+                p3_margin = round(((p3_price - p3_cost) / p3_price) * 100, 1)
+                p3_gain = round(coi.total_monthly_coi_usd - p3_price, 2)
+                p3_roi = round((p3_gain / p3_price) * 100, 0)
+                pack_sovereign = TieredPackage(
+                    tier="SOVEREIGN",
+                    name="Pack Sérénité Totale & Cyberdéfense",
+                    monthly_price_usd=p3_price,
+                    estimated_msp_cost_usd=p3_cost,
+                    gross_margin_percent=p3_margin,
+                    monthly_net_gain_usd=p3_gain,
+                    roi_percent=p3_roi,
+                    key_features=[
+                        "Fibre Optique 200 Mbps avec double adduction physique",
+                        "Sauvegarde Cloud immuable anti-ransomware (1 To)",
+                        "Supervision SOC et astreinte 24h/24 7j/7",
+                        "Infogérance complète de tout votre parc informatique",
+                    ],
+                    pitch="La solution zéro compromis pour protéger votre réputation, vos données sensibles et garantir une disponibilité à 99.9%.",
+                    objection_killer="Audit de conformité et cyber-assurance partenaire inclus.",
+                )
+
+                tech_specs = {
+                    "client_name": ent_name,
+                    "sector": sector,
+                    "site_address": enterprise_data.get('location', 'Kinshasa'),
+                    "contact_technique": contact_name,
+                    "recommended_package": pack_performance.name,
+                    "bandwidth_committed": "100 Mbps symétrique",
+                    "backup_solution": "Routeur 4G LTE automatique (Failover)",
+                    "sla_guarantee": "GTR 4h (Garantie de Temps de Rétablissement)",
+                    "estimated_users": impacted,
+                    "rack_space_required": "2U dans baie existante",
+                    "public_ip_count": 1,
+                    "dns_migration_required": True,
+                    "m365_tenant_creation": True,
+                }
+
+                return AIQualificationResult(
+                    enterprise_name=ent_name,
+                    sector=sector,
+                    bant=bant,
+                    coi=coi,
+                    packages=[pack_essential, pack_performance, pack_sovereign],
+                    recommended_tier="PERFORMANCE",
+                    detected_needs=ai_res.get('detected_needs', []),
+                    detected_objections=ai_res.get('detected_objections', []),
+                    executive_summary=ai_res.get('executive_summary', ''),
+                    email_follow_up_j1=ai_res.get('email_follow_up_j1', ''),
+                    email_follow_up_j4=ai_res.get('email_follow_up_j4', ''),
+                    technical_handover_specs=tech_specs,
+                )
+        except Exception as e:
+            logger.warning(f"Erreur qualification Gemini ({e}), bascule sur le fallback local.")
+
+        return self.fallback.qualify_visit(raw_transcript, enterprise_data)
+
+
 class CoreAIHttpAdapter(IAIQualificationProvider):
     """
-    Adaptateur réseau pour se connecter au microservice Core AI dès qu'il est actif.
+    Adaptateur réseau pour se connecter à un microservice externe si configuré explicitement.
     """
     def __init__(self, base_url: str = None):
         self.base_url = base_url or os.getenv('CORE_AI_URL', 'http://127.0.0.1:8001/api/v1')
-        self.fallback = MockAIQualificationAdapter()
+        self.fallback = UnifiedAIQualificationAdapter()
 
     def qualify_lead_brief(self, enterprise_data: Dict[str, Any]) -> BANTScore:
         try:
@@ -287,7 +493,7 @@ class CoreAIHttpAdapter(IAIQualificationProvider):
                 score.calculate_total()
                 return score
         except Exception as e:
-            logger.warning(f"Échec appel Core AI brief ({e}), utilisation du Mock fallback.")
+            logger.warning(f"Échec appel distant Core AI brief ({e}), bascule unifiée.")
         return self.fallback.qualify_lead_brief(enterprise_data)
 
     def qualify_visit(self, raw_transcript: str, enterprise_data: Dict[str, Any]) -> AIQualificationResult:
@@ -299,7 +505,6 @@ class CoreAIHttpAdapter(IAIQualificationProvider):
             resp = requests.post(f"{self.base_url}/qualify/visit/", json=payload, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
-                # Mapping JSON vers DTO
                 bant = BANTScore(**data['bant'])
                 coi = COIEstimation(**data['coi'])
                 packages = [TieredPackage(**p) for p in data.get('packages', [])]
@@ -318,15 +523,16 @@ class CoreAIHttpAdapter(IAIQualificationProvider):
                     technical_handover_specs=data.get('technical_handover_specs', {}),
                 )
         except Exception as e:
-            logger.warning(f"Échec appel Core AI visit ({e}), utilisation du Mock fallback.")
+            logger.warning(f"Échec appel distant Core AI visit ({e}), bascule unifiée.")
         return self.fallback.qualify_visit(raw_transcript, enterprise_data)
 
 
 def get_ai_qualification_provider() -> IAIQualificationProvider:
     """
-    Factory pour instancier le bon provider selon la configuration d'environnement.
+    Factory pour instancier le provider unifié Core AI.
+    Par défaut, utilise le moteur in-process UnifiedAIQualificationAdapter.
     """
-    provider_name = os.getenv('AI_QUALIFICATION_PROVIDER', 'mock').lower()
-    if provider_name in ['core_ai', 'gemini', 'remote']:
+    provider_name = os.getenv('AI_QUALIFICATION_PROVIDER', 'unified').lower()
+    if provider_name in ['remote', 'external']:
         return CoreAIHttpAdapter()
-    return MockAIQualificationAdapter()
+    return UnifiedAIQualificationAdapter()

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
-import { mockDebriefs } from './kamMockData';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI } from '@/lib/api';
 
@@ -25,27 +24,35 @@ export default function KamDebriefView({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const [debriefData, setDebriefData] = useState<MeetingDebrief | null>(
-    mockDebriefs[selectedVisit?.id] || mockDebriefs['visit-sgb-01']
-  );
+  const [debriefData, setDebriefData] = useState<MeetingDebrief | null>(null);
 
   // Données de retour métier exigées par la Direction KAM Office
   const [conversionStatus, setConversionStatus] = useState<string>(
     (selectedVisit as any)?.conversion_status || 'PROSPECT'
   );
-  const [convertedAmount, setConvertedAmount] = useState<number>(
+  const [convertedAmount, setConvertedAmount] = useState<number | string>(
     (selectedVisit as any)?.converted_amount || 0
   );
   const [convertedOffer, setConvertedOffer] = useState<string>(
-    (selectedVisit as any)?.converted_offer || (selectedVisit?.briefing?.ai_hypotheses_and_playbook?.orange_opportunities?.[0]?.solution_category || 'Fibre Dédiée Pro + SD-WAN')
+    (selectedVisit as any)?.converted_offer || ''
   );
   const [conversionNotes, setConversionNotes] = useState<string>(
     (selectedVisit as any)?.conversion_notes || ''
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successFeedback, setSuccessFeedback] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successFeedback, setSuccessFeedback] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording]);
 
   // Synchronisation lors du changement de compte sélectionné
   useEffect(() => {
@@ -56,7 +63,20 @@ export default function KamDebriefView({
       setConversionNotes((selectedVisit as any).conversion_notes || '');
       setSuccessFeedback('');
       setErrorMessage('');
-      setDebriefData(mockDebriefs[selectedVisit.id] || mockDebriefs['visit-sgb-01']);
+
+      const accountId = selectedVisit.account_id || selectedVisit.id.replace('account-', '');
+      fetchAPI(`/api/kam/accounts/${accountId}/debrief/`)
+        .then((res: any) => {
+          if (res && res.debrief) {
+            setDebriefData(res.debrief);
+            if (!conversionNotes && res.debrief.executive_summary) {
+              setConversionNotes(res.debrief.executive_summary);
+            }
+          }
+        })
+        .catch(() => {
+          // Si pas encore de débrief en base, conserver l'état propre
+        });
     }
   }, [selectedVisitId, selectedVisit]);
 
@@ -65,18 +85,40 @@ export default function KamDebriefView({
     setRecordingSeconds(0);
   };
 
-  const handleStopAndGenerate = () => {
+  const handleStopAndGenerate = async () => {
     setIsRecording(false);
     setIsGenerating(true);
 
-    setTimeout(() => {
+    if (!selectedVisit) {
       setIsGenerating(false);
-      const generated = mockDebriefs[selectedVisit?.id] || mockDebriefs['visit-sgb-01'];
-      setDebriefData(generated);
-      if (!conversionNotes && generated) {
-        setConversionNotes(generated.executive_summary);
+      return;
+    }
+
+    const accountId = selectedVisit.account_id || selectedVisit.id.replace('account-', '');
+    try {
+      const res = await fetchAPI(`/api/kam/accounts/${accountId}/debrief/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          generate_ai: true,
+          audio_duration_seconds: recordingSeconds,
+          transcript: conversionNotes || `Compte-rendu de rendez-vous avec ${selectedVisit.account_name}.`,
+          conversion_status: conversionStatus,
+          converted_amount: Number(convertedAmount) || 0,
+          converted_offer: convertedOffer
+        })
+      });
+      if (res && res.debrief) {
+        setDebriefData(res.debrief);
+        if (res.debrief.executive_summary) {
+          setConversionNotes(res.debrief.executive_summary);
+        }
       }
-    }, 1500);
+    } catch (err) {
+      console.error("Erreur de génération du débriefing Core AI:", err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSubmitDebriefToKamOffice = async () => {
@@ -153,7 +195,6 @@ export default function KamDebriefView({
                 key={v.id}
                 onClick={() => {
                   onSelectVisitId(v.id);
-                  setDebriefData(mockDebriefs[v.id] || mockDebriefs['visit-sgb-01']);
                 }}
                 className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                   isSelected

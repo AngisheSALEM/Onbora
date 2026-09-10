@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
-import { mockDebriefs } from './kamMockData';
 import { Icons } from '@/components/shared/Icons';
+import { fetchAPI } from '@/lib/api';
 
 interface KamVoiceDebriefModalProps {
   visit: StrategicVisit | null;
@@ -34,12 +34,18 @@ export default function KamVoiceDebriefModal({
 
   useEffect(() => {
     if (isOpen && visit) {
-      const existing = mockDebriefs[visit.id];
-      if (existing) {
-        setDebriefData(existing);
-      } else {
-        setDebriefData(null);
-      }
+      const accountId = visit.account_id || visit.id.replace('account-', '');
+      fetchAPI(`/api/kam/accounts/${accountId}/debrief/`)
+        .then((res: any) => {
+          if (res && res.debrief) {
+            setDebriefData(res.debrief);
+          } else {
+            setDebriefData(null);
+          }
+        })
+        .catch(() => {
+          setDebriefData(null);
+        });
     }
   }, [isOpen, visit]);
 
@@ -50,32 +56,29 @@ export default function KamVoiceDebriefModal({
     setRecordingSeconds(0);
   };
 
-  const handleStopAndGenerate = () => {
+  const handleStopAndGenerate = async () => {
     setIsRecording(false);
     setIsGenerating(true);
 
-    setTimeout(() => {
+    const accountId = visit.account_id || visit.id.replace('account-', '');
+    try {
+      const res = await fetchAPI(`/api/kam/accounts/${accountId}/debrief/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          generate_ai: true,
+          audio_duration_seconds: recordingSeconds,
+          transcript: `Débriefing vocal pour le compte ${visit.account_name}.`
+        })
+      });
+      if (res && res.debrief) {
+        setDebriefData(res.debrief);
+      }
+    } catch (err) {
+      console.error("Erreur génération débrief Core AI:", err);
+    } finally {
       setIsGenerating(false);
-      // Generate synthetic debrief
-      const newDebrief: MeetingDebrief = mockDebriefs['visit-sgb-01'] || {
-        visit_id: visit.id,
-        account_name: visit.account_name,
-        date: new Date().toLocaleString('fr-FR'),
-        audio_duration_seconds: recordingSeconds,
-        transcript_text: '« Rendez-vous de travail très constructif avec les décideurs. Accord pour avancer sur l\'audit technique et remise de proposition sous 5 jours. »',
-        executive_summary: 'Réunion positive. Forte réceptivité aux offres souveraines Orange. Priorisation d\'un PoC pilote.',
-        client_followup_email: {
-          subject: `Remerciements & Synthèse — ${visit.account_name} / Orange Business`,
-          body: `Bonjour,\n\nJe vous remercie pour le temps accordé ce jour...\n\nBien cordialement,\nSalem`
-        },
-        commitments_extracted: [
-          { id: 'deb-gen-1', action: 'Transmettre la proposition technique détaillée', owner: 'Salem (KAM)', due_date: '2026-09-08', status: 'IN_PROGRESS' }
-        ],
-        risk_level: 'LOW',
-        next_step_recommendation: 'Valider le devis avec l\'équipe avant-vente.'
-      };
-      setDebriefData(newDebrief);
-    }, 1800);
+    }
   };
 
   const formatTimer = (totalSecs: number) => {
