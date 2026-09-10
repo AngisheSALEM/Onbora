@@ -15,6 +15,7 @@ from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
     EnterpriseSerializer,
+    EnterpriseCockpitSerializer,
     EnterpriseMapSerializer,
     EnterpriseBriefSerializer,
     SalespersonActivitySerializer,
@@ -555,20 +556,55 @@ class SupervisorDashboardView(APIView):
 
     def get(self, request):
         from accounts.models import User
+        from django.db.models import Count, Sum, Q
+        from .models import VisitReport, VisitFormSubmission, Enterprise, SalesIncentivePoint, Plaque
+
+        # Pré-calcul par lot des compteurs de plaques (2 requêtes SQL groupées au lieu de 2N)
+        total_ent_map = dict(Enterprise.objects.filter(plaque_rel__isnull=False).values_list('plaque_rel_id').annotate(c=Count('id')))
+        ready_ent_map = dict(Enterprise.objects.filter(plaque_rel__isnull=False, is_ready_for_conversion=True).values_list('plaque_rel_id').annotate(c=Count('id')))
+        plaque_ctx = {
+            'total_enterprises_map': total_ent_map,
+            'ready_count_map': ready_ent_map,
+        }
 
         # 1. Plaques
         plaques = ListPlaquesUseCase().execute()
-        plaques_data = PlaqueSerializer(plaques, many=True).data
+        plaques_data = PlaqueSerializer(plaques, many=True, context=plaque_ctx).data
 
-        # 2. Leads géolocalisés
-        enterprises = Enterprise.objects.all().order_by('-created_at')
-        enterprises_data = EnterpriseSerializer(enterprises, many=True).data
+        # Pré-calcul par lot des métriques des commerciaux (5 requêtes SQL au lieu de 10N)
+        reports_map = dict(VisitReport.objects.filter(preparation__salesperson__isnull=False).values_list('preparation__salesperson_id').annotate(c=Count('id')))
+        submissions_map = dict(VisitFormSubmission.objects.filter(salesperson__isnull=False).values_list('salesperson_id').annotate(c=Count('id')))
+        conv_map = dict(Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_user__isnull=False).values_list('converted_by_user_id').annotate(c=Count('id')))
+        amount_map = {row[0]: float(row[1] or 0.0) for row in Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_user__isnull=False).values_list('converted_by_user_id').annotate(t=Sum('converted_amount'))}
+        points_map = {row[0]: int(row[1] or 0) for row in SalesIncentivePoint.objects.filter(salesperson__isnull=False).values_list('salesperson_id').annotate(t=Sum('points'))}
+
+        sp_ctx = {
+            'reports_count_map': reports_map,
+            'visits_count_map': reports_map,
+            'submissions_count_map': submissions_map,
+            'conversions_count_map': conv_map,
+            'converted_amount_map': amount_map,
+            'incentive_points_map': points_map,
+        }
 
         # 3. Commerciaux
-        salespersons = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques')
-        salespersons_data = SalespersonUserSerializer(salespersons, many=True).data
+        salespersons = list(User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques'))
+        salespersons_data = SalespersonUserSerializer(salespersons, many=True, context=sp_ctx).data
 
-        # 4. Comptes-rendus de visite reçus
+        # 2. Leads géolocalisés (avec select_related complet pour éliminer les requêtes N+1)
+        ent_counts = Enterprise.objects.aggregate(
+            total=Count('id'),
+            ready=Count('id', filter=Q(is_ready_for_conversion=True))
+        )
+        total_enterprises = ent_counts['total']
+        ready_count = ent_counts['ready']
+        enterprises_qs = Enterprise.objects.defer(
+            'scraped_data', 'existing_crm_data', 'ai_hypotheses', 'ai_key_questions',
+            'ai_potential_objections', 'ai_tailored_pitch', 'conversion_notes'
+        ).select_related('assigned_kam', 'assigned_salesperson', 'plaque_rel').order_by('-created_at')
+        enterprises_data = EnterpriseCockpitSerializer(enterprises_qs[:100], many=True).data
+
+        # 4. Comptes-rendus de visite récents
         reports = VisitReport.objects.select_related('preparation__enterprise', 'preparation__salesperson').order_by('-created_at')[:25]
         reports_feed = []
         for r in reports:
@@ -595,9 +631,9 @@ class SupervisorDashboardView(APIView):
 
         return Response({
             "total_plaques": len(plaques_data),
-            "total_enterprises": enterprises.count(),
-            "ready_enterprises_count": enterprises.filter(is_ready_for_conversion=True).count(),
-            "total_salespersons": salespersons.count(),
+            "total_enterprises": total_enterprises,
+            "ready_enterprises_count": ready_count,
+            "total_salespersons": len(salespersons),
             "total_reports": VisitReport.objects.count(),
             "plaques": plaques_data,
             "enterprises": enterprises_data,
@@ -1786,7 +1822,7 @@ class EnterpriseListFullView(APIView):
         limit = int(request.query_params.get('limit', 1000))
         offset = int(request.query_params.get('offset', 0))
 
-        qs = Enterprise.objects.all()
+        qs = Enterprise.objects.select_related('assigned_kam', 'assigned_salesperson', 'plaque_rel')
 
         if segment:
             qs = qs.filter(segment=segment)

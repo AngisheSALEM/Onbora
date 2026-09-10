@@ -35,6 +35,8 @@ class SalespersonUserSerializer(serializers.ModelSerializer):
         return [p.code for p in obj.assigned_plaques.all()]
 
     def get_reports_count(self, obj):
+        if 'reports_count_map' in self.context:
+            return self.context['reports_count_map'].get(obj.id, 0)
         from .models import VisitReport
         return VisitReport.objects.filter(preparation__salesperson=obj).count()
 
@@ -42,22 +44,32 @@ class SalespersonUserSerializer(serializers.ModelSerializer):
         return getattr(obj, 'avatar', 'memoji_056.png') or 'memoji_056.png'
 
     def get_visits_count(self, obj):
+        if 'visits_count_map' in self.context:
+            return self.context['visits_count_map'].get(obj.id, 0)
         from .models import VisitReport
         return VisitReport.objects.filter(preparation__salesperson=obj).count()
 
     def get_form_submissions_count(self, obj):
+        if 'submissions_count_map' in self.context:
+            return self.context['submissions_count_map'].get(obj.id, 0)
         from .models import VisitFormSubmission
         return VisitFormSubmission.objects.filter(salesperson=obj).count()
 
     def get_conversions_count(self, obj):
+        if 'conversions_count_map' in self.context:
+            return self.context['conversions_count_map'].get(obj.id, 0)
         from .models import Enterprise
         return Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').count()
 
     def get_converted_amount(self, obj):
+        if 'converted_amount_map' in self.context:
+            return self.context['converted_amount_map'].get(obj.id, 0.0)
         from .models import Enterprise
         return float(Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').aggregate(total=models.Sum('converted_amount'))['total'] or 0.0)
 
     def get_incentive_points(self, obj):
+        if 'incentive_points_map' in self.context:
+            return self.context['incentive_points_map'].get(obj.id, 0)
         from .models import SalesIncentivePoint, Enterprise, VisitFormSubmission, VisitReport
         db_points = SalesIncentivePoint.objects.filter(salesperson=obj).aggregate(total=models.Sum('points'))['total'] or 0
         conversions = Enterprise.objects.filter(converted_by_user=obj, conversion_status='CONVERTED').count()
@@ -133,6 +145,8 @@ class PlaqueSerializer(serializers.ModelSerializer):
         return f"/api/sales/plaques/{obj_id}/kml/" if obj_id else None
 
     def get_total_enterprises(self, obj):
+        if 'total_enterprises_map' in self.context:
+            return self.context['total_enterprises_map'].get(obj.id, 0)
         val = getattr(obj, 'total_enterprises', None)
         if val is not None and not callable(val):
             return val
@@ -141,6 +155,8 @@ class PlaqueSerializer(serializers.ModelSerializer):
         return 0
 
     def get_ready_count(self, obj):
+        if 'ready_count_map' in self.context:
+            return self.context['ready_count_map'].get(obj.id, 0)
         val = getattr(obj, 'ready_count', None)
         if val is not None and not callable(val):
             return val
@@ -206,6 +222,48 @@ class EnterpriseSerializer(serializers.ModelSerializer):
         return obj.plaque or ""
 
 
+class EnterpriseCockpitSerializer(serializers.ModelSerializer):
+    """
+    Serializer allégé haute-performance pour le cockpit superviseur et la cartographie,
+    sans les blobs JSON lourds (scraped_data, raw AI debates).
+    """
+    segment_display = serializers.CharField(source='get_segment_display', read_only=True)
+    assigned_entity_display = serializers.CharField(source='get_assigned_entity_display', read_only=True)
+    conversion_status_display = serializers.CharField(source='get_conversion_status_display', read_only=True)
+    assigned_salesperson_name = serializers.SerializerMethodField()
+    plaque_code = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Enterprise
+        fields = [
+            'id', 'crm_id', 'name', 'website', 'sector', 'approximate_size', 'location',
+            'city', 'commune', 'address', 'plaque', 'plaque_rel', 'plaque_code', 'latitude', 'longitude',
+            'annual_revenue', 'employee_count', 'site_count',
+            'rccm', 'id_nat', 'nif',
+            'contact_name', 'contact_role', 'contact_phone', 'contact_email',
+            'current_operator', 'current_connectivity',
+            'segment', 'segment_display',
+            'assigned_entity', 'assigned_entity_display',
+            'assigned_kam', 'assigned_salesperson', 'assigned_salesperson_name',
+            'is_visited', 'last_visited_at',
+            'conversion_status', 'conversion_status_display',
+            'converted_by_entity', 'converted_amount', 'converted_offer', 'converted_at',
+            'is_ready_for_conversion', 'conversion_score', 'recommended_solution',
+            'siren', 'siret', 'kaabu_organization_id',
+            'arrowsphere_tenant_id', 'sync_status', 'last_sync_date', 'created_at'
+        ]
+
+    def get_assigned_salesperson_name(self, obj):
+        if obj.assigned_salesperson:
+            return f"{obj.assigned_salesperson.first_name} {obj.assigned_salesperson.last_name}".strip() or obj.assigned_salesperson.username
+        return None
+
+    def get_plaque_code(self, obj):
+        if obj.plaque_rel:
+            return obj.plaque_rel.code
+        return obj.plaque or ""
+
+
 class SegmentationConfigSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()
 
@@ -218,25 +276,28 @@ class SegmentationConfigSerializer(serializers.ModelSerializer):
         ]
 
     def get_stats(self, obj):
-        total = Enterprise.objects.count()
-        tpe_count = Enterprise.objects.filter(segment='TPE_INFORMEL').count()
-        pme_count = Enterprise.objects.filter(segment='PME').count()
-        gc_count = Enterprise.objects.filter(segment='GRAND_COMPTE').count()
-        bo_count = Enterprise.objects.filter(assigned_entity='BACK_OFFICE').count()
-        kam_count = Enterprise.objects.filter(assigned_entity='KAM_OFFICE').count()
-        conv_bo = Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_entity='BACK_OFFICE').count()
-        conv_kam = Enterprise.objects.filter(conversion_status='CONVERTED', converted_by_entity='KAM_OFFICE').count()
+        from django.db.models import Count, Q
+        agg = Enterprise.objects.aggregate(
+            total=Count('id'),
+            tpe=Count('id', filter=Q(segment='TPE_INFORMEL')),
+            pme=Count('id', filter=Q(segment='PME')),
+            gc=Count('id', filter=Q(segment='GRAND_COMPTE')),
+            bo=Count('id', filter=Q(assigned_entity='BACK_OFFICE')),
+            kam=Count('id', filter=Q(assigned_entity='KAM_OFFICE')),
+            conv_bo=Count('id', filter=Q(conversion_status='CONVERTED', converted_by_entity='BACK_OFFICE')),
+            conv_kam=Count('id', filter=Q(conversion_status='CONVERTED', converted_by_entity='KAM_OFFICE')),
+        )
         
         return {
-            'total_enterprises': total,
-            'tpe_count': tpe_count,
-            'pme_count': pme_count,
-            'grand_compte_count': gc_count,
-            'back_office_total': bo_count,
-            'kam_office_total': kam_count,
-            'converted_back_office': conv_bo,
-            'converted_kam_office': conv_kam,
-            'total_converted': conv_bo + conv_kam
+            'total_enterprises': agg['total'],
+            'tpe_count': agg['tpe'],
+            'pme_count': agg['pme'],
+            'grand_compte_count': agg['gc'],
+            'back_office_total': agg['bo'],
+            'kam_office_total': agg['kam'],
+            'converted_back_office': agg['conv_bo'],
+            'converted_kam_office': agg['conv_kam'],
+            'total_converted': agg['conv_bo'] + agg['conv_kam']
         }
 
 

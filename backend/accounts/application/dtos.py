@@ -23,7 +23,7 @@ class RegisterRequestDTO(BaseDTO):
     username: str
     password: str
     email: str = ""
-    role: str = "CLIENT_B2B"
+    role: str = "SALESPERSON"
     phone: Optional[str] = None
     company_name: Optional[str] = None
     first_name: Optional[str] = None

@@ -11,7 +11,10 @@ from .domain.exceptions import DomainException
 
 
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
+    """
+    Création de comptes collaborateurs réservée exclusivement à l'Administrateur N+1.
+    """
+    permission_classes = [IsAdmin]
     
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -20,7 +23,7 @@ class RegisterView(APIView):
                 username=serializer.validated_data['username'],
                 email=serializer.validated_data.get('email', ''),
                 password=serializer.validated_data['password'],
-                role=serializer.validated_data.get('role', User.CLIENT_B2B),
+                role=serializer.validated_data.get('role', User.SALESPERSON),
                 phone=serializer.validated_data.get('phone', ''),
                 company_name=serializer.validated_data.get('company_name', ''),
                 first_name=serializer.validated_data.get('first_name', ''),

@@ -42,13 +42,17 @@ from twin.services.roi_calculator_service import ROICalculatorService
 
 class ListPlaquesUseCase(BaseUseCase[Any, List[PlaqueDTO]]):
     def execute(self, request: Any = None) -> List[PlaqueDTO]:
-        plaques = Plaque.objects.filter(is_active=True).prefetch_related('enterprises', 'assigned_salespersons')
+        plaques = Plaque.objects.filter(is_active=True).annotate(
+            annotated_total_enterprises=Count('enterprises', distinct=True),
+            annotated_ready_count=Count('enterprises', filter=Q(enterprises__is_ready_for_conversion=True), distinct=True)
+        ).prefetch_related('assigned_salespersons')
         results = []
         for p in plaques:
-            total_leads = p.enterprises.count()
-            ready_leads = p.enterprises.filter(is_ready_for_conversion=True).count()
-            assigned_ids = [u.id for u in p.assigned_salespersons.all()]
-            assigned_names = [f"{u.first_name} {u.last_name}".strip() or u.username for u in p.assigned_salespersons.all()]
+            total_leads = getattr(p, 'annotated_total_enterprises', 0)
+            ready_leads = getattr(p, 'annotated_ready_count', 0)
+            salespersons = list(p.assigned_salespersons.all())
+            assigned_ids = [u.id for u in salespersons]
+            assigned_names = [f"{u.first_name} {u.last_name}".strip() or u.username for u in salespersons]
             results.append(PlaqueDTO(
                 id=p.id,
                 code=p.code,

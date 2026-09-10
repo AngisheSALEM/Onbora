@@ -29,6 +29,7 @@ def api_root(request):
             "discovery": "/api/discovery/",
             "kam": "/api/kam/",
             "sales": "/api/sales/",
+            "crm": "/api/crm/",
             "reporting": "/api/reporting/",
             "catalog": "/api/catalog/"
         }
@@ -43,6 +44,7 @@ urlpatterns = [
     path('api/kam/', include('kam.urls')),
     path('api/kam-office/', include('kam.office_urls')),
     path('api/sales/', include('sales.urls')),
+    path('api/crm/', include('sales.crm_urls')),
     path('api/reporting/', include('reporting.urls')),
     path('api/catalog/', include('catalog.urls')),
     path('api/twin/', include('twin.urls')),
@@ -54,6 +56,7 @@ urlpatterns = [
     path('api/v1/kam/', include('kam.urls')),
     path('api/v1/kam-office/', include('kam.office_urls')),
     path('api/v1/sales/', include('sales.urls')),
+    path('api/v1/crm/', include('sales.crm_urls')),
     path('api/v1/reporting/', include('reporting.urls')),
     path('api/v1/catalog/', include('catalog.urls')),
     path('api/v1/twin/', include('twin.urls')),

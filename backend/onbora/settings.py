@@ -114,7 +114,7 @@ if DATABASE_URL:
     elif clean_host and ('neon.tech' in clean_host or 'render.com' in clean_host):
         db_options['sslmode'] = 'require'
 
-    db_options['connect_timeout'] = 10
+    db_options['connect_timeout'] = 30
     db_options['keepalives'] = 1
     db_options['keepalives_idle'] = 30
     db_options['keepalives_interval'] = 10
@@ -128,11 +128,19 @@ if DATABASE_URL:
             'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
             'HOST': clean_host,
             'PORT': parsed_db.port or 5432,
-            'CONN_MAX_AGE': 0,
+            'CONN_MAX_AGE': 600,
             'CONN_HEALTH_CHECKS': True,
             'OPTIONS': db_options,
         }
     }
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'onbora-local-cache',
+        }
+    }
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 elif DB_HOST:
     DATABASES = {
         'default': {
@@ -218,7 +226,7 @@ CORS_ALLOW_METHODS = [
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',

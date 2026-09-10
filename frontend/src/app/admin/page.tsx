@@ -795,7 +795,7 @@ export default function AdminCockpitPage() {
       email: '',
       phone: '',
       password: '',
-      location: role === 'SUPERVISOR' ? 'Kinshasa - Plaque Gombe' : 'Kinshasa & Portefeuille National',
+      location: role === 'SUPERVISOR' ? 'Direction Régionale Kinshasa' : 'Kinshasa & Portefeuille National',
       avatar: role === 'SUPERVISOR' ? 'memoji_031.png' : 'memoji_019.png',
     });
     setManagerCreateError('');
@@ -3701,13 +3701,13 @@ export default function AdminCockpitPage() {
 
               <div className="flex flex-col gap-1">
                 <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
-                  {targetRoleToCreate === 'SUPERVISOR' ? 'Territoire / Plaque de rattachement' : 'Portefeuille de spécialisation'}
+                  {targetRoleToCreate === 'SUPERVISOR' ? 'Direction Régionale / Ville de Supervision' : 'Portefeuille de spécialisation'}
                 </label>
                 <input
                   type="text"
                   value={managerForm.location}
                   onChange={(e) => setManagerForm({ ...managerForm, location: e.target.value })}
-                  placeholder={targetRoleToCreate === 'SUPERVISOR' ? 'Ex: Kinshasa - Gombe & Limete' : 'Ex: Banques & Groupes Miniers Katanga'}
+                  placeholder={targetRoleToCreate === 'SUPERVISOR' ? 'Ex: Direction Régionale Kinshasa' : 'Ex: Banques & Groupes Miniers Katanga'}
                   className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
                 />
               </div>

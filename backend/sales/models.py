@@ -259,6 +259,12 @@ class Enterprise(models.Model):
     )
     last_sync_date = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        db_table = 'sales_enterprise'
+        verbose_name = "Compte Entreprise (CRM B2B)"
+        verbose_name_plural = "Répertoire CRM des Entreprises B2B"
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.name} [{self.get_segment_display()}] - {self.city}"
 

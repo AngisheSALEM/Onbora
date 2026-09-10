@@ -3,11 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from .models import User, UserDevice
 
-# Désenregistrer la table Group par défaut de Django car Onbora utilise User.role
-try:
-    admin.site.unregister(Group)
-except admin.sites.NotRegistered:
-    pass
+# La gestion des Groupes et Permissions Django est active pour le contrôle RBAC
 
 
 class CustomUserAdmin(UserAdmin):
