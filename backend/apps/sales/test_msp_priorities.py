@@ -36,9 +36,11 @@ class MSPPrioritiesServicesTestCase(TestCase):
             salesperson=self.salesperson,
             meeting_objective='Audit connectivité et cybersécurité'
         )
+        from shared.infrastructure.ai_providers import MockAIQualificationAdapter
+        self.mock_adapter = MockAIQualificationAdapter()
 
     def test_bant_qualification_lead_brief(self):
-        service = BANTQualificationService()
+        service = BANTQualificationService(ai_provider=self.mock_adapter)
         result = service.evaluate_enterprise_brief(self.enterprise)
         
         self.assertIn('status', result)
@@ -53,7 +55,7 @@ class MSPPrioritiesServicesTestCase(TestCase):
             approximate_size='1',
             location='Marché'
         )
-        service = BANTQualificationService()
+        service = BANTQualificationService(ai_provider=self.mock_adapter)
         result = service.evaluate_enterprise_brief(informal_enterprise)
         
         self.assertEqual(result['status'], 'DISQUALIFIED')
@@ -87,7 +89,7 @@ class MSPPrioritiesServicesTestCase(TestCase):
         self.assertTrue(eval_pkg['is_margin_compliant'])
 
     def test_visit_transcription_and_handover_pack(self):
-        service = BANTQualificationService()
+        service = BANTQualificationService(ai_provider=self.mock_adapter)
         transcript = "Rendez-vous très positif avec le médecin chef. Problème récurrent de coupure internet et besoin de M365."
         qual_res = service.process_visit_transcription(transcript, {
             'name': self.enterprise.name,

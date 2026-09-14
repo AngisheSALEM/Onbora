@@ -1307,22 +1307,6 @@ from .serializers import (
 )
 
 
-class FieldIntelligenceReportCreateListView(APIView):
-    permission_classes = [IsSalespersonOrAdmin]
-
-    def get(self, request):
-        reports = FieldIntelligenceReport.objects.all().order_by('-created_at')
-        enterprise_id = request.GET.get('enterprise_id')
-        if enterprise_id:
-            reports = reports.filter(enterprise_id=enterprise_id)
-        
-        conversion_status = request.GET.get('conversion_status')
-        if conversion_status:
-            reports = reports.filter(conversion_status=conversion_status)
-
-        serializer = FieldIntelligenceReportSerializer(reports, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
 def _process_nearby_leads(nearby_leads_data: list, report, enterprise, user) -> int:
     """Creates NearbyLead entries and awards incentive points up to limit."""
     credited = 0
@@ -1405,6 +1389,22 @@ def _process_trade_audits(trade_audits_data: list, report, enterprise, user) -> 
                 )
     return credited
 
+
+class FieldIntelligenceReportCreateListView(APIView):
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request):
+        reports = FieldIntelligenceReport.objects.all().order_by('-created_at')
+        enterprise_id = request.GET.get('enterprise_id')
+        if enterprise_id:
+            reports = reports.filter(enterprise_id=enterprise_id)
+        
+        conversion_status = request.GET.get('conversion_status')
+        if conversion_status:
+            reports = reports.filter(conversion_status=conversion_status)
+
+        serializer = FieldIntelligenceReportSerializer(reports, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data

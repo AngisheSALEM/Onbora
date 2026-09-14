@@ -50,8 +50,15 @@ class AuthAPITest(APITestCase):
             password='existingpass123',
             role=User.KAM
         )
+        self.admin_user = User.objects.create_superuser(
+            username='admin_auth',
+            password='password123',
+            email='admin_auth@test.com',
+            role=User.ADMIN
+        )
 
     def test_register_user_success(self):
+        self.client.force_authenticate(user=self.admin_user)
         response = self.client.post(self.register_url, self.user_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('token', response.data)
@@ -64,6 +71,7 @@ class AuthAPITest(APITestCase):
         self.assertEqual(user.phone, '0699999999')
 
     def test_register_missing_fields(self):
+        self.client.force_authenticate(user=self.admin_user)
         incomplete_data = {'username': 'incomplete'}
         response = self.client.post(self.register_url, incomplete_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

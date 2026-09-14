@@ -200,13 +200,56 @@ class MockAIQualificationAdapter(IAIQualificationProvider):
             f"Transmettre la note de cadrage à {contact_name}"
         ]
 
+        packages = []
+        if detected_needs:
+            packages = [
+                TieredPackage(
+                    tier='ESSENTIAL',
+                    name='Pack Connectivité Sécurisée Pro',
+                    monthly_price_usd=180.0,
+                    estimated_msp_cost_usd=90.0,
+                    gross_margin_percent=50.0,
+                    monthly_net_gain_usd=max(0.0, round(coi.total_monthly_coi_usd - 180.0, 2)),
+                    roi_percent=round((max(0.0, coi.total_monthly_coi_usd - 180.0) / 180.0) * 100, 1),
+                    key_features=['Fibre Pro 50 Mbps', 'Router Wi-Fi Pro', 'GTR 4h'],
+                    pitch=f"Garantit la stabilité de vos flux pour {ent_name}.",
+                    objection_killer="GTR 4h contractuelle et secours 4G."
+                ),
+                TieredPackage(
+                    tier='PERFORMANCE',
+                    name='Pack Performance & Outils Collaboratifs',
+                    monthly_price_usd=320.0,
+                    estimated_msp_cost_usd=160.0,
+                    gross_margin_percent=50.0,
+                    monthly_net_gain_usd=max(0.0, round(coi.total_monthly_coi_usd - 320.0, 2)),
+                    roi_percent=round((max(0.0, coi.total_monthly_coi_usd - 320.0) / 320.0) * 100, 1),
+                    key_features=['Fibre Dédiée 100 Mbps', 'Microsoft 365 Business', 'Secours 4G automatique'],
+                    pitch=f"Connectivité renforcée et suite collaborative pour les équipes de {ent_name}.",
+                    objection_killer="Zéro coupure avec bascule instantanée."
+                ),
+                TieredPackage(
+                    tier='SOVEREIGN',
+                    name='Pack Souveraineté & Cyberdéfense',
+                    monthly_price_usd=550.0,
+                    estimated_msp_cost_usd=275.0,
+                    gross_margin_percent=50.0,
+                    monthly_net_gain_usd=max(0.0, round(coi.total_monthly_coi_usd - 550.0, 2)),
+                    roi_percent=round((max(0.0, coi.total_monthly_coi_usd - 550.0) / 550.0) * 100, 1),
+                    key_features=['Fibre 200 Mbps', 'Firewall managé 24/7', 'Sauvegarde Cloud souveraine'],
+                    pitch=f"Protection intégrale de vos données et conformité pour {ent_name}.",
+                    objection_killer="Supervision SOC proactive 24/7."
+                ),
+            ]
+
+        recommended_tier = "PERFORMANCE" if len(packages) >= 2 else ("ESSENTIAL" if packages else "STANDARD")
+
         return AIQualificationResult(
             enterprise_name=ent_name,
             sector=sector,
             bant=bant,
             coi=coi,
-            packages=[],
-            recommended_tier="STANDARD",
+            packages=packages,
+            recommended_tier=recommended_tier,
             detected_needs=detected_needs,
             detected_objections=detected_objections,
             actions_todo=actions_todo,

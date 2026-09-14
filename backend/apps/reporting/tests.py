@@ -3,8 +3,8 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .models import DemoEvent
-from .utils import log_demo_event
+from reporting.models import DemoEvent
+from reporting.utils import log_demo_event
 
 User = get_user_model()
 
