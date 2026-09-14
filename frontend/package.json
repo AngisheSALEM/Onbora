@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:design": "python ../scripts/verify_design_compliance.py --all"
   },
   "dependencies": {
     "@types/leaflet": "^1.9.22",

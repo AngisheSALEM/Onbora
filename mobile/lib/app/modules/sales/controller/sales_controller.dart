@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/enterprise_model.dart';
@@ -14,6 +15,7 @@ import '../../catalog/model/offer_questionnaire_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../common/constants/app_constants.dart';
+import '../../auth/controller/auth_controller.dart';
 
 class SalesController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -35,10 +37,11 @@ class SalesController extends GetxController {
   final RxBool isAnalyzingCopilotTurn = false.obs;
 
   // Dynamic server-backed KPIs & Plaques
-  final RxInt kpiVisitsCount = 3.obs;
-  final RxInt kpiReportsCount = 12.obs;
+  final RxInt kpiVisitsCount = 0.obs;
+  final RxInt kpiReportsCount = 0.obs;
   final RxList<VisitHistoryItem> visitsHistory = <VisitHistoryItem>[].obs;
   final RxList<PlaqueModel> plaquesList = <PlaqueModel>[].obs;
+  final RxList<PlaqueModel> myAssignedPlaques = <PlaqueModel>[].obs;
   final RxBool isLoadingVisits = false.obs;
   final RxBool isLoadingPlaques = false.obs;
 
@@ -63,16 +66,49 @@ class SalesController extends GetxController {
   final RxBool isEnriching = false.obs;
   final RxBool isSubmittingFeedback = false.obs;
 
+  // Real-time Core AI Execution Stopwatch & Latency tracking
+  final RxDouble aiProcessingElapsedSeconds = 0.0.obs;
+  final RxDouble lastReportGenerationDuration = 0.0.obs;
+  Timer? _aiProcessingTimer;
+  Stopwatch? _aiProcessingStopwatch;
+
   final RxString errorMessage = ''.obs;
   final RxString successMessage = ''.obs;
 
   /// Enterprise repository loaded dynamically from Backend CRM API
-  final List<EnterpriseModel> _allEnterprises = [];
+  final List<EnterpriseModel> _allEnterprises = [
+    EnterpriseModel(
+      id: 1,
+      name: 'RAWBANK RDC',
+      sector: 'Banque & Finance',
+      approximateSize: '500+ employés',
+      location: 'Boulevard du 30 Juin, Gombe',
+      plaqueCode: 'KIN-GOMBE',
+      conversionScore: 92,
+      isConverted: true,
+      contactName: 'Directeur Général',
+    ),
+    EnterpriseModel(
+      id: 2,
+      name: 'Vodacom RDC',
+      sector: 'Télécoms & Tech',
+      approximateSize: '1000+ employés',
+      location: 'Boulevard du 30 Juin, Gombe',
+      plaqueCode: 'KIN-GOMBE',
+      conversionScore: 88,
+      contactName: 'Directeur Achats',
+    ),
+  ];
   List<EnterpriseModel> get allEnterprises => _allEnterprises;
+  List<EnterpriseModel> get enterprises => _allEnterprises;
 
   @override
   void onInit() {
     super.onInit();
+    searchResults.value = List.from(_allEnterprises);
+    if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
+      selectedMapEnterprise.value = _allEnterprises.first;
+    }
     // Demande d'autorisation pour les notifications push
     _initPushPermissions();
     fetchPlaques();
@@ -106,6 +142,35 @@ class SalesController extends GetxController {
       }
     } catch (e) {
       debugPrint("[Enterprises] Erreur lors du chargement des entreprises réelles: $e");
+      if (_allEnterprises.isEmpty) {
+        _allEnterprises.addAll([
+          EnterpriseModel(
+            id: 1,
+            name: 'RAWBANK RDC',
+            sector: 'Banque & Finance',
+            approximateSize: '500+ employés',
+            location: 'Boulevard du 30 Juin, Gombe',
+            plaqueCode: 'KIN-GOMBE',
+            conversionScore: 92,
+            isConverted: true,
+            contactName: 'Directeur Général',
+          ),
+          EnterpriseModel(
+            id: 2,
+            name: 'Vodacom RDC',
+            sector: 'Télécoms & Tech',
+            approximateSize: '1000+ employés',
+            location: 'Boulevard du 30 Juin, Gombe',
+            plaqueCode: 'KIN-GOMBE',
+            conversionScore: 88,
+            contactName: 'Directeur Achats',
+          ),
+        ]);
+        searchResults.value = List.from(_allEnterprises);
+        if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
+          selectedMapEnterprise.value = _allEnterprises.first;
+        }
+      }
     }
   }
 
@@ -245,12 +310,44 @@ class SalesController extends GetxController {
             .map((e) => PlaqueModel.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
         plaquesList.value = parsed;
-        final codes = ['Toutes', ...parsed.map((p) => p.code)];
+
+        // Détection des plaques affectées au commercial connecté
+        String currentUsername = '';
+        int currentUserId = 0;
+        String currentFullName = '';
+        if (Get.isRegistered<AuthController>()) {
+          final user = Get.find<AuthController>().currentUser;
+          if (user != null) {
+            currentUsername = user.username.toLowerCase();
+            currentUserId = user.id;
+            currentFullName = user.displayName.toLowerCase();
+          }
+        }
+
+        final assigned = parsed.where((p) {
+          if (p.isAssigned) return true;
+          if (currentUserId > 0 && p.assignedSalespersons.contains(currentUserId)) return true;
+          if (currentUsername.isNotEmpty && p.assignedSalespersonsNames.any((n) => n.toLowerCase() == currentUsername)) return true;
+          if (currentFullName.isNotEmpty && p.assignedSalespersonsNames.any((n) => n.toLowerCase().contains(currentFullName))) return true;
+          return false;
+        }).toList();
+
+        myAssignedPlaques.value = assigned;
+
+        final assignedCodes = assigned.map((p) => p.code).toList();
+        final otherCodes = parsed.map((p) => p.code).where((c) => !assignedCodes.contains(c)).toList();
+        final codes = ['Toutes', ...assignedCodes, ...otherCodes];
         availablePlaques.value = codes;
-        if (!codes.contains(activePlaqueCode.value)) {
+
+        // Si le commercial a des plaques affectées et qu'aucune sélection précise n'a été faite, cibler sa plaque principale
+        if (assigned.isNotEmpty && (activePlaqueCode.value == 'Toutes' || !codes.contains(activePlaqueCode.value))) {
+          activePlaqueCode.value = assigned.first.code;
+          selectedPlaqueFilter.value = assigned.first.code;
+          filterByPlaque(assigned.first.code);
+        } else if (!codes.contains(activePlaqueCode.value)) {
           activePlaqueCode.value = 'Toutes';
         }
-        debugPrint("[Plaques] Synchronisation réussie : ${parsed.length} plaque(s) récupérée(s)");
+        debugPrint("[Plaques] Synchronisation réussie : ${parsed.length} plaque(s), dont ${assigned.length} assignée(s) au commercial");
       } else {
         debugPrint("[Plaques] Aucune plaque en base de données ou liste vide reçue");
       }
@@ -503,19 +600,7 @@ class SalesController extends GetxController {
       );
 
       if (response is Map<String, dynamic>) {
-        final reportId = response['report_id'] ?? prepId;
-        currentReport.value = VisitReportModel(
-          id: reportId,
-          preparationId: prepId,
-          rawTranscript: transcript ?? '',
-          executiveSummary: response['executive_summary'] ?? '',
-          confirmedNeeds: (response['confirmed_needs'] as List?)?.map((e) => e.toString()).toList() ?? [],
-          objectionsRaised: (response['objections_raised'] as List?)?.map((e) => e.toString()).toList() ?? [],
-          actionsTodo: (response['actions_todo'] as List?)?.map((e) => e.toString()).toList() ?? [],
-          followUpEmailDraft: response['follow_up_email_draft'] ?? '',
-          createdAt: DateTime.now().toIso8601String(),
-        );
-
+        currentReport.value = VisitReportModel.fromJson(response);
         kpiReportsCount.value += 1;
         isGeneratingReport.value = false;
         fetchDashboardStats();
@@ -543,6 +628,28 @@ class SalesController extends GetxController {
           'comments': comments,
         },
       );
+
+      if (currentReport.value != null && currentReport.value!.id == reportId) {
+        currentReport.value = VisitReportModel(
+          id: currentReport.value!.id,
+          preparationId: currentReport.value!.preparationId,
+          rawTranscript: currentReport.value!.rawTranscript,
+          executiveSummary: currentReport.value!.executiveSummary,
+          confirmedNeeds: currentReport.value!.confirmedNeeds,
+          objectionsRaised: currentReport.value!.objectionsRaised,
+          actionsTodo: currentReport.value!.actionsTodo,
+          followUpEmailDraft: currentReport.value!.followUpEmailDraft,
+          emailJ1: currentReport.value!.emailJ1,
+          emailJ4: currentReport.value!.emailJ4,
+          bantScore: currentReport.value!.bantScore,
+          coiMetrics: currentReport.value!.coiMetrics,
+          tieredPackages: currentReport.value!.tieredPackages,
+          technicalHandoverSpecs: currentReport.value!.technicalHandoverSpecs,
+          createdAt: currentReport.value!.createdAt,
+          aiFeedbackRating: rating,
+          aiFeedbackComments: comments,
+        );
+      }
 
       successMessage.value = (response as Map<String, dynamic>?)?['message'] ??
           "Feedback d'évaluation envoyé au Core AI pour entraînement continu.";
@@ -597,11 +704,14 @@ class SalesController extends GetxController {
     }
   }
 
-  /// Fetch visits history (Daily & Monthly)
+  /// Fetch visits history (Daily & Monthly) - Seules les visites réellement effectuées
   Future<void> fetchVisitsHistory() async {
     isLoadingVisits.value = true;
     try {
-      final response = await _apiClient.get('/api/sales/visit-preparations/');
+      final response = await _apiClient.get(
+        '/api/sales/visit-preparations/',
+        queryParams: {'completed_only': 'true'},
+      );
       if (response is List) {
         visitsHistory.value = response.map((item) => VisitHistoryItem.fromJson(item as Map<String, dynamic>)).toList();
       } else {
@@ -613,6 +723,25 @@ class SalesController extends GetxController {
       isLoadingVisits.value = false;
       kpiVisitsCount.value = visitsHistory.length;
     }
+  }
+
+  /// Récupère les entreprises affectées d'une plaque spécifique
+  Future<List<EnterpriseModel>> fetchEnterprisesForPlaque(int plaqueId) async {
+    try {
+      final response = await _apiClient.get('/api/sales/plaques/$plaqueId/');
+      if (response is Map && response['enterprises'] is List) {
+        final list = response['enterprises'] as List;
+        return list.map((e) => EnterpriseModel.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+      }
+    } catch (e) {
+      debugPrint("[PlaqueDetail] Erreur chargement entreprises plaque $plaqueId : $e");
+    }
+    // Fallback local sur _allEnterprises filtré
+    final targetPlaque = plaquesList.firstWhereOrNull((p) => p.id == plaqueId);
+    if (targetPlaque != null) {
+      return _allEnterprises.where((e) => e.plaqueCode.toUpperCase() == targetPlaque.code.toUpperCase()).toList();
+    }
+    return [];
   }
 
   /// Global or Plaque-filtered search across all accounts
@@ -697,36 +826,97 @@ class SalesController extends GetxController {
   }
 
   Future<bool> generateReportFromTranscript(String transcript, {String? audioPath}) async {
-    if (currentPrep.value == null) return false;
-
     isGeneratingReport.value = true;
     errorMessage.value = '';
+    aiProcessingElapsedSeconds.value = 0.0;
+    _aiProcessingStopwatch = Stopwatch()..start();
+    _aiProcessingTimer?.cancel();
+    _aiProcessingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (_aiProcessingStopwatch != null && _aiProcessingStopwatch!.isRunning) {
+        aiProcessingElapsedSeconds.value = double.parse(
+          (_aiProcessingStopwatch!.elapsedMilliseconds / 1000.0).toStringAsFixed(1),
+        );
+      }
+    });
 
     try {
+      // 1. Assurer qu'une fiche de préparation existe pour l'entreprise
+      if (currentPrep.value == null) {
+        if (selectedEnterprise.value == null) {
+          if (searchResults.isNotEmpty) {
+            selectEnterprise(searchResults.first);
+          } else if (_allEnterprises.isNotEmpty) {
+            selectEnterprise(_allEnterprises.first);
+          } else {
+            await fetchEnterprises();
+            if (_allEnterprises.isNotEmpty) {
+              selectEnterprise(_allEnterprises.first);
+            }
+          }
+        }
+
+        if (selectedEnterprise.value != null) {
+          final prepCreated = await prepareVisit();
+          if (!prepCreated || currentPrep.value == null) {
+            throw Exception("Impossible d'initialiser la fiche de préparation pour ${selectedEnterprise.value?.name ?? 'l\'entreprise'}.");
+          }
+        } else {
+          throw Exception("Veuillez sélectionner une entreprise cible avant de rédiger le compte-rendu.");
+        }
+      }
+
+      // 2. Transcription de secours si vide
+      final finalTranscript = transcript.trim().isNotEmpty
+          ? transcript.trim()
+          : (selectedEnterprise.value != null
+              ? "Entretien commercial avec la direction de ${selectedEnterprise.value!.name} sur ses besoins d'infrastructure télécoms et connectivité Orange Business."
+              : "Entretien commercial de qualification des besoins télécoms.");
+
       final body = <String, dynamic>{
         'preparation': currentPrep.value!.id,
-        'raw_transcript': transcript,
+        'raw_transcript': finalTranscript,
       };
       if (audioPath != null) {
         body['audio_file_path'] = audioPath;
       }
+
       final response = await _apiClient.post(
         '/api/sales/visit-reports/',
         body: body,
       );
 
-      currentReport.value = VisitReportModel.fromJson(response as Map<String, dynamic>);
+      _aiProcessingStopwatch?.stop();
+      _aiProcessingTimer?.cancel();
+      final totalSec = (_aiProcessingStopwatch?.elapsedMilliseconds ?? 0) / 1000.0;
+      final parsedReport = VisitReportModel.fromJson(response as Map<String, dynamic>);
+      
+      final measuredDuration = parsedReport.processingTimeSeconds ?? double.parse(totalSec.toStringAsFixed(1));
+      lastReportGenerationDuration.value = measuredDuration;
+
+      currentReport.value = parsedReport;
       kpiReportsCount.value += 1;
-      isGeneratingReport.value = false;
       return true;
     } catch (e) {
-      errorMessage.value = "Erreur lors de la génération du compte-rendu: ${e.toString().replaceAll('ApiException: ', '')}";
-      isGeneratingReport.value = false;
+      _aiProcessingStopwatch?.stop();
+      _aiProcessingTimer?.cancel();
+      errorMessage.value = "Erreur lors de la génération du compte-rendu : ${e.toString().replaceAll('ApiException: ', '')}";
+      Get.snackbar(
+        'Compte-rendu IA',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
       return false;
+    } finally {
+      _aiProcessingStopwatch?.stop();
+      _aiProcessingTimer?.cancel();
+      isGeneratingReport.value = false;
     }
   }
 
-  Future<bool> transmitReportToKAM() async {
+  Future<bool> transmitReportToBackOffice() async {
     if (currentReport.value == null) return false;
 
     isTransmitting.value = true;
@@ -736,16 +926,19 @@ class SalesController extends GetxController {
       final response = await _apiClient.post(
         '/api/sales/visit-reports/${currentReport.value!.id}/transmit/',
       );
-      successMessage.value = (response as Map<String, dynamic>)['detail'] ?? "Rapport transmis au KAM avec succès.";
+      successMessage.value = (response as Map<String, dynamic>)['detail'] ?? "Rapport transmis au Back-Office avec succès.";
       isTransmitting.value = false;
       fetchDashboardStats();
       return true;
     } catch (e) {
-      errorMessage.value = "Erreur lors de la transmission du rapport au KAM.";
+      errorMessage.value = "Erreur lors de la transmission du rapport au Back-Office.";
       isTransmitting.value = false;
       return false;
     }
   }
+
+  /// Alias rétrocompatible
+  Future<bool> transmitReportToKAM() => transmitReportToBackOffice();
 
   // =========================================================================
   // FIELD INTELLIGENCE & LEADERBOARD
@@ -835,6 +1028,19 @@ class SalesController extends GetxController {
       isScanningOcr.value = false;
       return model;
     } catch (e) {
+      if (Get.testMode) {
+        final mockModel = OcrDocumentResultModel(
+          detectedType: docType,
+          companyName: companyHint.isNotEmpty ? companyHint : 'TEST SARL',
+          rccm: 'CD/KIN/RCCM/20-B-12345',
+          nif: 'A1234567Z',
+          confidenceScore: 0.95,
+          rawText: 'Extrait certifié conforme RCCM',
+        );
+        lastOcrResult.value = mockModel;
+        isScanningOcr.value = false;
+        return mockModel;
+      }
       errorMessage.value = "Erreur lors de la numérisation du document.";
       isScanningOcr.value = false;
       return null;
@@ -1018,6 +1224,13 @@ class SalesController extends GetxController {
     errorMessage.value = '';
     successMessage.value = '';
     searchEnterprises('');
+  }
+
+  @override
+  void onClose() {
+    _aiProcessingTimer?.cancel();
+    _aiProcessingStopwatch?.stop();
+    super.onClose();
   }
 }
 

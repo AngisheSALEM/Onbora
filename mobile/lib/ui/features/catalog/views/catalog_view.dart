@@ -53,7 +53,7 @@ class _CatalogViewState extends State<CatalogView> {
                     hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                     filled: true,
                     fillColor: const Color(0xFF1E293B),
-                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFF97316)),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF4F6CE8)),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear_rounded, color: Colors.grey),
@@ -81,7 +81,7 @@ class _CatalogViewState extends State<CatalogView> {
                           label: Text(category),
                           selected: isSelected,
                           onSelected: (_) => catalogVm.filterByCategory(category),
-                          selectedColor: const Color(0xFFF97316),
+                          selectedColor: const Color(0xFF4F6CE8),
                           labelStyle: TextStyle(
                             color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -169,7 +169,7 @@ class _CatalogViewState extends State<CatalogView> {
                                       Text(
                                         '${item.monthlyPrice.toStringAsFixed(0)} \$ / mois',
                                         style: const TextStyle(
-                                          color: Color(0xFFF97316),
+                                          color: Color(0xFF4F6CE8),
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),

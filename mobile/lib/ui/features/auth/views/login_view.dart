@@ -98,13 +98,13 @@ class _LoginViewState extends State<LoginView> {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                                color: const Color(0xFF4F6CE8).withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
                                 Icons.business_center_rounded,
                                 size: 44,
-                                color: Color(0xFFF97316),
+                                color: Color(0xFF4F6CE8),
                               ),
                             ),
                           ),
@@ -182,7 +182,7 @@ class _LoginViewState extends State<LoginView> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: const [
-                                          Icon(Icons.developer_board_rounded, size: 16, color: Color(0xFFF97316)),
+                                          Icon(Icons.developer_board_rounded, size: 16, color: Color(0xFF4F6CE8)),
                                           SizedBox(width: 6),
                                           Text('Local Dev', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                         ],
@@ -284,7 +284,7 @@ class _LoginViewState extends State<LoginView> {
                             onPressed: authVm.isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: const Color(0xFFF97316),
+                              backgroundColor: const Color(0xFF4F6CE8),
                             ),
                             child: authVm.isLoading
                                 ? Row(

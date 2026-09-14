@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
@@ -113,14 +113,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppConstants.orangeOfficial,
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white : AppConstants.primaryBlack,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Orange Business • Copilote Terrain',
+                          'Onbora • Copilote Terrain',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -195,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       TextButton(
                                         onPressed: _handleLogin,
-                                        child: const Text('Réessayer', style: TextStyle(color: AppConstants.orangeOfficial, fontWeight: FontWeight.bold, fontSize: 12)),
+                                        child: Text('Réessayer', style: TextStyle(color: isDark ? Colors.white : AppConstants.primaryBlack, fontWeight: FontWeight.bold, fontSize: 12)),
                                       ),
                                     ],
                                   ),
@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: AppConstants.marginXxL),
 
-                          // Submit Button (#FF7900 Official CTA)
+                          // Submit Button (Official CTA)
                           Obx(() => ScaleTap(
                                 child: ElevatedButton(
                                   onPressed: authController.isLoading.value ? null : _handleLogin,

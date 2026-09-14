@@ -318,7 +318,7 @@ class ProfileScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Rendez-vous terrain',
+                                'Visites terrain',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -327,7 +327,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${salesController?.kpiVisitsCount.value ?? 3} visites planifiées et effectuées',
+                                '${salesController?.kpiVisitsCount.value ?? 0} visites planifiées et effectuées',
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),

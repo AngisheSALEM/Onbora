@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI } from '@/lib/api';
@@ -44,6 +44,43 @@ export default function KamDebriefView({
   const [successFeedback, setSuccessFeedback] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
+  const recognitionRef = useRef<any>(null);
+
+  // Initialize SpeechRecognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'fr-FR';
+
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript + ' ';
+          }
+          if (currentTranscript.trim()) {
+            setConversionNotes(currentTranscript.trim());
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.warn("Speech recognition notice:", event.error);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+    };
+  }, []);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRecording) {
@@ -83,9 +120,21 @@ export default function KamDebriefView({
   const handleStartRecording = () => {
     setIsRecording(true);
     setRecordingSeconds(0);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.warn("Speech recognition notice:", e);
+      }
+    }
   };
 
   const handleStopAndGenerate = async () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+    }
     setIsRecording(false);
     setIsGenerating(true);
 
@@ -101,7 +150,7 @@ export default function KamDebriefView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           generate_ai: true,
-          audio_duration_seconds: recordingSeconds,
+          audio_duration_seconds: Math.max(recordingSeconds, 30),
           transcript: conversionNotes || `Compte-rendu de rendez-vous avec ${selectedVisit.account_name}.`,
           conversion_status: conversionStatus,
           converted_amount: Number(convertedAmount) || 0,
@@ -385,6 +434,31 @@ export default function KamDebriefView({
           </div>
         </div>
 
+        {/* Quick Context Injection Chips */}
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
+            Marqueurs Rapides de Débriefing
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              "Besoin Fibre Dédiée 100 Mbps",
+              "Interconnexion multi-sites",
+              "Secours 4G automatique",
+              "Contrat concurrent expire fin d'année",
+              "Validation budgétaire obtenue",
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setConversionNotes((prev) => prev ? `${prev}. ${chip}` : chip)}
+                className="px-2.5 py-1 bg-[#ECEAE5] dark:bg-[#191816] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-300 text-[11px] font-medium rounded-lg border border-black/5 dark:border-white/5 transition-all cursor-pointer"
+              >
+                + {chip}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Notes et Compte-Rendu de Débriefing */}
         <div className="space-y-1.5">
           <label className="text-xs font-extrabold uppercase text-zinc-500 tracking-wider block">
@@ -425,6 +499,46 @@ export default function KamDebriefView({
       {/* Debrief AI Deliverables */}
       {debriefData && !isGenerating && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* RAG Matching Packages */}
+          {(debriefData as any).recommended_packages && (debriefData as any).recommended_packages.length > 0 && (
+            <div className="lg:col-span-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Icons.Layers size={16} className="text-blue-600" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Offres Orange B2B Recommandées par RAG ({(debriefData as any).recommended_packages.length})
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {(debriefData as any).recommended_packages.map((pkg: any, idx: number) => (
+                  <div key={pkg.id || idx} className="p-3.5 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/5 flex flex-col justify-between gap-2 text-xs">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 font-bold">
+                          {pkg.category || 'Orange B2B'}
+                        </span>
+                        {pkg.score !== undefined && (
+                          <span className="text-[10px] font-mono text-zinc-400">
+                            Match: {(pkg.score * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </div>
+                      <h5 className="font-extrabold text-zinc-900 dark:text-white leading-tight">
+                        {pkg.title}
+                      </h5>
+                      <p className="text-[11px] text-zinc-500 mt-1 line-clamp-2">
+                        {pkg.summary}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200">{pkg.pricing || 'Sur devis'}</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{pkg.sla || 'SLA 99.9%'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Deliverable 1 : Executive Summary & Commitments */}
           <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 flex flex-col gap-5 shadow-sm border border-black/5 dark:border-white/5">

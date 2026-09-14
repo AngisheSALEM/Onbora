@@ -11,6 +11,8 @@ class EnterpriseModel {
   final int? plaqueId;
   final int conversionScore;
   final bool isConverted;
+  final bool isVisited;
+  final String? contactName;
   final List<String> keyNeeds;
   final String aiBriefSummary;
   final String? customPitch;
@@ -63,6 +65,8 @@ class EnterpriseModel {
     this.plaqueId,
     this.conversionScore = 85,
     this.isConverted = false,
+    this.isVisited = false,
+    this.contactName,
     this.keyNeeds = const ['Fibre Optique Pro 100M', 'Microsoft 365 Business', 'Firewall Managé'],
     this.aiBriefSummary = 'Besoin prioritaire en interconnexion multisite et sécurisation des flux de données.',
     this.customPitch,
@@ -99,6 +103,8 @@ class EnterpriseModel {
       plaqueId: json['plaque_rel'] ?? json['plaque_id'],
       conversionScore: json['conversion_score'] ?? json['score'] ?? 88,
       isConverted: json['is_converted'] ?? json['converted'] ?? (json['id'] == 1 || json['id'] == 3),
+      isVisited: json['is_visited'] == true,
+      contactName: json['contact_name'],
       keyNeeds: parsedNeeds,
       aiBriefSummary: json['ai_brief_summary'] ?? json['brief'] ?? 'Compte éligible au bouquet Fibre & SD-WAN Orange B2B.',
       customPitch: json['custom_pitch'] ?? json['pitch'],
@@ -127,6 +133,8 @@ class EnterpriseModel {
       'plaque_id': plaqueId,
       'conversion_score': conversionScore,
       'is_converted': isConverted,
+      'is_visited': isVisited,
+      'contact_name': contactName,
       'key_needs': keyNeeds,
       'ai_brief_summary': aiBriefSummary,
       'custom_pitch': customPitch,

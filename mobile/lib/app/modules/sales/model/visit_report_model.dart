@@ -16,6 +16,7 @@ class VisitReportModel {
   final String createdAt;
   final int? aiFeedbackRating;
   final String aiFeedbackComments;
+  final double? processingTimeSeconds;
 
   VisitReportModel({
     required this.id,
@@ -35,6 +36,7 @@ class VisitReportModel {
     required this.createdAt,
     this.aiFeedbackRating,
     this.aiFeedbackComments = '',
+    this.processingTimeSeconds,
   });
 
   factory VisitReportModel.fromJson(Map<String, dynamic> json) {
@@ -62,69 +64,34 @@ class VisitReportModel {
             ? Map<String, dynamic>.from(json['original_ai_output']['technical_handover_specs'] as Map)
             : null);
 
-    final emailDraft = json['follow_up_email_draft'] as String? ??
-        'Bonjour,\n\nMerci pour cet échange constructif. Comme convenu, le Pack Performance sécurise votre activité pour 320 \$/mois et vous fait économiser 930 \$/mois net dès le premier mois.\n\nBien cordialement,';
-
+    final emailDraft = json['follow_up_email_draft'] as String? ?? '';
     final j1 = json['email_j1'] as String? ?? (json['original_ai_output'] is Map ? json['original_ai_output']['email_j1'] as String? ?? emailDraft : emailDraft);
     final j4 = json['email_j4'] as String? ?? (json['original_ai_output'] is Map ? json['original_ai_output']['email_j4'] as String? ?? '' : '');
 
-    // Default tiered packages if empty
-    final finalPackages = packages.isNotEmpty
-        ? packages
-        : [
-            {
-              'tier': 'ESSENTIAL',
-              'name': 'Pack Connectivité Pro (50M)',
-              'monthly_price_usd': 180.0,
-              'gross_margin_percent': 38.9,
-              'monthly_net_gain_usd': 1070.0,
-              'roi_percent': 594.4,
-              'pitch': 'Fibre 50M + GTR 4h avec routeur managé inclus.',
-              'objection_killer': 'Secours 4G automatique inclus.'
-            },
-            {
-              'tier': 'PERFORMANCE',
-              'name': 'Pack Entreprise Performance (100M + M365)',
-              'monthly_price_usd': 320.0,
-              'gross_margin_percent': 45.3,
-              'monthly_net_gain_usd': 930.0,
-              'roi_percent': 290.6,
-              'pitch': 'Fibre 100M + M365 + Sécurité EDR Cloud gérée.',
-              'objection_killer': 'Rentabilisé dès le 1er mois sans coupure.'
-            },
-            {
-              'tier': 'SOVEREIGN',
-              'name': 'Pack Sérénité Totale (200M + SOC 24/7)',
-              'monthly_price_usd': 550.0,
-              'gross_margin_percent': 52.7,
-              'monthly_net_gain_usd': 700.0,
-              'roi_percent': 127.3,
-              'pitch': 'Fibre 200M double adduction + Backup Cloud 1 To.',
-              'objection_killer': 'Audit de sécurité et conformité inclus.'
-            }
-          ];
+    final rawProcessingTime = json['processing_time_seconds'] as num? ??
+        (json['original_ai_output'] is Map && json['original_ai_output']['processing_time_seconds'] != null
+            ? json['original_ai_output']['processing_time_seconds'] as num?
+            : null);
 
     return VisitReportModel(
-      id: json['id'] ?? (json['report_id'] ?? 0),
-      preparationId: json['preparation'] ?? json['preparation_id'] ?? 0,
-      rawTranscript: json['raw_transcript'] ?? '',
-      executiveSummary: json['executive_summary'] ?? 'Diagnostic financier : Les coupures actuelles coûtent ~1 250 \$/mois. Le Pack Performance à 320 \$/mois dégage un gain net de +930 \$/mois (ROI +290%).',
-      confirmedNeeds: (json['confirmed_needs'] as List?)?.map((e) => e.toString()).toList() ??
-          ['Fibre Optique Pro 100 Mbps', 'Secours 4G automatique', 'Microsoft 365 Business'],
-      objectionsRaised: (json['objections_raised'] as List?)?.map((e) => e.toString()).toList() ??
-          ['Délai de déploiement', 'Peur d\'interruption pendant la bascule'],
-      actionsTodo: (json['actions_todo'] as List?)?.map((e) => e.toString()).toList() ??
-          ['Envoyer l\'email de relance J+1 avec chiffrage ROI', 'Transmettre le dossier technique au KAM'],
+      id: json['id'] as int? ?? (json['report_id'] as int? ?? 0),
+      preparationId: json['preparation'] as int? ?? (json['preparation_id'] as int? ?? 0),
+      rawTranscript: json['raw_transcript'] as String? ?? '',
+      executiveSummary: json['executive_summary'] as String? ?? '',
+      confirmedNeeds: (json['confirmed_needs'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      objectionsRaised: (json['objections_raised'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      actionsTodo: (json['actions_todo'] as List?)?.map((e) => e.toString()).toList() ?? [],
       followUpEmailDraft: emailDraft,
       emailJ1: j1,
       emailJ4: j4,
-      bantScore: rawBant ?? {'total_score': 88, 'status': 'HOT_LEAD'},
-      coiMetrics: rawCoi ?? {'total_monthly_coi_usd': 1250.0, 'annual_coi_usd': 15000.0},
-      tieredPackages: finalPackages,
+      bantScore: rawBant,
+      coiMetrics: rawCoi,
+      tieredPackages: packages,
       technicalHandoverSpecs: rawTechSpecs,
-      createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
-      aiFeedbackRating: json['ai_feedback_rating'],
-      aiFeedbackComments: json['ai_feedback_comments'] ?? '',
+      createdAt: json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      aiFeedbackRating: json['ai_feedback_rating'] as int?,
+      aiFeedbackComments: json['ai_feedback_comments'] as String? ?? '',
+      processingTimeSeconds: rawProcessingTime?.toDouble(),
     );
   }
 
@@ -147,6 +114,7 @@ class VisitReportModel {
       'created_at': createdAt,
       'ai_feedback_rating': aiFeedbackRating,
       'ai_feedback_comments': aiFeedbackComments,
+      'processing_time_seconds': processingTimeSeconds,
     };
   }
 }

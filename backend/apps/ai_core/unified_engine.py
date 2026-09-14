@@ -142,33 +142,157 @@ class UnifiedCoreAIEngine:
         }
 
     # -------------------------------------------------------------------------
-    # 5. LEAD SCORING B2B
+    # 5. LEAD SCORING B2B & CHURN RADAR DATA EXTRACTOR
     # -------------------------------------------------------------------------
+    def _extract_enterprise_notes(self, enterprise: Any) -> str:
+        """Consolide l'ensemble des retours terrain, comptes-rendus et observations sur le compte."""
+        notes = []
+        if getattr(enterprise, 'conversion_notes', None):
+            notes.append(f"Notes commerciales : {enterprise.conversion_notes}")
+        
+        # Rapports KAM récents
+        if hasattr(enterprise, 'kam_visit_reports'):
+            try:
+                reports = sorted(enterprise.kam_visit_reports.all(), key=lambda x: x.created_at, reverse=True)[:3]
+                for r in reports:
+                    part = f"Rapport KAM ({r.created_at.strftime('%d/%m/%Y')}) : {r.executive_summary or ''}"
+                    if r.confirmed_needs:
+                        part += f" | Besoins : {', '.join(r.confirmed_needs)}"
+                    if r.objections_raised:
+                        part += f" | Objections : {', '.join(r.objections_raised)}"
+                    notes.append(part)
+            except Exception:
+                pass
+
+        # Retours terrain commerciaux SOHO
+        if hasattr(enterprise, 'field_intelligence_reports'):
+            try:
+                firs = sorted(enterprise.field_intelligence_reports.all(), key=lambda x: x.created_at, reverse=True)[:2]
+                for fir in firs:
+                    if fir.nurturing_notes:
+                        notes.append(f"Feedback terrain : {fir.nurturing_notes}")
+            except Exception:
+                pass
+
+        # Briefing pre-call existant
+        if hasattr(enterprise, 'pre_call_briefings'):
+            try:
+                briefings = sorted(enterprise.pre_call_briefings.all(), key=lambda x: x.created_at, reverse=True)
+                if briefings and briefings[0].detected_business_challenges:
+                    notes.append(f"Défis business identifiés : {', '.join(briefings[0].detected_business_challenges)}")
+            except Exception:
+                pass
+
+        return "\n".join(notes) if notes else "Compte suivi par l'équipe commerciale Orange Business B2B."
+
     def evaluate_lead_scoring(self, enterprise: Any) -> dict:
+        rev = float(getattr(enterprise, 'annual_revenue', 0) or 0)
+        telecom_budget = float(getattr(enterprise, 'telecom_budget_monthly', 0) or (rev * 0.015 / 12 if rev > 0 else 2500.0))
+        budget_label = getattr(enterprise, 'budget_status', '') or 'Non précisé'
+        if budget_label != 'Non précisé':
+            budget_str = f"{budget_label} (Budget mensuel estimé : {telecom_budget:,.0f} USD, CA annuel : {rev:,.0f} USD)"
+        else:
+            budget_str = f"CA annuel : {rev:,.0f} USD, Budget télécom mensuel estimé : {telecom_budget:,.0f} USD"
+
+        # Échéance du contrat concurrent
+        contract_end = getattr(enterprise, 'contract_end_date', None)
+        if contract_end:
+            expiry_str = f"Échéance au {contract_end.strftime('%d/%m/%Y')}"
+        else:
+            expiry_str = "Non renseignée"
+
+        # Décideur impliqué
+        contact_name = getattr(enterprise, 'contact_name', '') or ''
+        contact_role = (getattr(enterprise, 'contact_role', '') or '').upper()
+        decision_maker = bool(contact_name) and any(
+            t in contact_role for t in ['DG', 'DIRECTEUR', 'DSI', 'DAF', 'GÉRANT', 'GERANT', 'HEAD', 'VP', 'CIO', 'CEO']
+        )
+
+        raw_notes = self._extract_enterprise_notes(enterprise)
+        curr_op = getattr(enterprise, 'current_operator', 'Non renseigné') or 'Non renseigné'
+        curr_conn = getattr(enterprise, 'current_connectivity', 'N/A') or 'N/A'
+        pain = getattr(enterprise, 'pain_level', 'Modéré') or 'Modéré'
+        incidents = getattr(enterprise, 'incident_count', 0) or 0
+
+        extended_notes = f"{raw_notes}\n[Contexte Télécoms] Opérateur actuel : {curr_op} ({curr_conn}). Niveau de frustration : {pain}. Incidents non résolus : {incidents}."
+
         inp = LeadScoringInput(
             company_name=enterprise.name,
-            sector=enterprise.sector,
-            locations_count=enterprise.site_count or 1,
-            budget_status=f"CA annuel : {enterprise.annual_revenue or 'N/A'}",
-            competitor_contract_expiry="Non renseigne",
-            decision_maker_involved=bool(enterprise.contact_name),
-            raw_notes=enterprise.conversion_notes or ""
+            sector=getattr(enterprise, 'sector', 'Services B2B') or "Services B2B",
+            locations_count=getattr(enterprise, 'site_count', 1) or 1,
+            budget_status=budget_str,
+            pain_level=pain,
+            competitor_contract_expiry=expiry_str,
+            decision_maker_involved=decision_maker,
+            raw_notes=extended_notes
         )
         out = self.lead_scoring_engine.evaluate(inp)
-        return out.model_dump()
+        res = out.model_dump()
+
+        # Normalisation pour le frontend et le KAM Office
+        tier = res.get("scoring_tier", "TIER_2_PROSPECT")
+        if tier == "TIER_2_MEDIUM":
+            tier = "TIER_2_PROSPECT"
+        res["scoring_tier"] = tier
+
+        formatted_drivers = []
+        for d in res.get("score_drivers", []):
+            formatted_drivers.append({
+                "factor": d.get("factor", ""),
+                "points": d.get("impact", "+10 pts"),
+                "positive": d.get("type", "POSITIVE") == "POSITIVE",
+            })
+        res["score_drivers"] = formatted_drivers
+        res["estimated_mrr_usd"] = round(telecom_budget, 2)
+        res["recommended_approach"] = res.get("recommended_sales_angle", "")
+        return res
 
     # -------------------------------------------------------------------------
     # 6. CHURN RADAR & RETENTION
     # -------------------------------------------------------------------------
     def analyze_churn_radar(self, enterprise: Any) -> dict:
+        rev = float(getattr(enterprise, 'annual_revenue', 0) or 0)
+        telecom_budget = float(getattr(enterprise, 'telecom_budget_monthly', 0) or (rev * 0.015 / 12 if rev > 0 else 2500.0))
+        contract_end = getattr(enterprise, 'contract_end_date', None)
+        contract_end_str = contract_end.strftime('%Y-%m-%d') if contract_end else None
+
+        incidents = getattr(enterprise, 'incident_count', 0) or 0
+        curr_op = getattr(enterprise, 'current_operator', 'Orange') or 'Orange'
+        curr_conn = getattr(enterprise, 'current_connectivity', 'Fibre Pro') or 'Fibre Pro'
+        pain = getattr(enterprise, 'pain_level', 'Modéré') or 'Modéré'
+
+        # Services actuels
+        services = [curr_conn]
+        conv_offer = getattr(enterprise, 'converted_offer', None)
+        if conv_offer and conv_offer not in services:
+            services.append(conv_offer)
+
+        raw_notes = self._extract_enterprise_notes(enterprise)
+        notes = f"{raw_notes}\n[Audit Opérateur] Fournisseur : {curr_op}. Niveau de risque : {pain}. Incidents récents non résolus : {incidents}."
+
         inp = ChurnRadarInput(
             company_name=enterprise.name,
-            current_services=[enterprise.current_connectivity or "Fibre Pro"],
-            recent_interactions_notes=enterprise.conversion_notes or f"Client sous contrat {enterprise.current_operator or 'Orange'}.",
-            unresolved_incidents_count=1 if enterprise.current_operator != 'Orange' else 0,
+            current_services=services,
+            recent_interactions_notes=notes,
+            unresolved_incidents_count=incidents,
+            contract_end_date=contract_end_str,
         )
         out = self.churn_radar_engine.analyze(inp)
-        return out.model_dump()
+        res = out.model_dump()
+
+        # Normalisation pour affichage radar KAM
+        res["enterprise_id"] = enterprise.id
+        res["enterprise_name"] = enterprise.name
+        res["sector"] = getattr(enterprise, 'sector', 'Grand Compte') or "Grand Compte"
+        res["at_stake_monthly_revenue_usd"] = round(telecom_budget, 2)
+        res["signals_detected"] = res.get("churn_reasons", [])
+        retention = res.get("retention_plan", {})
+        res["retention_action_plan"] = {
+            "urgency": retention.get("urgency", "IMMEDIATE_48H"),
+            "action": retention.get("action", "Organiser un point de gouvernance"),
+            "recommended_talk_track": retention.get("email_draft", "")
+        }
+        return res
 
 
 # Singleton applicatif Core AI unifié

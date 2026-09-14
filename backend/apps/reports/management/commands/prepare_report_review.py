@@ -15,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--cases",
             type=Path,
-            default=Path(settings.BASE_DIR) / "evals" / "cases.json",
+            default=Path(settings.BASE_DIR) / "resources" / "evals" / "cases.json",
         )
         parser.add_argument(
             "--catalog",

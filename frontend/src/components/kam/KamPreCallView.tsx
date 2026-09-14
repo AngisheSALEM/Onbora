@@ -63,6 +63,35 @@ export default function KamPreCallView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // RAG Catalog Explorer State
+  const [ragQuery, setRagQuery] = useState('Fibre Dédiée');
+  const [ragResults, setRagResults] = useState<any[]>([]);
+  const [ragSearching, setRagSearching] = useState(false);
+  const [copiedRagPackage, setCopiedRagPackage] = useState<string | null>(null);
+
+  const searchRagCatalog = async (queryText: string) => {
+    if (!queryText.trim()) return;
+    setRagSearching(true);
+    try {
+      const res = await fetchAPI('/api/ai/catalog/search/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: queryText, limit: 3 }),
+      });
+      if (res && Array.isArray(res.results)) {
+        setRagResults(res.results);
+      }
+    } catch (e) {
+      console.warn("Erreur recherche RAG catalogue:", e);
+    } finally {
+      setRagSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    searchRagCatalog(ragQuery);
+  }, []);
+
   // Synchroniser si initialAccountId change depuis le parent
   useEffect(() => {
     if (initialAccountId && String(initialAccountId) !== selectedAccountId) {
@@ -318,6 +347,130 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Card 3bis: Moteur RAG Catalogue Orange Business B2B */}
+          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
+              <div className="flex items-center gap-2">
+                <Icons.Layers size={18} className="text-[#4F6CE8]" />
+                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  Recherche RAG Catalogue Orange B2B en Direct
+                </h3>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>TF-IDF Inversé (&lt; 2ms)</span>
+              </span>
+            </div>
+
+            {/* Search Input & Quick Keyword Chips */}
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={ragQuery}
+                    onChange={(e) => setRagQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') searchRagCatalog(ragQuery);
+                    }}
+                    placeholder="Rechercher une offre (ex: Fibre 100M, SD-WAN, Cloud, CyberSOC)..."
+                    className="w-full px-4 py-2.5 pl-9 rounded-2xl bg-[#ECEAE5] dark:bg-[#1C1C1E] border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+                    <Icons.Search size={14} />
+                  </div>
+                </div>
+                <button
+                  onClick={() => searchRagCatalog(ragQuery)}
+                  disabled={ragSearching}
+                  className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-2xl transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Icons.Sparkles size={14} className={ragSearching ? "animate-spin" : ""} />
+                  <span>Rechercher</span>
+                </button>
+              </div>
+
+              {/* Quick suggestion chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {["Fibre Dédiée Pro", "SD-WAN Managé", "CyberSOC 24/7", "Cloud Backup", "IP VPN", "GTR 4h"].map((keyword, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setRagQuery(keyword);
+                      searchRagCatalog(keyword);
+                    }}
+                    className="px-2.5 py-1 bg-[#ECEAE5] dark:bg-[#1C1C1E] hover:bg-white dark:hover:bg-[#3B373D] text-zinc-700 dark:text-zinc-300 text-[11px] font-medium rounded-lg border border-black/5 dark:border-white/5 transition-all cursor-pointer"
+                  >
+                    {keyword}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* RAG Results Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+              {ragResults.length > 0 ? (
+                ragResults.map((result: any, idx: number) => {
+                  const isCopied = copiedRagPackage === (result.id || String(idx));
+                  return (
+                    <div
+                      key={result.id || idx}
+                      className="p-4 rounded-2xl bg-[#ECEAE5] dark:bg-[#1C1C1E] border border-black/5 dark:border-white/5 flex flex-col justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold">
+                            {result.categorie || 'Orange Business'}
+                          </span>
+                          {result.score !== undefined && (
+                            <span className="text-[10px] font-mono text-zinc-400">
+                              Pertinence: {(result.score * 100).toFixed(0)}%
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="font-extrabold text-zinc-900 dark:text-white leading-tight">
+                          {result.nom_offre || result.titre}
+                        </h4>
+
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                          {result.description_commerciale || result.resume}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                        <div className="text-[11px]">
+                          <span className="font-bold text-zinc-900 dark:text-white block">
+                            {result.tarification || 'Sur devis'}
+                          </span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            {result.sla || 'SLA 99.9%'}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            const snippet = `Offre Orange : ${result.nom_offre || result.titre} (${result.tarification || 'Sur devis'}) - SLA : ${result.sla || 'GTR 4h'} - ${result.description_commerciale || ''}`;
+                            navigator.clipboard.writeText(snippet);
+                            setCopiedRagPackage(result.id || String(idx));
+                            setTimeout(() => setCopiedRagPackage(null), 2000);
+                          }}
+                          className="px-2.5 py-1 bg-white dark:bg-[#2F2C30] hover:bg-[#4F6CE8] hover:text-white text-zinc-700 dark:text-zinc-200 rounded-lg text-[10px] font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                        >
+                          {isCopied ? "Copié !" : "Copier"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="md:col-span-3 text-center py-4 text-xs text-zinc-400 italic">
+                  Aucune offre ne correspond à cette recherche. Essayez un autre mot-clé.
+                </div>
+              )}
             </div>
           </div>
 

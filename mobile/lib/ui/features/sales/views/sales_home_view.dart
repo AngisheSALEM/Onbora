@@ -17,7 +17,7 @@ class SalesHomeView extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           children: const [
-            Icon(Icons.directions_run_rounded, color: Color(0xFFF97316)),
+            Icon(Icons.directions_run_rounded, color: Color(0xFF4F6CE8)),
             SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -65,18 +65,18 @@ class SalesHomeView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF97316).withValues(alpha: 0.2),
+                      color: const Color(0xFF4F6CE8).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.4)),
+                      border: Border.all(color: const Color(0xFF4F6CE8).withValues(alpha: 0.4)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.person_pin_rounded, color: Color(0xFFF97316), size: 14),
+                        Icon(Icons.person_pin_rounded, color: Color(0xFF4F6CE8), size: 14),
                         SizedBox(width: 6),
                         Text(
                           'Commercial Terrain',
-                          style: TextStyle(color: Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFF4F6CE8), fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -104,7 +104,7 @@ class SalesHomeView extends StatelessWidget {
                       icon: const Icon(Icons.search_rounded, size: 20),
                       label: const Text('Rechercher un prospect'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
+                        backgroundColor: const Color(0xFF4F6CE8),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -161,7 +161,7 @@ class SalesHomeView extends StatelessWidget {
               // Enterprise Selected Active Card
               Card(
                 shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Color(0xFFF97316), width: 2),
+                  side: const BorderSide(color: Color(0xFF4F6CE8), width: 2),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Padding(
@@ -176,14 +176,14 @@ class SalesHomeView extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF97316).withValues(alpha: 0.15),
+                                color: const Color(0xFF4F6CE8).withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 salesVm.selectedEnterprise!.sector ?? 'Prospect B2B',
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color: Color(0xFFF97316),
+                                  color: Color(0xFF4F6CE8),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -248,7 +248,7 @@ class SalesHomeView extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                               ),
-                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF97316)),
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6CE8)),
                             ),
                           ),
                         ],
@@ -302,7 +302,7 @@ class SalesHomeView extends StatelessWidget {
                   title: 'Préparer le brief',
                   subtitle: 'Pitch & Questions',
                   icon: Icons.edit_document,
-                  color: const Color(0xFFF97316),
+                  color: const Color(0xFF4F6CE8),
                   onTap: salesVm.selectedEnterprise != null
                       ? () {
                           Navigator.push(

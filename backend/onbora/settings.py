@@ -17,8 +17,12 @@ from dotenv import load_dotenv
 # Load .env file
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+import sys
+APPS_DIR = BASE_DIR / 'apps'
+if str(APPS_DIR) not in sys.path:
+    sys.path.insert(0, str(APPS_DIR))
 
 
 # Quick-start development settings - unsuitable for production
@@ -246,7 +250,7 @@ FIREBASE_CREDENTIALS_PATH = os.getenv(
 # Onbora Core AI Configuration (Direct Modular Integration)
 ONBORA_CATALOG_PATH = os.getenv(
     'ONBORA_CATALOG_PATH',
-    str(BASE_DIR / 'catalog_ai' / 'versions' / 'v1' / 'catalog.json')
+    str(BASE_DIR / 'resources' / 'catalog_ai' / 'versions' / 'v1' / 'catalog.json')
 )
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash-lite')

@@ -39,8 +39,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (savedToken && savedUser) {
       try {
+        const parsedUser = JSON.parse(savedUser);
         setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        setUser(parsedUser);
+
+        // Verify token validity against backend asynchronously
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        fetch(`${API_URL}/api/auth/me/`, {
+          headers: {
+            'Authorization': `Token ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+        }).then((res) => {
+          if (res.ok) {
+            return res.json().then((meData) => {
+              if (meData && meData.id) {
+                setUser((prev) => (prev ? { ...prev, ...meData } : meData));
+                localStorage.setItem('user', JSON.stringify({ ...parsedUser, ...meData }));
+              }
+            });
+          } else if (res.status === 401) {
+            // Token is invalid/expired (e.g. database reset from Neon to SQLite)
+            console.warn("Session expirée ou invalide. Nettoyage du stockage local.");
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+          }
+        }).catch(() => {
+          // Network error or backend offline - keep local state
+        });
       } catch (e) {
         // Clear corrupt data
         localStorage.removeItem('token');
@@ -53,6 +81,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(null);
     }
     setLoading(false);
+
+    const handleUnauthorized = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
   }, []);
 
   const login = (newToken: string, newUser: User) => {

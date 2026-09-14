@@ -150,3 +150,37 @@ class AIExecution(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["conversation", "purpose", "created_at"])]
+
+
+class AISessionMemory(models.Model):
+    """
+    Gestionnaire de mémoire persistante PostgreSQL pour les sessions de copilote IA.
+    Remplace le stockage précaire de fichiers JSON sur disque local (memory_store.py).
+    Supporte la boucle Human-in-the-Loop et l'historique conversationnel multi-tours.
+    """
+
+    class DecisionStatus(models.TextChoices):
+        PENDING = "pending", "En attente"
+        APPROVED = "approved", "Validé"
+        REJECTED = "rejected", "Rejeté"
+
+    session_id = models.CharField(max_length=120, unique=True, db_index=True)
+    client_name = models.CharField(max_length=255, default="Compte B2B")
+    summary = models.TextField(blank=True, default="")
+    messages = models.JSONField(default=list, blank=True)
+    reports = models.JSONField(default=list, blank=True)
+    decision_status = models.CharField(
+        max_length=20, choices=DecisionStatus.choices, default=DecisionStatus.PENDING
+    )
+    validation_comment = models.TextField(blank=True, default="")
+    human_validation_required = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        verbose_name = "Session Mémoire IA"
+        verbose_name_plural = "Sessions Mémoires IA"
+
+    def __str__(self) -> str:
+        return f"{self.session_id} - {self.client_name} ({self.decision_status})"

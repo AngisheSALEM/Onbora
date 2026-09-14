@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         catalog = load_catalog(settings.ONBORA_CATALOG_PATH)
-        cases = load_evaluation_cases(settings.BASE_DIR / "evals" / "cases.json")
+        cases = load_evaluation_cases(settings.BASE_DIR / "resources" / "evals" / "cases.json")
         failures = []
         for case in cases:
             result = evaluate_case(case, catalog)

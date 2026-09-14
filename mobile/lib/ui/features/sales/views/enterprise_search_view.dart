@@ -56,7 +56,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.hub_rounded, color: Color(0xFFF97316), size: 22),
+                    Icon(Icons.hub_rounded, color: Color(0xFF4F6CE8), size: 22),
                     SizedBox(width: 8),
                     Text(
                       'Base Entreprises & CRM',
@@ -90,7 +90,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                             hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFF97316)),
+                            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF4F6CE8)),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.clear_rounded, color: Colors.grey, size: 20),
@@ -108,7 +108,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                     ElevatedButton(
                       onPressed: () => _triggerSearch(_searchController.text),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
+                        backgroundColor: const Color(0xFF4F6CE8),
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
@@ -143,7 +143,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                               _triggerSearch(sector);
                             }
                           },
-                          selectedColor: const Color(0xFFF97316),
+                          selectedColor: const Color(0xFF4F6CE8),
                           labelStyle: TextStyle(
                             color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -235,7 +235,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                               children: ['Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'].map((suggestion) {
                                 return ActionChip(
                                   label: Text(suggestion),
-                                  avatar: const Icon(Icons.business_rounded, size: 16, color: Color(0xFFF97316)),
+                                  avatar: const Icon(Icons.business_rounded, size: 16, color: Color(0xFF4F6CE8)),
                                   onPressed: () {
                                     _searchController.text = suggestion;
                                     _triggerSearch(suggestion);
@@ -257,7 +257,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                             margin: const EdgeInsets.only(bottom: 14),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
-                                color: isSelected ? const Color(0xFFF97316) : Colors.transparent,
+                                color: isSelected ? const Color(0xFF4F6CE8) : Colors.transparent,
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(16),
@@ -363,7 +363,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: isSelected ? const Color(0xFF10B981) : const Color(0xFFF97316),
+                                      backgroundColor: isSelected ? const Color(0xFF10B981) : const Color(0xFF4F6CE8),
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     ),

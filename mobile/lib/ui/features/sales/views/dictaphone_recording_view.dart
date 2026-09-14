@@ -95,7 +95,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.business_rounded, color: Color(0xFFF97316), size: 18),
+                    const Icon(Icons.business_rounded, color: Color(0xFF4F6CE8), size: 18),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
@@ -125,7 +125,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
-                            color: _selectedInputMode == 0 ? const Color(0xFFF97316) : Colors.transparent,
+                            color: _selectedInputMode == 0 ? const Color(0xFF4F6CE8) : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -152,7 +152,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
-                            color: _selectedInputMode == 1 ? const Color(0xFFF97316) : Colors.transparent,
+                            color: _selectedInputMode == 1 ? const Color(0xFF4F6CE8) : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -204,7 +204,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                               : 'Appuyez pour enregistrer votre débrief à chaud',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: dictVm.state == RecordingState.recording ? const Color(0xFFF97316) : Colors.grey,
+                    color: dictVm.state == RecordingState.recording ? const Color(0xFF4F6CE8) : Colors.grey,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -229,12 +229,12 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                         shape: BoxShape.circle,
                         color: dictVm.state == RecordingState.recording
                             ? const Color(0xFFEF4444)
-                            : const Color(0xFFF97316),
+                            : const Color(0xFF4F6CE8),
                         boxShadow: [
                           BoxShadow(
                             color: (dictVm.state == RecordingState.recording
                                     ? const Color(0xFFEF4444)
-                                    : const Color(0xFFF97316))
+                                    : const Color(0xFF4F6CE8))
                                 .withValues(alpha: 0.4),
                             blurRadius: dictVm.state == RecordingState.recording ? 30 : 15,
                             spreadRadius: dictVm.state == RecordingState.recording ? 10 : 2,
@@ -400,7 +400,7 @@ class _DictaphoneRecordingViewState extends State<DictaphoneRecordingView> {
                           return FilterChip(
                             label: Text(need, style: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontSize: 11)),
                             selected: isSelected,
-                            selectedColor: const Color(0xFFF97316),
+                            selectedColor: const Color(0xFF4F6CE8),
                             backgroundColor: const Color(0xFF0F172A),
                             checkmarkColor: Colors.white,
                             onSelected: (selected) {

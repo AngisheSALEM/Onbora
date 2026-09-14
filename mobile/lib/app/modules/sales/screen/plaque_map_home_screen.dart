@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -216,7 +216,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
       final isSelected = salesCtrl.selectedMapEnterprise.value?.id == ent.id;
       final colorHex = ent.isConverted
           ? '#10B981'
-          : (isSelected ? '#FF7900' : '#D97706');
+          : (isSelected ? '#4F6CE8' : '#2563EB');
 
       _mapController?.addCircle(
         CircleOptions(
@@ -448,6 +448,7 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                           itemBuilder: (context, index) {
                             final plaque = plaques[index];
                             final isSelected = selectedPlaque == plaque;
+                            final isAssigned = salesController.myAssignedPlaques.any((p) => p.code == plaque);
 
                             return Padding(
                               padding: const EdgeInsets.only(right: 6),
@@ -459,8 +460,13 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? (isDark ? Colors.white : const Color(0xFF18181B))
-                                        : (isDark ? const Color(0xDD18181C) : const Color(0xF8FFFFFF)),
+                                        : (isAssigned
+                                            ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                                            : (isDark ? const Color(0xDD18181C) : const Color(0xF8FFFFFF))),
                                     borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+                                    border: isAssigned && !isSelected
+                                        ? Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.5), width: 1)
+                                        : null,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
@@ -469,15 +475,34 @@ class _PlaqueMapHomeScreenState extends State<PlaqueMapHomeScreen>
                                       ),
                                     ],
                                   ),
-                                  child: Text(
-                                    plaque == 'Toutes' ? 'Toutes les plaques' : plaque,
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? (isDark ? const Color(0xFF121214) : Colors.white)
-                                          : (isDark ? Colors.white : AppConstants.textDark),
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w600,
-                                      fontSize: 11,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isAssigned) ...[
+                                        Icon(
+                                          CupertinoIcons.checkmark_seal_fill,
+                                          size: 11,
+                                          color: isSelected
+                                              ? (isDark ? const Color(0xFF121214) : Colors.white)
+                                              : const Color(0xFF3B82F6),
+                                        ),
+                                        const SizedBox(width: 4),
+                                      ],
+                                      Text(
+                                        plaque == 'Toutes'
+                                            ? 'Toutes les plaques'
+                                            : (isAssigned ? '$plaque (Assignée)' : plaque),
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? (isDark ? const Color(0xFF121214) : Colors.white)
+                                              : (isAssigned
+                                                  ? (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8))
+                                                  : (isDark ? Colors.white : AppConstants.textDark)),
+                                          fontWeight: isSelected || isAssigned ? FontWeight.w700 : FontWeight.w600,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

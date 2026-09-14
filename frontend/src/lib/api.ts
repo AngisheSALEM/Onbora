@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -18,7 +18,10 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     if (response.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || errorData.non_field_errors?.[0] || 'Une erreur est survenue.');

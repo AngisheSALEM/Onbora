@@ -19,7 +19,6 @@ class DictaphoneRecordingScreen extends StatefulWidget {
 }
 
 class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
-  int _processingStep = 1;
   bool _hasConsented = false;
   bool _isNoAudioMode = false;
   final TextEditingController _manualNotesController = TextEditingController();
@@ -38,17 +37,18 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final salesController = Get.find<SalesController>();
+    if (salesController.selectedEnterprise.value == null && salesController.allEnterprises.isNotEmpty) {
+      salesController.selectEnterprise(salesController.allEnterprises.first);
+    }
+  }
+
+  @override
   void dispose() {
     _manualNotesController.dispose();
     super.dispose();
-  }
-
-  void _simulateProgressSteps() async {
-    setState(() => _processingStep = 1);
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) setState(() => _processingStep = 2);
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (mounted) setState(() => _processingStep = 3);
   }
 
   void _showConsentModal(BuildContext context, bool isDark, DictaphoneController dictController) {
@@ -542,30 +542,56 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 46,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final text = _manualNotesController.text.trim();
-                                if (text.isEmpty) {
-                                  Get.snackbar('Note vide', 'Veuillez saisir au moins quelques éléments de visite.');
-                                  return;
-                                }
-                                _simulateProgressSteps();
-                                final success = await salesController.generateReportFromTranscript(text, audioPath: null);
-                                if (success) {
-                                  Get.offNamed(Routes.VISIT_REPORT_DETAIL);
-                                }
-                              },
-                              icon: const Icon(LucideIcons.sparkles, size: 16, color: Colors.white),
-                              label: const Text('Générer le Compte-Rendu IA', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                                foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                          Obx(() {
+                            final isProcessing = salesController.isGeneratingReport.value;
+                            final elapsed = salesController.aiProcessingElapsedSeconds.value;
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                onPressed: isProcessing
+                                    ? null
+                                    : () async {
+                                        final text = _manualNotesController.text.trim();
+                                        if (text.isEmpty) {
+                                          Get.snackbar('Note vide', 'Veuillez saisir au moins quelques éléments de visite.');
+                                          return;
+                                        }
+                                        final success = await salesController.generateReportFromTranscript(text, audioPath: null);
+                                        if (success) {
+                                          Get.offNamed(Routes.VISIT_REPORT_DETAIL);
+                                        }
+                                      },
+                                icon: isProcessing
+                                    ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: isDark ? const Color(0xFF121214) : Colors.white,
+                                        ),
+                                      )
+                                    : Icon(
+                                        LucideIcons.sparkles,
+                                        size: 16,
+                                        color: isDark ? const Color(0xFF121214) : Colors.white,
+                                      ),
+                                label: Text(
+                                  isProcessing
+                                      ? 'Core AI en cours (${elapsed.toStringAsFixed(1)}s)...'
+                                      : 'Générer le Compte-Rendu IA',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
+                                  foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -691,37 +717,139 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                     );
                   }),
 
-                  // Progress Indicator for Report Generation
+                  // Real-Time Core AI Execution HUD with Live Latency Counter
                   Obx(() {
-                    if (!salesController.isGeneratingReport.value && !dictController.isUploading.value) {
+                    final isGenerating = salesController.isGeneratingReport.value;
+                    final isUploading = dictController.isUploading.value;
+                    if (!isGenerating && !isUploading) {
                       return const SizedBox.shrink();
+                    }
+
+                    final elapsed = salesController.aiProcessingElapsedSeconds.value;
+
+                    // Dynamic step label and progress estimation based on real-time elapsed latency
+                    final String stepTitle;
+                    final String stepSubtitle;
+                    final double progressValue;
+                    if (elapsed < 2.0) {
+                      stepTitle = 'Étape 1/3 : Transcription & normalisation du signal';
+                      stepSubtitle = 'Conversion du flux audio en transcript structuré...';
+                      progressValue = 0.33;
+                    } else if (elapsed < 5.0) {
+                      stepTitle = 'Étape 2/3 : Analyse BANT & calcul du coût d\'inaction (COI)';
+                      stepSubtitle = 'Extraction des besoins télécoms et détection des objections...';
+                      progressValue = 0.66;
+                    } else {
+                      stepTitle = 'Étape 3/3 : Synthèse exécutive & devis Orange Business';
+                      stepSubtitle = 'Génération de l\'email J+1 et du dossier technique KAM...';
+                      progressValue = (0.66 + (elapsed - 5.0) * 0.04).clamp(0.66, 0.95);
                     }
 
                     return RepaintBoundary(
                       child: Column(
                         children: [
                           GlassCard(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(18),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                LinearProgressIndicator(
-                                  value: _processingStep / 3.0,
-                                  backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE5E7EB),
-                                  color: isDark ? Colors.white : const Color(0xFF18181B),
-                                  minHeight: 6,
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        LucideIcons.cpu,
+                                        size: 18,
+                                        color: isDark ? Colors.white : AppConstants.textDark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Core AI — Génération en direct',
+                                            style: TextStyle(
+                                              color: isDark ? Colors.white : AppConstants.textDark,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Moteur in-process RDC • RAG TF-IDF',
+                                            style: TextStyle(
+                                              color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Live Stopwatch Pill Badge
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            LucideIcons.timer,
+                                            size: 13,
+                                            color: Color(0xFF10B981),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${elapsed.toStringAsFixed(1)}s',
+                                            style: const TextStyle(
+                                              color: Color(0xFF10B981),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 13,
+                                              fontFeatures: [FontFeature.tabularFigures()],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: progressValue,
+                                    backgroundColor: isDark ? const Color(0xFF27272A) : const Color(0xFFE5E7EB),
+                                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                                    minHeight: 6,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  _processingStep == 1
-                                      ? 'Étape 1/3 : Retranscription de l\'échange...'
-                                      : _processingStep == 2
-                                          ? 'Étape 2/3 : Analyse des besoins identifiés...'
-                                          : 'Étape 3/3 : Rédaction du compte-rendu de visite...',
-                                  textAlign: TextAlign.center,
+                                  stepTitle,
                                   style: TextStyle(
                                     color: isDark ? Colors.white : AppConstants.textDark,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  stepSubtitle,
+                                  style: TextStyle(
+                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ],
@@ -737,6 +865,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                   Obx(() {
                     final st = dictController.state;
                     final isProcessing = salesController.isGeneratingReport.value || dictController.isUploading.value;
+                    final elapsed = salesController.aiProcessingElapsedSeconds.value;
 
                     if (st == RecordingState.stopped || st == RecordingState.completed) {
                       return SizedBox(
@@ -747,7 +876,6 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                             onPressed: isProcessing
                                 ? null
                                 : () async {
-                                    _simulateProgressSteps();
                                     final companyName = salesController.selectedEnterprise.value?.name ?? 'Client';
                                     final transcript = dictController.transcribedText.value.isNotEmpty
                                         ? dictController.transcribedText.value
@@ -764,14 +892,27 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                   },
                             icon: isProcessing
                                 ? SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(color: isDark ? const Color(0xFF121214) : Colors.white, strokeWidth: 2),
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: isDark ? const Color(0xFF121214) : Colors.white,
+                                    ),
                                   )
-                                : Icon(LucideIcons.sparkles, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
+                                : Icon(
+                                    LucideIcons.sparkles,
+                                    size: 20,
+                                    color: isDark ? const Color(0xFF121214) : Colors.white,
+                                  ),
                             label: Text(
-                              isProcessing ? 'Rédaction en cours...' : AppConstants.dictaphoneGenerateBtn,
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF121214) : Colors.white),
+                              isProcessing
+                                  ? 'Core AI en cours (${elapsed.toStringAsFixed(1)}s)...'
+                                  : AppConstants.dictaphoneGenerateBtn,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? const Color(0xFF121214) : Colors.white,
+                              ),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),

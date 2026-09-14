@@ -12,6 +12,8 @@ class PlaqueModel {
   final int totalEnterprises;
   final int readyCount;
   final List<String> assignedSalespersonsNames;
+  final List<int> assignedSalespersons;
+  final bool isAssigned;
   final bool isActive;
   final Map<String, dynamic>? boundaryGeojson;
   final String? kmlData;
@@ -28,6 +30,8 @@ class PlaqueModel {
     this.totalEnterprises = 0,
     this.readyCount = 0,
     this.assignedSalespersonsNames = const [],
+    this.assignedSalespersons = const [],
+    this.isAssigned = false,
     this.isActive = true,
     this.boundaryGeojson,
     this.kmlData,
@@ -38,6 +42,19 @@ class PlaqueModel {
     Map<String, dynamic>? parsedGeojson;
     if (json['boundary_geojson'] is Map) {
       parsedGeojson = Map<String, dynamic>.from(json['boundary_geojson'] as Map);
+    }
+
+    final rawAssigned = json['assigned_salespersons'];
+    final assignedIds = <int>[];
+    if (rawAssigned is List) {
+      for (final it in rawAssigned) {
+        if (it is int) {
+          assignedIds.add(it);
+        } else if (it != null) {
+          final p = int.tryParse(it.toString());
+          if (p != null) assignedIds.add(p);
+        }
+      }
     }
 
     return PlaqueModel(
@@ -51,6 +68,8 @@ class PlaqueModel {
       totalEnterprises: json['total_enterprises'] ?? 0,
       readyCount: json['ready_count'] ?? 0,
       assignedSalespersonsNames: (json['assigned_salespersons_names'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      assignedSalespersons: assignedIds,
+      isAssigned: json['is_assigned'] == true,
       isActive: json['is_active'] ?? true,
       boundaryGeojson: parsedGeojson,
       kmlData: json['kml_data'],

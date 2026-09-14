@@ -21,7 +21,7 @@ class QualificationExtractor:
         self.model = model
         self.catalog = catalog
         self.qualification_context = qualification_catalog_context(catalog)
-        prompt_path = Path(settings.BASE_DIR) / "prompts" / "extraction" / "v1.md"
+        prompt_path = Path(settings.BASE_DIR) / "resources" / "prompts" / "extraction" / "v1.md"
         self.instructions = prompt_path.read_text(encoding="utf-8")
 
     def extract(

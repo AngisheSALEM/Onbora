@@ -18,7 +18,7 @@ Pour comprendre le fonctionnement métier et technique du projet Onbora :
 *   **Contexte global** : [onbora_context.md](file:///C:/Users/Salem/Documents/projet/Onbora/onbora_context.md) (Roadmap, rôles, cas d'usage)
 *   **Architecture technique** : [architecture.md](file:///C:/Users/Salem/Documents/projet/Onbora/architecture.md) (Modèles de données, flux, stack technique)
 *   **Intégration CRM & Provisioning** : [integration_kaabu_arrowsphere.md](file:///C:/Users/Salem/Documents/projet/Onbora/integration_kaabu_arrowsphere.md) (Algorithmes de déduplication Kaabu et flux technique avec ArrowSphere)
-*   **Chartes graphiques et règles** : [vibe_rules.md](file:///C:/Users/Salem/Documents/projet/Onbora/vibe_rules.md) & [charte_graphique.md](file:///C:/Users/Salem/Documents/projet/Onbora/charte_graphique.md)
+*   **Chartes graphiques et directives d'agents** : [agent.md](file:///C:/Users/Salem/Documents/projet/Onbora/agent.md), [DESIGN.md](file:///C:/Users/Salem/Documents/projet/Onbora/DESIGN.md) & [charte_graphique.md](file:///C:/Users/Salem/Documents/projet/Onbora/charte_graphique.md)
 
 ---
 

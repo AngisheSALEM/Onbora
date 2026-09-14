@@ -24,7 +24,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--cases",
             type=Path,
-            default=Path(settings.BASE_DIR) / "evals" / "gemini-cases.json",
+            default=Path(settings.BASE_DIR) / "resources" / "evals" / "gemini-cases.json",
         )
         parser.add_argument("--case", action="append", dest="case_ids")
         parser.add_argument("--limit", type=int)

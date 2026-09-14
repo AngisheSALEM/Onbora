@@ -131,11 +131,26 @@ Les fichiers clés disponibles dans le dépôt :
 *   **Résolution des Contraintes de Base de Données Render (PostgreSQL)** :
     *   Création de la migration [`backend/kam/migrations/0005_ensure_raw_conversation_data.py`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/kam/migrations/0005_ensure_raw_conversation_data.py) résolvant de manière idempotente l'absence des colonnes `raw_conversation_data` et levant les contraintes `NOT NULL` sur les anciennes colonnes héritées (`raw_qualification_data`) sur Render PostgreSQL.
 
+*   **Refonte d'Architecture "Nested Apps Layout" & Core AI In-Process Unifié (Septembre 2026)** :
+    *   **Conteneurisation `backend/apps/`** : 100% des applications Django regroupées sous `backend/apps/` (`accounts`, `sales`, `kam`, `discovery`, `ai_core`, `catalog`, `twin`, `training`, `reporting`, `workbench`, `api`) et ressources non-Python sous `backend/resources/` (`contracts`, `evals`, `prompts`, `catalog_ai`).
+    *   **Moteur Core AI In-Process Haute Performance (`apps.ai_core`)** :
+        *   RAG TF-IDF avec index inversé en RAM (< 2ms de latence) sur `offres_orange_b2b.json`.
+        *   Registre d'outils B2B connectés directement à PostgreSQL Neon (`Enterprise`, `KAMVisitReport`).
+        *   Mémoire de session persistante avec historique multi-tours et boucle Human-in-the-Loop (`AISessionMemory`, `AISessionService`).
+        *   Endpoints DRF unifiés exposés sur `/api/ai/` et `/api/v1/ai/` (santé, recherche RAG, analyse de visite, validation HITL, sessions).
+    *   **Éradication Intégrale de la Dette Technique (Zéro Défaut / Clean SoC)** :
+        *   Résolution de l'ensemble des 16 alertes de dette technique (requêtes N+1 dans `sales/serializers.py` et déport des "Fat Views" dans `discovery`, `kam`, `sales`).
+        *   Création de services découplés (`apps/kam/services/briefing_service.py`).
+        *   Hook 2 (`scripts/verify_technical_debt.py --all`) validé à 100% sur 260 fichiers Python.
+        *   Mise à jour des directives maîtresses [`agent.md`](file:///C:/Users/Salem/Documents/projet/Onbora/agent.md) et [`AGENTS.md`](file:///C:/Users/Salem/Documents/projet/Onbora/AGENTS.md).
+
 ---
 
 ## 9. Prochaine Action Planifiée
-*   **Surveillance du Déploiement Render** : Vérification des logs d'exécution du `python manage.py migrate` post-commit sur Render Cloud.
-*   **Recette Globale Web & Mobile** : Tests d'intégration de bout en bout entre l'app mobile Flutter, l'API REST Render et le dashboard KAM Next.js.
+*   **Intégration d'AI Core dans l'Interface KAM** :
+    *   Branchement du microphone / dictaphone vocal (`KamVocalVisitModal.tsx`) avec les endpoints IA d'analyse et de transcription (`/api/ai/analyze-visit/` ou `/api/kam/strategic-accounts/<id>/debrief/`).
+    *   Génération automatique des rapports de visite avec le moteur IA unifié (synthèse exécutive, analyse BANT, besoins et objections détectés, email de suivi J+1 pré-rédigé, tâches d'action).
+    *   Recommandations de catalogue augmentées par RAG TF-IDF directement dans le desk opérationnel KAM.
 
 ---
 

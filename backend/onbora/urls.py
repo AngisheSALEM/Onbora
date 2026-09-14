@@ -31,7 +31,8 @@ def api_root(request):
             "sales": "/api/sales/",
             "crm": "/api/crm/",
             "reporting": "/api/reporting/",
-            "catalog": "/api/catalog/"
+            "catalog": "/api/catalog/",
+            "ai": "/api/ai/"
         }
     })
 
@@ -48,6 +49,7 @@ urlpatterns = [
     path('api/reporting/', include('reporting.urls')),
     path('api/catalog/', include('catalog.urls')),
     path('api/twin/', include('twin.urls')),
+    path('api/ai/', include('apps.ai_core.urls')),
     
     # Aliases v1
     path('api/v1/auth/', include('accounts.urls')),
@@ -60,6 +62,7 @@ urlpatterns = [
     path('api/v1/reporting/', include('reporting.urls')),
     path('api/v1/catalog/', include('catalog.urls')),
     path('api/v1/twin/', include('twin.urls')),
+    path('api/v1/ai/', include('apps.ai_core.urls')),
 ]
 
 from django.conf import settings

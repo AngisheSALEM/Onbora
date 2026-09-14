@@ -69,8 +69,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Rendez-vous'), findsOneWidget);
-    expect(find.text(AppConstants.recentVisitsTitle), findsOneWidget);
+    expect(find.text(AppConstants.salesVisitsTitle), findsOneWidget);
+    expect(find.text('Mes Plaques Assignées'), findsOneWidget);
   });
 
   testWidgets('CatalogScreen renders Orange B2B catalog title', (WidgetTester tester) async {
@@ -96,7 +96,7 @@ void main() {
 
     expect(find.text('Profil'), findsWidgets);
     expect(find.text('Comptes-rendus de visite'), findsOneWidget);
-    expect(find.text('Rendez-vous terrain'), findsOneWidget);
+    expect(find.text('Visites terrain'), findsOneWidget);
     expect(find.text('Mode Sombre (OLED)'), findsOneWidget);
   });
 

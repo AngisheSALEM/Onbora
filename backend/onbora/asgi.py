@@ -8,6 +8,13 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 """
 
 import os
+import sys
+from pathlib import Path
+
+base_dir = Path(__file__).resolve().parent.parent
+apps_dir = base_dir / 'apps'
+if str(apps_dir) not in sys.path:
+    sys.path.insert(0, str(apps_dir))
 
 from django.core.asgi import get_asgi_application
 

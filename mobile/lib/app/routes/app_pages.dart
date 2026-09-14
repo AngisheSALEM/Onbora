@@ -26,6 +26,7 @@ import '../modules/sales/screen/leaderboard_screen.dart';
 import '../modules/sales/screen/field_intelligence_screen.dart';
 import '../modules/sales/screen/document_scan_screen.dart';
 import '../modules/sales/screen/visit_form_screen.dart';
+import '../modules/sales/screen/plaque_detail_screen.dart';
 
 // Modules KAM (Grands Comptes)
 import '../modules/kam/binding/kam_binding.dart';
@@ -114,6 +115,13 @@ class AppPages {
     GetPage(
       name: Routes.VISIT_FORM,
       page: () => const VisitFormScreen(),
+      binding: SalesBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: Routes.PLAQUE_DETAIL,
+      page: () => const PlaqueDetailScreen(),
       binding: SalesBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),

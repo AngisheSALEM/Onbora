@@ -210,6 +210,10 @@ export default function KamVocalVisitModal({
                 <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 font-bold text-zinc-600 dark:text-zinc-300">
                   {formatTimer(elapsedSeconds)}
                 </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>RAG Catalogue B2B</span>
+                </span>
               </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {appointment.enterprise_name} • Interlocuteur : <strong className="text-zinc-800 dark:text-zinc-200">{appointment.contact_name}</strong> ({appointment.contact_role})
@@ -347,7 +351,7 @@ export default function KamVocalVisitModal({
           <button
             onClick={handleCompleteMeetingWithAI}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-extrabold transition-all cursor-pointer shadow-md shadow-[#4F6CE8]/20 disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-extrabold transition-all cursor-pointer shadow-md disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

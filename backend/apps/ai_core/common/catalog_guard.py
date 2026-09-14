@@ -35,11 +35,27 @@ def build_catalog_context_prompt(
     query: Optional[str] = None,
     max_items: int = 8,
 ) -> List[str]:
-    """Construit et normalise la liste des offres disponibles pour le prompt LLM."""
+    """Construit et normalise la liste des offres disponibles pour le prompt LLM via RAG TF-IDF."""
     if catalog_context:
         items = [str(c).strip() for c in catalog_context if str(c).strip()]
         if items:
             return items
+
+    try:
+        from ..rag_service import get_catalog_rag
+        rag = get_catalog_rag()
+        if query:
+            rag_results = rag.search(query, limit=max_items)
+            if rag_results:
+                results = []
+                for s in rag_results:
+                    name = s.get("name", "")
+                    desc = s.get("description", "")
+                    entry = f"{name} ({s.get('category', 'Télécoms')}) : {desc}"
+                    results.append(entry)
+                return results
+    except Exception as exc:
+        logger.warning("[CatalogGuard] RAG non disponible, repli sur chargement brut : %s", exc)
 
     services = load_official_orange_catalog()
     if services:
@@ -53,7 +69,6 @@ def build_catalog_context_prompt(
             if benefits:
                 entry += f" [Bénéfices : {benefits}]"
 
-            # Si query fournie, scorer légèrement
             if q_lower and (q_lower in name.lower() or q_lower in desc.lower()):
                 results.insert(0, entry)
             else:

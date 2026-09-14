@@ -29,10 +29,17 @@ Thumbs.db
 .vscode/
 *.log
 
-# Exclude all markdown files except README.md and DESIGN.md
+# Exclude all markdown files except core documentation
 **/*.md
 !README.md
 !DESIGN.md
+!agent.md
+!AGENTS.md
+!onbora_context.md
+!CORE_AI_TESTING_GUIDE.md
+!PREVISITE_ARCHITECTURE.md
+!backend/README.md
+!backend/apps/ai_core/TESTING_GUIDE.md
 
 # Documentation local files
 doc_backend.md

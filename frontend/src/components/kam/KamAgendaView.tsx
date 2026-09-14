@@ -402,7 +402,7 @@ export default function KamAgendaView({
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
                       isCompleted
                         ? 'bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-[#4F6CE8] hover:text-white'
-                        : 'bg-[#4F6CE8] hover:bg-[#3D57C5] text-white shadow-md shadow-[#4F6CE8]/20'
+                        : 'bg-[#4F6CE8] hover:bg-[#3D57C5] text-white shadow-md'
                     }`}
                     title="Lancer le débrief vocal en direct"
                   >

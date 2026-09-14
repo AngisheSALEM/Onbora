@@ -15,6 +15,7 @@ abstract class Routes {
   static const FIELD_INTELLIGENCE = '/field-intelligence';
   static const DOCUMENT_SCAN = '/document-scan';
   static const VISIT_FORM = '/visit-form';
+  static const PLAQUE_DETAIL = '/plaque-detail';
   
   // Routes KAM (Grands Comptes)
   static const KAM_NAVIGATION = '/kam-navigation';

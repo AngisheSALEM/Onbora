@@ -429,16 +429,30 @@ export default function KamAccountsListView({
                             {briefing.firmographics.locations_count} sites connectés
                           </span>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onOpenBriefing(visit);
-                            }}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
-                          >
-                            <Icons.Info size={14} />
-                            <span>Info</span>
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenDebrief(visit);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-2 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-rose-600 hover:text-white text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+                              title="Débriefing vocal et synthèse Core AI post-visite"
+                            >
+                              <Icons.Mic size={14} />
+                              <span>Débrief Vocal</span>
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenBriefing(visit);
+                              }}
+                              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                            >
+                              <Icons.Info size={14} />
+                              <span>Info</span>
+                            </button>
+                          </div>
                         </div>
 
                       </div>

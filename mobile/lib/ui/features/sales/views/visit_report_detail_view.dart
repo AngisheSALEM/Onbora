@@ -96,10 +96,10 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF97316).withValues(alpha: 0.2),
+                              color: const Color(0xFF4F6CE8).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.description_rounded, color: Color(0xFFF97316), size: 28),
+                            child: const Icon(Icons.description_rounded, color: Color(0xFF4F6CE8), size: 28),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -137,7 +137,7 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                         children: [
                           Row(
                             children: const [
-                              Icon(Icons.auto_awesome_rounded, color: Color(0xFFF97316), size: 20),
+                              Icon(Icons.auto_awesome_rounded, color: Color(0xFF4F6CE8), size: 20),
                               SizedBox(width: 8),
                               Text('Diagnostic & Synthèse IA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                             ],
@@ -264,7 +264,7 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
+                        backgroundColor: const Color(0xFF4F6CE8),
                       ),
                     ),
                   ),
@@ -277,8 +277,37 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
 
   Widget _buildFinancialROICard(VisitReportModel report) {
     final coi = report.coiMetrics;
-    final monthlyLoss = coi != null ? (coi['total_monthly_coi_usd'] as num?)?.toDouble() ?? 1250.0 : 1250.0;
-    final netGain = monthlyLoss - 320.0;
+    final monthlyLoss = coi != null ? (coi['total_monthly_coi_usd'] as num?)?.toDouble() ?? 0.0 : 0.0;
+
+    if (monthlyLoss <= 0.0) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B).withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155)),
+        ),
+        child: Row(
+          children: const [
+            Icon(Icons.shield_outlined, color: Color(0xFF94A3B8), size: 22),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Bilan Financier : Aucune perte d\'exploitation chiffrée lors de ce premier échange.',
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final packages = report.tieredPackages;
+    double packagePrice = 0.0;
+    if (packages.isNotEmpty) {
+      packagePrice = (packages.first['monthly_price_usd'] as num?)?.toDouble() ?? 0.0;
+    }
+    final netGain = packagePrice > 0 ? (monthlyLoss - packagePrice) : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -329,36 +358,40 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Gain Net Client',
-                        style: TextStyle(color: Color(0xFF86EFAC), fontSize: 11, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '+${netGain.toStringAsFixed(0)} \$/m',
-                        style: const TextStyle(color: Color(0xFF22C55E), fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+              if (packagePrice > 0) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Gain Net Client',
+                          style: TextStyle(color: Color(0xFF86EFAC), fontSize: 11, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '+${netGain.toStringAsFixed(0)} \$/m',
+                          style: const TextStyle(color: Color(0xFF22C55E), fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Argument massue : L\'offre MSP transforme une perte de 1 250 \$/mois en un investissement de 320 \$/mois remboursé 3x dès le 1er mois.',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, height: 1.4),
+          Text(
+            packagePrice > 0
+                ? 'L\'offre Orange Business transforme une perte de ${monthlyLoss.toStringAsFixed(0)} \$/mois en un investissement remboursé dès le premier mois.'
+                : 'La suppression des pannes permet d\'économiser jusqu\'à ${monthlyLoss.toStringAsFixed(0)} \$/mois face au coût d\'inaction.',
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, height: 1.4),
           ),
         ],
       ),
@@ -371,7 +404,7 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
       children: [
         Row(
           children: const [
-            Icon(Icons.inventory_2_outlined, color: Color(0xFFF97316), size: 20),
+            Icon(Icons.inventory_2_outlined, color: Color(0xFF4F6CE8), size: 20),
             SizedBox(width: 8),
             Text('Packages Tierés (Marge Garantie)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ],
@@ -386,10 +419,10 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isRecommended ? const Color(0xFFF97316).withValues(alpha: 0.06) : Colors.white,
+              color: isRecommended ? const Color(0xFF4F6CE8).withValues(alpha: 0.06) : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isRecommended ? const Color(0xFFF97316) : const Color(0xFFE2E8F0),
+                color: isRecommended ? const Color(0xFF4F6CE8) : const Color(0xFFE2E8F0),
                 width: isRecommended ? 1.5 : 1.0,
               ),
             ),
@@ -412,7 +445,7 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isRecommended ? const Color(0xFFF97316) : const Color(0xFF64748B),
+                        color: isRecommended ? const Color(0xFF4F6CE8) : const Color(0xFF64748B),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -441,7 +474,7 @@ class _VisitReportDetailViewState extends State<VisitReportDetailView> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                          color: const Color(0xFF4F6CE8).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(

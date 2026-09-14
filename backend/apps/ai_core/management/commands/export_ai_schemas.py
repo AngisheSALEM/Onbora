@@ -33,7 +33,7 @@ class Command(BaseCommand):
     help = "Exporte les JSON Schemas versionnés des contrats Onbora IA."
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--output", default=str(settings.BASE_DIR / "contracts"))
+        parser.add_argument("--output", default=str(settings.BASE_DIR / "resources" / "contracts"))
 
     def handle(self, *args, **options) -> None:
         output = Path(options["output"])

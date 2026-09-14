@@ -97,7 +97,7 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.business_rounded, color: Color(0xFFF97316), size: 36),
+                            const Icon(Icons.business_rounded, color: Color(0xFF4F6CE8), size: 36),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
@@ -184,14 +184,14 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
                           children: [
                             ListTile(
                               onTap: () => setState(() => _showAdvancedPitch = !_showAdvancedPitch),
-                              leading: const Icon(Icons.campaign_rounded, color: Color(0xFFF97316)),
+                              leading: const Icon(Icons.campaign_rounded, color: Color(0xFF4F6CE8)),
                               title: const Text(
                                 'Pitch de Rentabilité Sur-Mesure',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFFF97316)),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF4F6CE8)),
                               ),
                               trailing: Icon(
                                 _showAdvancedPitch ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-                                color: const Color(0xFFF97316),
+                                color: const Color(0xFF4F6CE8),
                               ),
                             ),
                             if (_showAdvancedPitch)
@@ -233,7 +233,7 @@ class _VisitPreparationViewState extends State<VisitPreparationView> {
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF97316),
+                            backgroundColor: const Color(0xFF4F6CE8),
                           ),
                         ),
                       ),

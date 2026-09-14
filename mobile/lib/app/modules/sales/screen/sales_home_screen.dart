@@ -99,34 +99,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Bouton 1 : Brief IA de Visite
-                    ScaleTap(
-                      onTap: () {
-                        if (salesController.selectedEnterprise.value == null && salesController.searchResults.isNotEmpty) {
-                          salesController.selectEnterprise(salesController.searchResults.first);
-                        }
-                        Get.toNamed(Routes.VISIT_PREPARATION);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: const BoxDecoration(shape: BoxShape.circle),
-                        child: Icon(
-                          CupertinoIcons.doc_text,
-                          size: 18,
-                          color: isDark ? Colors.white : AppConstants.textDark,
-                        ),
-                      ),
-                    ),
-
-                    // Séparateur vertical discret
-                    Container(
-                      width: 1,
-                      height: 14,
-                      color: isDark ? Colors.white12 : Colors.black12,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                    ),
-
-                    // Bouton 2 : Scanner OCR
+                    // Bouton 1 : Scanner OCR
                     ScaleTap(
                       onTap: () => Get.toNamed(Routes.DOCUMENT_SCAN),
                       child: Container(
@@ -262,13 +235,102 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 thickness: 0.5,
                 color: isDark ? const Color(0x22FFFFFF) : const Color(0x15000000),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
-              // Section Rendez-vous : RDV en cours OU Carrousel 16:9
+              // 1.1 Territoire & Plaques affectées au commercial terrain
+              Obx(() {
+                final myPlaques = salesController.myAssignedPlaques;
+                if (myPlaques.isEmpty) return const SizedBox.shrink();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark ? const Color(0x33FFFFFF) : const Color(0x15000000),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(CupertinoIcons.location_fill, size: 14, color: isDark ? Colors.white : AppConstants.primaryBlack),
+                          const SizedBox(width: 6),
+                          Text(
+                            'MES PLAQUES AFFECTÉES (${myPlaques.length})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: isDark ? Colors.white70 : const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: myPlaques.map((plq) {
+                          final isSelected = salesController.activePlaqueCode.value == plq.code;
+                          return ScaleTap(
+                            onTap: () {
+                              salesController.filterByPlaque(plq.code);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? (isDark ? Colors.white : const Color(0xFF18181B))
+                                    : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : (isDark ? Colors.white12 : const Color(0x15000000)),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    plq.code,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected
+                                          ? (isDark ? const Color(0xFF121214) : Colors.white)
+                                          : (isDark ? Colors.white : AppConstants.textDark),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '(${plq.totalEnterprises})',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: isSelected
+                                          ? (isDark ? const Color(0xFF3F3F46) : Colors.white70)
+                                          : const Color(0xFF8E8E93),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              // Section Visites : Visite en cours OU Carrousel 16:9
               Obx(() {
                 final active = salesController.selectedEnterprise.value;
 
-                // CAS 1 : RENDEZ-VOUS EN COURS (Cockpit Épuré Apple)
+                // CAS 1 : VISITE EN COURS (Cockpit Épuré Apple)
                 if (active != null) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,7 +568,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'AUCUN RENDEZ-VOUS EN COURS',
+                                'AUCUNE VISITE EN COURS',
                                 style: AppConstants.overlineStyle(isDark).copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
@@ -544,7 +606,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                             child: ScaleTap(
                               onTap: () {
                                 salesController.selectEnterprise(ent);
-                                Get.toNamed(Routes.VISIT_PREPARATION);
+                                Get.toNamed(Routes.VISIT_FORM);
                               },
                               child: Container(
                                 clipBehavior: Clip.antiAlias,
@@ -619,7 +681,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                           ),
                                         ],
                                       ),
-                                      // Bouton CTA Débrief
+                                      // Bouton CTA Lancer la visite
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
@@ -633,10 +695,10 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  'Voir le brief',
+                                                  'Lancer la visite',
                                                   style: TextStyle(
                                                     fontSize: 11,
-                                                    fontWeight: FontWeight.w500,
+                                                    fontWeight: FontWeight.w600,
                                                     color: isDark ? Colors.white : AppConstants.textDark,
                                                   ),
                                                 ),
@@ -670,120 +732,164 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
               }),
               const SizedBox(height: 28),
 
-              // Titre de Section : Visites récentes (Title 2 : 22px Bold)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppConstants.recentVisitsTitle,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : AppConstants.textDark,
-                    ),
-                  ),
-                  ScaleTap(
-                    onTap: () => Get.toNamed(Routes.VISITS_HISTORY),
-                    child: Text(
-                      'Voir tout',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppConstants.textDark,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Liste Visites récentes (Apple Music Geometry avec indent separator)
+              // Titre de Section : Mes Plaques Assignées
               Obx(() {
-                final visits = salesController.visitsHistory.take(4).toList();
-                if (visits.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Center(
-                      child: Text(
-                        'Aucune visite récente',
-                        style: AppConstants.subheadStyle(isDark),
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: visits.length,
-                  separatorBuilder: (_, _) => Divider(
-                    color: isDark ? const Color(0x1FFFFFFF) : const Color(0x15000000),
-                    height: 1,
-                    thickness: 0.5,
-                    indent: 56,
-                  ),
-                  itemBuilder: (context, index) {
-                    final v = visits[index];
-                    final isTransmitted = v.status == 'TRANSMIS';
-
-                    return ScaleTap(
-                      onTap: () => Get.toNamed(Routes.VISITS_HISTORY),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                isTransmitted ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.clock_fill,
-                                color: isTransmitted ? AppConstants.successGreen : const Color(0xFF8E8E93),
-                                size: 20,
-                              ),
+                final myPlaques = salesController.myAssignedPlaques;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Mes Plaques Assignées',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.4,
+                            color: isDark ? Colors.white : AppConstants.textDark,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${myPlaques.length} zone(s)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : const Color(0xFF6B7280),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (myPlaques.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: Text(
+                            'Aucune plaque assignée pour le moment',
+                            style: AppConstants.subheadStyle(isDark),
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: myPlaques.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final plq = myPlaques[index];
+                          return ScaleTap(
+                            onTap: () => Get.toNamed(Routes.PLAQUE_DETAIL, arguments: plq),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    v.enterpriseName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: (isDark ? Colors.white : AppConstants.primaryBlack).withValues(alpha: isDark ? 0.1 : 0.08),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      CupertinoIcons.location_solid,
+                                      color: isDark ? Colors.white : AppConstants.primaryBlack,
+                                      size: 20,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    v.formattedTime,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              plq.code,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.3,
+                                                color: isDark ? Colors.white : AppConstants.textDark,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: AppConstants.successGreen.withValues(alpha: isDark ? 0.2 : 0.12),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                'Assignée',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppConstants.successGreen,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          plq.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${plq.city} • ${plq.totalEnterprises} comptes répertoriés',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark ? Colors.white54 : const Color(0xFF9CA3AF),
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    CupertinoIcons.chevron_right,
+                                    color: Color(0xFF8E8E93),
+                                    size: 16,
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              CupertinoIcons.ellipsis,
-                              color: Color(0xFF8E8E93),
-                              size: 16,
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                  ],
                 );
               }),
             ],

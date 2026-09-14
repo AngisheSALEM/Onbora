@@ -62,6 +62,45 @@ interface EnterpriseItem {
   assigned_salesperson_name?: string;
   is_visited?: boolean;
   last_visited_at?: string;
+  last_visited_by?: number;
+  last_visited_by_name?: string;
+}
+
+interface VisitReportItem {
+  id: number;
+  salesperson_id?: number;
+  salesperson_name?: string;
+  enterprise_id?: number;
+  enterprise_name?: string;
+  plaque_code?: string;
+  executive_summary: string;
+  confirmed_needs: string[];
+  objections_raised: string[];
+  actions_todo: string[];
+  follow_up_email_draft?: string;
+  ai_feedback_rating?: number | null;
+  ai_feedback_comments?: string;
+  created_at: string;
+}
+
+interface VisitSubmissionItem {
+  id: number;
+  enterprise: number;
+  enterprise_name: string;
+  enterprise_sector?: string;
+  enterprise_commune?: string;
+  plaque_code?: string;
+  salesperson?: number;
+  salesperson_name?: string;
+  target_offer_name: string;
+  answers: { question_id?: string; question_text?: string; answer?: any }[];
+  ai_summary: string;
+  qualification_score: number;
+  detected_needs: string[];
+  objections_noted?: string;
+  next_action?: string;
+  status: string;
+  created_at: string;
 }
 
 interface PlaqueItem {
@@ -158,16 +197,22 @@ export default function BackofficeCommandCenterPage() {
 
   // Dedicated Salesperson Detail Interface State
   const [selectedSalespersonDetail, setSelectedSalespersonDetail] = useState<SalespersonItem | null>(null);
-  const [salespersonDetailTab, setSalespersonDetailTab] = useState<'enterprises' | 'directives'>('enterprises');
+  const [salespersonDetailTab, setSalespersonDetailTab] = useState<'enterprises' | 'reports' | 'directives'>('enterprises');
   const [salespersonDetailFilter, setSalespersonDetailFilter] = useState<'ALL' | 'VISITED' | 'UNVISITED'>('ALL');
   const [salespersonDetailSearch, setSalespersonDetailSearch] = useState('');
+  const [salespersonDetailReportsFilter, setSalespersonDetailReportsFilter] = useState<'ALL' | 'FORMS' | 'AI_REPORTS'>('ALL');
+  const [salespersonReports, setSalespersonReports] = useState<VisitReportItem[]>([]);
+  const [salespersonSubmissions, setSalespersonSubmissions] = useState<VisitSubmissionItem[]>([]);
+  const [loadingSalespersonReports, setLoadingSalespersonReports] = useState(false);
+  const [selectedReportToInspect, setSelectedReportToInspect] = useState<any | null>(null);
 
   // Data State
   const [loading, setLoading] = useState(true);
   const [plaques, setPlaques] = useState<PlaqueItem[]>([]);
   const [enterprises, setEnterprises] = useState<EnterpriseItem[]>([]);
   const [salespersons, setSalespersons] = useState<SalespersonItem[]>([]);
-  const [recentReportsFeed, setRecentReportsFeed] = useState<any[]>([]);
+  const [recentReportsFeed, setRecentReportsFeed] = useState<VisitReportItem[]>([]);
+  const [recentFormSubmissions, setRecentFormSubmissions] = useState<VisitSubmissionItem[]>([]);
 
   // Directives State
   const [directives, setDirectives] = useState<DirectiveItem[]>([]);
@@ -255,6 +300,7 @@ export default function BackofficeCommandCenterPage() {
       setEnterprises(Array.isArray(data?.enterprises) ? data.enterprises : []);
       setSalespersons(Array.isArray(data?.salespersons) ? data.salespersons : []);
       setRecentReportsFeed(Array.isArray(data?.recent_reports_feed) ? data.recent_reports_feed : []);
+      setRecentFormSubmissions(Array.isArray(data?.recent_form_submissions) ? data.recent_form_submissions : []);
     } catch (err: any) {
       console.error("Erreur lors du chargement du cockpit superviseur:", err);
     } finally {
@@ -292,6 +338,37 @@ export default function BackofficeCommandCenterPage() {
       if (refreshed) setSelectedSalespersonDetail(refreshed);
     }
   }, [salespersons]);
+
+  // Charger en direct l'historique complet des rapports et formulaires de visite du commercial sélectionné
+  useEffect(() => {
+    if (!selectedSalespersonDetail) {
+      setSalespersonReports([]);
+      setSalespersonSubmissions([]);
+      return;
+    }
+    let isMounted = true;
+    const fetchReports = async () => {
+      setLoadingSalespersonReports(true);
+      try {
+        const [repData, subData] = await Promise.all([
+          fetchAPI(`/api/sales/visit-reports/?salesperson_id=${selectedSalespersonDetail.id}`),
+          fetchAPI(`/api/sales/visit-form/submissions/?salesperson_id=${selectedSalespersonDetail.id}`),
+        ]);
+        if (isMounted) {
+          setSalespersonReports(Array.isArray(repData) ? repData : []);
+          setSalespersonSubmissions(Array.isArray(subData) ? subData : []);
+        }
+      } catch (err) {
+        console.error("Erreur lors de la récupération des comptes-rendus du commercial:", err);
+      } finally {
+        if (isMounted) setLoadingSalespersonReports(false);
+      }
+    };
+    fetchReports();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedSalespersonDetail?.id]);
 
   useEffect(() => {
     loadDashboardData();
@@ -845,20 +922,52 @@ export default function BackofficeCommandCenterPage() {
     });
   }, [plaqueEnterprisesAll, plaqueDetailFilter, plaqueDetailSearch]);
 
-  // Dedicated Salesperson Detail: all enterprises assigned to this salesperson
+  // Dedicated Salesperson Detail: all enterprises assigned to this salesperson or in their plaques or visited by them
   const salespersonAssignedEnterprisesAll = useMemo(() => {
     if (!selectedSalespersonDetail) return [];
     const list = Array.isArray(enterprises) ? enterprises : [];
-    return list.filter((e) => e.assigned_salesperson === selectedSalespersonDetail.id);
-  }, [enterprises, selectedSalespersonDetail]);
+    const assignedPlaqueCodes = new Set(selectedSalespersonDetail.assigned_plaques || []);
+    
+    // Set of enterprise IDs that have reports or submissions by this salesperson
+    const visitedEntIds = new Set<number>();
+    salespersonReports.forEach((r) => { if (r.enterprise_id) visitedEntIds.add(r.enterprise_id); });
+    salespersonSubmissions.forEach((s) => {
+      const eid = typeof s.enterprise === 'object' ? (s.enterprise as any).id : s.enterprise;
+      if (eid) visitedEntIds.add(eid);
+      if ((s as any).enterprise_id) visitedEntIds.add((s as any).enterprise_id);
+    });
+    recentReportsFeed.forEach((r) => {
+      if (r.salesperson_id === selectedSalespersonDetail.id && r.enterprise_id) {
+        visitedEntIds.add(r.enterprise_id);
+      }
+    });
+
+    return list.filter((e) => {
+      if (e.assigned_salesperson === selectedSalespersonDetail.id) return true;
+      if (e.last_visited_by === selectedSalespersonDetail.id) return true;
+      if (visitedEntIds.has(e.id)) return true;
+      if (e.plaque_code && assignedPlaqueCodes.has(e.plaque_code)) return true;
+      return false;
+    });
+  }, [enterprises, selectedSalespersonDetail, salespersonReports, salespersonSubmissions, recentReportsFeed]);
 
   const salespersonDetailKpis = useMemo(() => {
     const total = salespersonAssignedEnterprisesAll.length;
-    const visited = salespersonAssignedEnterprisesAll.filter((e) => e.is_visited).length;
-    const unvisited = total - visited;
-    const rate = total > 0 ? Math.round((visited / total) * 100) : 0;
+    const visitedSet = new Set<number>();
+    salespersonAssignedEnterprisesAll.forEach((e) => {
+      if (e.is_visited) visitedSet.add(e.id);
+    });
+    salespersonReports.forEach((r) => { if (r.enterprise_id) visitedSet.add(r.enterprise_id); });
+    salespersonSubmissions.forEach((s) => {
+      const eid = typeof s.enterprise === 'object' ? (s.enterprise as any).id : s.enterprise;
+      if (eid) visitedSet.add(eid);
+    });
+    const totalVisitsFromBackend = selectedSalespersonDetail?.visits_count || 0;
+    const visited = Math.max(visitedSet.size, totalVisitsFromBackend, salespersonReports.length);
+    const unvisited = Math.max(0, total - visited);
+    const rate = total > 0 ? Math.min(100, Math.round((visited / total) * 100)) : 0;
     return { total, visited, unvisited, rate };
-  }, [salespersonAssignedEnterprisesAll]);
+  }, [salespersonAssignedEnterprisesAll, salespersonReports, salespersonSubmissions, selectedSalespersonDetail]);
 
   const filteredSalespersonDetailAccounts = useMemo(() => {
     return salespersonAssignedEnterprisesAll.filter((ent) => {
@@ -1119,7 +1228,7 @@ export default function BackofficeCommandCenterPage() {
                     onClick={() => setSearchQuery('')}
                     className="text-xs text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer"
                   >
-                    ✕
+                    <Icons.X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
@@ -1460,7 +1569,7 @@ export default function BackofficeCommandCenterPage() {
                   </div>
 
                   {/* Sub-Tabs Selector */}
-                  <div className="flex items-center gap-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] p-2 rounded-2xl border border-black/5 dark:border-white/5">
+                  <div className="flex items-center gap-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] p-2 rounded-2xl border border-black/5 dark:border-white/5 flex-wrap">
                     <button
                       onClick={() => setSalespersonDetailTab('enterprises')}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
@@ -1470,7 +1579,18 @@ export default function BackofficeCommandCenterPage() {
                       }`}
                     >
                       <Icons.Building size={14} />
-                      <span>Comptes Assignés & Visites ({salespersonDetailKpis.total})</span>
+                      <span>Portefeuille & Comptes ({salespersonDetailKpis.total})</span>
+                    </button>
+                    <button
+                      onClick={() => setSalespersonDetailTab('reports')}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+                        salespersonDetailTab === 'reports'
+                          ? 'bg-[#4F6CE8] text-white shadow-xs'
+                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
+                      }`}
+                    >
+                      <Icons.FileText size={14} />
+                      <span>Rapports de Visite ({salespersonReports.length + salespersonSubmissions.length})</span>
                     </button>
                     <button
                       onClick={() => setSalespersonDetailTab('directives')}
@@ -1590,6 +1710,13 @@ export default function BackofficeCommandCenterPage() {
                                               le {new Date(ent.last_visited_at).toLocaleDateString()}
                                             </span>
                                           )}
+                                          <button
+                                            onClick={() => setSalespersonDetailTab('reports')}
+                                            className="text-[9px] font-bold text-[#4F6CE8] hover:underline mt-0.5 pl-1 text-left flex items-center gap-0.5 cursor-pointer"
+                                          >
+                                            <span>Consulter le rapport</span>
+                                            <span>→</span>
+                                          </button>
                                         </div>
                                       ) : (
                                         <span className="px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
@@ -1631,7 +1758,208 @@ export default function BackofficeCommandCenterPage() {
                     </div>
                   )}
 
-                  {/* SUB-TAB 2: DIRECTIVES & INSTRUCTIONS */}
+                  {/* SUB-TAB: COMPTES-RENDUS & FORMULAIRES DE VISITE */}
+                  {salespersonDetailTab === 'reports' && (
+                    <div className="flex flex-col gap-4">
+                      {/* Sub-Filters & Counter Toolbar */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3 rounded-2xl border border-black/5 dark:border-white/5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => setSalespersonDetailReportsFilter('ALL')}
+                            className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                              salespersonDetailReportsFilter === 'ALL'
+                                ? 'bg-[#4F6CE8] text-white shadow-xs'
+                                : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
+                            }`}
+                          >
+                            Tous les comptes-rendus ({salespersonReports.length + salespersonSubmissions.length})
+                          </button>
+                          <button
+                            onClick={() => setSalespersonDetailReportsFilter('FORMS')}
+                            className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                              salespersonDetailReportsFilter === 'FORMS'
+                                ? 'bg-[#4F6CE8] text-white shadow-xs'
+                                : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
+                            }`}
+                          >
+                            Formulaires Guidés ({salespersonSubmissions.length})
+                          </button>
+                          <button
+                            onClick={() => setSalespersonDetailReportsFilter('AI_REPORTS')}
+                            className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                              salespersonDetailReportsFilter === 'AI_REPORTS'
+                                ? 'bg-[#4F6CE8] text-white shadow-xs'
+                                : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
+                            }`}
+                          >
+                            Synthèses Dictaphone / IA ({salespersonReports.length})
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                            Visites transmises depuis l'application mobile
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Reports Feed Cards */}
+                      {loadingSalespersonReports ? (
+                        <div className="p-8 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 flex flex-col items-center justify-center gap-3">
+                          <div className="w-6 h-6 border-2 border-[#4F6CE8] border-t-transparent rounded-full animate-spin" />
+                          <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">Chargement des comptes-rendus de visite...</span>
+                        </div>
+                      ) : (salespersonReports.length === 0 && salespersonSubmissions.length === 0) ? (
+                        <div className="p-12 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 flex flex-col items-center justify-center gap-2">
+                          <Icons.FileText size={32} className="text-zinc-400 mb-1" />
+                          <span className="text-sm font-bold text-[#242124] dark:text-white">Aucun compte-rendu de visite enregistré</span>
+                          <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] max-w-md">
+                            Ce commercial n'a pas encore finalisé de visite guidée ou de compte-rendu dictaphone sur son terminal mobile.
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {/* 1. Form Submissions */}
+                          {(salespersonDetailReportsFilter === 'ALL' || salespersonDetailReportsFilter === 'FORMS') &&
+                            salespersonSubmissions.map((sub) => (
+                              <div
+                                key={`sub-${sub.id}`}
+                                className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3 shadow-xs hover:border-black/10 dark:hover:border-white/10 transition-all"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-3">
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="text-sm font-extrabold text-[#242124] dark:text-white">
+                                        {sub.enterprise_name}
+                                      </h4>
+                                      <span className="px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                                        Formulaire Guidé
+                                      </span>
+                                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1">
+                                        <Icons.CheckCircle size={10} /> Score : {sub.qualification_score}/100
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5 flex-wrap">
+                                      {sub.plaque_code && <span className="font-semibold text-[#4F6CE8]">{sub.plaque_code}</span>}
+                                      {sub.enterprise_commune && <span>• {sub.enterprise_commune}</span>}
+                                      {sub.enterprise_sector && <span>• {sub.enterprise_sector}</span>}
+                                      <span>• Visité le {new Date(sub.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <button
+                                      onClick={() => setSelectedReportToInspect({ ...sub, type: 'SUBMISSION' })}
+                                      className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] text-[#242124] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold border border-black/5 dark:border-white/5 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                    >
+                                      <Icons.FileText size={13} />
+                                      <span>Voir les réponses ({sub.answers?.length || 0})</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Offre ciblée :</span>
+                                    <span className="text-xs font-bold text-[#242124] dark:text-white">{sub.target_offer_name}</span>
+                                  </div>
+
+                                  {sub.ai_summary && (
+                                    <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white whitespace-pre-line leading-relaxed shadow-xs">
+                                      {sub.ai_summary}
+                                    </div>
+                                  )}
+
+                                  {sub.detected_needs && sub.detected_needs.length > 0 && (
+                                    <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                      <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Besoins détectés :</span>
+                                      {sub.detected_needs.map((need, idx) => (
+                                        <span key={idx} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                                          {need}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {sub.objections_noted && (
+                                    <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                                      <span className="text-[10px] font-semibold">Points d'attention / Objections :</span>
+                                      <span>{sub.objections_noted}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+
+                          {/* 2. Dictaphone & AI Visit Reports */}
+                          {(salespersonDetailReportsFilter === 'ALL' || salespersonDetailReportsFilter === 'AI_REPORTS') &&
+                            salespersonReports.map((rep) => (
+                              <div
+                                key={`rep-${rep.id}`}
+                                className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3 shadow-xs hover:border-black/10 dark:hover:border-white/10 transition-all"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-3">
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="text-sm font-extrabold text-[#242124] dark:text-white">
+                                        {rep.enterprise_name}
+                                      </h4>
+                                      <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-semibold">
+                                        Compte-Rendu Dictaphone / IA
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5 flex-wrap">
+                                      {rep.plaque_code && <span className="font-semibold text-[#4F6CE8]">{rep.plaque_code}</span>}
+                                      <span>• Visite enregistrée le {new Date(rep.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <button
+                                      onClick={() => setSelectedReportToInspect({ ...rep, type: 'REPORT' })}
+                                      className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] text-[#242124] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold border border-black/5 dark:border-white/5 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                    >
+                                      <Icons.FileText size={13} />
+                                      <span>Détails & Plan d'actions</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                  {rep.executive_summary && (
+                                    <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white whitespace-pre-line leading-relaxed shadow-xs">
+                                      {rep.executive_summary}
+                                    </div>
+                                  )}
+
+                                  {rep.confirmed_needs && rep.confirmed_needs.length > 0 && (
+                                    <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                      <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Besoins confirmés :</span>
+                                      {rep.confirmed_needs.map((need, idx) => (
+                                        <span key={idx} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                                          {need}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {rep.actions_todo && rep.actions_todo.length > 0 && (
+                                    <div className="flex flex-col gap-1 mt-1">
+                                      <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Actions à mener :</span>
+                                      <ul className="list-disc list-inside text-xs text-[#242124] dark:text-white space-y-0.5">
+                                        {rep.actions_todo.map((act, idx) => (
+                                          <li key={idx}>{act}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {salespersonDetailTab === 'directives' && (
                     <div className="flex flex-col gap-4">
                       {/* Send Directive Form */}
@@ -2312,7 +2640,7 @@ export default function BackofficeCommandCenterPage() {
                                         const isAssignedPlaque = selectedPlaqueDetail.assigned_salespersons?.includes(s.id);
                                         return (
                                           <option key={s.id} value={s.id}>
-                                            {s.full_name} {isAssignedPlaque ? '★ (Plaque)' : ''}
+                                            {s.full_name} {isAssignedPlaque ? '(Assigné Plaque)' : ''}
                                           </option>
                                         );
                                       })}
@@ -3709,6 +4037,126 @@ export default function BackofficeCommandCenterPage() {
                     <span>{savingPlaqueAssign ? "Enregistrement..." : "Valider l'Affectation"}</span>
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* INSPECTION MODAL: COMPTE-RENDU DE VISITE DÉTAILLÉ */}
+        {selectedReportToInspect && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+            <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl max-w-2xl w-full p-6 border border-black/10 dark:border-white/10 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#4F6CE8]">
+                    {selectedReportToInspect.type === 'SUBMISSION' ? 'Formulaire de Qualification Guidé' : 'Compte-Rendu Dictaphone / IA'}
+                  </span>
+                  <h3 className="text-base font-extrabold text-[#242124] dark:text-white">
+                    {selectedReportToInspect.enterprise_name}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setSelectedReportToInspect(null)}
+                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+                >
+                  <Icons.X size={18} />
+                </button>
+              </div>
+
+              {/* Metadata Chips */}
+              <div className="flex items-center gap-2 flex-wrap text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
+                {selectedReportToInspect.plaque_code && (
+                  <span className="px-2.5 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] font-bold">
+                    Plaque : {selectedReportToInspect.plaque_code}
+                  </span>
+                )}
+                {selectedReportToInspect.qualification_score !== undefined && (
+                  <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+                    Score : {selectedReportToInspect.qualification_score}/100
+                  </span>
+                )}
+                {selectedReportToInspect.target_offer_name && (
+                  <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#363336] text-[#242124] dark:text-white font-semibold border border-black/5 dark:border-white/5">
+                    {selectedReportToInspect.target_offer_name}
+                  </span>
+                )}
+                <span>
+                  {new Date(selectedReportToInspect.created_at).toLocaleDateString('fr-FR', {
+                    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                  })}
+                </span>
+              </div>
+
+              {/* Executive Summary */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-[#242124] dark:text-white">Synthèse de la Visite</span>
+                <div className="bg-white dark:bg-[#363336] p-4 rounded-2xl text-xs text-[#242124] dark:text-white leading-relaxed whitespace-pre-line border border-black/5 dark:border-white/5 shadow-xs">
+                  {selectedReportToInspect.ai_summary || selectedReportToInspect.executive_summary || 'Aucune synthèse disponible.'}
+                </div>
+              </div>
+
+              {/* Form Answers if available */}
+              {selectedReportToInspect.answers && selectedReportToInspect.answers.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-bold text-[#242124] dark:text-white">
+                    Réponses au Questionnaire Guidé ({selectedReportToInspect.answers.length})
+                  </span>
+                  <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                    {selectedReportToInspect.answers.map((ans: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 text-xs flex flex-col gap-1">
+                        <span className="font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
+                          Q{idx + 1}: {ans.question_text || ans.question_id || 'Question'}
+                        </span>
+                        <span className="font-bold text-[#242124] dark:text-white">
+                          {Array.isArray(ans.answer) ? ans.answer.join(', ') : String(ans.answer ?? 'Non renseigné')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Needs & Objections */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {((selectedReportToInspect.detected_needs?.length || 0) > 0 || (selectedReportToInspect.confirmed_needs?.length || 0) > 0) && (
+                  <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Besoins Détectés</span>
+                    <div className="flex flex-wrap gap-1">
+                      {(selectedReportToInspect.detected_needs || selectedReportToInspect.confirmed_needs || []).map((need: string, idx: number) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                          {need}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(selectedReportToInspect.objections_noted || (selectedReportToInspect.objections_raised?.length || 0) > 0) && (
+                  <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">Objections / Contraintes</span>
+                    <p className="text-xs text-[#242124] dark:text-white">
+                      {selectedReportToInspect.objections_noted || (selectedReportToInspect.objections_raised || []).join(', ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Next Action */}
+              {selectedReportToInspect.next_action && (
+                <div className="p-3 rounded-2xl bg-[#4F6CE8]/10 text-xs flex items-center justify-between text-[#4F6CE8]">
+                  <span className="font-semibold">Prochaine action :</span>
+                  <span className="font-bold">{selectedReportToInspect.next_action}</span>
+                </div>
+              )}
+
+              {/* Close action */}
+              <div className="flex justify-end mt-2 pt-3 border-t border-black/5 dark:border-white/5">
+                <button
+                  onClick={() => setSelectedReportToInspect(null)}
+                  className="px-4 py-2 rounded-2xl bg-[#242124] dark:bg-white text-white dark:text-[#242124] text-xs font-semibold cursor-pointer"
+                >
+                  Fermer
+                </button>
               </div>
             </div>
           </div>

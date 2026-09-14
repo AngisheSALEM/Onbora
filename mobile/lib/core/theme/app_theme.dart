@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   // Brand Colors (High-Contrast Enterprise Palette)
   static const Color primaryNavy = Color(0xFF0F172A); // Slate 900
-  static const Color accentOrange = Color(0xFFF97316); // Orange Amber Accent
+  static const Color accentOrange = Color(0xFF4F6CE8); // Orange Amber Accent
   static const Color secondaryTeal = Color(0xFF0D9488); // Teal 600
   static const Color backgroundLight = Color(0xFFF8FAFC); // Slate 50
   static const Color cardLight = Colors.white;

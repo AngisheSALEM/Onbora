@@ -111,7 +111,6 @@ abstract class AppConstants {
   static const Color accentPurple = Color(0xFF2563EB); // Apple Royal Blue
   static const Color primaryBlue = Color(0xFF007AFF); // Apple System Blue
   static const Color accentBlue = Color(0xFF007AFF);
-  static const Color orangeOfficial = Color(0xFF0F172A); // Apple Dark Slate
   static const Color accentYellow = Color(0xFF64748B);
   static const Color accentYellowDark = Color(0xFF94A3B8);
   static const Color accentYellowLight = Color(0xFF475569);
@@ -181,12 +180,12 @@ abstract class AppConstants {
   }
 
   // --- Brand & Solution Naming ---
-  static const String brandServiceName = 'Orange B2B';
+  static const String brandServiceName = 'Onbora B2B';
   static const String appName = 'ONBORA SALES';
   static const String appSubtitle = 'Suivi Commercial & Prospection B2B';
   
   // Login texts
-  static const String loginTitle = 'Espace Commercial Orange B2B';
+  static const String loginTitle = 'Espace Commercial Onbora B2B';
   static const String loginButton = 'Se connecter';
   static const String loginIdLabel = 'Identifiant / Email *';
   static const String loginPasswordLabel = 'Mot de passe *';
@@ -199,12 +198,12 @@ abstract class AppConstants {
   static const String viewAiBriefBtn = 'Consulter le brief';
   static const String startVisitBtn = 'Démarrer la visite';
 
-  // Sales Home texts (Rendez-vous épuré)
-  static const String salesVisitsTitle = 'Rendez-vous';
+  // Sales Home texts (Visites terrain)
+  static const String salesVisitsTitle = 'Visites';
   static const String navHomeTitle = 'Accueil';
   static const String homeSearchProspectBtn = 'Rechercher un prospect';
   static const String homeSearchPlaceholder = 'Rechercher un prospect...';
-  static const String homeActiveMeetingTitle = 'Rendez-vous';
+  static const String homeActiveMeetingTitle = 'Visite en cours';
   static const String recentVisitsTitle = 'Visites récentes';
 
   // Search Prospect texts

@@ -16,6 +16,7 @@ import KamPreCallView from '@/components/kam/KamPreCallView';
 import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
 import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
 import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
+import KamVoiceDebriefModal from '@/components/kam/KamVoiceDebriefModal';
 import CopilotChatView from '@/components/shared/CopilotChatView';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
@@ -28,6 +29,7 @@ export default function KamCommandCenterPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadDirectivesCount, setUnreadDirectivesCount] = useState(0);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
+  const [activeDebriefVisit, setActiveDebriefVisit] = useState<StrategicVisit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export default function KamCommandCenterPage() {
 
   const handleOpenDebriefForAccount = (visit: StrategicVisit) => {
     setSelectedVisitId(visit.id);
-    setActiveView('agenda');
+    setActiveDebriefVisit(visit);
   };
 
   const handleAddNewAccount = (newAccount: StrategicVisit) => {
@@ -230,6 +232,17 @@ export default function KamCommandCenterPage() {
           isOpen={isCreateAccountOpen}
           onClose={() => setIsCreateAccountOpen(false)}
           onAddAccount={handleAddNewAccount}
+        />
+
+        {/* POST-VISIT VOCAL DEBRIEF DICTAPHONE MODAL */}
+        <KamVoiceDebriefModal
+          visit={activeDebriefVisit}
+          isOpen={!!activeDebriefVisit}
+          onClose={() => setActiveDebriefVisit(null)}
+          onDebriefSaved={(updatedVisit) => {
+            handleDebriefSaved(updatedVisit);
+            setActiveDebriefVisit(null);
+          }}
         />
 
       </div>

@@ -15,6 +15,8 @@ class VisitReportModel {
   final Map<String, dynamic>? technicalHandoverSpecs;
   final String? audioFilePath;
   final String createdAt;
+  final int? aiFeedbackRating;
+  final String aiFeedbackComments;
 
   VisitReportModel({
     required this.id,
@@ -33,6 +35,8 @@ class VisitReportModel {
     this.technicalHandoverSpecs,
     this.audioFilePath,
     required this.createdAt,
+    this.aiFeedbackRating,
+    this.aiFeedbackComments = '',
   });
 
   factory VisitReportModel.fromJson(Map<String, dynamic> json) {
@@ -90,6 +94,8 @@ class VisitReportModel {
       technicalHandoverSpecs: rawTechSpecs,
       audioFilePath: json['audio_file_path'] as String?,
       createdAt: json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      aiFeedbackRating: json['ai_feedback_rating'] as int?,
+      aiFeedbackComments: json['ai_feedback_comments'] as String? ?? '',
     );
   }
 }

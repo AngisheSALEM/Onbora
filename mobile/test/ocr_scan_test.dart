@@ -1,5 +1,6 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onbora_sales/app/common/controller/theme_controller.dart';
 import 'package:onbora_sales/app/core/api/api_client.dart';
 import 'package:onbora_sales/app/core/storage/session_storage.dart';
@@ -9,8 +10,9 @@ import 'package:onbora_sales/app/modules/sales/screen/document_scan_screen.dart'
 
 void main() {
   setUp(() {
-    Get.testMode = true;
+    SharedPreferences.setMockInitialValues({});
     Get.reset();
+    Get.testMode = true;
     Get.put<ApiClient>(ApiClient());
     Get.put<SessionStorage>(SessionStorage());
     Get.put<ThemeController>(ThemeController());

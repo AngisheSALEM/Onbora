@@ -31,8 +31,6 @@ export default function LoginPage() {
         router.push('/client');
       } else if (user.role === 'SALESPERSON') {
         router.push('/sales');
-      } else {
-        router.push('/login');
       }
     }
   }, [user, loading, router]);
@@ -48,7 +46,7 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const res = await fetch(`${API_URL}/api/auth/login/`, {
         method: 'POST',
         headers: {
@@ -76,10 +74,12 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
+  // Seul un utilisateur déjà identifié et en cours de redirection voit l'écran de transition
+  if (loading && user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F6F5F2] dark:bg-[#242124]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F6F5F2] dark:bg-[#242124] gap-3">
         <div className="w-8 h-8 border-2 border-zinc-700 border-t-[#4F6CE8] rounded-full animate-spin" />
+        <p className="text-xs text-zinc-500 font-medium">Redirection vers votre espace...</p>
       </div>
     );
   }
@@ -93,11 +93,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white dark:bg-[#2F2C30] rounded-3xl p-8 sm:p-10 flex flex-col gap-6 shadow-2xl animate-fade-in border-0">
         <div className="text-center">
           <Logo className="mx-auto mb-3" size={48} />
-          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-950 dark:text-white uppercase">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
             Onbora
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-normal">
-            Portail d'Authentification Sécurisé
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Connexion à votre espace professionnel
           </p>
         </div>
 
@@ -111,7 +111,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Identifiant / Nom d'utilisateur
+              Identifiant
             </label>
             <input
               type="text"
@@ -119,7 +119,7 @@ export default function LoginPage() {
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ex: admin, supervisor, kam_director..."
+              placeholder="Votre identifiant"
               className="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-550 focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all text-zinc-950 dark:text-white border-0"
             />
           </div>
@@ -141,23 +141,18 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 mt-2 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-extrabold text-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#4F6CE8]/30 active:scale-98"
+            className="w-full py-3 mt-2 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-medium text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-[0.99]"
           >
             {submitting ? (
               <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Vérification des droits...</span>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Connexion en cours...</span>
               </div>
             ) : (
-              <span>Connexion Sécurisée</span>
+              <span>Se connecter</span>
             )}
           </button>
         </form>
-
-        <div className="p-3 bg-black/5 dark:bg-white/5 rounded-2xl text-[11px] text-zinc-500 dark:text-zinc-400 text-center leading-relaxed">
-          <p className="font-550 text-zinc-700 dark:text-zinc-300 mb-1">Politique de Cloisonnement des Rôles</p>
-          Chaque compte accède strictement et exclusivement à son espace métier habilité (Cockpit Admin, Direction KAM, Back-Office Supervision ou Force Commerciale).
-        </div>
       </div>
     </div>
   );
