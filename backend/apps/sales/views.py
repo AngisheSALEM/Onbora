@@ -374,13 +374,6 @@ class PlaqueKMLDownloadView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class PlaqueDrawAndSaveView(APIView):
-    """
-    POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
-    génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
-    """
-    permission_classes = [IsSupervisorOrAdmin]
-
 def _notify_plaque_drawn_salespersons(plaque, salespersons):
     """Dispatches in-app and FCM push notifications to assigned salespersons."""
     from shared.infrastructure.firebase_service import send_push_notification_to_user
@@ -469,6 +462,13 @@ def _persist_drawn_plaque(data: dict) -> tuple:
 
     return plaque, salespersons
 
+
+class PlaqueDrawAndSaveView(APIView):
+    """
+    POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
+    génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
+    """
+    permission_classes = [IsSupervisorOrAdmin]
 
     def post(self, request):
         try:
@@ -1948,16 +1948,6 @@ class ConvertedAccountsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class EnterpriseListFullView(APIView):
-    """
-    GET: Banque de données CRM des 400 entreprises congolaises avec filtrage granulaire :
-    - segment (GRAND_COMPTE, PME, TPE_INFORMEL)
-    - assigned_entity (BACK_OFFICE, KAM_OFFICE)
-    - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
-    - city & recherche textuelle
-    """
-    permission_classes = [IsAuthenticated]
-
 def _filter_enterprises_for_list(request):
     """Filters Enterprise queryset based on request parameters and user permissions."""
     segment = request.query_params.get('segment')
@@ -2028,6 +2018,16 @@ def _filter_enterprises_for_list(request):
 
     return qs
 
+
+class EnterpriseListFullView(APIView):
+    """
+    GET: Banque de données CRM des 400 entreprises congolaises avec filtrage granulaire :
+    - segment (GRAND_COMPTE, PME, TPE_INFORMEL)
+    - assigned_entity (BACK_OFFICE, KAM_OFFICE)
+    - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
+    - city & recherche textuelle
+    """
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         limit = int(request.query_params.get('limit', 1000))
