@@ -294,9 +294,6 @@ export default function SalesDashboard() {
     setAudioFilePath('');
     setIsProcessingAudio(false);
     setCreatedDossierId(null);
-    setActiveTab('workflow');
-    setIsEditingSlides(false);
-    setSlides([]);
   };
 
   const formatDuration = (sec: number) => {
