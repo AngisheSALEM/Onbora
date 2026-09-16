@@ -10,14 +10,12 @@ import KamAccountsListView from '@/components/kam/KamAccountsListView';
 import KamAgendaView from '@/components/kam/KamAgendaView';
 import KamVisitsHistoryView from '@/components/kam/KamVisitsHistoryView';
 import KamSignalsView from '@/components/kam/KamSignalsView';
-import KamDirectivesView from '@/components/kam/KamDirectivesView';
 import KamSettingsView from '@/components/kam/KamSettingsView';
 import KamPreCallView from '@/components/kam/KamPreCallView';
 import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
 import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
 import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
 import KamVoiceDebriefModal from '@/components/kam/KamVoiceDebriefModal';
-import CopilotChatView from '@/components/shared/CopilotChatView';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
 
@@ -27,7 +25,6 @@ export default function KamCommandCenterPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
   const [activeView, setActiveView] = useState<KamView>('accounts');
   const [searchQuery, setSearchQuery] = useState('');
-  const [unreadDirectivesCount, setUnreadDirectivesCount] = useState(0);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
   const [activeDebriefVisit, setActiveDebriefVisit] = useState<StrategicVisit | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,10 +44,12 @@ export default function KamCommandCenterPage() {
             return exists ? prev : data.accounts[0].id;
           });
         }
+      } else {
+        setVisits([]);
       }
     } catch (err: any) {
-      console.error("Erreur lors de la récupération des comptes KAM assignés:", err);
-      setError("Impossible de charger votre portefeuille de comptes. Veuillez vérifier votre session.");
+      console.error("Erreur chargement comptes assignés:", err);
+      setError(err?.message || "Impossible de charger les comptes");
     } finally {
       setLoading(false);
     }
@@ -60,10 +59,11 @@ export default function KamCommandCenterPage() {
     loadAssignedAccounts();
   }, [loadAssignedAccounts]);
 
-  const selectedVisit = visits.find((v) => v.id === selectedVisitId) || visits[0] || null;
+  const selectedVisit = visits.find((v) => v.id === selectedVisitId) || null;
 
-  const handleOpenBriefingForAccount = (visit: StrategicVisit) => {
-    setSelectedVisitId(visit.id);
+  const handleOpenBriefingForAccount = (visitOrId: StrategicVisit | string) => {
+    const id = typeof visitOrId === 'string' ? visitOrId : visitOrId.id;
+    setSelectedVisitId(id);
     setActiveView('briefing');
   };
 
@@ -83,15 +83,14 @@ export default function KamCommandCenterPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['KAM']}>
+    <ProtectedRoute allowedRoles={['KAM', 'ADMIN']}>
       <div className="flex h-screen w-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans antialiased overflow-hidden select-none transition-colors duration-300">
         
-        {/* 1. FLOATING LEFT VERTICAL NAVIGATION SIDEBAR */}
+        {/* 1. SIDEBAR FLOTTANTE GIVRÉE (Gris Apple & Coins Arrondis 32px) */}
         <KamSidebar
           activeView={activeView}
           onViewChange={setActiveView}
           unreadSignalsCount={visits.length > 0 ? 1 : 0}
-          unreadDirectivesCount={unreadDirectivesCount}
         />
 
         {/* 2. MAIN WORKSPACE CONTENT AREA */}
@@ -209,14 +208,6 @@ export default function KamCommandCenterPage() {
                   visits={visits}
                   onOpenBriefingForAccount={handleOpenBriefingForAccount}
                 />
-              )}
-
-              {activeView === 'directives' && (
-                <KamDirectivesView onDirectivesCountChange={setUnreadDirectivesCount} />
-              )}
-
-              {activeView === 'copilot' && (
-                <CopilotChatView userRole="KAM" />
               )}
 
               {activeView === 'settings' && (

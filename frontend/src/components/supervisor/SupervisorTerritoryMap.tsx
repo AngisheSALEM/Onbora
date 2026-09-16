@@ -440,7 +440,7 @@ export default function SupervisorTerritoryMap({
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-black/5 dark:bg-white/5 p-3 rounded-2xl flex flex-col">
-              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Comptes SOHO</span>
+              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Comptes TPE</span>
               <span className="text-lg font-bold text-[#242124] dark:text-white">{selectedPlaque.enterprises_count || 0}</span>
             </div>
             <div className="bg-black/5 dark:bg-white/5 p-3 rounded-2xl flex flex-col">

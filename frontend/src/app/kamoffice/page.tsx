@@ -7,9 +7,12 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import CopilotChatView from '@/components/shared/CopilotChatView';
 import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
 import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
+import UserAvatar from '@/components/kam/UserAvatar';
+import KamActivityStatusSelector from '@/components/kam/KamActivityStatusSelector';
+import Pagination from '@/components/kam/Pagination';
+import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 
 export type KamOfficeView =
   | 'overview'
@@ -18,8 +21,7 @@ export type KamOfficeView =
   | 'kams'
   | 'grands_comptes'
   | 'pme'
-  | 'directives'
-  | 'copilot'
+  | 'reports'
   | 'settings';
 
 interface KamOfficeMetrics {
@@ -99,26 +101,33 @@ interface KamAccount {
   assigned_at: string | null;
 }
 
-interface DirectiveItem {
+export interface KamVisitRecord {
   id: number;
-  sender?: number;
-  sender_name: string;
-  sender_avatar?: string;
-  recipient?: number;
-  recipient_name: string;
-  recipient_role?: string;
-  recipient_avatar?: string;
-  target_entity: 'KAM_OFFICE' | 'BACK_OFFICE';
-  title: string;
-  instruction: string;
-  priority: 'NORMAL' | 'HIGH' | 'CRITICAL';
-  priority_display?: string;
-  status: 'SENT' | 'IN_PROGRESS' | 'COMPLETED';
-  status_display?: string;
-  target_account_name: string;
-  acknowledgement_note: string;
+  appointment_id: number | null;
+  enterprise_id: number;
+  enterprise_name: string;
+  enterprise_sector: string;
+  crm_id: string;
+  meeting_type: 'PHYSICAL' | 'GOOGLE_MEET' | 'CALL';
+  meeting_type_label?: string;
+  contact_name: string;
+  contact_role: string;
+  raw_transcript: string;
+  executive_summary: string;
+  confirmed_needs: string[];
+  objections_raised: string[];
+  actions_todo: string[];
+  follow_up_email_draft: string;
+  bant_scores?: {
+    budget?: number;
+    authority?: number;
+    need?: number;
+    timeline?: number;
+    total?: number;
+    status?: string;
+  };
+  conversion_status: string;
   created_at: string;
-  updated_at: string;
 }
 
 export default function KamOfficePage() {
@@ -134,8 +143,24 @@ export default function KamOfficePage() {
   const [metrics, setMetrics] = useState<KamOfficeMetrics | null>(null);
   const [kamsList, setKamsList] = useState<KamUser[]>([]);
   const [accountsList, setAccountsList] = useState<KamAccount[]>([]);
-  const [directives, setDirectives] = useState<DirectiveItem[]>([]);
-  const [loadingDirectives, setLoadingDirectives] = useState(false);
+  
+  // KAM Visit Reports State
+  const [kamReports, setKamReports] = useState<KamVisitRecord[]>([]);
+  const [loadingKamReports, setLoadingKamReports] = useState(false);
+  const [reportsSearchQuery, setReportsSearchQuery] = useState('');
+  const [reportsStatusFilter, setReportsStatusFilter] = useState<'ALL' | 'CONVERTED' | 'IN_NEGOTIATION' | 'PROSPECT' | 'LOST'>('ALL');
+  const [reportsMeetingTypeFilter, setReportsMeetingTypeFilter] = useState<'ALL' | 'PHYSICAL' | 'GOOGLE_MEET' | 'CALL'>('ALL');
+  const [reportsPage, setReportsPage] = useState(1);
+  const reportsPageSize = 10;
+  const [selectedReportDetail, setSelectedReportDetail] = useState<KamVisitRecord | null>(null);
+
+  // Pagination State for Grands Comptes, PME, KAMs
+  const [gcPage, setGcPage] = useState(1);
+  const gcPageSize = 10;
+  const [pmePage, setPmePage] = useState(1);
+  const pmePageSize = 10;
+  const [kamsPage, setKamsPage] = useState(1);
+  const kamsPageSize = 8;
 
   // Detail Drill-down State for Menu 2 (KAM)
   const [selectedKamDetail, setSelectedKamDetail] = useState<KamUser | null>(null);
@@ -158,11 +183,6 @@ export default function KamOfficePage() {
   // Filters: KAMs View
   const [kamSpecializationFilter, setKamSpecializationFilter] = useState<'ALL' | 'GRAND_COMPTE' | 'PME'>('ALL');
   const [kamAvailabilityFilter, setKamAvailabilityFilter] = useState<'ALL' | 'AVAILABLE' | 'UNAVAILABLE'>('ALL');
-
-  // Filters: Directives View
-  const [directiveTab, setDirectiveTab] = useState<'received' | 'sent'>('received');
-  const [directiveStatusFilter, setDirectiveStatusFilter] = useState<'ALL' | 'SENT' | 'IN_PROGRESS' | 'COMPLETED'>('ALL');
-  const [directivePriorityFilter, setDirectivePriorityFilter] = useState<'ALL' | 'NORMAL' | 'HIGH' | 'CRITICAL'>('ALL');
 
   // Notification Banner
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -187,25 +207,11 @@ export default function KamOfficePage() {
   const [creatingKam, setCreatingKam] = useState(false);
   const [createKamError, setCreateKamError] = useState('');
 
-  // Directives Modal (Create & Acknowledge)
-  const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
-  const [newDirectiveRecipientId, setNewDirectiveRecipientId] = useState<string>('');
-  const [newDirectiveTitle, setNewDirectiveTitle] = useState('');
-  const [newDirectiveInstruction, setNewDirectiveInstruction] = useState('');
-  const [newDirectivePriority, setNewDirectivePriority] = useState<'NORMAL' | 'HIGH' | 'CRITICAL'>('NORMAL');
-  const [newDirectiveTargetAccount, setNewDirectiveTargetAccount] = useState('');
-  const [creatingDirective, setCreatingDirective] = useState(false);
   const [selectedAccountForDetail, setSelectedAccountForDetail] = useState<KamAccount | null>(null);
 
-  const [selectedDirectiveToAck, setSelectedDirectiveToAck] = useState<DirectiveItem | null>(null);
-  const [ackNote, setAckNote] = useState('');
-  const [ackStatus, setAckStatus] = useState<'IN_PROGRESS' | 'COMPLETED'>('IN_PROGRESS');
-  const [savingAck, setSavingAck] = useState(false);
-
-  // Settings & Memojis
-  const [memojisCatalog, setMemojisCatalog] = useState<{ id: number; filename: string; gender?: string }[]>([]);
-  const [memojiGenderFilter, setMemojiGenderFilter] = useState<'all' | 'homme' | 'femme'>('all');
-  const [savingAvatar, setSavingAvatar] = useState(false);
+  // Settings & Profile Picture
+  const [profilePictureInput, setProfilePictureInput] = useState('');
+  const [savingProfilePicture, setSavingProfilePicture] = useState(false);
   const [avatarSuccessMsg, setAvatarSuccessMsg] = useState('');
   const [avatarErrorMsg, setAvatarErrorMsg] = useState('');
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
@@ -236,76 +242,55 @@ export default function KamOfficePage() {
     }
   }, []);
 
-  // Fetch Directives
-  const loadDirectives = useCallback(async () => {
-    setLoadingDirectives(true);
+  // Fetch Visit Reports
+  const loadKamReports = useCallback(async () => {
+    setLoadingKamReports(true);
     try {
-      const data = await fetchAPI('/api/sales/directives/?target_entity=KAM_OFFICE');
-      if (data && Array.isArray(data.directives)) {
-        setDirectives(data.directives);
+      const data = await fetchAPI('/api/kam/visits/');
+      if (data && Array.isArray(data.visits)) {
+        setKamReports(data.visits);
+      } else {
+        setKamReports([]);
       }
     } catch (err) {
-      console.error("Erreur de chargement des directives:", err);
+      console.error("Erreur de chargement des rapports KAM:", err);
+      setKamReports([]);
     } finally {
-      setLoadingDirectives(false);
+      setLoadingKamReports(false);
     }
   }, []);
 
   useEffect(() => {
     loadKamOfficeData();
-    loadDirectives();
-  }, [loadKamOfficeData, loadDirectives]);
+    loadKamReports();
+  }, [loadKamOfficeData, loadKamReports]);
 
-  // Load Memojis for settings
+  // Sync profile picture input from user
   useEffect(() => {
-    fetch('/memojis/memojis_catalog.json')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setMemojisCatalog(data);
-        } else {
-          const fallback = Array.from({ length: 64 }, (_, i) => {
-            const num = String(i + 1).padStart(3, '0');
-            return {
-              id: i + 1,
-              filename: `memoji_${num}.png`,
-              gender: i % 2 === 0 ? 'homme' : 'femme',
-            };
-          });
-          setMemojisCatalog(fallback);
-        }
-      })
-      .catch(() => {
-        const fallback = Array.from({ length: 64 }, (_, i) => {
-          const num = String(i + 1).padStart(3, '0');
-          return {
-            id: i + 1,
-            filename: `memoji_${num}.png`,
-            gender: i % 2 === 0 ? 'homme' : 'femme',
-          };
-        });
-        setMemojisCatalog(fallback);
-      });
-  }, []);
+    if (user) {
+      setProfilePictureInput(user.profile_picture_url || user.avatar || '');
+    }
+  }, [user]);
 
-  // Save Avatar
-  const handleSelectAvatar = async (filename: string) => {
-    setSavingAvatar(true);
+  // Save Profile Picture
+  const handleSaveProfilePicture = async (url: string) => {
+    setSavingProfilePicture(true);
     setAvatarErrorMsg('');
+    setAvatarSuccessMsg('');
     try {
       await fetchAPI('/api/accounts/me/', {
         method: 'PATCH',
-        body: JSON.stringify({ avatar: filename }),
+        body: JSON.stringify({ profile_picture_url: url.trim(), avatar: url.trim() }),
       });
       if (updateUser) {
-        updateUser({ avatar: filename });
+        updateUser({ profile_picture_url: url.trim(), avatar: url.trim() });
       }
-      setAvatarSuccessMsg("Avatar Memoji synchronisé avec succès sur votre profil !");
+      setAvatarSuccessMsg("Photo de profil mise à jour avec succès !");
       setTimeout(() => setAvatarSuccessMsg(''), 3500);
     } catch (err: any) {
-      setAvatarErrorMsg(err.message || "Erreur lors de la mise à jour de l'avatar.");
+      setAvatarErrorMsg(err.message || "Erreur lors de la mise à jour de la photo de profil.");
     } finally {
-      setSavingAvatar(false);
+      setSavingProfilePicture(false);
     }
   };
 
@@ -414,82 +399,6 @@ export default function KamOfficePage() {
     }
   };
 
-  // Create Directive Handler
-  const handleCreateDirective = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newDirectiveRecipientId || !newDirectiveTitle.trim() || !newDirectiveInstruction.trim()) return;
-
-    setCreatingDirective(true);
-    try {
-      await fetchAPI('/api/sales/directives/', {
-        method: 'POST',
-        body: JSON.stringify({
-          recipient_id: Number(newDirectiveRecipientId),
-          title: newDirectiveTitle.trim(),
-          instruction: newDirectiveInstruction.trim(),
-          priority: newDirectivePriority,
-          target_account_name: newDirectiveTargetAccount.trim(),
-          target_entity: 'KAM_OFFICE',
-        }),
-      });
-
-      setIsDirectiveModalOpen(false);
-      setNewDirectiveRecipientId('');
-      setNewDirectiveTitle('');
-      setNewDirectiveInstruction('');
-      setNewDirectiveTargetAccount('');
-      setNewDirectivePriority('NORMAL');
-
-      setNotification({
-        type: 'success',
-        message: "Directive transmise au Key Account Manager avec succès.",
-      });
-      setTimeout(() => setNotification(null), 4000);
-      await loadDirectives();
-    } catch (err: any) {
-      console.error(err);
-      setNotification({
-        type: 'error',
-        message: err.message || "Erreur lors de l'émission de la directive.",
-      });
-      setTimeout(() => setNotification(null), 4000);
-    } finally {
-      setCreatingDirective(false);
-    }
-  };
-
-  // Acknowledge Directive Handler
-  const handleSaveAck = async () => {
-    if (!selectedDirectiveToAck) return;
-    setSavingAck(true);
-    try {
-      await fetchAPI(`/api/sales/directives/${selectedDirectiveToAck.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          status: ackStatus,
-          acknowledgement_note: ackNote,
-        }),
-      });
-
-      setSelectedDirectiveToAck(null);
-      setAckNote('');
-      setNotification({
-        type: 'success',
-        message: "Statut de la directive mis à jour avec succès.",
-      });
-      setTimeout(() => setNotification(null), 4000);
-      await loadDirectives();
-    } catch (err: any) {
-      console.error(err);
-      setNotification({
-        type: 'error',
-        message: err.message || "Erreur lors de la mise à jour.",
-      });
-      setTimeout(() => setNotification(null), 4000);
-    } finally {
-      setSavingAck(false);
-    }
-  };
 
   // Toggle KAM Specialization or Availability
   const handleUpdateKam = async (kamId: number, fields: Partial<KamUser>) => {
@@ -622,32 +531,53 @@ export default function KamOfficePage() {
     return accountsList.filter((acc) => acc.assigned_kam?.id === selectedKamDetail.id);
   }, [accountsList, selectedKamDetail]);
 
-  // Filtered Directives
-  const filteredDirectives = useMemo(() => {
-    const currentUserId = user?.id;
-    return directives
-      .filter((d) => {
-        if (directiveTab === 'received') {
-          return d.target_entity === 'KAM_OFFICE' || d.recipient === currentUserId;
-        } else {
-          return d.sender === currentUserId;
-        }
-      })
-      .filter((d) => {
-        if (directiveStatusFilter !== 'ALL' && d.status !== directiveStatusFilter) return false;
-        if (directivePriorityFilter !== 'ALL' && d.priority !== directivePriorityFilter) return false;
+  // Filtered Visit Reports
+  const filteredKamReports = useMemo(() => {
+    return kamReports.filter((r) => {
+      if (reportsStatusFilter !== 'ALL' && r.conversion_status !== reportsStatusFilter) return false;
+      if (reportsMeetingTypeFilter !== 'ALL' && r.meeting_type !== reportsMeetingTypeFilter) return false;
+      const effectiveSearch = (reportsSearchQuery || searchQuery).trim().toLowerCase();
+      if (!effectiveSearch) return true;
+      return (
+        Boolean(r.enterprise_name && r.enterprise_name.toLowerCase().includes(effectiveSearch)) ||
+        Boolean(r.contact_name && r.contact_name.toLowerCase().includes(effectiveSearch)) ||
+        Boolean(r.executive_summary && r.executive_summary.toLowerCase().includes(effectiveSearch)) ||
+        Boolean(r.enterprise_sector && r.enterprise_sector.toLowerCase().includes(effectiveSearch)) ||
+        Boolean(r.crm_id && r.crm_id.toLowerCase().includes(effectiveSearch))
+      );
+    });
+  }, [kamReports, reportsStatusFilter, reportsMeetingTypeFilter, reportsSearchQuery, searchQuery]);
 
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return (
-          Boolean(d.title && d.title.toLowerCase().includes(q)) ||
-          Boolean(d.instruction && d.instruction.toLowerCase().includes(q)) ||
-          Boolean(d.recipient_name && d.recipient_name.toLowerCase().includes(q)) ||
-          Boolean(d.sender_name && d.sender_name.toLowerCase().includes(q)) ||
-          Boolean(d.target_account_name && d.target_account_name.toLowerCase().includes(q))
-        );
-      });
-  }, [directives, directiveTab, directiveStatusFilter, directivePriorityFilter, searchQuery, user]);
+  const paginatedKamReports = useMemo(() => {
+    const start = (reportsPage - 1) * reportsPageSize;
+    return filteredKamReports.slice(start, start + reportsPageSize);
+  }, [filteredKamReports, reportsPage, reportsPageSize]);
+
+  const totalReportsPages = Math.ceil(filteredKamReports.length / reportsPageSize) || 1;
+
+  // Paginated Grands Comptes
+  const paginatedGrandsComptes = useMemo(() => {
+    const start = (gcPage - 1) * gcPageSize;
+    return filteredGrandsComptesAccounts.slice(start, start + gcPageSize);
+  }, [filteredGrandsComptesAccounts, gcPage, gcPageSize]);
+
+  const totalGcPages = Math.ceil(filteredGrandsComptesAccounts.length / gcPageSize) || 1;
+
+  // Paginated PME
+  const paginatedPme = useMemo(() => {
+    const start = (pmePage - 1) * pmePageSize;
+    return filteredPmeAccounts.slice(start, start + pmePageSize);
+  }, [filteredPmeAccounts, pmePage, pmePageSize]);
+
+  const totalPmePages = Math.ceil(filteredPmeAccounts.length / pmePageSize) || 1;
+
+  // Paginated KAMs
+  const paginatedKams = useMemo(() => {
+    const start = (kamsPage - 1) * kamsPageSize;
+    return filteredKamsList.slice(start, start + kamsPageSize);
+  }, [filteredKamsList, kamsPage, kamsPageSize]);
+
+  const totalKamsPages = Math.ceil(filteredKamsList.length / kamsPageSize) || 1;
 
   // Dynamic Nav Items matching Backoffice Pattern
   const navItems = [
@@ -665,7 +595,7 @@ export default function KamOfficePage() {
     },
     {
       id: 'churnradar' as KamOfficeView,
-      label: "Radar Churn & Alertes",
+      label: "Radar Taux d'abandon & Alertes",
       icon: Icons.AlertTriangle,
       badge: undefined,
     },
@@ -688,16 +618,10 @@ export default function KamOfficePage() {
       badge: metrics ? metrics.pme_count : undefined,
     },
     {
-      id: 'directives' as KamOfficeView,
-      label: "Directives",
+      id: 'reports' as KamOfficeView,
+      label: "Rapports de Visite",
       icon: Icons.FileText,
-      badge: directives.filter((d) => d.status !== 'COMPLETED').length || undefined,
-    },
-    {
-      id: 'copilot' as KamOfficeView,
-      label: "Copilote IA",
-      icon: Icons.Bot,
-      badge: 'AI',
+      badge: kamReports.length > 0 ? kamReports.length : undefined,
     },
     {
       id: 'settings' as KamOfficeView,
@@ -736,9 +660,7 @@ export default function KamOfficePage() {
                     <h1 className="text-base font-semibold text-zinc-900 dark:text-white tracking-tight">
                       ONBORA
                     </h1>
-                    <p className="text-[10px] text-[#4F6CE8] font-semibold tracking-wider uppercase">
-                      Direction KAM Office
-                    </p>
+                    
                   </div>
                 </div>
               )}
@@ -812,16 +734,11 @@ export default function KamOfficePage() {
             <div className="flex items-center justify-between px-1">
               {!isSidebarCollapsed ? (
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden">
-                    <img
-                      src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                      alt={user?.username || 'KAM Office'}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
+                  <UserAvatar
+                    src={user?.profile_picture_url || user?.avatar}
+                    alt={user?.username || 'KAM Office'}
+                    size="sm"
+                  />
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-semibold leading-tight text-zinc-900 dark:text-white truncate">
                       {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
@@ -832,11 +749,11 @@ export default function KamOfficePage() {
                   </div>
                 </div>
               ) : (
-                <div className="mx-auto w-8 h-8 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center font-extrabold text-xs overflow-hidden">
-                  <img
-                    src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                    alt="avatar"
-                    className="w-full h-full object-cover"
+                <div className="mx-auto">
+                  <UserAvatar
+                    src={user?.profile_picture_url || user?.avatar}
+                    alt={user?.username || 'KAM Office'}
+                    size="sm"
                   />
                 </div>
               )}
@@ -865,17 +782,16 @@ export default function KamOfficePage() {
               <h2 className="text-xl font-550 text-[#242124] dark:text-white tracking-tight">
                 {activeView === 'overview' && "Portefeuille Stratégique & KPIs"}
                 {activeView === 'leadscoring' && "Scoring B2B & Priorisation IA"}
-                {activeView === 'churnradar' && "Radar Churn & Opportunités d'Upsell"}
+                {activeView === 'churnradar' && "Radar Risque d'Attrition & Ventes Additionnelles"}
                 {activeView === 'kams' && (selectedKamDetail ? `Fiche KAM — ${selectedKamDetail.full_name}` : "Équipe Key Account Managers & Pôles")}
                 {activeView === 'grands_comptes' && "Répertoire Grands Comptes (> 1M$)"}
                 {activeView === 'pme' && "Répertoire PME Stratégiques (100k$ - 1M$)"}
-                {activeView === 'directives' && "Directives Stratégiques & Assignations"}
+                {activeView === 'reports' && "Rapports de Visite & Comptes-Rendus KAM"}
                 {activeView === 'settings' && "Paramètres & Base de Connaissances"}
-                {activeView === 'copilot' && "Copilote Stratégique IA"}
               </h2>
             </div>
 
-            {/* Actions d'En-Tête : Recherche pilule avec croix, Actualiser, ThemeToggle */}
+            {/* Actions d'En-Tête : Recherche pilule avec croix, Actualiser, Statut KAM, ThemeToggle */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <div className="flex items-center gap-2 bg-white dark:bg-[#2D2A2D] px-3.5 py-2 rounded-2xl border border-black/5 dark:border-white/5 shadow-2xs">
                 <Icons.Search size={14} className="text-[#6E6C67] dark:text-[#A1A1AA]" />
@@ -892,8 +808,8 @@ export default function KamOfficePage() {
                       ? "Rechercher Grand Compte..."
                       : activeView === 'pme'
                       ? "Rechercher PME..."
-                      : activeView === 'directives'
-                      ? "Rechercher directive, compte..."
+                      : activeView === 'reports'
+                      ? "Rechercher rapport, compte, contact..."
                       : "Recherche..."
                   }
                   className="bg-transparent text-xs font-550 focus:outline-none w-48 sm:w-64 text-[#242124] dark:text-white border-0 placeholder-[#6E6C67] dark:placeholder-[#A1A1AA]"
@@ -901,9 +817,9 @@ export default function KamOfficePage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="text-xs text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer"
+                    className="text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer flex items-center"
                   >
-                    ✕
+                    <Icons.X size={12} />
                   </button>
                 )}
               </div>
@@ -911,14 +827,16 @@ export default function KamOfficePage() {
               <button
                 onClick={() => {
                   loadKamOfficeData();
-                  loadDirectives();
+                  loadKamReports();
                 }}
-                disabled={loadingData}
+                disabled={loadingData || loadingKamReports}
                 title="Actualiser les données"
                 className="p-2.5 rounded-2xl bg-white dark:bg-[#2D2A2D] hover:bg-black/5 dark:hover:bg-white/10 text-[#6E6C67] dark:text-white transition-all cursor-pointer border border-black/5 dark:border-white/5 disabled:opacity-50 shadow-2xs"
               >
-                <Icons.Refresh size={15} className={loadingData ? "animate-spin" : ""} />
+                <Icons.Refresh size={15} className={loadingData || loadingKamReports ? "animate-spin" : ""} />
               </button>
+
+              <KamActivityStatusSelector />
 
               <ThemeToggle />
             </div>
@@ -1430,21 +1348,19 @@ export default function KamOfficePage() {
 
                     {/* Cards Grid of KAMs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {filteredKamsList.map((kam) => (
+                      {paginatedKams.map((kam) => (
                         <div
                           key={kam.id}
                           onClick={() => setSelectedKamDetail(kam)}
-                          className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col justify-between gap-4 hover:border-[#4F6CE8]/40 transition-all cursor-pointer group shadow-2xs"
+                          className="group bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 hover:border-[#4F6CE8]/40 dark:hover:border-[#4F6CE8]/40 transition-all cursor-pointer flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md"
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-2xl bg-[#4F6CE8]/15 border border-[#4F6CE8]/30 flex items-center justify-center overflow-hidden shrink-0">
-                                <img
-                                  src={`/memojis/${(kam.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                  alt={kam.full_name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
+                              <UserAvatar
+                                src={kam.avatar}
+                                alt={kam.full_name}
+                                size="md"
+                              />
                               <div className="flex flex-col">
                                 <span className="font-bold text-sm text-zinc-900 dark:text-white group-hover:text-[#4F6CE8] transition-colors">
                                   {kam.full_name}
@@ -1501,6 +1417,15 @@ export default function KamOfficePage() {
                         </div>
                       ))}
                     </div>
+
+                    <Pagination
+                      currentPage={kamsPage}
+                      totalPages={totalKamsPages}
+                      onPageChange={setKamsPage}
+                      totalItems={filteredKamsList.length}
+                      pageSize={kamsPageSize}
+                      itemName="comptes KAM"
+                    />
                   </div>
                 )}
               </div>
@@ -1609,7 +1534,7 @@ export default function KamOfficePage() {
                           <th className="pb-3 px-3">Grand Compte</th>
                           <th className="pb-3 px-3">CA Annuel</th>
                           <th className="pb-3 px-3">Localisation</th>
-                          <th className="pb-3 px-3">Opérateur Actuel</th>
+                          <th className="pb-3 px-3">Statut Conversion</th>
                           <th className="pb-3 px-3">Contact Décideur</th>
                           <th className="pb-3 px-3">KAM Référent</th>
                           <th className="pb-3 px-3 text-right">Action</th>
@@ -1623,7 +1548,7 @@ export default function KamOfficePage() {
                             </td>
                           </tr>
                         ) : (
-                          filteredGrandsComptesAccounts.map((acc) => (
+                          paginatedGrandsComptes.map((acc) => (
                             <tr key={acc.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
                               <td className="py-3.5 px-3">
                                 <div className="flex flex-col">
@@ -1650,8 +1575,8 @@ export default function KamOfficePage() {
                               </td>
 
                               <td className="py-3.5 px-3">
-                                <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                                  {acc.current_operator || 'Opérateur non renseigné'}
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
+                                  {acc.conversion_status_display || acc.conversion_status || 'Prospect'}
                                 </span>
                               </td>
 
@@ -1692,6 +1617,15 @@ export default function KamOfficePage() {
                       </tbody>
                     </table>
                   </div>
+
+                  <Pagination
+                    currentPage={gcPage}
+                    totalPages={totalGcPages}
+                    onPageChange={setGcPage}
+                    totalItems={filteredGrandsComptesAccounts.length}
+                    pageSize={gcPageSize}
+                    itemName="Grands Comptes"
+                  />
                 </div>
               </div>
             )}
@@ -1799,7 +1733,7 @@ export default function KamOfficePage() {
                           <th className="pb-3 px-3">PME Stratégique</th>
                           <th className="pb-3 px-3">CA Annuel</th>
                           <th className="pb-3 px-3">Localisation</th>
-                          <th className="pb-3 px-3">Opérateur Actuel</th>
+                          <th className="pb-3 px-3">Statut Conversion</th>
                           <th className="pb-3 px-3">Contact Décideur</th>
                           <th className="pb-3 px-3">KAM Référent</th>
                           <th className="pb-3 px-3 text-right">Action</th>
@@ -1813,7 +1747,7 @@ export default function KamOfficePage() {
                             </td>
                           </tr>
                         ) : (
-                          filteredPmeAccounts.map((acc) => (
+                          paginatedPme.map((acc) => (
                             <tr key={acc.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
                               <td className="py-3.5 px-3">
                                 <div className="flex flex-col">
@@ -1840,8 +1774,8 @@ export default function KamOfficePage() {
                               </td>
 
                               <td className="py-3.5 px-3">
-                                <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                                  {acc.current_operator || 'Non renseigné'}
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
+                                  {acc.conversion_status_display || acc.conversion_status || 'Prospect'}
                                 </span>
                               </td>
 
@@ -1882,169 +1816,218 @@ export default function KamOfficePage() {
                       </tbody>
                     </table>
                   </div>
+
+                  <Pagination
+                    currentPage={pmePage}
+                    totalPages={totalPmePages}
+                    onPageChange={setPmePage}
+                    totalItems={filteredPmeAccounts.length}
+                    pageSize={pmePageSize}
+                    itemName="PME Stratégiques"
+                  />
                 </div>
               </div>
             )}
 
             {/* ========================================================================= */}
-            {/* VUE 5 : DIRECTIVES STRATÉGIQUES (Reçues & Émises)                          */}
+            {/* VUE 5 : RAPPORTS DE VISITE & COMPTES-RENDUS KAM                           */}
             {/* ========================================================================= */}
-            {activeView === 'directives' && (
+            {activeView === 'reports' && (
               <div className="flex flex-col gap-4">
-                {/* Header Toolbar avec Sous-Onglets et Bouton d'Émission */}
+                {/* Header Toolbar avec Filtres & Recherche */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  {/* Tabs: Reçues vs Émises */}
-                  <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5">
-                    <button
-                      onClick={() => setDirectiveTab('received')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                        directiveTab === 'received'
-                          ? 'bg-[#4F6CE8] text-white shadow-xs'
-                          : 'text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white'
-                      }`}
-                    >
-                      Directives Reçues
-                    </button>
-                    <button
-                      onClick={() => setDirectiveTab('sent')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                        directiveTab === 'sent'
-                          ? 'bg-[#4F6CE8] text-white shadow-xs'
-                          : 'text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white'
-                      }`}
-                    >
-                      Directives Émises aux KAMs
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                    {/* Filtre Type de Rendez-vous */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-[#363336] px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5">
+                      <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Type :</span>
+                      <select
+                        value={reportsMeetingTypeFilter}
+                        onChange={(e) => {
+                          setReportsMeetingTypeFilter(e.target.value as any);
+                          setReportsPage(1);
+                        }}
+                        className="bg-transparent text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
+                      >
+                        <option value="ALL">Tous les formats</option>
+                        <option value="PHYSICAL">Visite Physique</option>
+                        <option value="GOOGLE_MEET">Google Meet</option>
+                        <option value="CALL">Appel Téléphonique</option>
+                      </select>
+                    </div>
+
+                    {/* Filtre Statut Conversion */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-[#363336] px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5">
+                      <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Statut :</span>
+                      <select
+                        value={reportsStatusFilter}
+                        onChange={(e) => {
+                          setReportsStatusFilter(e.target.value as any);
+                          setReportsPage(1);
+                        }}
+                        className="bg-transparent text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
+                      >
+                        <option value="ALL">Tous les statuts</option>
+                        <option value="CONVERTED">Converti / Gagné</option>
+                        <option value="IN_NEGOTIATION">En Négociation</option>
+                        <option value="PROSPECT">Prospect</option>
+                        <option value="LOST">Perdu</option>
+                      </select>
+                    </div>
+
+                    {/* Champ de recherche dédié aux rapports */}
+                    <div className="flex items-center gap-2 bg-white dark:bg-[#363336] px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5">
+                      <Icons.Search size={13} className="text-[#6E6C67] dark:text-[#A1A1AA]" />
+                      <input
+                        type="text"
+                        value={reportsSearchQuery}
+                        onChange={(e) => {
+                          setReportsSearchQuery(e.target.value);
+                          setReportsPage(1);
+                        }}
+                        placeholder="Compte, interlocuteur, mot-clé..."
+                        className="bg-transparent text-xs font-medium text-[#242124] dark:text-white placeholder-[#6E6C67] dark:placeholder-[#A1A1AA] outline-none w-44"
+                      />
+                      {reportsSearchQuery && (
+                        <button
+                          onClick={() => setReportsSearchQuery('')}
+                          className="text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer"
+                        >
+                          <Icons.X size={11} />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Bouton Créer une Directive vers un KAM */}
-                  <button
-                    onClick={() => setIsDirectiveModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-                  >
-                    <Icons.Send size={14} />
-                    <span>Émettre une Directive KAM</span>
-                  </button>
+                  <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
+                    {filteredKamReports.length} rapport{filteredKamReports.length > 1 ? 's' : ''} enregistré{filteredKamReports.length > 1 ? 's' : ''}
+                  </span>
                 </div>
 
-                {/* Directives Cards List */}
-                <div className="flex flex-col gap-3">
-                  {filteredDirectives.length === 0 ? (
-                    <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-12 rounded-3xl border border-black/5 dark:border-white/5 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                      Aucune directive trouvée dans cette section.
-                    </div>
-                  ) : (
-                    filteredDirectives.map((d) => (
-                      <div
-                        key={d.id}
-                        className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3 shadow-2xs"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-black/5 dark:border-white/5">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            {/* Sender Bitmoji */}
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center font-extrabold text-xs overflow-hidden shrink-0">
-                                <img
-                                  src={`/memojis/${(d.sender_avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                  alt="Expéditeur"
-                                  className="w-full h-full object-cover"
-                                />
+                {/* Liste des Rapports */}
+                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
+                          <th className="pb-3 px-3">Compte Entreprise</th>
+                          <th className="pb-3 px-3">Format</th>
+                          <th className="pb-3 px-3">Contact Décideur</th>
+                          <th className="pb-3 px-3">Synthèse & BANT</th>
+                          <th className="pb-3 px-3">Statut Conversion</th>
+                          <th className="pb-3 px-3">Date</th>
+                          <th className="pb-3 px-3 text-right">Détail</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                        {loadingKamReports ? (
+                          <tr>
+                            <td colSpan={7} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
+                              <div className="flex items-center justify-center gap-2">
+                                <div className="w-4 h-4 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+                                <span>Chargement des rapports de visite...</span>
                               </div>
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-xs text-[#242124] dark:text-white">
-                                  Émis par {d.sender_name || 'Super Admin'}
-                                </span>
-                                <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                                  {new Date(d.created_at).toLocaleDateString('fr-FR')} à {new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Recipient Bitmoji if available */}
-                            {d.recipient_name && (
-                              <div className="flex items-center gap-2 sm:ml-4 sm:pl-4 sm:border-l border-black/10 dark:border-white/10">
-                                <div className="w-7 h-7 rounded-full bg-[#4F6CE8]/10 flex items-center justify-center overflow-hidden shrink-0">
-                                  <img
-                                    src={`/memojis/${(d.recipient_avatar || (kamsList.find(k => k.id === d.recipient)?.avatar) || 'memoji_044.png').replace('assets/memojis/', '')}`}
-                                    alt="Destinataire"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
+                            </td>
+                          </tr>
+                        ) : filteredKamReports.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
+                              Aucun rapport de visite ne correspond à vos filtres.
+                            </td>
+                          </tr>
+                        ) : (
+                          paginatedKamReports.map((report) => (
+                            <tr key={report.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
+                              <td className="py-3.5 px-3">
                                 <div className="flex flex-col">
-                                  <span className="font-medium text-[11px] text-zinc-700 dark:text-zinc-300">
-                                    Destinataire : <strong className="font-semibold">{d.recipient_name}</strong>
+                                  <span className="font-semibold text-zinc-900 dark:text-white">
+                                    {report.enterprise_name}
                                   </span>
-                                  <span className="text-[9px] text-zinc-400">
-                                    {d.recipient_role || 'Key Account Manager'}
+                                  <span className="text-[10px] font-mono text-[#6E6C67] dark:text-[#A1A1AA]">
+                                    {report.crm_id} • {report.enterprise_sector || 'Secteur Entreprise'}
                                   </span>
                                 </div>
-                              </div>
-                            )}
-                          </div>
+                              </td>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                d.priority === 'CRITICAL'
-                                  ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
-                                  : d.priority === 'HIGH'
-                                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
-                                  : 'bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300'
-                              }`}
-                            >
-                              {d.priority === 'CRITICAL' ? 'Priorité Critique' : d.priority === 'HIGH' ? 'Priorité Haute' : 'Priorité Normale'}
-                            </span>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                                d.status === 'COMPLETED'
-                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                                  : d.status === 'IN_PROGRESS'
-                                  ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                                  : 'bg-black/5 dark:bg-white/10 text-zinc-500'
-                              }`}
-                            >
-                              {d.status === 'COMPLETED' ? 'Traitée' : d.status === 'IN_PROGRESS' ? 'En cours' : 'Nouvelle'}
-                            </span>
-                          </div>
-                        </div>
+                              <td className="py-3.5 px-3">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                  report.meeting_type === 'PHYSICAL'
+                                    ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                                    : report.meeting_type === 'GOOGLE_MEET'
+                                    ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300'
+                                    : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                                }`}>
+                                  {report.meeting_type_label || (
+                                    report.meeting_type === 'PHYSICAL' ? 'Visite Physique' :
+                                    report.meeting_type === 'GOOGLE_MEET' ? 'Google Meet' : 'Appel'
+                                  )}
+                                </span>
+                              </td>
 
-                        <div className="flex flex-col gap-1.5">
-                          <h4 className="font-extrabold text-sm text-[#242124] dark:text-white">
-                            {d.title}
-                          </h4>
-                          <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                            {d.instruction}
-                          </p>
-                          {d.target_account_name && (
-                            <span className="text-[11px] text-[#4F6CE8] font-semibold mt-1">
-                              Compte cible : {d.target_account_name}
-                            </span>
-                          )}
-                        </div>
+                              <td className="py-3.5 px-3">
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-zinc-900 dark:text-white">
+                                    {report.contact_name}
+                                  </span>
+                                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                                    {report.contact_role || 'Décideur'}
+                                  </span>
+                                </div>
+                              </td>
 
-                        {d.acknowledgement_note && (
-                          <div className="p-3 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 mt-1">
-                            <span className="font-semibold text-[#4F6CE8] block mb-1">Compte-rendu d'exécution / Réponse :</span>
-                            {d.acknowledgement_note}
-                          </div>
+                              <td className="py-3.5 px-3 max-w-xs">
+                                <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
+                                  {report.executive_summary || 'Synthèse non disponible'}
+                                </p>
+                                {report.bant_scores?.total !== undefined && (
+                                  <span className="text-[10px] font-mono text-[#4F6CE8] font-bold">
+                                    Score BANT : {report.bant_scores.total}/100
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-3">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                                  report.conversion_status === 'CONVERTED'
+                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                                    : report.conversion_status === 'IN_NEGOTIATION'
+                                    ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                                    : report.conversion_status === 'LOST'
+                                    ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                                    : 'bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300'
+                                }`}>
+                                  {report.conversion_status === 'CONVERTED' ? 'Converti' :
+                                   report.conversion_status === 'IN_NEGOTIATION' ? 'En Négociation' :
+                                   report.conversion_status === 'LOST' ? 'Perdu' : 'Prospect'}
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-3 text-[11px] text-zinc-600 dark:text-[#A1A1AA]">
+                                {new Date(report.created_at).toLocaleDateString('fr-FR')}
+                              </td>
+
+                              <td className="py-3.5 px-3 text-right">
+                                <button
+                                  onClick={() => setSelectedReportDetail(report)}
+                                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#4F6CE8] border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
+                                >
+                                  Consulter
+                                </button>
+                              </td>
+                            </tr>
+                          ))
                         )}
+                      </tbody>
+                    </table>
+                  </div>
 
-                        <div className="pt-2 flex justify-end">
-                          <button
-                            onClick={() => {
-                              setSelectedDirectiveToAck(d);
-                              setAckNote(d.acknowledgement_note || '');
-                              setAckStatus(d.status === 'SENT' ? 'IN_PROGRESS' : d.status);
-                            }}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
-                          >
-                            <Icons.MessageSquare size={13} />
-                            <span>{d.status === 'COMPLETED' ? "Mettre à jour la note" : "Prendre en compte / Répondre"}</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                  <Pagination
+                    currentPage={reportsPage}
+                    totalPages={totalReportsPages}
+                    onPageChange={setReportsPage}
+                    totalItems={filteredKamReports.length}
+                    pageSize={reportsPageSize}
+                    itemName="rapports de visite"
+                  />
                 </div>
               </div>
             )}
@@ -2054,16 +2037,14 @@ export default function KamOfficePage() {
             {/* ========================================================================= */}
             {activeView === 'settings' && (
               <div className="flex flex-col gap-6 max-w-4xl">
-                {/* 1. Profil & Sélection d'Avatar Memoji */}
+                {/* 1. Profil & Photo de profil */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-5">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-3xl bg-[#4F6CE8]/15 border border-[#4F6CE8]/30 flex items-center justify-center overflow-hidden shrink-0">
-                      <img
-                        src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    <UserAvatar
+                      src={profilePictureInput || user?.profile_picture_url || user?.avatar}
+                      alt="Avatar"
+                      size="lg"
+                    />
                     <div>
                       <h3 className="text-base font-bold text-zinc-900 dark:text-white">
                         {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
@@ -2086,70 +2067,25 @@ export default function KamOfficePage() {
                     </div>
                   )}
 
-                  {/* Filtres de Genre */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Filtrer les avatars :</span>
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('all')}
-                      className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                        memojiGenderFilter === 'all'
-                          ? 'bg-[#4F6CE8] text-white'
-                          : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-300'
-                      }`}
-                    >
-                      Tous ({memojisCatalog.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('homme')}
-                      className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                        memojiGenderFilter === 'homme'
-                          ? 'bg-[#4F6CE8] text-white'
-                          : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-300'
-                      }`}
-                    >
-                      Hommes ({memojisCatalog.filter((m) => m.gender === 'homme').length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('femme')}
-                      className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                        memojiGenderFilter === 'femme'
-                          ? 'bg-[#4F6CE8] text-white'
-                          : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-300'
-                      }`}
-                    >
-                      Femmes ({memojisCatalog.filter((m) => m.gender === 'femme').length})
-                    </button>
-                  </div>
-
-                  {/* Galerie Memojis */}
-                  <div className="grid grid-cols-6 sm:grid-cols-10 gap-2.5 max-h-56 overflow-y-auto p-2 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5">
-                    {memojisCatalog
-                      .filter((m) => memojiGenderFilter === 'all' || m.gender === memojiGenderFilter)
-                      .map((m) => {
-                        const isSelected = (user?.avatar || 'memoji_056.png').replace('assets/memojis/', '') === m.filename;
-                        return (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() => handleSelectAvatar(m.filename)}
-                            disabled={savingAvatar}
-                            className={`w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all p-0.5 cursor-pointer ${
-                              isSelected
-                                ? 'border-[#4F6CE8] scale-105 shadow-md shadow-[#4F6CE8]/20'
-                                : 'border-transparent hover:border-black/20 dark:hover:border-white/20'
-                            }`}
-                          >
-                            <img
-                              src={`/memojis/${m.filename}`}
-                              alt={`Memoji ${m.id}`}
-                              className="w-full h-full object-cover rounded-xl"
-                            />
-                          </button>
-                        );
-                      })}
+                  {/* Téléversement Photo de profil Manager KAM Office */}
+                  <div className="pt-2 border-t border-black/5 dark:border-white/5">
+                    <ProfilePhotoUploader
+                      currentPhotoUrl={user?.profile_picture_url || user?.avatar}
+                      name={user?.username}
+                      title="Photo de profil Manager KAM Office"
+                      description="Téléversez votre photo officielle pour le portail KAM Office (JPG, PNG ou WebP, max 5 Mo) ou glissez-déposez un fichier."
+                      allowSelfUpdate={true}
+                      onPhotoUploaded={(newUrl) => {
+                        setProfilePictureInput(newUrl);
+                        if (updateUser) {
+                          updateUser({ avatar: newUrl, profile_picture_url: newUrl } as any);
+                        }
+                      }}
+                      onPhotoRemoved={() => {
+                        setProfilePictureInput('');
+                        handleSaveProfilePicture('/avatars/default_avatar.svg');
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -2178,8 +2114,8 @@ export default function KamOfficePage() {
                         a: "Les comptes sans KAM restent dans le vivier 'Non affectés'. Vous pouvez les filtrer en un clic grâce au filtre d'affectation puis cliquer sur 'Affecter KAM' pour désigner le profil le plus adapté en fonction de sa spécialité (Grands Comptes vs PME) et de sa charge de travail actuelle.",
                       },
                       {
-                        q: "Comment sont traitées les Directives Administratives émises par le Super Admin ?",
-                        a: "Les directives envoyées par la direction générale arrivent dans l'onglet Directives (sous-onglet Reçues). Vous pouvez accuser réception et consigner un compte-rendu d'exécution avec note de traitement. Vous pouvez également relayer des directives ciblées vers un KAM précis pour lui assigner une mission prioritaire.",
+                        q: "Comment sont consultés les Rapports de Visite et Comptes-Rendus des KAMs ?",
+                        a: "Tous les comptes-rendus de rendez-vous physiques, visioconférences Google Meet et appels téléphoniques rédigés par les KAMs sont centralisés dans l'onglet 'Rapports de Visite'. Vous pouvez y analyser les synthèses d'entretiens, les scores BANT, les besoins qualifiés et les projets d'e-mails de suivi.",
                       },
                       {
                         q: "Un KAM peut-il modifier lui-même son périmètre d'entreprises ?",
@@ -2210,11 +2146,6 @@ export default function KamOfficePage() {
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* 7. COPILOTE IA CONVERSATIONNEL DÉDIÉ */}
-            {activeView === 'copilot' && (
-              <CopilotChatView userRole="KAM_MANAGER" />
             )}
 
           </div>
@@ -2425,180 +2356,213 @@ export default function KamOfficePage() {
         )}
 
         {/* ========================================================================= */}
-        {/* MODALE : ÉMISSION D'UNE DIRECTIVE STRATÉGIQUE VERS UN KAM                  */}
+        {/* MODALE : RAPPORT DE VISITE DÉTAILLÉ (COMPTE-RENDU KAM)                    */}
         {/* ========================================================================= */}
-        {isDirectiveModalOpen && (
+        {selectedReportDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
-            <div className="w-full max-w-lg bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col gap-5">
-              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                    Émettre une Directive Stratégique
-                  </h3>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                    Assigner un ordre opérationnel ou une priorité à un KAM
-                  </p>
+            <div className="w-full max-w-2xl bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center font-extrabold text-sm shrink-0">
+                    <Icons.FileText size={18} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-extrabold text-sm text-[#242124] dark:text-white">
+                        {selectedReportDetail.enterprise_name}
+                      </h3>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        selectedReportDetail.meeting_type === 'PHYSICAL'
+                          ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                          : selectedReportDetail.meeting_type === 'GOOGLE_MEET'
+                          ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300'
+                          : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                      }`}>
+                        {selectedReportDetail.meeting_type_label || (
+                          selectedReportDetail.meeting_type === 'PHYSICAL' ? 'Visite Physique' :
+                          selectedReportDetail.meeting_type === 'GOOGLE_MEET' ? 'Google Meet' : 'Appel'
+                        )}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#6E6C67] dark:text-[#A1A1AA]">
+                      {selectedReportDetail.crm_id} • Rendez-vous du {new Date(selectedReportDetail.created_at).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
                 </div>
                 <button
-                  onClick={() => setIsDirectiveModalOpen(false)}
-                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 cursor-pointer"
+                  onClick={() => setSelectedReportDetail(null)}
+                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   <Icons.X size={16} />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateDirective} className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">KAM Destinataire</label>
-                  <select
-                    required
-                    value={newDirectiveRecipientId}
-                    onChange={(e) => setNewDirectiveRecipientId(e.target.value)}
-                    className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-white outline-none cursor-pointer"
-                  >
-                    <option value="">-- Choisir le KAM --</option>
-                    {kamsList.map((k) => (
-                      <option key={k.id} value={k.id}>
-                        {k.full_name} ({k.kam_specialization === 'GRAND_COMPTE' ? 'GC' : 'PME'})
-                      </option>
+              {/* Interlocuteur Décideur */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
+                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Décideur Rencontré</span>
+                  <span className="font-bold text-[#242124] dark:text-white mt-0.5">
+                    {selectedReportDetail.contact_name}
+                  </span>
+                  <span className="text-[10px] text-zinc-500">
+                    {selectedReportDetail.contact_role || 'Fonction non précisée'}
+                  </span>
+                </div>
+
+                <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
+                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Statut de Conversion</span>
+                  <span className={`font-bold mt-0.5 ${
+                    selectedReportDetail.conversion_status === 'CONVERTED'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : selectedReportDetail.conversion_status === 'IN_NEGOTIATION'
+                      ? 'text-[#4F6CE8]'
+                      : selectedReportDetail.conversion_status === 'LOST'
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-zinc-700 dark:text-zinc-300'
+                  }`}>
+                    {selectedReportDetail.conversion_status === 'CONVERTED' ? 'Contrat Signé / Gagné' :
+                     selectedReportDetail.conversion_status === 'IN_NEGOTIATION' ? 'Négociation en cours' :
+                     selectedReportDetail.conversion_status === 'LOST' ? 'Opportunité Perdue' : 'En Prospection'}
+                  </span>
+                  <span className="text-[10px] text-zinc-500">
+                    Secteur : {selectedReportDetail.enterprise_sector || 'Non renseigné'}
+                  </span>
+                </div>
+              </div>
+
+              {/* BANT Evaluation Pills */}
+              {selectedReportDetail.bant_scores && (
+                <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
+                      Grille d'Évaluation BANT
+                    </span>
+                    {selectedReportDetail.bant_scores.total !== undefined && (
+                      <span className="text-xs font-mono font-bold text-[#4F6CE8]">
+                        Score Global : {selectedReportDetail.bant_scores.total}/100
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div className="p-2 rounded-xl bg-black/2 dark:bg-white/2">
+                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Budget</span>
+                      <strong className="font-mono text-zinc-900 dark:text-white">{selectedReportDetail.bant_scores.budget ?? 'N/A'}/25</strong>
+                    </div>
+                    <div className="p-2 rounded-xl bg-black/2 dark:bg-white/2">
+                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Autorité</span>
+                      <strong className="font-mono text-zinc-900 dark:text-white">{selectedReportDetail.bant_scores.authority ?? 'N/A'}/25</strong>
+                    </div>
+                    <div className="p-2 rounded-xl bg-black/2 dark:bg-white/2">
+                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Besoin</span>
+                      <strong className="font-mono text-zinc-900 dark:text-white">{selectedReportDetail.bant_scores.need ?? 'N/A'}/25</strong>
+                    </div>
+                    <div className="p-2 rounded-xl bg-black/2 dark:bg-white/2">
+                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Timeline</span>
+                      <strong className="font-mono text-zinc-900 dark:text-white">{selectedReportDetail.bant_scores.timeline ?? 'N/A'}/25</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Synthèse Exécutive */}
+              <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5">
+                <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
+                  Synthèse de l'Échange
+                </span>
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                  {selectedReportDetail.executive_summary || 'Aucune synthèse rédigée.'}
+                </p>
+              </div>
+
+              {/* Besoins & Objections */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                {selectedReportDetail.confirmed_needs && selectedReportDetail.confirmed_needs.length > 0 && (
+                  <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                      Besoins Confirmés
+                    </span>
+                    <ul className="list-disc pl-4 space-y-1 text-zinc-700 dark:text-zinc-300">
+                      {selectedReportDetail.confirmed_needs.map((b, i) => (
+                        <li key={i}>{b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedReportDetail.objections_raised && selectedReportDetail.objections_raised.length > 0 && (
+                  <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                      Objections / Freins
+                    </span>
+                    <ul className="list-disc pl-4 space-y-1 text-zinc-700 dark:text-zinc-300">
+                      {selectedReportDetail.objections_raised.map((o, i) => (
+                        <li key={i}>{o}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Plan d'Actions / Todos */}
+              {selectedReportDetail.actions_todo && selectedReportDetail.actions_todo.length > 0 && (
+                <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5">
+                  <span className="text-[10px] font-semibold text-[#4F6CE8] uppercase tracking-wider">
+                    Plan d'Actions & Prochaines Échéances
+                  </span>
+                  <ul className="list-disc pl-4 space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
+                    {selectedReportDetail.actions_todo.map((a, i) => (
+                      <li key={i}>{a}</li>
                     ))}
-                  </select>
+                  </ul>
                 </div>
+              )}
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Objet de la Directive</label>
-                  <input
-                    type="text"
-                    required
-                    value={newDirectiveTitle}
-                    onChange={(e) => setNewDirectiveTitle(e.target.value)}
-                    placeholder="ex: Priorité de raccordement et rendez-vous DSI"
-                    className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-white outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Priorité</label>
-                    <select
-                      value={newDirectivePriority}
-                      onChange={(e) => setNewDirectivePriority(e.target.value as any)}
-                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-white outline-none cursor-pointer"
+              {/* Projet d'Email de Suivi */}
+              {selectedReportDetail.follow_up_email_draft && (
+                <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
+                      Projet d'Email de Suivi
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedReportDetail.follow_up_email_draft);
+                        setNotification({ type: 'success', message: "Brouillon d'email copié dans le presse-papier." });
+                        setTimeout(() => setNotification(null), 3000);
+                      }}
+                      className="text-[11px] font-semibold text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1"
                     >
-                      <option value="NORMAL">Normale</option>
-                      <option value="HIGH">Haute</option>
-                      <option value="CRITICAL">Critique</option>
-                    </select>
+                      <Icons.Copy size={12} />
+                      <span>Copier le modèle</span>
+                    </button>
                   </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Compte Clé Cible (optionnel)</label>
-                    <input
-                      type="text"
-                      value={newDirectiveTargetAccount}
-                      onChange={(e) => setNewDirectiveTargetAccount(e.target.value)}
-                      placeholder="ex: Société Minière de Bisunzu"
-                      className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-white outline-none"
-                    />
+                  <div className="p-3 rounded-xl bg-black/2 dark:bg-white/2 text-xs text-zinc-800 dark:text-zinc-200 font-mono whitespace-pre-line leading-relaxed">
+                    {selectedReportDetail.follow_up_email_draft}
                   </div>
                 </div>
+              )}
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Consigne & Instruction Détaillée</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={newDirectiveInstruction}
-                    onChange={(e) => setNewDirectiveInstruction(e.target.value)}
-                    placeholder="Détaillez les actions attendues du KAM..."
-                    className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-medium text-zinc-900 dark:text-white outline-none resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsDirectiveModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-white dark:bg-[#363336] text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={creatingDirective}
-                    className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {creatingDirective ? "Envoi en cours..." : "Transmettre la Directive"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* MODALE : ACCUSÉ DE RÉCEPTION D'UNE DIRECTIVE REÇUE                         */}
-        {/* ========================================================================= */}
-        {selectedDirectiveToAck && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
-            <div className="w-full max-w-md bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                    Accusé de Traitement
-                  </h3>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                    {selectedDirectiveToAck.title}
+              {/* Verbatim / Notes Brutes */}
+              {selectedReportDetail.raw_transcript && (
+                <details className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 text-xs">
+                  <summary className="font-semibold text-zinc-700 dark:text-zinc-300 cursor-pointer">
+                    Consulter le verbatim / transcription brute
+                  </summary>
+                  <p className="mt-2 text-zinc-600 dark:text-zinc-400 font-mono whitespace-pre-line leading-relaxed">
+                    {selectedReportDetail.raw_transcript}
                   </p>
-                </div>
-                <button
-                  onClick={() => setSelectedDirectiveToAck(null)}
-                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 cursor-pointer"
-                >
-                  <Icons.X size={16} />
-                </button>
-              </div>
+                </details>
+              )}
 
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Statut de réalisation</label>
-                  <select
-                    value={ackStatus}
-                    onChange={(e) => setAckStatus(e.target.value as any)}
-                    className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-white outline-none cursor-pointer"
-                  >
-                    <option value="IN_PROGRESS">En cours d'exécution</option>
-                    <option value="COMPLETED">Traité & Complété</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Compte-rendu / Note de suivi</label>
-                  <textarea
-                    rows={3}
-                    value={ackNote}
-                    onChange={(e) => setAckNote(e.target.value)}
-                    placeholder="Précisez les mesures prises ou le résultat obtenu..."
-                    className="bg-white dark:bg-[#363336] border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-medium text-zinc-900 dark:text-white outline-none resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
+              {/* Footer */}
+              <div className="pt-2 flex justify-end">
                 <button
-                  type="button"
-                  onClick={() => setSelectedDirectiveToAck(null)}
-                  className="px-4 py-2 rounded-xl bg-white dark:bg-[#363336] text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
+                  onClick={() => setSelectedReportDetail(null)}
+                  className="px-5 py-2 rounded-2xl bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-900 dark:text-white text-xs font-semibold cursor-pointer transition-colors"
                 >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAck}
-                  disabled={savingAck}
-                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {savingAck ? "Enregistrement..." : "Enregistrer"}
+                  Fermer
                 </button>
               </div>
             </div>
@@ -2696,10 +2660,10 @@ export default function KamOfficePage() {
               <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
-                    Solution Donnée & Architecture Cible
+                    Solution Proposée & Architecture Cible
                   </span>
                   <span className="text-[10px] font-mono text-zinc-500">
-                    Opérateur en place : <strong className="text-zinc-700 dark:text-zinc-300">{selectedAccountForDetail.current_operator || 'Vodacom'}</strong>
+                    Segment : <strong className="text-zinc-700 dark:text-zinc-300">{selectedAccountForDetail.segment === 'GRAND_COMPTE' ? 'Grand Compte' : 'PME Stratégique'}</strong>
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1 pt-1 border-t border-black/5 dark:border-white/5">
@@ -2742,10 +2706,10 @@ export default function KamOfficePage() {
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center font-extrabold text-xs overflow-hidden shrink-0">
                     {selectedAccountForDetail.assigned_kam ? (
-                      <img
-                        src={`/memojis/${(selectedAccountForDetail.assigned_kam.avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
+                      <UserAvatar
+                        src={selectedAccountForDetail.assigned_kam.avatar}
                         alt="KAM"
-                        className="w-full h-full object-cover"
+                        size="sm"
                       />
                     ) : (
                       <Icons.User size={16} className="text-zinc-400" />

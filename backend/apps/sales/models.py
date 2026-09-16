@@ -144,7 +144,6 @@ class Enterprise(models.Model):
     contact_email = models.EmailField(blank=True, null=True)
     
     # Contexte Télécoms & Connectivité Actuelle
-    current_operator = models.CharField(max_length=100, blank=True, default='Vodacom', help_text="Opérateur actuel (Vodacom, Airtel, Africell, Canalbox...)")
     current_connectivity = models.CharField(max_length=100, blank=True, default='4G LTE', help_text="Type d'accès actuel (Fibre, VSAT, 4G, Aucun)")
     contract_end_date = models.DateField(null=True, blank=True, db_index=True, help_text="Date d'échéance du contrat opérateur concurrent / actuel")
     incident_count = models.IntegerField(default=0, help_text="Nombre d'incidents / pannes réseau non résolus sur les 90 derniers jours")
@@ -272,6 +271,15 @@ class Enterprise(models.Model):
         verbose_name = "Compte Entreprise (CRM B2B)"
         verbose_name_plural = "Répertoire CRM des Entreprises B2B"
         ordering = ['-created_at']
+
+    @property
+    def current_operator(self):
+        """Propriété de rétrocompatibilité dépréciée (champ supprimé)."""
+        return None
+
+    @current_operator.setter
+    def current_operator(self, val):
+        pass
 
     def __str__(self):
         return f"{self.name} [{self.get_segment_display()}] - {self.city}"
@@ -658,53 +666,90 @@ class VisitFormSubmission(models.Model):
         return f"Formulaire [{self.target_offer_name}] - {self.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
 
 
-class AdminDirective(models.Model):
-    """
-    Directives & Instructions formelles émises par le Super Administrateur
-    à destination d'un KAM spécifique (KAM Office) ou d'un Commercial / Superviseur (Back-Office).
-    """
-    TARGET_ENTITIES = [
-        ('KAM_OFFICE', 'Direction KAM Office'),
-        ('BACK_OFFICE', 'Back-Office Terrain'),
-    ]
-    PRIORITY_CHOICES = [
-        ('NORMAL', 'Normale'),
-        ('HIGH', 'Urgente'),
-        ('CRITICAL', 'Stratégique'),
-    ]
-    STATUS_CHOICES = [
-        ('SENT', 'Transmise'),
-        ('IN_PROGRESS', 'En cours d\'application'),
-        ('COMPLETED', 'Traitée / Conforme'),
+# =========================================================================
+# MOTEUR DE SCORING ALGORITHMIQUE SANS IA (GOUVERNANCE MSP)
+# =========================================================================
+
+class ScoreProfile(models.Model):
+    TYPE_HEALTH = 'ACCOUNT_HEALTH'       # Score 1 : Démarre à 100, pénalités si dégradation
+    TYPE_UPSELL = 'EXPANSION_UPSELL'     # Score 2 : Démarre à 0, bonus si signaux positifs
+    TYPE_CHOICES = [
+        (TYPE_HEALTH, 'Santé & Risque de désengagement'),
+        (TYPE_UPSELL, 'Potentiel d’Expansion & Upsell'),
     ]
 
-    sender = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='sent_directives'
-    )
-    target_entity = models.CharField(max_length=20, choices=TARGET_ENTITIES, default='KAM_OFFICE')
-    recipient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='received_directives',
-        help_text="KAM ou Commercial/Superviseur ciblé"
-    )
-    title = models.CharField(max_length=200, help_text="Objet de la directive")
-    instruction = models.TextField(help_text="Contenu des instructions à appliquer")
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='NORMAL')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SENT')
-    target_account_name = models.CharField(max_length=200, blank=True, default='', help_text="Compte client concerné éventuel")
-    acknowledgement_note = models.TextField(blank=True, default='', help_text="Retour d'exécution du destinataire")
+    name = models.CharField(max_length=150, help_text="Nom affiché dans Onbora (ex: Santé relationnelle client)")
+    score_type = models.CharField(max_length=30, choices=TYPE_CHOICES, default=TYPE_HEALTH)
+    objective = models.CharField(max_length=255, blank=True, help_text="Ce que le score sert à détecter")
+    population = models.CharField(max_length=100, default="Tous les clients actifs", help_text="Quels comptes sont calculés")
+    analysis_window_days = models.PositiveIntegerField(default=90, help_text="Fenêtre de temps à observer (ex: 90 jours)")
+    recalculation_frequency = models.CharField(max_length=30, default='Chaque nuit', help_text="Fréquence de recalcul (ex: Chaque nuit)")
+    base_score = models.IntegerField(default=100, help_text="Score de base initial (100 pour santé, 0 pour upsell)")
+
+    # Dimensions actives avec leurs poids: [{"name": "engagement", "label": "Engagement client", "weight": 40}, ...]
+    dimensions = models.JSONField(default=list, help_text="Liste des dimensions actives et de leurs poids")
+
+    # Seuils de résultat: [{"min": 80, "max": 100, "label": "Sain", "color": "emerald"}, ...]
+    thresholds = models.JSONField(default=list, help_text="Seuils de résultat et libellés")
+
+    # Actions automatiques: {"CRITIQUE": "Créer une tâche KAM sous 48h", ...}
+    actions = models.JSONField(default=dict, blank=True, help_text="Actions déclenchées selon le niveau d'alerte")
+
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['name']
 
     def __str__(self):
-        return f"Directive #{self.id} [{self.get_priority_display()}] -> {self.recipient.username}: {self.title}"
+        return f"{self.name} ({self.get_score_type_display()})"
+
+
+class ScoreRule(models.Model):
+    profile = models.ForeignKey(ScoreProfile, on_delete=models.CASCADE, related_name='rules')
+    name = models.CharField(max_length=255, help_text="Libellé lisible de la condition")
+    dimension = models.CharField(max_length=50, help_text="engagement, relation, commercial, sentiment")
+
+    field = models.CharField(max_length=100, help_text="Nom du champ métrique (ex: days_since_last_meeting)")
+    operator = models.CharField(max_length=50, help_text="greater_than, less_than, is_true, equals, etc.")
+    value = models.JSONField(default=dict, help_text="Valeur seuil cible (ex: 60, true, 'devis')")
+
+    points = models.IntegerField(help_text="Points ajoutés (positif) ou retirés (négatif)")
+    valid_for_days = models.PositiveIntegerField(null=True, blank=True, help_text="Durée de validité du signal en jours")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        sign = "+" if self.points > 0 else ""
+        return f"[{self.profile.name}] {self.name} ({sign}{self.points} pts)"
+
+
+class AccountScoreResult(models.Model):
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='scoring_results')
+    profile = models.ForeignKey(ScoreProfile, on_delete=models.CASCADE, related_name='account_results')
+
+    score = models.IntegerField(help_text="Score final calculé entre 0 et 100")
+    status_label = models.CharField(max_length=50, help_text="Ex: Sain, À surveiller, Critique")
+    status_color = models.CharField(max_length=20, default="blue")
+
+    triggered_rules = models.JSONField(default=list, help_text="Liste transparente des règles déclenchées")
+    dimension_scores = models.JSONField(default=dict, help_text="Sous-totaux de points par dimension")
+    metrics_snapshot = models.JSONField(default=dict, blank=True, help_text="Instantané des métriques ayant servi au calcul")
+
+    calculated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('enterprise', 'profile')
+        ordering = ['-score']
+
+    def __str__(self):
+        return f"{self.enterprise.name} - {self.profile.name}: {self.score}/100 ({self.status_label})"
+
+
+
 
 

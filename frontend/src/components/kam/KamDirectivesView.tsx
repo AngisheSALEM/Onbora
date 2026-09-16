@@ -347,7 +347,7 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
                       setAckNote(directive.acknowledgement_note || '');
                       setAckStatus(directive.status === 'COMPLETED' ? 'COMPLETED' : 'IN_PROGRESS');
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-sm shadow-[#4F6CE8]/20 flex items-center gap-2"
+                    className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-2"
                   >
                     <Icons.MessageSquare size={14} />
                     <span>{isCompleted ? "Mettre à jour mon compte-rendu" : "Prendre en charge / Répondre"}</span>
@@ -437,7 +437,7 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
                 <button
                   type="submit"
                   disabled={savingAck}
-                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm shadow-[#4F6CE8]/20"
+                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm"
                 >
                   {savingAck ? "Envoi en cours..." : "Transmettre ma réponse"}
                 </button>

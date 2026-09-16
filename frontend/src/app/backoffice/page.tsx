@@ -8,7 +8,10 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import CopilotChatView from '@/components/shared/CopilotChatView';
+import BackofficePagination from '@/components/backoffice/BackofficePagination';
+import DailyReportView from '@/components/backoffice/DailyReportView';
+import EnterpriseActionsModal from '@/components/backoffice/EnterpriseActionsModal';
+import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 
 const SupervisorTerritoryMap = dynamic(
   () => import('@/components/supervisor/SupervisorTerritoryMap'),
@@ -25,12 +28,11 @@ const SupervisorTerritoryMap = dynamic(
 
 export type BackofficeView =
   | 'soho_managed'
+  | 'daily_report'
   | 'salespersons'
   | 'map'
   | 'plaques_list'
   | 'soho_directory'
-  | 'directives'
-  | 'copilot'
   | 'settings';
 
 interface EnterpriseItem {
@@ -132,6 +134,7 @@ interface SalespersonItem {
   is_available: boolean;
   is_active: boolean;
   avatar: string;
+  profile_picture_url?: string;
   assigned_plaques: string[];
   reports_count: number;
   visits_count: number;
@@ -139,28 +142,6 @@ interface SalespersonItem {
   conversions_count?: number;
   converted_amount?: number;
   incentive_points: number;
-}
-
-interface DirectiveItem {
-  id: number;
-  sender?: number;
-  sender_name: string;
-  sender_avatar?: string;
-  recipient?: number;
-  recipient_name: string;
-  recipient_role?: string;
-  recipient_avatar?: string;
-  target_entity: 'KAM_OFFICE' | 'BACK_OFFICE';
-  title: string;
-  instruction: string;
-  priority: 'NORMAL' | 'HIGH' | 'CRITICAL';
-  priority_display?: string;
-  status: 'SENT' | 'IN_PROGRESS' | 'COMPLETED';
-  status_display?: string;
-  target_account_name: string;
-  acknowledgement_note: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export default function BackofficeCommandCenterPage() {
@@ -171,13 +152,19 @@ export default function BackofficeCommandCenterPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Settings & Memojis State
-  const [memojisCatalog, setMemojisCatalog] = useState<{ id: number; filename: string; gender?: string }[]>([]);
-  const [memojiGenderFilter, setMemojiGenderFilter] = useState<'all' | 'homme' | 'femme'>('all');
+  // Settings & Profile Picture State
+  const [profilePictureInput, setProfilePictureInput] = useState('');
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [avatarSuccessMsg, setAvatarSuccessMsg] = useState('');
   const [avatarErrorMsg, setAvatarErrorMsg] = useState('');
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
+
+  // Initialize profile picture input from user
+  useEffect(() => {
+    if (user) {
+      setProfilePictureInput((user as any).profile_picture_url || user.avatar || '');
+    }
+  }, [user]);
 
   // Direct Plaque Assignment State (Accessible from Plaque Detail)
   const [selectedPlaqueForAssign, setSelectedPlaqueForAssign] = useState<PlaqueItem | null>(null);
@@ -197,7 +184,7 @@ export default function BackofficeCommandCenterPage() {
 
   // Dedicated Salesperson Detail Interface State
   const [selectedSalespersonDetail, setSelectedSalespersonDetail] = useState<SalespersonItem | null>(null);
-  const [salespersonDetailTab, setSalespersonDetailTab] = useState<'enterprises' | 'reports' | 'directives'>('enterprises');
+  const [salespersonDetailTab, setSalespersonDetailTab] = useState<'enterprises' | 'reports'>('enterprises');
   const [salespersonDetailFilter, setSalespersonDetailFilter] = useState<'ALL' | 'VISITED' | 'UNVISITED'>('ALL');
   const [salespersonDetailSearch, setSalespersonDetailSearch] = useState('');
   const [salespersonDetailReportsFilter, setSalespersonDetailReportsFilter] = useState<'ALL' | 'FORMS' | 'AI_REPORTS'>('ALL');
@@ -205,6 +192,7 @@ export default function BackofficeCommandCenterPage() {
   const [salespersonSubmissions, setSalespersonSubmissions] = useState<VisitSubmissionItem[]>([]);
   const [loadingSalespersonReports, setLoadingSalespersonReports] = useState(false);
   const [selectedReportToInspect, setSelectedReportToInspect] = useState<any | null>(null);
+  const [selectedEnterpriseForActions, setSelectedEnterpriseForActions] = useState<EnterpriseItem | null>(null);
 
   // Data State
   const [loading, setLoading] = useState(true);
@@ -214,28 +202,6 @@ export default function BackofficeCommandCenterPage() {
   const [recentReportsFeed, setRecentReportsFeed] = useState<VisitReportItem[]>([]);
   const [recentFormSubmissions, setRecentFormSubmissions] = useState<VisitSubmissionItem[]>([]);
 
-  // Directives State
-  const [directives, setDirectives] = useState<DirectiveItem[]>([]);
-  const [loadingDirectives, setLoadingDirectives] = useState(false);
-  const [directiveTab, setDirectiveTab] = useState<'received' | 'sent'>('received');
-  const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
-  const [selectedDirectiveToAck, setSelectedDirectiveToAck] = useState<DirectiveItem | null>(null);
-  const [ackNote, setAckNote] = useState('');
-  const [ackStatus, setAckStatus] = useState<'IN_PROGRESS' | 'COMPLETED'>('IN_PROGRESS');
-  const [savingAck, setSavingAck] = useState(false);
-
-  // New Directive Form (Supervisor -> Salesperson)
-  const [newDirectiveForm, setNewDirectiveForm] = useState({
-    recipient_id: '',
-    title: '',
-    instruction: '',
-    target_account_name: '',
-    priority: 'NORMAL' as 'NORMAL' | 'HIGH' | 'CRITICAL',
-  });
-  const [sendingDirective, setSendingDirective] = useState(false);
-  const [directiveSuccessMsg, setDirectiveSuccessMsg] = useState('');
-  const [directiveErrorMsg, setDirectiveErrorMsg] = useState('');
-
   // Auto-Dispatch State
   const [dispatchingPlaqueId, setDispatchingPlaqueId] = useState<number | null>(null);
   const [dispatchNotification, setDispatchNotification] = useState<{
@@ -244,12 +210,28 @@ export default function BackofficeCommandCenterPage() {
     type: 'success' | 'error';
   } | null>(null);
 
-  // Filters State
+  // Filters State for Plus petites entreprises / TPE Accounts
   const [sohoVisitFilter, setSohoVisitFilter] = useState<'ALL' | 'VISITED' | 'UNVISITED'>('ALL');
   const [sohoAssignmentFilter, setSohoAssignmentFilter] = useState<'ALL' | 'ASSIGNED' | 'UNASSIGNED'>('ALL');
   const [sohoPlaqueFilter, setSohoPlaqueFilter] = useState<string>('ALL');
   const [sohoCommercialFilter, setSohoCommercialFilter] = useState<string>('ALL');
-  const [sohoStatusFilter, setSohoStatusFilter] = useState<'ALL' | 'CONVERTED' | 'IN_PROGRESS' | 'VISITED'>('ALL');
+  const [sohoStatusFilter, setSohoStatusFilter] = useState<
+    'ALL' | 'ASSIGNED_UNVISITED' | 'ASSIGNED_UNCONVERTED' | 'VISITED' | 'UNVISITED' | 'CONVERTED' | 'UNASSIGNED'
+  >('ALL');
+
+  // Pagination states for each view table
+  const [sohoPage, setSohoPage] = useState<number>(1);
+  const [sohoPageSize, setSohoPageSize] = useState<number>(10);
+  const [salespersonsPage, setSalespersonsPage] = useState<number>(1);
+  const [salespersonsPageSize, setSalespersonsPageSize] = useState<number>(10);
+  const [plaquesPage, setPlaquesPage] = useState<number>(1);
+  const [plaquesPageSize, setPlaquesPageSize] = useState<number>(10);
+  const [plaqueDetailPage, setPlaqueDetailPage] = useState<number>(1);
+  const [plaqueDetailPageSize, setPlaqueDetailPageSize] = useState<number>(10);
+  const [salespersonDetailPage, setSalespersonDetailPage] = useState<number>(1);
+  const [salespersonDetailPageSize, setSalespersonDetailPageSize] = useState<number>(10);
+  const [directoryPage, setDirectoryPage] = useState<number>(1);
+  const [directoryPageSize, setDirectoryPageSize] = useState<number>(10);
 
   // List filter states for each view
   const [salespersonFilter, setSalespersonFilter] = useState<'ALL' | 'AVAILABLE' | 'UNAVAILABLE' | 'WITH_PLAQUES' | 'NO_PLAQUES'>('ALL');
@@ -257,8 +239,6 @@ export default function BackofficeCommandCenterPage() {
   const [plaqueCityFilter, setPlaqueCityFilter] = useState<string>('ALL');
   const [directoryVisitFilter, setDirectoryVisitFilter] = useState<'ALL' | 'VISITED' | 'UNVISITED'>('ALL');
   const [directoryStatusFilter, setDirectoryStatusFilter] = useState<'ALL' | 'CONVERTED' | 'PROSPECT'>('ALL');
-  const [directiveFilterStatus, setDirectiveFilterStatus] = useState<'ALL' | 'SENT' | 'IN_PROGRESS' | 'COMPLETED'>('ALL');
-  const [directiveFilterPriority, setDirectiveFilterPriority] = useState<'ALL' | 'NORMAL' | 'HIGH' | 'CRITICAL'>('ALL');
 
   const [selectedAccountForDetail, setSelectedAccountForDetail] = useState<EnterpriseItem | null>(null);
 
@@ -275,7 +255,7 @@ export default function BackofficeCommandCenterPage() {
     phone: '',
     password: '',
     location: 'Kinshasa',
-    avatar: 'memoji_056.png',
+    avatar: '/avatars/default_avatar.svg',
   });
 
   // Plaque Modal State
@@ -291,35 +271,51 @@ export default function BackofficeCommandCenterPage() {
     radius_km: 1.5,
   });
 
-  // Load Dashboard Data
+  // Load Dashboard Data (includes all reports and submissions)
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAPI('/api/sales/supervisor-dashboard/');
-      setPlaques(Array.isArray(data?.plaques) ? data.plaques : []);
-      setEnterprises(Array.isArray(data?.enterprises) ? data.enterprises : []);
-      setSalespersons(Array.isArray(data?.salespersons) ? data.salespersons : []);
-      setRecentReportsFeed(Array.isArray(data?.recent_reports_feed) ? data.recent_reports_feed : []);
-      setRecentFormSubmissions(Array.isArray(data?.recent_form_submissions) ? data.recent_form_submissions : []);
+      const [dashData, repData, subData] = await Promise.all([
+        fetchAPI('/api/sales/supervisor-dashboard/'),
+        fetchAPI('/api/sales/visit-reports/').catch(() => []),
+        fetchAPI('/api/sales/visit-form/submissions/').catch(() => []),
+      ]);
+      setPlaques(Array.isArray(dashData?.plaques) ? dashData.plaques : []);
+      setEnterprises(Array.isArray(dashData?.enterprises) ? dashData.enterprises : []);
+      setSalespersons(Array.isArray(dashData?.salespersons) ? dashData.salespersons : []);
+
+      // Combine feed from dashboard with all visit reports and form submissions (deduplicated)
+      const combinedReports = [
+        ...(Array.isArray(dashData?.recent_reports_feed) ? dashData.recent_reports_feed : []),
+        ...(Array.isArray(repData) ? repData : []),
+      ];
+      const seenRep = new Set<number>();
+      const uniqueReports: VisitReportItem[] = [];
+      combinedReports.forEach((r: any) => {
+        if (r?.id && !seenRep.has(r.id)) {
+          seenRep.add(r.id);
+          uniqueReports.push(r);
+        }
+      });
+      setRecentReportsFeed(uniqueReports);
+
+      const combinedSubs = [
+        ...(Array.isArray(dashData?.recent_form_submissions) ? dashData.recent_form_submissions : []),
+        ...(Array.isArray(subData) ? subData : []),
+      ];
+      const seenSub = new Set<number>();
+      const uniqueSubs: VisitSubmissionItem[] = [];
+      combinedSubs.forEach((s: any) => {
+        if (s?.id && !seenSub.has(s.id)) {
+          seenSub.add(s.id);
+          uniqueSubs.push(s);
+        }
+      });
+      setRecentFormSubmissions(uniqueSubs);
     } catch (err: any) {
       console.error("Erreur lors du chargement du cockpit superviseur:", err);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  // Load Directives
-  const loadDirectives = useCallback(async () => {
-    setLoadingDirectives(true);
-    try {
-      const data = await fetchAPI('/api/sales/directives/?target_entity=ALL');
-      const list = Array.isArray(data) ? data : (data?.directives || []);
-      setDirectives(list);
-    } catch (err) {
-      console.error("Erreur lors du chargement des directives back-office:", err);
-      setDirectives([]);
-    } finally {
-      setLoadingDirectives(false);
     }
   }, []);
 
@@ -372,48 +368,25 @@ export default function BackofficeCommandCenterPage() {
 
   useEffect(() => {
     loadDashboardData();
-    loadDirectives();
+  }, [loadDashboardData]);
 
-    // Charger les Memojis depuis le catalogue public
-    fetch('/memojis/memojis_catalog.json')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setMemojisCatalog(data);
-        } else {
-          throw new Error('Catalogue vide');
-        }
-      })
-      .catch(() => {
-        const fallback = Array.from({ length: 102 }, (_, i) => {
-          const num = String(i + 1).padStart(3, '0');
-          return {
-            id: i + 1,
-            filename: `memoji_${num}.png`,
-            gender: i % 2 === 0 ? 'homme' : 'femme',
-          };
-        });
-        setMemojisCatalog(fallback);
-      });
-  }, [loadDashboardData, loadDirectives]);
-
-  // Sélection & Sauvegarde instantanée de Memoji
-  const handleSelectAvatar = async (filename: string) => {
+  // Sélection & Sauvegarde de la Photo de Profil / Avatar
+  const handleSaveProfilePicture = async (newUrlOrAvatar: string) => {
     setSavingAvatar(true);
     setAvatarErrorMsg('');
     try {
       await fetchAPI('/api/accounts/me/', {
         method: 'PATCH',
-        body: JSON.stringify({ avatar: filename })
+        body: JSON.stringify({ avatar: newUrlOrAvatar, profile_picture_url: newUrlOrAvatar }),
       });
       if (updateUser) {
-        updateUser({ avatar: filename });
+        updateUser({ avatar: newUrlOrAvatar, profile_picture_url: newUrlOrAvatar } as any);
       }
-      setAvatarSuccessMsg("Avatar Memoji synchronisé avec succès sur votre profil !");
+      setAvatarSuccessMsg("Photo de profil mise à jour avec succès !");
       setTimeout(() => setAvatarSuccessMsg(''), 3500);
     } catch (err: any) {
       console.error(err);
-      setAvatarErrorMsg(err.message || "Erreur lors de la mise à jour de l'avatar.");
+      setAvatarErrorMsg(err.message || "Erreur lors de la mise à jour de la photo de profil.");
     } finally {
       setSavingAvatar(false);
     }
@@ -606,7 +579,7 @@ export default function BackofficeCommandCenterPage() {
       });
       setDispatchNotification({
         plaqueCode: plaque.code,
-        message: res.message || `${res.assigned_count || 0} comptes SOHO affectés avec succès.`,
+        message: res.message || `${res.assigned_count || 0} comptes Plus petites entreprises affectés avec succès.`,
         type: 'success',
       });
       await loadDashboardData();
@@ -678,62 +651,53 @@ export default function BackofficeCommandCenterPage() {
     }
   };
 
-  // Handle Acknowledge Directive
-  const handleSaveAcknowledgement = async () => {
-    if (!selectedDirectiveToAck) return;
-    setSavingAck(true);
-    try {
-      await fetchAPI(`/api/sales/directives/${selectedDirectiveToAck.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          status: ackStatus,
-          acknowledgement_note: ackNote,
-        }),
-      });
-      setIsDirectiveModalOpen(false);
-      setSelectedDirectiveToAck(null);
-      setAckNote('');
-      await loadDirectives();
-    } catch (err: any) {
-      console.error("Erreur acknowledgement:", err);
-    } finally {
-      setSavingAck(false);
-    }
-  };
+  // Aggregated visit info per enterprise (exact count, latest date, salesperson, and report)
+  const enterpriseVisitsMap = useMemo(() => {
+    const map = new Map<number, { count: number; lastVisitDate?: string; lastSalesperson?: string; lastReport?: any }>();
 
-  // Handle Send Directive to Salesperson
-  const handleSendDirective = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setDirectiveErrorMsg('');
-    setDirectiveSuccessMsg('');
-    setSendingDirective(true);
-    try {
-      await fetchAPI('/api/sales/directives/', {
-        method: 'POST',
-        body: JSON.stringify({
-          recipient_id: newDirectiveForm.recipient_id,
-          target_entity: 'BACK_OFFICE',
-          title: newDirectiveForm.title,
-          instruction: newDirectiveForm.instruction,
-          target_account_name: newDirectiveForm.target_account_name,
-          priority: newDirectiveForm.priority,
-        }),
+    // Process recentReportsFeed
+    (recentReportsFeed || []).forEach((r) => {
+      if (!r.enterprise_id) return;
+      const prev = map.get(r.enterprise_id) || { count: 0 };
+      map.set(r.enterprise_id, {
+        count: prev.count + 1,
+        lastVisitDate: prev.lastVisitDate || r.created_at,
+        lastSalesperson: prev.lastSalesperson || r.salesperson_name,
+        lastReport: prev.lastReport || { ...r, type: 'REPORT' },
       });
-      setDirectiveSuccessMsg("Directive transmise avec succès au commercial terrain.");
-      setNewDirectiveForm({
-        recipient_id: '',
-        title: '',
-        instruction: '',
-        target_account_name: '',
-        priority: 'NORMAL',
+    });
+
+    // Process recentFormSubmissions
+    (recentFormSubmissions || []).forEach((s) => {
+      const eid = typeof s.enterprise === 'object' ? (s.enterprise as any).id : s.enterprise;
+      const entId = eid || (s as any).enterprise_id;
+      if (!entId) return;
+      const prev = map.get(entId) || { count: 0 };
+      map.set(entId, {
+        count: prev.count + 1,
+        lastVisitDate: prev.lastVisitDate || s.created_at,
+        lastSalesperson: prev.lastSalesperson || s.salesperson_name,
+        lastReport: prev.lastReport || { ...s, type: 'SUBMISSION' },
       });
-      await loadDirectives();
-    } catch (err: any) {
-      setDirectiveErrorMsg(err.message || "Erreur lors de l'émission de la directive.");
-    } finally {
-      setSendingDirective(false);
-    }
-  };
+    });
+
+    return map;
+  }, [recentReportsFeed, recentFormSubmissions]);
+
+  const getEnterpriseVisitInfo = useCallback((ent: EnterpriseItem) => {
+    const info = enterpriseVisitsMap.get(ent.id);
+    const count = info?.count || (ent.is_visited ? 1 : 0);
+    const isVisited = ent.is_visited || count > 0;
+    const label = !isVisited || count === 0 ? "Non visité" : count === 1 ? "1 visite" : `${count} visites`;
+    return {
+      count,
+      isVisited,
+      label,
+      lastVisitDate: info?.lastVisitDate || ent.last_visited_at,
+      lastSalesperson: info?.lastSalesperson || ent.last_visited_by_name || ent.assigned_salesperson_name,
+      lastReport: info?.lastReport,
+    };
+  }, [enterpriseVisitsMap]);
 
   // Filtered & Sorted Salespersons (Ranked by points desc, conversions desc, visits desc, NEVER alphabetically)
   const sortedSalespersons = useMemo(() => {
@@ -760,19 +724,29 @@ export default function BackofficeCommandCenterPage() {
     return sortedSalespersons.slice(0, 3);
   }, [sortedSalespersons]);
 
-  // Filtered SOHO Managed Accounts (multi-critères avec recherche globale)
+  // Filtered Plus petites entreprises Managed Accounts (multi-critères avec recherche globale)
   const filteredSohoAccounts = useMemo(() => {
     const list = Array.isArray(enterprises) ? enterprises : [];
     return list.filter((ent) => {
-      // 1. Visite
-      if (sohoVisitFilter === 'VISITED' && !ent.is_visited) return false;
-      if (sohoVisitFilter === 'UNVISITED' && ent.is_visited) return false;
+      const vInfo = getEnterpriseVisitInfo(ent);
+      const isConverted = ent.is_converted || ent.conversion_status === 'CONVERTED';
 
-      // 2. Affectation
-      if (sohoAssignmentFilter === 'ASSIGNED' && !ent.assigned_salesperson) return false;
-      if (sohoAssignmentFilter === 'UNASSIGNED' && ent.assigned_salesperson) return false;
+      // 1. Statut combiné & suivi entreprise
+      if (sohoStatusFilter === 'ASSIGNED_UNVISITED') {
+        if (!ent.assigned_salesperson || vInfo.isVisited) return false;
+      } else if (sohoStatusFilter === 'ASSIGNED_UNCONVERTED') {
+        if (!ent.assigned_salesperson || isConverted) return false;
+      } else if (sohoStatusFilter === 'VISITED') {
+        if (!vInfo.isVisited) return false;
+      } else if (sohoStatusFilter === 'UNVISITED') {
+        if (vInfo.isVisited) return false;
+      } else if (sohoStatusFilter === 'CONVERTED') {
+        if (!isConverted) return false;
+      } else if (sohoStatusFilter === 'UNASSIGNED') {
+        if (ent.assigned_salesperson) return false;
+      }
 
-      // 3. Plaque
+      // 2. Plaque
       if (sohoPlaqueFilter !== 'ALL') {
         const matchesPlaque =
           ent.plaque_code === sohoPlaqueFilter ||
@@ -781,12 +755,12 @@ export default function BackofficeCommandCenterPage() {
         if (!matchesPlaque) return false;
       }
 
-      // 4. Commercial
+      // 3. Commercial
       if (sohoCommercialFilter !== 'ALL') {
         if (String(ent.assigned_salesperson) !== sohoCommercialFilter) return false;
       }
 
-      // 5. Recherche globale
+      // 4. Recherche globale
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return (
@@ -800,7 +774,19 @@ export default function BackofficeCommandCenterPage() {
         Boolean(ent.plaque_code && ent.plaque_code.toLowerCase().includes(q))
       );
     });
-  }, [enterprises, sohoVisitFilter, sohoAssignmentFilter, sohoPlaqueFilter, sohoCommercialFilter, searchQuery]);
+  }, [enterprises, getEnterpriseVisitInfo, sohoStatusFilter, sohoPlaqueFilter, sohoCommercialFilter, searchQuery]);
+
+  // Paginated Plus petites entreprises / TPE accounts
+  const paginatedSohoAccounts = useMemo(() => {
+    const start = (sohoPage - 1) * sohoPageSize;
+    return filteredSohoAccounts.slice(start, start + sohoPageSize);
+  }, [filteredSohoAccounts, sohoPage, sohoPageSize]);
+
+  // Paginated Salespersons
+  const paginatedSalespersons = useMemo(() => {
+    const start = (salespersonsPage - 1) * salespersonsPageSize;
+    return sortedSalespersons.slice(start, start + salespersonsPageSize);
+  }, [sortedSalespersons, salespersonsPage, salespersonsPageSize]);
 
   // Filtered Plaques (Filtre couverture, affectation, ville et recherche)
   const filteredPlaques = useMemo(() => {
@@ -830,12 +816,19 @@ export default function BackofficeCommandCenterPage() {
     });
   }, [plaques, enterprises, plaquesListFilter, plaqueCityFilter, searchQuery]);
 
-  // SOHO Directory Accounts (avec filtres statut/visite et recherche)
+  // Paginated Plaques
+  const paginatedPlaques = useMemo(() => {
+    const start = (plaquesPage - 1) * plaquesPageSize;
+    return filteredPlaques.slice(start, start + plaquesPageSize);
+  }, [filteredPlaques, plaquesPage, plaquesPageSize]);
+
+  // Plus petites entreprises Directory Accounts (avec filtres statut/visite et recherche)
   const filteredDirectoryAccounts = useMemo(() => {
     const list = Array.isArray(enterprises) ? enterprises : [];
     return list.filter((ent) => {
-      if (directoryVisitFilter === 'VISITED' && !ent.is_visited) return false;
-      if (directoryVisitFilter === 'UNVISITED' && ent.is_visited) return false;
+      const vInfo = getEnterpriseVisitInfo(ent);
+      if (directoryVisitFilter === 'VISITED' && !vInfo.isVisited) return false;
+      if (directoryVisitFilter === 'UNVISITED' && vInfo.isVisited) return false;
 
       const isConv = ent.is_converted || ent.conversion_status === 'CONVERTED';
       if (directoryStatusFilter === 'CONVERTED' && !isConv) return false;
@@ -853,25 +846,13 @@ export default function BackofficeCommandCenterPage() {
         Boolean(ent.assigned_salesperson_name && ent.assigned_salesperson_name.toLowerCase().includes(q))
       );
     });
-  }, [enterprises, directoryVisitFilter, directoryStatusFilter, searchQuery]);
+  }, [enterprises, getEnterpriseVisitInfo, directoryVisitFilter, directoryStatusFilter, searchQuery]);
 
-  // Filtered Directives
-  const filteredDirectives = useMemo(() => {
-    const list = Array.isArray(directives) ? directives : [];
-    return list.filter((d) => {
-      if (directiveFilterStatus !== 'ALL' && d.status !== directiveFilterStatus) return false;
-      if (directiveFilterPriority !== 'ALL' && d.priority !== directiveFilterPriority) return false;
-
-      if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase();
-      return (
-        Boolean(d.title && d.title.toLowerCase().includes(q)) ||
-        Boolean(d.instruction && d.instruction.toLowerCase().includes(q)) ||
-        Boolean(d.recipient_name && d.recipient_name.toLowerCase().includes(q)) ||
-        Boolean(d.target_account_name && d.target_account_name.toLowerCase().includes(q))
-      );
-    });
-  }, [directives, directiveFilterStatus, directiveFilterPriority, searchQuery]);
+  // Paginated Directory Accounts
+  const paginatedDirectoryAccounts = useMemo(() => {
+    const start = (directoryPage - 1) * directoryPageSize;
+    return filteredDirectoryAccounts.slice(start, start + directoryPageSize);
+  }, [filteredDirectoryAccounts, directoryPage, directoryPageSize]);
 
   const kpis = useMemo(() => {
     const list = Array.isArray(enterprises) ? enterprises : [];
@@ -922,6 +903,12 @@ export default function BackofficeCommandCenterPage() {
     });
   }, [plaqueEnterprisesAll, plaqueDetailFilter, plaqueDetailSearch]);
 
+  // Paginated Plaque Detail Accounts
+  const paginatedPlaqueDetailAccounts = useMemo(() => {
+    const start = (plaqueDetailPage - 1) * plaqueDetailPageSize;
+    return filteredPlaqueDetailAccounts.slice(start, start + plaqueDetailPageSize);
+  }, [filteredPlaqueDetailAccounts, plaqueDetailPage, plaqueDetailPageSize]);
+
   // Dedicated Salesperson Detail: all enterprises assigned to this salesperson or in their plaques or visited by them
   const salespersonAssignedEnterprisesAll = useMemo(() => {
     if (!selectedSalespersonDetail) return [];
@@ -971,8 +958,9 @@ export default function BackofficeCommandCenterPage() {
 
   const filteredSalespersonDetailAccounts = useMemo(() => {
     return salespersonAssignedEnterprisesAll.filter((ent) => {
-      if (salespersonDetailFilter === 'VISITED' && !ent.is_visited) return false;
-      if (salespersonDetailFilter === 'UNVISITED' && ent.is_visited) return false;
+      const vInfo = getEnterpriseVisitInfo(ent);
+      if (salespersonDetailFilter === 'VISITED' && !vInfo.isVisited) return false;
+      if (salespersonDetailFilter === 'UNVISITED' && vInfo.isVisited) return false;
 
       if (!salespersonDetailSearch) return true;
       const q = salespersonDetailSearch.toLowerCase();
@@ -984,24 +972,26 @@ export default function BackofficeCommandCenterPage() {
         Boolean(ent.contact_name && ent.contact_name.toLowerCase().includes(q))
       );
     });
-  }, [salespersonAssignedEnterprisesAll, salespersonDetailFilter, salespersonDetailSearch]);
+  }, [salespersonAssignedEnterprisesAll, getEnterpriseVisitInfo, salespersonDetailFilter, salespersonDetailSearch]);
 
-  const salespersonDirectives = useMemo(() => {
-    if (!selectedSalespersonDetail) return [];
-    const list = Array.isArray(directives) ? directives : [];
-    return list.filter((d) =>
-      d.recipient === selectedSalespersonDetail.id ||
-      d.recipient_name === selectedSalespersonDetail.full_name ||
-      (d as any).recipient_username === selectedSalespersonDetail.username
-    );
-  }, [directives, selectedSalespersonDetail]);
+  // Paginated Salesperson Detail Accounts
+  const paginatedSalespersonDetailAccounts = useMemo(() => {
+    const start = (salespersonDetailPage - 1) * salespersonDetailPageSize;
+    return filteredSalespersonDetailAccounts.slice(start, start + salespersonDetailPageSize);
+  }, [filteredSalespersonDetailAccounts, salespersonDetailPage, salespersonDetailPageSize]);
 
   const navItems = [
     {
       id: 'soho_managed' as BackofficeView,
-      label: 'Comptes SOHO',
+      label: 'Comptes TPE',
       icon: Icons.Building,
       badge: `${enterprises.length}`,
+    },
+    {
+      id: 'daily_report' as BackofficeView,
+      label: 'Rapport de la journée',
+      icon: Icons.FileText,
+      badge: (recentReportsFeed.length + recentFormSubmissions.length) > 0 ? `${recentReportsFeed.length + recentFormSubmissions.length}` : null,
     },
     {
       id: 'salespersons' as BackofficeView,
@@ -1017,27 +1007,15 @@ export default function BackofficeCommandCenterPage() {
     },
     {
       id: 'plaques_list' as BackofficeView,
-      label: 'Plaques & Auto-Dispatch',
+      label: 'Plaques & Auto dispatch',
       icon: Icons.Layers,
       badge: `${plaques.length}`,
     },
     {
       id: 'soho_directory' as BackofficeView,
-      label: 'Annuaire SOHO',
+      label: 'Annuaire TPE',
       icon: Icons.FileText,
       badge: null,
-    },
-    {
-      id: 'directives' as BackofficeView,
-      label: 'Directives & Messages',
-      icon: Icons.MessageSquare,
-      badge: (Array.isArray(directives) ? directives : []).filter((d) => d.status === 'SENT').length > 0 ? `${(Array.isArray(directives) ? directives : []).filter((d) => d.status === 'SENT').length}` : null,
-    },
-    {
-      id: 'copilot' as BackofficeView,
-      label: 'Copilote IA',
-      icon: Icons.Bot,
-      badge: 'AI',
     },
     {
       id: 'settings' as BackofficeView,
@@ -1146,12 +1124,11 @@ export default function BackofficeCommandCenterPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden">
                     <img
-                      src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
+                      src={user?.profile_picture_url || user?.avatar || '/avatars/default_avatar.svg'}
                       alt={user?.username || 'Superviseur'}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        // Fallback text if memoji fails
-                        (e.currentTarget as HTMLElement).style.display = 'none';
+                        (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
                       }}
                     />
                   </div>
@@ -1167,9 +1144,12 @@ export default function BackofficeCommandCenterPage() {
               ) : (
                 <div className="mx-auto w-8 h-8 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center font-extrabold text-xs overflow-hidden">
                   <img
-                    src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
+                    src={user?.profile_picture_url || user?.avatar || '/avatars/default_avatar.svg'}
                     alt="avatar"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
+                    }}
                   />
                 </div>
               )}
@@ -1190,21 +1170,21 @@ export default function BackofficeCommandCenterPage() {
         {/* 2. MAIN WORKSPACE CONTENT AREA */}
         <main className="flex-1 flex flex-col h-full overflow-hidden p-4 pl-4">
           
-          {/* Top Header Bar (Découplé & Élégant façon KAM) */}
+          {/* Top Header Bar */}
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5 shrink-0 mb-4">
             <div className="flex flex-col">
               <h2 className="text-xl font-550 text-[#242124] dark:text-white tracking-tight">
-                {activeView === 'soho_managed' && "Portefeuille Comptes SOHO"}
+                {activeView === 'soho_managed' && "Portefeuille Comptes TPE"}
+                {activeView === 'daily_report' && "Rapport d'Activité de la Journée"}
                 {activeView === 'salespersons' && (selectedSalespersonDetail ? `Fiche Commercial – ${selectedSalespersonDetail.full_name}` : "Commerciaux Terrain & Effectif")}
                 {activeView === 'map' && "Carte Territoire & Découpage des Plaques"}
-                {activeView === 'plaques_list' && (selectedPlaqueDetail ? `Détail & Répartition – Plaque ${selectedPlaqueDetail.code}` : "Gestion des Plaques & Smart Auto-Dispatch")}
-                {activeView === 'soho_directory' && "Annuaire Exhaustif SOHO"}
-                {activeView === 'directives' && "Directives Administratives & Terrain"}
+                {activeView === 'plaques_list' && (selectedPlaqueDetail ? `Détail & Répartition – Plaque ${selectedPlaqueDetail.code}` : "Gestion des Plaques & Auto dispatch")}
+                {activeView === 'soho_directory' && "Annuaire Exhaustif TPE"}
                 {activeView === 'settings' && "Paramètres & Base de Connaissances"}
               </h2>
             </div>
 
-            {/* Actions d'En-Tête : Recherche pilule avec croix, Actualiser, Theme (ZÉRO bouton redondant) */}
+            {/* Actions d'En-Tête : Recherche pilule avec croix, Actualiser, Theme */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <div className="flex items-center gap-2 bg-white dark:bg-[#2D2A2D] px-3.5 py-2 rounded-2xl border border-black/5 dark:border-white/5 shadow-2xs">
                 <Icons.Search size={14} className="text-[#6E6C67] dark:text-[#A1A1AA]" />
@@ -1214,11 +1194,13 @@ export default function BackofficeCommandCenterPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={
                     activeView === 'soho_managed' || activeView === 'soho_directory'
-                      ? "Filtrer compte, CRM, commune..."
+                      ? "Filtrer compte TPE, CRM, commune..."
                       : activeView === 'salespersons'
                       ? "Rechercher commercial, plaque..."
                       : activeView === 'plaques_list'
                       ? "Rechercher plaque, code..."
+                      : activeView === 'daily_report'
+                      ? "Rechercher dans les rapports..."
                       : "Recherche rapide..."
                   }
                   className="bg-transparent text-xs font-550 focus:outline-none w-48 sm:w-64 text-[#242124] dark:text-white border-0 placeholder-[#6E6C67] dark:placeholder-[#A1A1AA]"
@@ -1236,7 +1218,6 @@ export default function BackofficeCommandCenterPage() {
               <button
                 onClick={() => {
                   loadDashboardData();
-                  loadDirectives();
                 }}
                 disabled={loading}
                 title="Actualiser les données"
@@ -1274,13 +1255,13 @@ export default function BackofficeCommandCenterPage() {
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto pr-1">
 
-            {/* VIEW 1: SOHO MANAGED ACCOUNTS */}
+            {/* VIEW 1: Plus petites entreprises MANAGED ACCOUNTS */}
             {activeView === 'soho_managed' && (
               <div className="flex flex-col gap-4">
                 {/* KPI Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">Total Comptes SOHO</span>
+                    <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">Total Comptes TPE</span>
                     <span className="text-xl font-extrabold text-[#242124] dark:text-white">{kpis.total}</span>
                     <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{kpis.assigned} affectés à un commercial</span>
                   </div>
@@ -1309,13 +1290,19 @@ export default function BackofficeCommandCenterPage() {
                       <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Statut :</span>
                       <select
                         value={sohoStatusFilter}
-                        onChange={(e) => setSohoStatusFilter(e.target.value as any)}
+                        onChange={(e) => {
+                          setSohoStatusFilter(e.target.value as any);
+                          setSohoPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
                       >
                         <option value="ALL">Tous les statuts</option>
+                        <option value="ASSIGNED_UNVISITED">Assignés non visités (urgent)</option>
+                        <option value="ASSIGNED_UNCONVERTED">Assignés non convertis (en cours)</option>
+                        <option value="VISITED">Visités sur le terrain</option>
+                        <option value="UNVISITED">Pas encore visités</option>
                         <option value="CONVERTED">Signés / Convertis</option>
-                        <option value="IN_PROGRESS">En cours de prospection</option>
-                        <option value="VISITED">Visités sur terrain</option>
+                        <option value="UNASSIGNED">Non affectés</option>
                       </select>
                     </div>
 
@@ -1324,7 +1311,10 @@ export default function BackofficeCommandCenterPage() {
                       <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Plaque :</span>
                       <select
                         value={sohoPlaqueFilter}
-                        onChange={(e) => setSohoPlaqueFilter(e.target.value)}
+                        onChange={(e) => {
+                          setSohoPlaqueFilter(e.target.value);
+                          setSohoPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
                       >
                         <option value="ALL">Toutes les plaques</option>
@@ -1338,35 +1328,36 @@ export default function BackofficeCommandCenterPage() {
                   </div>
 
                   <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
-                    {filteredSohoAccounts.length} comptes affichés
+                    {filteredSohoAccounts.length} compte(s) TPE
                   </span>
                 </div>
 
-                {/* SOHO Accounts Table */}
-                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                {/* Plus petites entreprises Accounts Table */}
+                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Entreprise SOHO</th>
+                          <th className="pb-3 px-3">Entreprise TPE</th>
                           <th className="pb-3 px-3">Secteur & Ville</th>
                           <th className="pb-3 px-3">Plaque</th>
                           <th className="pb-3 px-3">Commercial Assigné</th>
-                          <th className="pb-3 px-3">Visite</th>
-                          <th className="pb-3 px-3">Statut</th>
-                          <th className="pb-3 px-3 text-right">Détails</th>
+                          <th className="pb-3 px-3">Statut Visite</th>
+                          <th className="pb-3 px-3">Statut Client</th>
+                          <th className="pb-3 px-3 text-right">Actions & Suivi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                        {filteredSohoAccounts.length === 0 ? (
+                        {paginatedSohoAccounts.length === 0 ? (
                           <tr>
                             <td colSpan={7} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                              Aucun compte SOHO ne correspond aux filtres actuels.
+                              Aucun compte TPE ne correspond aux filtres actuels.
                             </td>
                           </tr>
                         ) : (
-                          filteredSohoAccounts.map((account) => {
+                          paginatedSohoAccounts.map((account) => {
                             const isConverted = account.is_converted || account.conversion_status === 'CONVERTED';
+                            const vInfo = getEnterpriseVisitInfo(account);
 
                             return (
                               <tr key={account.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
@@ -1378,7 +1369,7 @@ export default function BackofficeCommandCenterPage() {
                                 </td>
                                 <td className="py-3 px-3">
                                   <div className="flex flex-col">
-                                    <span className="text-[#242124] dark:text-white font-550">{account.sector || 'SOHO / Commerce'}</span>
+                                    <span className="text-[#242124] dark:text-white font-550">{account.sector || 'TPE / Commerce'}</span>
                                     <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{account.commune || account.city}</span>
                                   </div>
                                 </td>
@@ -1408,10 +1399,20 @@ export default function BackofficeCommandCenterPage() {
                                   )}
                                 </td>
                                 <td className="py-3 px-3">
-                                  {account.is_visited ? (
-                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
-                                      <Icons.Check size={10} /> Visité
-                                    </span>
+                                  {vInfo.count > 0 ? (
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
+                                        <Icons.CheckCircle size={10} /> {vInfo.label}
+                                      </span>
+                                      {vInfo.lastReport && (
+                                        <button
+                                          onClick={() => setSelectedReportToInspect(vInfo.lastReport)}
+                                          className="text-[9px] font-bold text-[#4F6CE8] hover:underline text-left cursor-pointer"
+                                        >
+                                          Voir dernier CR
+                                        </button>
+                                      )}
+                                    </div>
                                   ) : (
                                     <span className="px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold w-fit">
                                       Non visité
@@ -1430,13 +1431,22 @@ export default function BackofficeCommandCenterPage() {
                                   )}
                                 </td>
                                 <td className="py-3 px-3 text-right">
-                                  <button
-                                    onClick={() => setSelectedAccountForDetail(account)}
-                                    className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#4F6CE8] transition-colors cursor-pointer"
-                                    title="Voir fiche complète"
-                                  >
-                                    <Icons.ExternalLink size={13} />
-                                  </button>
+                                  <div className="inline-flex items-center gap-1">
+                                    <button
+                                      onClick={() => setSelectedEnterpriseForActions(account)}
+                                      className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#4F6CE8] transition-colors cursor-pointer"
+                                      title="Consulter actions, notes et comptes-rendus"
+                                    >
+                                      <Icons.FileText size={13} />
+                                    </button>
+                                    <button
+                                      onClick={() => setSelectedAccountForDetail(account)}
+                                      className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white transition-colors cursor-pointer"
+                                      title="Voir fiche complète"
+                                    >
+                                      <Icons.ExternalLink size={13} />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -1445,8 +1455,36 @@ export default function BackofficeCommandCenterPage() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Explicit Numbered Pagination */}
+                  <BackofficePagination
+                    currentPage={sohoPage}
+                    totalPages={Math.ceil(filteredSohoAccounts.length / sohoPageSize) || 1}
+                    totalItems={filteredSohoAccounts.length}
+                    pageSize={sohoPageSize}
+                    onPageChange={setSohoPage}
+                    onPageSizeChange={(sz) => {
+                      setSohoPageSize(sz);
+                      setSohoPage(1);
+                    }}
+                    itemName="comptes TPE"
+                  />
                 </div>
               </div>
+            )}
+
+            {/* VIEW: RAPPORT DE LA JOURNÉE */}
+            {activeView === 'daily_report' && (
+              <DailyReportView
+                reports={recentReportsFeed}
+                submissions={recentFormSubmissions}
+                salespersons={salespersons}
+                enterprises={enterprises}
+                plaques={plaques}
+                onOpenReportDetail={(report) => setSelectedReportToInspect(report)}
+                onRefresh={loadDashboardData}
+                loading={loading}
+              />
             )}
 
             {/* VIEW 2: FIELD SALESPERSONS */}
@@ -1470,22 +1508,7 @@ export default function BackofficeCommandCenterPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setNewDirectiveForm({
-                            recipient_id: String(selectedSalespersonDetail.id),
-                            title: '',
-                            instruction: '',
-                            target_account_name: '',
-                            priority: 'NORMAL',
-                          });
-                          setSalespersonDetailTab('directives');
-                        }}
-                        className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-                      >
-                        <Icons.Send size={14} />
-                        <span>Émettre une Directive</span>
-                      </button>
+                      {/* Actions toolbar */}
                     </div>
                   </div>
 
@@ -1494,9 +1517,12 @@ export default function BackofficeCommandCenterPage() {
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#363336] p-1 border border-black/5 dark:border-white/5 shrink-0 overflow-hidden shadow-xs">
                         <img
-                          src={`/memojis/${(selectedSalespersonDetail.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
+                          src={selectedSalespersonDetail.profile_picture_url || selectedSalespersonDetail.avatar || '/avatars/default_avatar.svg'}
                           alt={selectedSalespersonDetail.full_name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
+                          }}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -1592,17 +1618,6 @@ export default function BackofficeCommandCenterPage() {
                       <Icons.FileText size={14} />
                       <span>Rapports de Visite ({salespersonReports.length + salespersonSubmissions.length})</span>
                     </button>
-                    <button
-                      onClick={() => setSalespersonDetailTab('directives')}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-                        salespersonDetailTab === 'directives'
-                          ? 'bg-[#4F6CE8] text-white shadow-xs'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      <Icons.Send size={14} />
-                      <span>Directives & Instructions ({salespersonDirectives.length})</span>
-                    </button>
                   </div>
 
                   {/* SUB-TAB 1: COMPTES ASSIGNÉS & VISITES */}
@@ -1612,7 +1627,10 @@ export default function BackofficeCommandCenterPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3 rounded-2xl border border-black/5 dark:border-white/5">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <button
-                            onClick={() => setSalespersonDetailFilter('ALL')}
+                            onClick={() => {
+                              setSalespersonDetailFilter('ALL');
+                              setSalespersonDetailPage(1);
+                            }}
                             className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                               salespersonDetailFilter === 'ALL'
                                 ? 'bg-[#4F6CE8] text-white shadow-xs'
@@ -1622,7 +1640,10 @@ export default function BackofficeCommandCenterPage() {
                             Tous ({salespersonDetailKpis.total})
                           </button>
                           <button
-                            onClick={() => setSalespersonDetailFilter('VISITED')}
+                            onClick={() => {
+                              setSalespersonDetailFilter('VISITED');
+                              setSalespersonDetailPage(1);
+                            }}
                             className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                               salespersonDetailFilter === 'VISITED'
                                 ? 'bg-emerald-600 text-white shadow-xs'
@@ -1632,7 +1653,10 @@ export default function BackofficeCommandCenterPage() {
                             Visités sur le terrain ({salespersonDetailKpis.visited})
                           </button>
                           <button
-                            onClick={() => setSalespersonDetailFilter('UNVISITED')}
+                            onClick={() => {
+                              setSalespersonDetailFilter('UNVISITED');
+                              setSalespersonDetailPage(1);
+                            }}
                             className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                               salespersonDetailFilter === 'UNVISITED'
                                 ? 'bg-[#4F6CE8]/10 text-white shadow-xs'
@@ -1648,7 +1672,10 @@ export default function BackofficeCommandCenterPage() {
                           <input
                             type="text"
                             value={salespersonDetailSearch}
-                            onChange={(e) => setSalespersonDetailSearch(e.target.value)}
+                            onChange={(e) => {
+                              setSalespersonDetailSearch(e.target.value);
+                              setSalespersonDetailPage(1);
+                            }}
                             placeholder="Rechercher un compte..."
                             className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#4F6CE8]"
                           />
@@ -1656,7 +1683,7 @@ export default function BackofficeCommandCenterPage() {
                       </div>
 
                       {/* Accounts Table */}
-                      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
                             <thead>
@@ -1670,14 +1697,14 @@ export default function BackofficeCommandCenterPage() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                              {filteredSalespersonDetailAccounts.length === 0 ? (
+                              {paginatedSalespersonDetailAccounts.length === 0 ? (
                                 <tr>
                                   <td colSpan={6} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
                                     Aucun compte assigné ne correspond aux critères sélectionnés.
                                   </td>
                                 </tr>
                               ) : (
-                                filteredSalespersonDetailAccounts.map((ent) => (
+                                paginatedSalespersonDetailAccounts.map((ent) => (
                                   <tr key={ent.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                                     <td className="py-3 px-3">
                                       <div className="flex flex-col">
@@ -1712,10 +1739,10 @@ export default function BackofficeCommandCenterPage() {
                                           )}
                                           <button
                                             onClick={() => setSalespersonDetailTab('reports')}
-                                            className="text-[9px] font-bold text-[#4F6CE8] hover:underline mt-0.5 pl-1 text-left flex items-center gap-0.5 cursor-pointer"
+                                            className="text-[9px] font-bold text-[#4F6CE8] hover:underline mt-0.5 pl-1 text-left flex items-center gap-1 cursor-pointer"
                                           >
                                             <span>Consulter le rapport</span>
-                                            <span>→</span>
+                                            <Icons.ArrowRight size={10} />
                                           </button>
                                         </div>
                                       ) : (
@@ -1754,6 +1781,20 @@ export default function BackofficeCommandCenterPage() {
                             </tbody>
                           </table>
                         </div>
+
+                        {/* Explicit Numbered Pagination */}
+                        <BackofficePagination
+                          currentPage={salespersonDetailPage}
+                          totalPages={Math.ceil(filteredSalespersonDetailAccounts.length / salespersonDetailPageSize) || 1}
+                          totalItems={filteredSalespersonDetailAccounts.length}
+                          pageSize={salespersonDetailPageSize}
+                          onPageChange={setSalespersonDetailPage}
+                          onPageSizeChange={(sz) => {
+                            setSalespersonDetailPageSize(sz);
+                            setSalespersonDetailPage(1);
+                          }}
+                          itemName="comptes"
+                        />
                       </div>
                     </div>
                   )}
@@ -1960,155 +2001,6 @@ export default function BackofficeCommandCenterPage() {
                       )}
                     </div>
                   )}
-                  {salespersonDetailTab === 'directives' && (
-                    <div className="flex flex-col gap-4">
-                      {/* Send Directive Form */}
-                      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icons.Send size={15} className="text-[#4F6CE8]" />
-                            <h4 className="text-xs font-extrabold text-[#242124] dark:text-white">
-                              Transmettre une directive ou consigne à {selectedSalespersonDetail.full_name}
-                            </h4>
-                          </div>
-                          <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                            Notification instantanée envoyée sur son terminal mobile
-                          </span>
-                        </div>
-
-                        <form onSubmit={handleSendDirective} className="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-1">
-                          <div className="sm:col-span-5 flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Objet de la directive</label>
-                            <input
-                              type="text"
-                              required
-                              value={newDirectiveForm.title}
-                              onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, title: e.target.value })}
-                              placeholder="ex: Relance urgente offre fibre"
-                              className="bg-white dark:bg-[#363336] px-3 py-2 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white focus:outline-none focus:border-[#4F6CE8]"
-                            />
-                          </div>
-
-                          <div className="sm:col-span-4 flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Compte SOHO Cible (optionnel)</label>
-                            <input
-                              type="text"
-                              value={newDirectiveForm.target_account_name}
-                              onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, target_account_name: e.target.value })}
-                              placeholder="ex: Polyclinique Centrale"
-                              className="bg-white dark:bg-[#363336] px-3 py-2 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white focus:outline-none focus:border-[#4F6CE8]"
-                            />
-                          </div>
-
-                          <div className="sm:col-span-3 flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Niveau de Priorité</label>
-                            <select
-                              value={newDirectiveForm.priority}
-                              onChange={(e: any) => setNewDirectiveForm({ ...newDirectiveForm, priority: e.target.value })}
-                              className="bg-white dark:bg-[#363336] px-3 py-2 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white focus:outline-none focus:border-[#4F6CE8]"
-                            >
-                              <option value="NORMAL">Normale</option>
-                              <option value="HIGH">Haute</option>
-                              <option value="CRITICAL">Urgente / Critique</option>
-                            </select>
-                          </div>
-
-                          <div className="sm:col-span-10 flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Consignes & Démarche attendue</label>
-                            <textarea
-                              required
-                              rows={2}
-                              value={newDirectiveForm.instruction}
-                              onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, instruction: e.target.value })}
-                              placeholder="Détaillez la démarche attendue, l'offre à pousser ou la situation client..."
-                              className="bg-white dark:bg-[#363336] px-3 py-2 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white focus:outline-none focus:border-[#4F6CE8] resize-none"
-                            />
-                          </div>
-
-                          <div className="sm:col-span-2 flex items-end">
-                            <button
-                              type="submit"
-                              disabled={sendingDirective}
-                              className="w-full py-2.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
-                            >
-                              <Icons.Send size={13} />
-                              <span>{sendingDirective ? 'Envoi...' : 'Transmettre'}</span>
-                            </button>
-                          </div>
-                        </form>
-
-                        {directiveSuccessMsg && (
-                          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
-                            <Icons.CheckCircle size={13} />
-                            <span>{directiveSuccessMsg}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Directives List */}
-                      <div className="flex flex-col gap-3">
-                        {salespersonDirectives.length === 0 ? (
-                          <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-12 rounded-3xl border border-black/5 dark:border-white/5 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                            Aucune directive émise pour {selectedSalespersonDetail.full_name} pour le moment.
-                          </div>
-                        ) : (
-                          salespersonDirectives.map((d) => (
-                            <div
-                              key={d.id}
-                              className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3"
-                            >
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-black/5 dark:border-white/5">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                                    d.priority === 'CRITICAL'
-                                      ? 'bg-red-500/15 text-red-600 dark:text-red-400'
-                                      : d.priority === 'HIGH'
-                                      ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-                                      : 'bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300'
-                                  }`}>
-                                    Priorité {d.priority}
-                                  </span>
-                                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                                    d.status === 'COMPLETED'
-                                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                      : d.status === 'IN_PROGRESS'
-                                      ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-                                      : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                                  }`}>
-                                    {d.status === 'COMPLETED' ? 'Terminée' : d.status === 'IN_PROGRESS' ? 'En cours' : 'Transmise'}
-                                  </span>
-                                  {d.target_account_name && (
-                                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#363336] text-[10px] font-semibold text-[#242124] dark:text-white border border-black/5 dark:border-white/5">
-                                      Compte: {d.target_account_name}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                                  Émise le {new Date(d.created_at).toLocaleDateString()} par {d.sender_name || 'Superviseur'}
-                                </span>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-extrabold text-[#242124] dark:text-white">{d.title}</h4>
-                                <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-1 leading-relaxed">{d.instruction}</p>
-                              </div>
-
-                              {d.acknowledgement_note && (
-                                <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                                  <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                    Compte-rendu du commercial ({selectedSalespersonDetail.full_name}) :
-                                  </span>
-                                  <p className="text-xs text-[#242124] dark:text-white italic">
-                                    "{d.acknowledgement_note}"
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 /* MAIN SALESPERSONS TABLE & OVERVIEW */
@@ -2171,9 +2063,12 @@ export default function BackofficeCommandCenterPage() {
                           >
                             <div className="relative shrink-0">
                               <img
-                                src={`/memojis/${(sp.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
+                                src={sp.profile_picture_url || sp.avatar || '/avatars/default_avatar.svg'}
                                 alt={sp.full_name}
                                 className="w-10 h-10 rounded-xl object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
+                                }}
                               />
                               <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white ${
                                 idx === 0 ? 'bg-[#4F6CE8]/10' : idx === 1 ? 'bg-slate-400' : 'bg-[#4F6CE8]/10'
@@ -2196,7 +2091,7 @@ export default function BackofficeCommandCenterPage() {
                   )}
 
                   {/* Salespersons Table */}
-                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
@@ -2211,14 +2106,14 @@ export default function BackofficeCommandCenterPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                          {sortedSalespersons.length === 0 ? (
+                          {paginatedSalespersons.length === 0 ? (
                             <tr>
                               <td colSpan={7} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
                                 Aucun commercial terrain répertorié.
                               </td>
                             </tr>
                           ) : (
-                            sortedSalespersons.map((sp) => (
+                            paginatedSalespersons.map((sp) => (
                               <tr
                                 key={sp.id}
                                 onClick={() => setSelectedSalespersonDetail(sp)}
@@ -2228,9 +2123,12 @@ export default function BackofficeCommandCenterPage() {
                                   <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#363336] p-0.5 border border-black/5 dark:border-white/5 overflow-hidden shrink-0">
                                       <img
-                                        src={`/memojis/${(sp.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
+                                        src={sp.profile_picture_url || sp.avatar || '/avatars/default_avatar.svg'}
                                         alt={sp.full_name}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
+                                        }}
                                       />
                                     </div>
                                     <div className="flex flex-col">
@@ -2308,6 +2206,20 @@ export default function BackofficeCommandCenterPage() {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Explicit Numbered Pagination */}
+                    <BackofficePagination
+                      currentPage={salespersonsPage}
+                      totalPages={Math.ceil(sortedSalespersons.length / salespersonsPageSize) || 1}
+                      totalItems={sortedSalespersons.length}
+                      pageSize={salespersonsPageSize}
+                      onPageChange={setSalespersonsPage}
+                      onPageSizeChange={(sz) => {
+                        setSalespersonsPageSize(sz);
+                        setSalespersonsPage(1);
+                      }}
+                      itemName="commerciaux"
+                    />
                   </div>
                 </div>
               )
@@ -2379,7 +2291,7 @@ export default function BackofficeCommandCenterPage() {
                         className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50"
                       >
                         <Icons.Zap size={14} className={dispatchingPlaqueId === selectedPlaqueDetail.id ? 'animate-spin' : ''} />
-                        <span>{dispatchingPlaqueId === selectedPlaqueDetail.id ? 'Calcul...' : 'Auto-Dispatch IA'}</span>
+                        <span>{dispatchingPlaqueId === selectedPlaqueDetail.id ? 'Calcul...' : 'Auto dispatch'}</span>
                       </button>
                     </div>
                   </div>
@@ -2405,9 +2317,10 @@ export default function BackofficeCommandCenterPage() {
 
                     <button
                       onClick={() => openPlaqueAssignModal(selectedPlaqueDetail)}
-                      className="text-xs text-[#4F6CE8] font-semibold hover:underline cursor-pointer"
+                      className="text-xs text-[#4F6CE8] font-semibold hover:underline cursor-pointer inline-flex items-center gap-1"
                     >
-                      Modifier l'équipe de la plaque →
+                      <span>Modifier l'équipe de la plaque</span>
+                      <Icons.ArrowRight size={12} />
                     </button>
                   </div>
 
@@ -2497,7 +2410,10 @@ export default function BackofficeCommandCenterPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3 rounded-2xl border border-black/5 dark:border-white/5">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <button
-                        onClick={() => setPlaqueDetailFilter('ALL')}
+                        onClick={() => {
+                          setPlaqueDetailFilter('ALL');
+                          setPlaqueDetailPage(1);
+                        }}
                         className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           plaqueDetailFilter === 'ALL'
                             ? 'bg-[#4F6CE8] text-white shadow-xs'
@@ -2507,7 +2423,10 @@ export default function BackofficeCommandCenterPage() {
                         Toutes ({plaqueDetailKpis.total})
                       </button>
                       <button
-                        onClick={() => setPlaqueDetailFilter('VISITED')}
+                        onClick={() => {
+                          setPlaqueDetailFilter('VISITED');
+                          setPlaqueDetailPage(1);
+                        }}
                         className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           plaqueDetailFilter === 'VISITED'
                             ? 'bg-emerald-600 text-white shadow-xs'
@@ -2517,7 +2436,10 @@ export default function BackofficeCommandCenterPage() {
                         Visités sur le terrain ({plaqueDetailKpis.visited})
                       </button>
                       <button
-                        onClick={() => setPlaqueDetailFilter('UNVISITED')}
+                        onClick={() => {
+                          setPlaqueDetailFilter('UNVISITED');
+                          setPlaqueDetailPage(1);
+                        }}
                         className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           plaqueDetailFilter === 'UNVISITED'
                             ? 'bg-[#4F6CE8]/10 text-white shadow-xs'
@@ -2527,7 +2449,10 @@ export default function BackofficeCommandCenterPage() {
                         Pas encore visités ({plaqueDetailKpis.unvisited})
                       </button>
                       <button
-                        onClick={() => setPlaqueDetailFilter('UNASSIGNED')}
+                        onClick={() => {
+                          setPlaqueDetailFilter('UNASSIGNED');
+                          setPlaqueDetailPage(1);
+                        }}
                         className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           plaqueDetailFilter === 'UNASSIGNED'
                             ? 'bg-zinc-800 text-white shadow-xs'
@@ -2537,7 +2462,10 @@ export default function BackofficeCommandCenterPage() {
                         Non assignés ({plaqueDetailKpis.unassigned})
                       </button>
                       <button
-                        onClick={() => setPlaqueDetailFilter('ASSIGNED')}
+                        onClick={() => {
+                          setPlaqueDetailFilter('ASSIGNED');
+                          setPlaqueDetailPage(1);
+                        }}
                         className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           plaqueDetailFilter === 'ASSIGNED'
                             ? 'bg-[#4F6CE8] text-white shadow-xs'
@@ -2553,7 +2481,10 @@ export default function BackofficeCommandCenterPage() {
                       <input
                         type="text"
                         value={plaqueDetailSearch}
-                        onChange={(e) => setPlaqueDetailSearch(e.target.value)}
+                        onChange={(e) => {
+                          setPlaqueDetailSearch(e.target.value);
+                          setPlaqueDetailPage(1);
+                        }}
                         placeholder="Rechercher entreprise..."
                         className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#4F6CE8]"
                       />
@@ -2561,7 +2492,7 @@ export default function BackofficeCommandCenterPage() {
                   </div>
 
                   {/* Enterprises Table in this plaque */}
-                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
@@ -2574,14 +2505,14 @@ export default function BackofficeCommandCenterPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                          {filteredPlaqueDetailAccounts.length === 0 ? (
+                          {paginatedPlaqueDetailAccounts.length === 0 ? (
                             <tr>
                               <td colSpan={5} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
                                 Aucune entreprise ne correspond aux filtres sélectionnés pour cette plaque.
                               </td>
                             </tr>
                           ) : (
-                            filteredPlaqueDetailAccounts.map((ent) => (
+                            paginatedPlaqueDetailAccounts.map((ent) => (
                               <tr key={ent.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                                 <td className="py-3 px-3">
                                   <div className="flex flex-col">
@@ -2653,6 +2584,20 @@ export default function BackofficeCommandCenterPage() {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Explicit Numbered Pagination */}
+                    <BackofficePagination
+                      currentPage={plaqueDetailPage}
+                      totalPages={Math.ceil(filteredPlaqueDetailAccounts.length / plaqueDetailPageSize) || 1}
+                      totalItems={filteredPlaqueDetailAccounts.length}
+                      pageSize={plaqueDetailPageSize}
+                      onPageChange={setPlaqueDetailPage}
+                      onPageSizeChange={(sz) => {
+                        setPlaqueDetailPageSize(sz);
+                        setPlaqueDetailPage(1);
+                      }}
+                      itemName="entreprises"
+                    />
                   </div>
                 </div>
               ) : (
@@ -2673,7 +2618,10 @@ export default function BackofficeCommandCenterPage() {
                       ].map((f) => (
                         <button
                           key={f.id}
-                          onClick={() => setPlaquesListFilter(f.id as any)}
+                          onClick={() => {
+                            setPlaquesListFilter(f.id as any);
+                            setPlaquesPage(1);
+                          }}
                           className={`px-3 py-1 rounded-xl text-xs font-550 transition-all cursor-pointer ${
                             plaquesListFilter === f.id
                               ? 'bg-[#4F6CE8] text-white shadow-xs'
@@ -2688,7 +2636,10 @@ export default function BackofficeCommandCenterPage() {
                     <div className="flex items-center gap-2">
                       <select
                         value={plaqueCityFilter}
-                        onChange={(e) => setPlaqueCityFilter(e.target.value)}
+                        onChange={(e) => {
+                          setPlaqueCityFilter(e.target.value);
+                          setPlaquesPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] text-xs font-550 text-[#242124] dark:text-white px-2.5 py-1 rounded-xl border border-black/10 dark:border-white/10 focus:outline-none cursor-pointer"
                       >
                         <option value="ALL">Toutes les villes</option>
@@ -2722,7 +2673,7 @@ export default function BackofficeCommandCenterPage() {
                   </div>
 
                   {/* Plaques Table */}
-                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
+                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
@@ -2736,14 +2687,14 @@ export default function BackofficeCommandCenterPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                          {filteredPlaques.length === 0 ? (
+                          {paginatedPlaques.length === 0 ? (
                             <tr>
                               <td colSpan={6} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
                                 Aucune plaque ne correspond aux filtres sélectionnés.
                               </td>
                             </tr>
                           ) : (
-                            filteredPlaques.map((plaque) => {
+                            paginatedPlaques.map((plaque) => {
                               const plaqueEnterprises = enterprises.filter(
                                 (e) => e.plaque_code === plaque.code || e.plaque === plaque.name || (e as any).plaque_rel === plaque.id
                               );
@@ -2812,7 +2763,7 @@ export default function BackofficeCommandCenterPage() {
                                         title="Déclencher l'algorithme d'affectation automatique avec anti-collision"
                                       >
                                         <Icons.Zap size={12} className={isDispatching ? "animate-spin" : ""} />
-                                        <span>{isDispatching ? "Calcul..." : "Auto-Dispatch"}</span>
+                                        <span>{isDispatching ? "Calcul..." : "Auto dispatch"}</span>
                                       </button>
                                     </div>
                                   </td>
@@ -2823,12 +2774,26 @@ export default function BackofficeCommandCenterPage() {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Explicit Numbered Pagination */}
+                    <BackofficePagination
+                      currentPage={plaquesPage}
+                      totalPages={Math.ceil(filteredPlaques.length / plaquesPageSize) || 1}
+                      totalItems={filteredPlaques.length}
+                      pageSize={plaquesPageSize}
+                      onPageChange={setPlaquesPage}
+                      onPageSizeChange={(sz) => {
+                        setPlaquesPageSize(sz);
+                        setPlaquesPage(1);
+                      }}
+                      itemName="plaques"
+                    />
                   </div>
                 </div>
               )
             )}
 
-            {/* VIEW 5: SOHO DIRECTORY */}
+            {/* VIEW 5: Plus petites entreprises DIRECTORY */}
             {activeView === 'soho_directory' && (
               <div className="flex flex-col gap-4">
                 {/* Sticky Filter Bar */}
@@ -2885,7 +2850,7 @@ export default function BackofficeCommandCenterPage() {
 
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-extrabold text-[#242124] dark:text-white">Annuaire Exhaustif SOHO & TPE</h3>
+                    <h3 className="text-sm font-extrabold text-[#242124] dark:text-white">Annuaire Exhaustif Plus petites entreprises & TPE</h3>
                     <p className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
                       Coordonnées, RCCM, fiches contacts et offres recommandées pour le terrain.
                     </p>
@@ -2935,7 +2900,7 @@ export default function BackofficeCommandCenterPage() {
                             </td>
                             <td className="py-3 px-3">
                               <span className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
-                                {account.recommended_solution || 'Pack Fibre SOHO'}
+                                {account.recommended_solution || 'Pack Fibre TPE'}
                               </span>
                             </td>
                             <td className="py-3 px-3 text-right">
@@ -2952,303 +2917,6 @@ export default function BackofficeCommandCenterPage() {
                     </table>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* VIEW 6: DIRECTIVES */}
-            {activeView === 'directives' && (
-              <div className="flex flex-col gap-4">
-                {/* Directives Sub-Navigation */}
-                <div className="flex items-center justify-between bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3 rounded-3xl border border-black/5 dark:border-white/5">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setDirectiveTab('received')}
-                      className={`px-3.5 py-1.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                        directiveTab === 'received'
-                          ? 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      Directives Reçues du Super Admin ({(Array.isArray(directives) ? directives : []).filter((d) => d.target_entity === 'BACK_OFFICE').length})
-                    </button>
-                    <button
-                      onClick={() => setDirectiveTab('sent')}
-                      className={`px-3.5 py-1.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                        directiveTab === 'sent'
-                          ? 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      Émettre une Directive aux Commerciaux
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sub-Tab 1: Directives Received from Super Admin */}
-                {directiveTab === 'received' && (
-                  <div className="flex flex-col gap-3">
-                    {/* Sticky Filter Bar */}
-                    <div className="sticky top-0 z-20 backdrop-blur-2xl bg-white/85 dark:bg-[#1E1C1E]/85 p-3 rounded-2xl border border-black/5 dark:border-white/5 flex items-center justify-between gap-3 flex-wrap shadow-xs">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-550 uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA] mr-1">
-                          Statut :
-                        </span>
-                        {[
-                          { id: 'ALL', label: 'Toutes' },
-                          { id: 'SENT', label: 'Nouvelles' },
-                          { id: 'IN_PROGRESS', label: 'En cours' },
-                          { id: 'COMPLETED', label: 'Traitées' },
-                        ].map((f) => (
-                          <button
-                            key={f.id}
-                            onClick={() => setDirectiveFilterStatus(f.id as any)}
-                            className={`px-3 py-1 rounded-xl text-xs font-550 transition-all cursor-pointer ${
-                              directiveFilterStatus === f.id
-                                ? 'bg-[#4F6CE8] text-white shadow-xs'
-                                : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                            }`}
-                          >
-                            {f.label}
-                          </button>
-                        ))}
-
-                        <span className="text-[10px] font-550 uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA] ml-2 mr-1">
-                          Priorité :
-                        </span>
-                        {[
-                          { id: 'ALL', label: 'Toutes' },
-                          { id: 'CRITICAL', label: 'Critique' },
-                          { id: 'HIGH', label: 'Haute' },
-                          { id: 'NORMAL', label: 'Normale' },
-                        ].map((f) => (
-                          <button
-                            key={f.id}
-                            onClick={() => setDirectiveFilterPriority(f.id as any)}
-                            className={`px-2.5 py-1 rounded-xl text-xs font-550 transition-all cursor-pointer ${
-                              directiveFilterPriority === f.id
-                                ? 'bg-[#4F6CE8] text-white shadow-xs'
-                                : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                            }`}
-                          >
-                            {f.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <span className="text-xs font-550 text-[#4F6CE8] bg-[#4F6CE8]/10 px-2.5 py-1 rounded-xl">
-                        {filteredDirectives.length} directive(s)
-                      </span>
-                    </div>
-
-                    {loadingDirectives ? (
-                      <div className="py-12 flex justify-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5">
-                        <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
-                      </div>
-                    ) : filteredDirectives.length === 0 ? (
-                      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5">
-                        Aucune directive ne correspond aux critères sélectionnés.
-                      </div>
-                    ) : (
-                      filteredDirectives.map((directive) => {
-                        const isCompleted = directive.status === 'COMPLETED';
-                        const isInProgress = directive.status === 'IN_PROGRESS';
-
-                        return (
-                          <div
-                            key={directive.id}
-                            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3"
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-black/5 dark:border-white/5">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center font-extrabold text-xs overflow-hidden shrink-0">
-                                  <img
-                                    src={`/memojis/${(directive.sender_avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                    alt="Admin"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-xs text-[#242124] dark:text-white">
-                                    Émis par {directive.sender_name || 'Super Admin'}
-                                  </span>
-                                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                                    {new Date(directive.created_at).toLocaleDateString()} à {new Date(directive.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                                  directive.priority === 'CRITICAL'
-                                    ? 'bg-red-500/15 text-red-600 dark:text-red-400'
-                                    : directive.priority === 'HIGH'
-                                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-                                    : 'bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300'
-                                }`}>
-                                  Priorité {directive.priority}
-                                </span>
-                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                                  isCompleted
-                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                    : isInProgress
-                                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-                                    : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                                }`}>
-                                  {isCompleted ? "Traitée" : isInProgress ? "En cours" : "Nouvelle"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                              <h4 className="font-extrabold text-sm text-[#242124] dark:text-white">{directive.title}</h4>
-                              <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                                {directive.instruction}
-                              </p>
-                              {directive.target_account_name && (
-                                <span className="text-[11px] text-[#4F6CE8] font-550 mt-1">
-                                  Compte cible : {directive.target_account_name}
-                                </span>
-                              )}
-                            </div>
-
-                            {directive.acknowledgement_note && (
-                              <div className="p-3 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 mt-1">
-                                <span className="font-semibold text-[#4F6CE8] block mb-1">Votre réponse / compte-rendu :</span>
-                                {directive.acknowledgement_note}
-                              </div>
-                            )}
-
-                            <div className="pt-2 flex justify-end">
-                              <button
-                                onClick={() => {
-                                  setSelectedDirectiveToAck(directive);
-                                  setAckNote(directive.acknowledgement_note || '');
-                                  setAckStatus(directive.status === 'COMPLETED' ? 'COMPLETED' : 'IN_PROGRESS');
-                                  setIsDirectiveModalOpen(true);
-                                }}
-                                className="px-3.5 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-                              >
-                                <Icons.MessageSquare size={13} />
-                                <span>{isCompleted ? "Mettre à jour la note" : "Prendre en compte / Répondre"}</span>
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-
-                {/* Sub-Tab 2: Send Directive Form */}
-                {directiveTab === 'sent' && (
-                  <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 max-w-2xl">
-                    <h3 className="text-base font-extrabold text-[#242124] dark:text-white">
-                      Émettre une Directive Opérationnelle à un Commercial Terrain
-                    </h3>
-
-                    {directiveSuccessMsg && (
-                      <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                        <Icons.CheckCircle size={15} />
-                        <span>{directiveSuccessMsg}</span>
-                      </div>
-                    )}
-
-                    {directiveErrorMsg && (
-                      <div className="p-3 rounded-2xl bg-red-500/15 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-                        <Icons.AlertCircle size={15} />
-                        <span>{directiveErrorMsg}</span>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleSendDirective} className="flex flex-col gap-4">
-                      <div>
-                        <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                          Commercial Destinataire *
-                        </label>
-                        <select
-                          required
-                          value={newDirectiveForm.recipient_id}
-                          onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, recipient_id: e.target.value })}
-                          className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl px-3.5 py-2 text-xs font-550 text-[#242124] dark:text-white outline-none cursor-pointer"
-                        >
-                          <option value="">Sélectionner un commercial terrain...</option>
-                          {salespersons.map((sp) => (
-                            <option key={sp.id} value={sp.id}>
-                              {sp.full_name} (@{sp.username})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                          Objet / Titre de la directive *
-                        </label>
-                        <input
-                          required
-                          type="text"
-                          value={newDirectiveForm.title}
-                          onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, title: e.target.value })}
-                          placeholder="Ex: Priorité prospection Cybercafés Plaque Gombe..."
-                          className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl px-3.5 py-2 text-xs text-[#242124] dark:text-white outline-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                            Compte cible (optionnel)
-                          </label>
-                          <input
-                            type="text"
-                            value={newDirectiveForm.target_account_name}
-                            onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, target_account_name: e.target.value })}
-                            placeholder="Nom du client..."
-                            className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl px-3.5 py-2 text-xs text-[#242124] dark:text-white outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                            Niveau de priorité *
-                          </label>
-                          <select
-                            value={newDirectiveForm.priority}
-                            onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, priority: e.target.value as any })}
-                            className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl px-3.5 py-2 text-xs font-550 text-[#242124] dark:text-white outline-none cursor-pointer"
-                          >
-                            <option value="NORMAL">Normale</option>
-                            <option value="HIGH">Haute</option>
-                            <option value="CRITICAL">Critique / Immédiate</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                          Instructions détaillées *
-                        </label>
-                        <textarea
-                          required
-                          rows={4}
-                          value={newDirectiveForm.instruction}
-                          onChange={(e) => setNewDirectiveForm({ ...newDirectiveForm, instruction: e.target.value })}
-                          placeholder="Détaillez les actions attendues du commercial sur le terrain..."
-                          className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl p-3 text-xs text-[#242124] dark:text-white outline-none"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={sendingDirective}
-                        className="py-2.5 px-4 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold cursor-pointer transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        <Icons.Send size={14} className={sendingDirective ? "animate-spin" : ""} />
-                        <span>{sendingDirective ? "Transmission en cours..." : "Transmettre la Directive"}</span>
-                      </button>
-                    </form>
-                  </div>
-                )}
               </div>
             )}
 
@@ -3279,17 +2947,17 @@ export default function BackofficeCommandCenterPage() {
                   )}
                 </div>
 
-                {/* 1. Profile Card & Memoji Selector */}
+                {/* 1. Profile Card & Photo de Profil */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 border-2 border-[#4F6CE8] flex items-center justify-center overflow-hidden shadow-lg shrink-0">
+                      <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 border-2 border-[#4F6CE8] flex items-center justify-center overflow-hidden shadow-xs shrink-0">
                         <img
-                          src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                          alt="Memoji Actif"
+                          src={profilePictureInput || user?.profile_picture_url || '/avatars/default_avatar.svg'}
+                          alt="Photo de profil"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
+                            (e.target as HTMLImageElement).src = '/avatars/default_avatar.svg';
                           }}
                         />
                       </div>
@@ -3305,95 +2973,28 @@ export default function BackofficeCommandCenterPage() {
                         <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] block mt-0.5">
                           Identifiant : @{user?.username} • {user?.email || 'superviseur@onbora.cd'}
                         </span>
-                        <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block mt-0.5 font-medium">
-                          Memoji actuel : <span className="font-mono font-semibold text-[#242124] dark:text-white">{(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}</span>
-                        </span>
                       </div>
                     </div>
-
-                    {/* Filtres de Genre pour Memojis */}
-                    <div className="flex items-center gap-1.5 bg-white dark:bg-[#242124] p-1.5 rounded-2xl self-start sm:self-auto shrink-0 border border-black/5 dark:border-white/5">
-                      <button
-                        type="button"
-                        onClick={() => setMemojiGenderFilter('all')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          memojiGenderFilter === 'all'
-                            ? 'bg-[#4F6CE8] text-white shadow-sm'
-                            : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                        }`}
-                      >
-                        Tous ({memojisCatalog.length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMemojiGenderFilter('homme')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          memojiGenderFilter === 'homme'
-                            ? 'bg-[#4F6CE8] text-white shadow-sm'
-                            : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                        }`}
-                      >
-                        Hommes ({memojisCatalog.filter((m) => m.gender === 'homme').length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMemojiGenderFilter('femme')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          memojiGenderFilter === 'femme'
-                            ? 'bg-[#4F6CE8] text-white shadow-sm'
-                            : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                        }`}
-                      >
-                        Femmes ({memojisCatalog.filter((m) => m.gender === 'femme').length})
-                      </button>
-                    </div>
                   </div>
 
-                  {/* Galerie de sélection des Memojis 3D */}
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-[#242124] dark:text-white">
-                        Galerie des Avatars Memoji 3D
-                      </span>
-                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                        Cliquez sur un avatar pour le synchroniser immédiatement avec votre compte superviseur
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3 max-h-72 overflow-y-auto p-3 bg-white dark:bg-[#242124] rounded-2xl border border-black/5 dark:border-white/5">
-                      {memojisCatalog
-                        .filter((m) => memojiGenderFilter === 'all' || m.gender === memojiGenderFilter)
-                        .map((memoji) => {
-                          const isSelected = (user?.avatar || 'memoji_056.png').replace('assets/memojis/', '') === memoji.filename;
-                          return (
-                            <button
-                              key={memoji.id}
-                              type="button"
-                              disabled={savingAvatar}
-                              onClick={() => handleSelectAvatar(memoji.filename)}
-                              title={`${memoji.filename} (${memoji.gender || 'avatar'})`}
-                              className={`relative aspect-square rounded-2xl p-1 transition-all cursor-pointer flex items-center justify-center ${
-                                isSelected
-                                  ? 'bg-[#4F6CE8]/10 dark:bg-[#4F6CE8]/20 ring-2 ring-[#4F6CE8] shadow-md scale-105'
-                                  : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 hover:scale-105 border border-black/5 dark:border-white/5'
-                              }`}
-                            >
-                              <img
-                                src={`/memojis/${memoji.filename}`}
-                                alt={`Memoji ${memoji.id}`}
-                                className="w-full h-full object-contain"
-                                loading="lazy"
-                              />
-                              {isSelected && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#4F6CE8] text-white rounded-full flex items-center justify-center shadow-xs">
-                                  <Icons.Check size={10} />
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                    </div>
-                  </div>
+                  {/* Téléversement de la Photo de Profil Superviseur */}
+                  <ProfilePhotoUploader
+                    currentPhotoUrl={user?.profile_picture_url || user?.avatar}
+                    name={user?.username}
+                    title="Photo de profil Superviseur Back-Office"
+                    description="Téléversez votre photo officielle pour le Back-Office (JPG, PNG ou WebP, max 5 Mo) ou glissez-déposez un fichier."
+                    allowSelfUpdate={true}
+                    onPhotoUploaded={(newUrl) => {
+                      setProfilePictureInput(newUrl);
+                      if (updateUser) {
+                        updateUser({ avatar: newUrl, profile_picture_url: newUrl } as any);
+                      }
+                    }}
+                    onPhotoRemoved={() => {
+                      setProfilePictureInput('');
+                      handleSaveProfilePicture('/avatars/default_avatar.svg');
+                    }}
+                  />
                 </div>
 
                 {/* 2. FAQ INTERACTIVE SUPERVISEUR */}
@@ -3415,14 +3016,14 @@ export default function BackofficeCommandCenterPage() {
                   <div className="flex flex-col gap-3">
                     {[
                       {
-                        q: "1. Comment fonctionne l'Auto-Dispatch IA et la prévention des collisions de portefeuille ?",
+                        q: "1. Comment fonctionne l'Auto-Dispatch et la prévention des collisions de portefeuille ?",
                         a: (
                           <div className="flex flex-col gap-2 text-xs leading-relaxed text-[#6E6C67] dark:text-[#A1A1AA]">
                             <p>
-                              L'algorithme d'Auto-Dispatch IA d'Onbora analyse en continu la proximité géographique des comptes SOHO au sein de chaque plaque. Il évalue la charge de travail actuelle des commerciaux affectés (nombre de comptes déjà assignés et visites planifiées) et distribue les entreprises équitablement.
+                              L'algorithme d'Auto-Dispatch d'Onbora analyse en continu la proximité géographique des comptes TPE au sein de chaque plaque. Il évalue la charge de travail actuelle des commerciaux affectés (nombre de comptes déjà assignés et visites planifiées) et distribue les entreprises équitablement.
                             </p>
                             <p>
-                              Un mécanisme strict anti-collision garantit qu'un compte SOHO ne peut jamais être attribué à deux commerciaux simultanément.
+                              Un mécanisme strict anti-collision garantit qu'un compte TPE ne peut jamais être attribué à deux commerciaux simultanément.
                             </p>
                           </div>
                         ),
@@ -3450,7 +3051,7 @@ export default function BackofficeCommandCenterPage() {
                               <strong className="text-[#242124] dark:text-white">Affecter un commercial à une plaque :</strong> Définit le groupe de commerciaux autorisés et prioritaires sur cette zone géographique. Vous pouvez le faire directement depuis la page des plaques ou depuis la carte.
                             </p>
                             <p>
-                              <strong className="text-[#242124] dark:text-white">Dispatcher les comptes :</strong> Distribue individuellement chaque entreprise SOHO de la plaque à un commercial précis. Le commercial voit alors ces comptes apparaître instantanément dans sa liste de prospection sur son mobile.
+                              <strong className="text-[#242124] dark:text-white">Dispatcher les comptes :</strong> Distribue individuellement chaque entreprise Plus petites entreprises de la plaque à un commercial précis. Le commercial voit alors ces comptes apparaître instantanément dans sa liste de prospection sur son mobile.
                             </p>
                           </div>
                         ),
@@ -3487,11 +3088,11 @@ export default function BackofficeCommandCenterPage() {
                         ),
                       },
                       {
-                        q: "6. Que faire lorsqu'une entreprise SOHO n'est pas encore géolocalisée sur la carte ?",
+                        q: "6. Que faire lorsqu'une entreprise TPE n'est pas encore géolocalisée sur la carte ?",
                         a: (
                           <div className="flex flex-col gap-2 text-xs leading-relaxed text-[#6E6C67] dark:text-[#A1A1AA]">
                             <p>
-                              Les entreprises qui n'ont pas encore de coordonnées GPS précises restent parfaitement accessibles dans l'onglet <strong className="text-[#242124] dark:text-white">Annuaire SOHO</strong> et dans le dispatch manuel de leur plaque.
+                              Les entreprises qui n'ont pas encore de coordonnées GPS précises restent parfaitement accessibles dans l'onglet <strong className="text-[#242124] dark:text-white">Annuaire TPE</strong> et dans le dispatch manuel de leur plaque.
                             </p>
                             <p>
                               Dès qu'un commercial effectue sa première visite physique sur place, l'application mobile capture les coordonnées GPS réelles et les enregistre automatiquement dans la base Onbora.
@@ -3549,11 +3150,6 @@ export default function BackofficeCommandCenterPage() {
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* 7. COPILOTE IA CONVERSATIONNEL DÉDIÉ */}
-            {activeView === 'copilot' && (
-              <CopilotChatView userRole="SUPERVISOR" />
             )}
 
           </div>
@@ -3792,79 +3388,6 @@ export default function BackofficeCommandCenterPage() {
           </div>
         )}
 
-        {/* MODAL: DIRECTIVE ACKNOWLEDGEMENT */}
-        {isDirectiveModalOpen && selectedDirectiveToAck && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-            <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 w-full max-w-lg border border-black/5 dark:border-white/5 shadow-2xl flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
-                <div className="flex items-center gap-2.5">
-                  <Icons.MessageSquare size={18} className="text-[#4F6CE8]" />
-                  <h3 className="font-extrabold text-sm text-[#242124] dark:text-white">Traiter la Directive Admin</h3>
-                </div>
-                <button
-                  onClick={() => setIsDirectiveModalOpen(false)}
-                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  <Icons.X size={16} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5">
-                <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Directive reçue :</span>
-                <span className="font-extrabold text-xs text-[#242124] dark:text-white">{selectedDirectiveToAck.title}</span>
-                <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">{selectedDirectiveToAck.instruction}</p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                    Nouveau statut de la directive
-                  </label>
-                  <select
-                    value={ackStatus}
-                    onChange={(e) => setAckStatus(e.target.value as any)}
-                    className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl px-3.5 py-2 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
-                  >
-                    <option value="IN_PROGRESS">En cours d'exécution terrain</option>
-                    <option value="COMPLETED">Traitée & Clôturée</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA] block mb-1">
-                    Compte-rendu / Note de prise en compte
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={ackNote}
-                    onChange={(e) => setAckNote(e.target.value)}
-                    placeholder="Indiquez les actions prises, le retour du commercial ou les résultats constatés..."
-                    className="w-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-2xl p-3 text-xs text-[#242124] dark:text-white outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsDirectiveModalOpen(false)}
-                  className="px-4 py-2 rounded-2xl bg-black/5 dark:bg-white/5 text-xs font-semibold text-[#242124] dark:text-white cursor-pointer"
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAcknowledgement}
-                  disabled={savingAck}
-                  className="px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold cursor-pointer transition-all disabled:opacity-50"
-                >
-                  {savingAck ? "Enregistrement..." : "Enregistrer la Réponse"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* MODAL: ACCOUNT DETAIL */}
         {selectedAccountForDetail && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
@@ -3907,7 +3430,7 @@ export default function BackofficeCommandCenterPage() {
               <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1 text-xs">
                 <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Solution Proposée & Concurrence</span>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="font-semibold text-[#4F6CE8]">{selectedAccountForDetail.recommended_solution || 'Pack Fibre SOHO'}</span>
+                  <span className="font-semibold text-[#4F6CE8]">{selectedAccountForDetail.recommended_solution || 'Pack Fibre TPE'}</span>
                   <span className="text-[10px] text-zinc-500 font-medium">Actuel : {selectedAccountForDetail.current_operator || 'Inconnu'}</span>
                 </div>
               </div>

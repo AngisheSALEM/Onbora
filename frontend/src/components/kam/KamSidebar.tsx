@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
+import UserAvatar, { ActivityStatus } from './UserAvatar';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'directives' | 'copilot' | 'signals' | 'settings' | 'briefing';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing';
 
 interface KamSidebarProps {
   activeView: KamView;
@@ -24,6 +25,28 @@ export default function KamSidebar({
   const displayName = user ? `${user.first_name || user.username}` : 'Salem';
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [activityStatus, setActivityStatus] = useState<ActivityStatus>('AVAILABLE');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('onbora_kam_activity_status') as ActivityStatus | null;
+      if (saved) setActivityStatus(saved);
+    } catch {
+      // ignore
+    }
+
+    const handleStatusChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ status: ActivityStatus }>;
+      if (customEvent.detail?.status) {
+        setActivityStatus(customEvent.detail.status);
+      }
+    };
+
+    window.addEventListener('kam:activity_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('kam:activity_status_changed', handleStatusChange);
+    };
+  }, []);
 
   const navItems = [
     {
@@ -40,7 +63,7 @@ export default function KamSidebar({
     },
     {
       id: 'churnradar' as KamView,
-      label: 'Radar Churn & Upsell',
+      label: "Radar Taux d'abandon & Vente additionnelle",
       icon: Icons.AlertTriangle,
       badge: null
     },
@@ -55,18 +78,6 @@ export default function KamSidebar({
       label: 'Post-Call & Visites',
       icon: Icons.FileText,
       badge: null
-    },
-    {
-      id: 'copilot' as KamView,
-      label: 'Copilote IA',
-      icon: Icons.Bot,
-      badge: 'Codex'
-    },
-    {
-      id: 'directives' as KamView,
-      label: 'Directives',
-      icon: Icons.MessageSquare,
-      badge: unreadDirectivesCount > 0 ? `${unreadDirectivesCount}` : null
     },
     {
       id: 'settings' as KamView,
@@ -174,13 +185,13 @@ export default function KamSidebar({
               className="flex items-center gap-2.5 truncate text-left cursor-pointer hover:opacity-85 transition-opacity w-full"
               title="Voir mon profil & paramètres"
             >
-              <div className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden border border-black/5 dark:border-white/5">
-                <img
-                  src={`/memojis/${(user?.avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
-                  alt="Bitmoji KAM"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <UserAvatar
+                src={user?.profile_picture_url || user?.avatar}
+                name={displayName}
+                size="sm"
+                showStatusDot
+                status={activityStatus}
+              />
               <div className="truncate">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-white block leading-tight truncate">
                   {displayName}
@@ -194,12 +205,14 @@ export default function KamSidebar({
             <button
               onClick={() => onViewChange('settings')}
               title="Profil & Paramètres"
-              className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center overflow-hidden border border-black/5 dark:border-white/5 cursor-pointer"
+              className="cursor-pointer"
             >
-              <img
-                src={`/memojis/${(user?.avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
-                alt="Bitmoji KAM"
-                className="w-full h-full object-cover"
+              <UserAvatar
+                src={user?.profile_picture_url || user?.avatar}
+                name={displayName}
+                size="sm"
+                showStatusDot
+                status={activityStatus}
               />
             </button>
           )}

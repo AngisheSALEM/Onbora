@@ -4,6 +4,7 @@ import React from 'react';
 import { Icons } from '@/components/shared/Icons';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { KamView } from './KamSidebar';
+import KamActivityStatusSelector from './KamActivityStatusSelector';
 
 interface KamHeaderProps {
   activeView: KamView;
@@ -25,7 +26,7 @@ export default function KamHeader({
       case 'leadscoring':
         return 'Pipeline & Lead Scoring B2B';
       case 'churnradar':
-        return 'Radar Churn & Opportunités d\'Upsell';
+        return "Radar Taux d'abandon & Opportunités de Vente additionnelle";
       case 'accounts':
         return ''; // Retiré car le grand titre est affiché dans le corps de page
       case 'briefing':
@@ -36,10 +37,6 @@ export default function KamHeader({
         return 'Historique des Visites & Rapports Exécutifs';
       case 'signals':
         return 'Notes & Ingestion (Desk G-Notes)';
-      case 'directives':
-        return 'Directives & Messages Stratégiques';
-      case 'copilot':
-        return 'Copilote IA — Codex B2B';
       case 'settings':
         return 'Paramètres & Base de Connaissances FAQ';
       default:
@@ -60,7 +57,7 @@ export default function KamHeader({
         )}
       </div>
 
-      {/* Right : Direct Live Search Input (shown only on relevant views) & Theme Toggle */}
+      {/* Right : Direct Live Search Input (shown only on relevant views), Activity Status & Theme Toggle */}
       <div className="flex items-center gap-3">
         {showHeaderSearch && (
           <div className="flex items-center gap-2.5 px-4 py-1.5 bg-[#F6F5F2]/90 dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full shadow-xs backdrop-blur-md text-xs font-550 w-64 md:w-80 border border-black/5 dark:border-white/5 transition-all focus-within:ring-2 focus-within:ring-[#4F6CE8] focus-within:w-72 md:focus-within:w-96">
@@ -78,11 +75,14 @@ export default function KamHeader({
                 className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
                 title="Effacer la recherche"
               >
-                <Icons.Close size={13} />
+                <Icons.X size={13} />
               </button>
             )}
           </div>
         )}
+
+        {/* CAM Activity Status Selector */}
+        <KamActivityStatusSelector />
 
         {/* Theme Toggle Sun / Moon */}
         <ThemeToggle />

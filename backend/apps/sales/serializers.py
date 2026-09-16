@@ -4,7 +4,7 @@ from accounts.models import User
 from .models import (
     Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession,
     ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig,
-    AdminDirective, SalesIncentivePoint
+    SalesIncentivePoint
 )
 
 
@@ -95,49 +95,7 @@ class SalespersonSerializer(serializers.ModelSerializer):
 SalespersonUserSerializer = SalespersonSerializer
 
 
-class AdminDirectiveSerializer(serializers.ModelSerializer):
-    sender_name = serializers.SerializerMethodField()
-    sender_username = serializers.CharField(source='sender.username', read_only=True)
-    sender_role = serializers.CharField(source='sender.role', read_only=True)
-    sender_avatar = serializers.SerializerMethodField()
-    recipient_name = serializers.SerializerMethodField()
-    recipient_username = serializers.CharField(source='recipient.username', read_only=True)
-    recipient_role = serializers.CharField(source='recipient.role', read_only=True)
-    recipient_avatar = serializers.SerializerMethodField()
-    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    target_entity_display = serializers.CharField(source='get_target_entity_display', read_only=True)
 
-    class Meta:
-        model = AdminDirective
-        fields = [
-            'id', 'sender', 'sender_name', 'sender_username', 'sender_role', 'sender_avatar',
-            'target_entity', 'target_entity_display',
-            'recipient', 'recipient_name', 'recipient_username', 'recipient_role',
-            'recipient_avatar', 'title', 'instruction', 'priority', 'priority_display',
-            'status', 'status_display', 'target_account_name', 'acknowledgement_note',
-            'created_at', 'updated_at'
-        ]
-
-    def get_sender_name(self, obj):
-        if obj.sender:
-            return f"{obj.sender.first_name} {obj.sender.last_name}".strip() or obj.sender.username
-        return "Super Administration"
-
-    def get_sender_avatar(self, obj):
-        if obj.sender:
-            return getattr(obj.sender, 'avatar', 'memoji_056.png') or 'memoji_056.png'
-        return 'memoji_056.png'
-
-    def get_recipient_name(self, obj):
-        if obj.recipient:
-            return f"{obj.recipient.first_name} {obj.recipient.last_name}".strip() or obj.recipient.username
-        return "Collaborateur"
-
-    def get_recipient_avatar(self, obj):
-        if obj.recipient:
-            return getattr(obj.recipient, 'avatar', 'memoji_056.png') or 'memoji_056.png'
-        return 'memoji_056.png'
 
 
 class PlaqueSerializer(serializers.ModelSerializer):
@@ -222,7 +180,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             'annual_revenue', 'employee_count', 'site_count',
             'rccm', 'id_nat', 'nif',
             'contact_name', 'contact_role', 'contact_phone', 'contact_email',
-            'current_operator', 'current_connectivity',
+            'current_connectivity',
             'contract_end_date', 'incident_count', 'budget_status', 'pain_level', 'telecom_budget_monthly',
             'segment', 'segment_display',
             'assigned_entity', 'assigned_entity_display',
@@ -270,7 +228,7 @@ class EnterpriseCockpitSerializer(serializers.ModelSerializer):
             'annual_revenue', 'employee_count', 'site_count',
             'rccm', 'id_nat', 'nif',
             'contact_name', 'contact_role', 'contact_phone', 'contact_email',
-            'current_operator', 'current_connectivity',
+            'current_connectivity',
             'contract_end_date', 'incident_count', 'budget_status', 'pain_level', 'telecom_budget_monthly',
             'segment', 'segment_display',
             'assigned_entity', 'assigned_entity_display',
@@ -350,7 +308,7 @@ class ConvertedAccountSerializer(serializers.ModelSerializer):
             'converted_by_entity', 'converted_amount', 'converted_offer',
             'converted_at', 'conversion_notes',
             'contact_name', 'contact_role', 'contact_phone', 'contact_email',
-            'converted_by_user_name', 'current_operator', 'recommended_solution'
+            'converted_by_user_name', 'recommended_solution'
         ]
 
     def get_converted_by_user_name(self, obj):

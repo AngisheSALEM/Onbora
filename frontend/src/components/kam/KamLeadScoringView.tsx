@@ -75,29 +75,10 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
       {/* 1. TOP HEADER & KPI CARDS */}
       <div className="mb-6 space-y-4 pb-6 border-b border-black/5 dark:border-white/5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#4F6CE8]/10 text-[#4F6CE8]">
-                <Icons.Award size={12} />
-                Priorisation Intelligente
-              </span>
-              <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                Algorithme de Lead Scoring B2B
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-              Pipeline Scoré & Opportunités Chaudes
-            </h2>
-          </div>
+          
 
-          {/* Quick Refresh */}
-          <button
-            onClick={fetchLeads}
-            disabled={loading}
-            className="p-2.5 bg-[#FFFFFF] dark:bg-[#2F2C30] hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D] text-zinc-700 dark:text-zinc-200 rounded-2xl transition-colors cursor-pointer self-start md:self-auto"
-          >
-            <Icons.RefreshCw size={16} className={loading ? "animate-spin text-[#4F6CE8]" : ""} />
-          </button>
+      
+        
         </div>
 
         {/* 3 Summary KPIs (60-30-10 Apple Design) */}

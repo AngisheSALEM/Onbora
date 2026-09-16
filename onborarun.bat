@@ -10,20 +10,16 @@ if exist "%~dp0backend\venv\Scripts\activate.bat" (
     call "%~dp0.venv\Scripts\activate.bat"
 )
 
-echo [1/3] Demarrage du Core AI Service (Port 8001 - FastAPI Brain)...
-start /B cmd /c "cd /d %~dp0core-ai && python -m uvicorn agent_api:app --host 0.0.0.0 --port 8001"
-
-echo [2/3] Demarrage du Backend Django (Port 8000)...
+echo [1/2] Demarrage du Backend Django (Port 8000)...
 start /B cmd /c "cd /d %~dp0backend && python manage.py runserver 0.0.0.0:8000"
 
-echo [3/3] Demarrage du Frontend Next.js (Port 3000)...
-start /B cmd /c "cd /d %~dp0frontend && npm run dev"
+echo [2/2] Demarrage du Frontend Next.js (Port 3000)...
+start /B cmd /c "cd /d %~dp0frontend && npx next dev -H 0.0.0.0 -p 3000"
 
 echo --------------------------------------------------
 echo Tous les services sont en cours d'execution dans cette fenetre :
-echo   - Frontend Next.js : http://localhost:3000
-echo   - Backend Django   : http://localhost:8000
-echo   - Core AI Microservice : http://localhost:8001
+echo   - Frontend Next.js : http://localhost:3000 (LAN: http://10.195.185.137:3000)
+echo   - Backend Django   : http://localhost:8000 (LAN: http://10.195.185.137:8000)
 echo --------------------------------------------------
 echo Appuyez sur Ctrl+C ou fermez cette fenetre pour tout arreter.
 pause > nul

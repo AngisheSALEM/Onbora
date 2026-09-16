@@ -220,7 +220,7 @@ export default function AdminPlaqueMapOnly({
 
           <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-black/5 dark:border-white/5">
             <div className="p-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl">
-              <span className="text-[10px] text-[#787570] dark:text-[#9B978F] block">Comptes SOHO</span>
+              <span className="text-[10px] text-[#787570] dark:text-[#9B978F] block">Comptes TPE</span>
               <span className="font-extrabold text-[#4F6CE8] text-sm">
                 {activePlaque.enterprises_count}
               </span>

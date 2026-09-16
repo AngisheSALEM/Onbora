@@ -8,7 +8,10 @@ import { fetchAPI } from '@/lib/api';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import CopilotChatView from '@/components/shared/CopilotChatView';
+import Pagination from '@/components/kam/Pagination';
+import UserAvatar from '@/components/kam/UserAvatar';
+import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
+import AdminScoringView from '@/components/admin/AdminScoringView';
 
 const AdminPlaqueMapOnly = dynamic(
   () => import('@/components/admin/AdminPlaqueMapOnly'),
@@ -201,38 +204,12 @@ interface KamTeamMemberItem {
   is_active: boolean;
 }
 
-interface AdminDirectiveItem {
-  id: number;
-  sender?: number;
-  sender_name: string;
-  sender_username?: string;
-  sender_role?: string;
-  sender_avatar?: string;
-  recipient?: number;
-  recipient_name: string;
-  recipient_username: string;
-  recipient_role: string;
-  recipient_avatar: string;
-  target_entity: 'KAM_OFFICE' | 'BACK_OFFICE';
-  target_entity_display: string;
-  title: string;
-  instruction: string;
-  priority: 'NORMAL' | 'HIGH' | 'CRITICAL';
-  priority_display: string;
-  status: 'SENT' | 'IN_PROGRESS' | 'COMPLETED';
-  status_display: string;
-  target_account_name: string;
-  acknowledgement_note: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export default function AdminCockpitPage() {
   const { user, logout, loading: authLoading, updateUser } = useAuth();
 
   // Navigation tabs (Hiérarchie optimisée : 1. Comptes Convertis, 2. Catalogue d'offres, 3. Entreprises CRM...)
   const [activeTab, setActiveTab] = useState<
-    'converted' | 'b2b_catalog' | 'crm_bank' | 'supervisors' | 'kam_managers' | 'field_sales' | 'kams_team' | 'directives' | 'segmentation' | 'copilot' | 'settings'
+    'converted' | 'b2b_catalog' | 'crm_bank' | 'supervisors' | 'kam_managers' | 'field_sales' | 'kams_team' | 'segmentation' | 'scoring' | 'settings'
   >('converted');
 
   // Retractable Sidebar State
@@ -240,6 +217,15 @@ export default function AdminCockpitPage() {
 
   // Universal search query
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Pagination states
+  const [convertedPage, setConvertedPage] = useState(1);
+  const [crmPage, setCrmPage] = useState(1);
+  const [supervisorsPage, setSupervisorsPage] = useState(1);
+  const [kamManagersPage, setKamManagersPage] = useState(1);
+  const [salespersonsPage, setSalespersonsPage] = useState(1);
+  const [kamsTeamPage, setKamsTeamPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // 1. Segmentation State
   const [config, setConfig] = useState<SegmentationConfigData | null>(null);
@@ -272,6 +258,33 @@ export default function AdminCockpitPage() {
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [avatarSuccessMsg, setAvatarSuccessMsg] = useState('');
   const [avatarErrorMsg, setAvatarErrorMsg] = useState('');
+  const [profilePictureInput, setProfilePictureInput] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setProfilePictureInput((user as any).profile_picture_url || user.avatar || '');
+    }
+  }, [user]);
+
+  const handleSaveProfilePicture = async (newUrl: string) => {
+    setSavingAvatar(true);
+    setAvatarErrorMsg('');
+    try {
+      await fetchAPI('/api/accounts/me/', {
+        method: 'PATCH',
+        body: JSON.stringify({ avatar: newUrl, profile_picture_url: newUrl }),
+      });
+      if (updateUser) {
+        updateUser({ avatar: newUrl, profile_picture_url: newUrl } as any);
+      }
+      setAvatarSuccessMsg('Photo de profil mise à jour avec succès !');
+      setTimeout(() => setAvatarSuccessMsg(''), 3500);
+    } catch (err: any) {
+      setAvatarErrorMsg('Erreur lors de la mise à jour de la photo de profil : ' + (err.message || 'Erreur réseau'));
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(0);
 
   // 3. Converted Accounts State
@@ -346,30 +359,7 @@ export default function AdminCockpitPage() {
   const [loadingKamPortfolio, setLoadingKamPortfolio] = useState(false);
   const [kamPortfolioSearch, setKamPortfolioSearch] = useState('');
 
-  // 8. Directives & Instructions Super Admin (Traçabilité Multi-Admins & Animation)
-  const [directives, setDirectives] = useState<AdminDirectiveItem[]>([]);
-  const [loadingDirectives, setLoadingDirectives] = useState(false);
-  const [directiveFilterEntity, setDirectiveFilterEntity] = useState<'ALL' | 'KAM_OFFICE' | 'BACK_OFFICE'>('ALL');
-  const [directiveFilterStatus, setDirectiveFilterStatus] = useState<'ALL' | 'SENT' | 'IN_PROGRESS' | 'COMPLETED'>('ALL');
-  const [directiveFilterOrigin, setDirectiveFilterOrigin] = useState<'ALL' | 'MINE' | 'OTHERS'>('ALL');
-  const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
-  const [sendingDirective, setSendingDirective] = useState(false);
-  const [directiveSuccessMsg, setDirectiveSuccessMsg] = useState('');
-  const [directiveErrorMsg, setDirectiveErrorMsg] = useState('');
-  const [isEnvelopeFlying, setIsEnvelopeFlying] = useState(false);
-  const [lastSentDirective, setLastSentDirective] = useState<{
-    title: string;
-    recipientName: string;
-    timestamp: string;
-  } | null>(null);
-  const [directiveForm, setDirectiveForm] = useState({
-    target_entity: 'KAM_OFFICE' as 'KAM_OFFICE' | 'BACK_OFFICE',
-    recipient_id: '',
-    title: '',
-    instruction: '',
-    priority: 'NORMAL' as 'NORMAL' | 'HIGH' | 'CRITICAL',
-    target_account_name: '',
-  });
+
 
   // Load Field Sales (Commerciaux & Plaques)
   const loadFieldSales = async () => {
@@ -419,24 +409,6 @@ export default function AdminCockpitPage() {
     }
   };
 
-  // Load Directives with Multi-Admin Traceability
-  const loadDirectives = async () => {
-    setLoadingDirectives(true);
-    try {
-      let url = `/api/sales/directives/?target_entity=${directiveFilterEntity}&status=${directiveFilterStatus}`;
-      if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
-      if (directiveFilterOrigin === 'MINE' && user?.id) {
-        url += `&sender_id=${user.id}`;
-      }
-      const data = await fetchAPI(url);
-      setDirectives(Array.isArray(data) ? data : (data?.directives || []));
-    } catch (err) {
-      console.error("Erreur chargement directives:", err);
-    } finally {
-      setLoadingDirectives(false);
-    }
-  };
-
   // Toggle Salesperson Active Status
   const handleToggleSalespersonActive = async (id: number, currentActive: boolean) => {
     try {
@@ -448,95 +420,6 @@ export default function AdminCockpitPage() {
     } catch (err) {
       console.error(err);
       alert("Erreur lors de la mise à jour du statut du commercial.");
-    }
-  };
-
-  // Open Directive Modal pre-filled
-  const handleOpenDirectiveToRecipient = (
-    target_entity: 'KAM_OFFICE' | 'BACK_OFFICE',
-    recipient_id: number,
-    account_name?: string
-  ) => {
-    setDirectiveForm({
-      target_entity,
-      recipient_id: String(recipient_id),
-      title: account_name ? `Directive prioritaire sur le compte ${account_name}` : '',
-      instruction: '',
-      priority: 'NORMAL',
-      target_account_name: account_name || '',
-    });
-    setDirectiveErrorMsg('');
-    setIsDirectiveModalOpen(true);
-  };
-
-  // Submit Directive with Flying Envelope Animation
-  const handleSendDirectiveSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!directiveForm.recipient_id || !directiveForm.title.trim() || !directiveForm.instruction.trim()) {
-      setDirectiveErrorMsg("Veuillez sélectionner un destinataire, un titre et une instruction.");
-      return;
-    }
-    setSendingDirective(true);
-    setDirectiveErrorMsg('');
-    try {
-      await fetchAPI('/api/sales/directives/', {
-        method: 'POST',
-        body: JSON.stringify({
-          target_entity: directiveForm.target_entity,
-          recipient_id: Number(directiveForm.recipient_id),
-          title: directiveForm.title.trim(),
-          instruction: directiveForm.instruction.trim(),
-          priority: directiveForm.priority,
-          target_account_name: directiveForm.target_account_name.trim(),
-        })
-      });
-
-      // Find recipient name for the envelope flight animation
-      let targetRecipientName = 'Collaborateur';
-      if (directiveForm.target_entity === 'KAM_OFFICE') {
-        const found = kamsTeam.find(k => String(k.id) === String(directiveForm.recipient_id)) ||
-                      kamManagersList.find(m => String(m.id) === String(directiveForm.recipient_id));
-        if (found) targetRecipientName = found.full_name;
-      } else {
-        const found = supervisorsList.find(s => String(s.id) === String(directiveForm.recipient_id)) ||
-                      salespersons.find(sp => String(sp.id) === String(directiveForm.recipient_id));
-        if (found) targetRecipientName = found.full_name;
-      }
-
-      const now = new Date();
-      setLastSentDirective({
-        title: directiveForm.title.trim(),
-        recipientName: targetRecipientName,
-        timestamp: `${now.toLocaleDateString()} à ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-      });
-
-      setIsDirectiveModalOpen(false);
-      setIsEnvelopeFlying(true);
-      loadDirectives();
-
-      setTimeout(() => {
-        setIsEnvelopeFlying(false);
-      }, 3400);
-
-    } catch (err: any) {
-      console.error(err);
-      setDirectiveErrorMsg(err.message || "Erreur lors de l'envoi de la directive.");
-    } finally {
-      setSendingDirective(false);
-    }
-  };
-
-  // Update Directive Status
-  const handleUpdateDirectiveStatus = async (id: number, newStatus: 'SENT' | 'IN_PROGRESS' | 'COMPLETED') => {
-    try {
-      await fetchAPI(`/api/sales/directives/${id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus })
-      });
-      loadDirectives();
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de la mise à jour de la directive.");
     }
   };
 
@@ -557,8 +440,6 @@ export default function AdminCockpitPage() {
         return fieldSubTab === 'commerciaux' ? "Rechercher un commercial terrain, plaque..." : "Rechercher une plaque cartographique...";
       case 'kams_team':
         return "Rechercher un Key Account Manager...";
-      case 'directives':
-        return "Rechercher une directive, destinataire, compte cible...";
       default:
         return "Rechercher dans la console centrale...";
     }
@@ -654,54 +535,9 @@ export default function AdminCockpitPage() {
     loadB2bOffers();
     loadFieldSales();
     loadKamsTeam();
-    loadDirectives();
-
-    // Charger les Memojis depuis le catalogue public
-    fetch('/memojis/memojis_catalog.json')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setMemojisCatalog(data);
-        } else {
-          throw new Error('Catalogue vide');
-        }
-      })
-      .catch(() => {
-        const fallback = Array.from({ length: 102 }, (_, i) => {
-          const num = String(i + 1).padStart(3, '0');
-          return {
-            id: i + 1,
-            filename: `memoji_${num}.png`,
-            gender: i % 2 === 0 ? 'homme' : 'femme',
-          };
-        });
-        setMemojisCatalog(fallback);
-      });
   }, []);
 
-  // Sélection & Sauvegarde instantanée de Memoji
-  const handleSelectAvatar = async (filename: string) => {
-    setSavingAvatar(true);
-    setAvatarErrorMsg('');
-    try {
-      await fetchAPI('/api/accounts/me/', {
-        method: 'PATCH',
-        body: JSON.stringify({ avatar: filename })
-      });
-      if (updateUser) {
-        updateUser({ avatar: filename });
-      }
-      setAvatarSuccessMsg("Memoji mis à jour avec succès dans tout le système !");
-      setTimeout(() => setAvatarSuccessMsg(''), 3500);
-    } catch (err: any) {
-      console.error(err);
-      setAvatarErrorMsg(err.message || "Erreur lors de la mise à jour du Memoji.");
-    } finally {
-      setSavingAvatar(false);
-    }
-  };
-
-  // Execute Search Callback
+  // Exécution automatique à la saisie avec debouncing 350ms
   const executeSearch = useCallback(() => {
     if (activeTab === 'converted') {
       loadConvertedAccounts();
@@ -715,8 +551,6 @@ export default function AdminCockpitPage() {
       loadFieldSales();
     } else if (activeTab === 'kams_team') {
       loadKamsTeam();
-    } else if (activeTab === 'directives') {
-      loadDirectives();
     }
   }, [
     activeTab,
@@ -725,9 +559,6 @@ export default function AdminCockpitPage() {
     crmEntityFilter,
     b2bCategoryFilter,
     b2bRdcFilter,
-    directiveFilterEntity,
-    directiveFilterStatus,
-    directiveFilterOrigin,
     searchQuery
   ]);
 
@@ -748,10 +579,7 @@ export default function AdminCockpitPage() {
     crmSegmentFilter,
     crmEntityFilter,
     b2bCategoryFilter,
-    b2bRdcFilter,
-    directiveFilterEntity,
-    directiveFilterStatus,
-    directiveFilterOrigin
+    b2bRdcFilter
   ]);
 
   // Handle Save Segmentation Config
@@ -1161,29 +989,36 @@ export default function AdminCockpitPage() {
     );
   }, [kamPortfolioAccounts, kamPortfolioSearch]);
 
-  // Filtered Directives (Multi-Admins Traceability & Origin)
-  const filteredDirectives = useMemo(() => {
-    const list = Array.isArray(directives) ? directives : [];
-    return list.filter(d => {
-      // Origin filter
-      if (directiveFilterOrigin === 'MINE' && user) {
-        if (d.sender_username !== user.username && d.sender !== user.id) return false;
-      } else if (directiveFilterOrigin === 'OTHERS' && user) {
-        if (d.sender_username === user.username || d.sender === user.id) return false;
-      }
-      if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase();
-      return (
-        d.title.toLowerCase().includes(q) ||
-        d.instruction.toLowerCase().includes(q) ||
-        d.recipient_name.toLowerCase().includes(q) ||
-        d.recipient_username.toLowerCase().includes(q) ||
-        (d.sender_name && d.sender_name.toLowerCase().includes(q)) ||
-        (d.sender_username && d.sender_username.toLowerCase().includes(q)) ||
-        (d.target_account_name && d.target_account_name.toLowerCase().includes(q))
-      );
-    });
-  }, [directives, searchQuery, directiveFilterOrigin, user]);
+  // Paginated lists (Pagination explicite numérotée)
+  const paginatedConverted = useMemo(() => {
+    const start = (convertedPage - 1) * PAGE_SIZE;
+    return filteredConvertedAccounts.slice(start, start + PAGE_SIZE);
+  }, [filteredConvertedAccounts, convertedPage]);
+
+  const paginatedEnterprises = useMemo(() => {
+    const start = (crmPage - 1) * PAGE_SIZE;
+    return filteredEnterprises.slice(start, start + PAGE_SIZE);
+  }, [filteredEnterprises, crmPage]);
+
+  const paginatedSupervisors = useMemo(() => {
+    const start = (supervisorsPage - 1) * PAGE_SIZE;
+    return filteredSupervisors.slice(start, start + PAGE_SIZE);
+  }, [filteredSupervisors, supervisorsPage]);
+
+  const paginatedKamManagers = useMemo(() => {
+    const start = (kamManagersPage - 1) * PAGE_SIZE;
+    return filteredKamManagers.slice(start, start + PAGE_SIZE);
+  }, [filteredKamManagers, kamManagersPage]);
+
+  const paginatedSalespersons = useMemo(() => {
+    const start = (salespersonsPage - 1) * PAGE_SIZE;
+    return filteredSalespersons.slice(start, start + PAGE_SIZE);
+  }, [filteredSalespersons, salespersonsPage]);
+
+  const paginatedKamsTeam = useMemo(() => {
+    const start = (kamsTeamPage - 1) * PAGE_SIZE;
+    return filteredKamsTeam.slice(start, start + PAGE_SIZE);
+  }, [filteredKamsTeam, kamsTeamPage]);
 
   if (authLoading) {
     return (
@@ -1274,21 +1109,14 @@ export default function AdminCockpitPage() {
                   count: kamsTeam.length,
                 },
                 {
-                  id: 'directives',
-                  label: 'Directives & Messages',
-                  icon: <Icons.Send size={16} />,
-                  count: (Array.isArray(directives) ? directives : []).filter(d => d.status !== 'COMPLETED').length,
-                },
-                {
                   id: 'segmentation',
                   label: 'Règles de Segmentation',
                   icon: <Icons.Sliders size={16} />,
                 },
                 {
-                  id: 'copilot',
-                  label: 'Copilote IA',
-                  icon: <Icons.Bot size={16} />,
-                  count: 'AI',
+                  id: 'scoring',
+                  label: 'Moteur de Scoring',
+                  icon: <Icons.Target size={16} />,
                 },
                 {
                   id: 'settings',
@@ -1416,32 +1244,12 @@ export default function AdminCockpitPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {(directiveSuccessMsg || offerSuccessMsg) && (
+              {offerSuccessMsg && (
                 <div className="px-3.5 py-1.5 bg-[#4F6CE8]/10 text-[#4F6CE8] rounded-full text-[11px] font-semibold flex items-center gap-1.5 animate-fade-in">
                   <Icons.CheckCircle size={13} />
-                  <span>{directiveSuccessMsg || offerSuccessMsg}</span>
+                  <span>{offerSuccessMsg}</span>
                 </div>
               )}
-
-              {/* Raccourci Émettre une Directive */}
-              <button
-                onClick={() => {
-                  setDirectiveForm({
-                    target_entity: 'KAM_OFFICE',
-                    recipient_id: '',
-                    title: '',
-                    instruction: '',
-                    priority: 'NORMAL',
-                    target_account_name: '',
-                  });
-                  setDirectiveErrorMsg('');
-                  setIsDirectiveModalOpen(true);
-                }}
-                className="px-3.5 py-2 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-2xl text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <Icons.Send size={13} />
-                <span className="hidden sm:inline">Émettre une Directive</span>
-              </button>
 
               {/* Theme Toggle */}
               <ThemeToggle />
@@ -1458,11 +1266,9 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Traçabilité des Signatures</span>
+               
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Comptes Clients Convertis & Chiffre d'Affaires Signé</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Historique consolidé de toutes les signatures obtenues par le Back-Office Terrain et par la Direction KAM Office.
-                  </p>
+                 
                 </div>
 
                 {/* Filtre par Entité (Menu Déroulant Sleek) */}
@@ -1495,7 +1301,7 @@ export default function AdminCockpitPage() {
                   <span className="text-2xl font-extrabold text-[#242124] dark:text-white mt-1">
                     {convertedSummary.back_office_signed_amount_usd.toLocaleString()} $
                   </span>
-                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">{convertedSummary.back_office_count} SOHO & commerces de proximité</span>
+                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">{convertedSummary.back_office_count} Plus petites entreprises & commerces de proximité</span>
                 </div>
 
                 <div className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-1">
@@ -1525,61 +1331,57 @@ export default function AdminCockpitPage() {
                     Aucun compte converti ne correspond aux critères sélectionnés.
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    {filteredConvertedAccounts.map((acc) => (
-                      <div
-                        key={acc.id}
-                        className="bg-[#F6F5F2] dark:bg-[#242124] hover:bg-black/5 dark:hover:bg-white/5 p-4 rounded-2xl transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-                        onClick={() => setSelectedAccountDetail(acc)}
-                      >
-                        <div className="flex items-center gap-3.5">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-medium text-xs shrink-0 ${
-                            acc.converted_by_entity === 'BACK_OFFICE'
-                              ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
-                              : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                          }`}>
-                            {acc.converted_by_entity === 'BACK_OFFICE' ? 'BO' : 'KAM'}
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-[#242124] dark:text-white group-hover:text-[#4F6CE8] transition-colors">{acc.name}</span>
-                              <span className="text-[9px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase">({acc.crm_id})</span>
+                  <>
+                    <div className="flex flex-col gap-2">
+                      {paginatedConverted.map((acc) => (
+                        <div
+                          key={acc.id}
+                          className="bg-[#F6F5F2] dark:bg-[#242124] hover:bg-black/5 dark:hover:bg-white/5 p-4 rounded-2xl transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                          onClick={() => setSelectedAccountDetail(acc)}
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-medium text-xs shrink-0 ${
+                              acc.converted_by_entity === 'BACK_OFFICE'
+                                ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
+                                : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                            }`}>
+                              {acc.converted_by_entity === 'BACK_OFFICE' ? 'BO' : 'KAM'}
                             </div>
-                            <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                              {acc.city} ({acc.commune}) • RCCM : {acc.rccm || "En cours"} • Contact : {acc.contact_name} ({acc.contact_role})
-                            </span>
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#242124] dark:text-white group-hover:text-[#4F6CE8] transition-colors">{acc.name}</span>
+                                <span className="text-[9px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase">({acc.crm_id})</span>
+                              </div>
+                              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                                {acc.city} ({acc.commune}) • RCCM : {acc.rccm || "En cours"} • Contact : {acc.contact_name} ({acc.contact_role})
+                              </span>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-4 self-end sm:self-auto">
-                          <div className="text-right">
-                            <span className="text-xs font-medium text-[#242124] dark:text-white block">
-                              +{Number(acc.converted_amount).toLocaleString()} $
-                            </span>
-                            <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] line-clamp-1 max-w-xs">
-                              {acc.converted_offer || "Pack Fibre Managée"}
-                            </span>
+                          <div className="flex items-center gap-4 self-end sm:self-auto">
+                            <div className="text-right">
+                              <span className="text-xs font-medium text-[#242124] dark:text-white block">
+                                +{Number(acc.converted_amount).toLocaleString()} $
+                              </span>
+                              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] line-clamp-1 max-w-xs">
+                                {acc.converted_offer || "Pack Fibre Managée"}
+                              </span>
+                            </div>
+                            <Icons.ChevronRight size={14} className="text-[#6E6C67] dark:text-[#A1A1AA]" />
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenDirectiveToRecipient(
-                                acc.converted_by_entity || 'KAM_OFFICE',
-                                0,
-                                acc.name
-                              );
-                            }}
-                            className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-[#4F6CE8] text-[#6E6C67] hover:text-white transition-all shadow-sm cursor-pointer"
-                            title="Émettre une directive sur ce compte converti"
-                          >
-                            <Icons.Send size={12} />
-                          </button>
-                          <Icons.ChevronRight size={14} className="text-[#6E6C67] dark:text-[#A1A1AA]" />
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+
+                    <Pagination
+                      currentPage={convertedPage}
+                      totalPages={Math.ceil(filteredConvertedAccounts.length / PAGE_SIZE)}
+                      onPageChange={setConvertedPage}
+                      totalItems={filteredConvertedAccounts.length}
+                      pageSize={PAGE_SIZE}
+                      itemName="comptes convertis"
+                    />
+                  </>
                 )}
               </div>
             </div>
@@ -1592,11 +1394,8 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Moteur Core AI</span>
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Catalogue d'offres</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Solutions et services B2B exploitées par le moteur Core AI pour les recommandations.
-                  </p>
+
                 </div>
 
                 {/* Actions Offres B2B */}
@@ -1771,11 +1570,9 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Source Unique de Vérité CRM</span>
+
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Entreprises CRM</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Consultation de l'ensemble des entreprises enregistrées dans le CRM avec chiffre d'affaires, géolocalisation et segmentation.
-                  </p>
+                 
                 </div>
 
                 {/* Filtres Combinés */}
@@ -1788,7 +1585,7 @@ export default function AdminCockpitPage() {
                     <option value="ALL">Tous les Segments</option>
                     <option value="GRAND_COMPTE">Grands Comptes (Top C-Level)</option>
                     <option value="PME">PME (Moyennes structures)</option>
-                    <option value="TPE_INFORMEL">SOHO (Commerces, Artisans, Proximité)</option>
+                    <option value="TPE_INFORMEL">Plus petites entreprises (Commerces, Artisans, Proximité)</option>
                   </select>
 
                   <select
@@ -1816,63 +1613,61 @@ export default function AdminCockpitPage() {
                     <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-1">
-                    {enterprises.map((ent) => (
-                      <div
-                        key={ent.id}
-                        className="bg-[#F6F5F2] dark:bg-[#242124] p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-medium text-[10px] shrink-0 ${
-                            ent.segment === 'GRAND_COMPTE'
-                              ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white font-medium'
-                              : ent.segment === 'PME'
-                              ? 'bg-[#4F6CE8]/15 text-[#4F6CE8] font-medium'
-                              : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] font-medium'
-                          }`}>
-                            {ent.segment === 'GRAND_COMPTE' ? 'GC' : ent.segment === 'PME' ? 'PME' : 'SOHO'}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-[#242124] dark:text-white">{ent.name}</span>
-                              <span className="text-[9px] font-medium text-[#6E6C67] dark:text-[#A1A1AA]">({ent.crm_id})</span>
-                            </div>
-                            <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                              {ent.sector} • {ent.city} ({ent.commune}) • Opérateur : {ent.current_operator} ({ent.current_connectivity})
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 self-end sm:self-auto">
-                          <div className="text-right">
-                            <span className="font-medium text-[#242124] dark:text-white block">
-                              {Number(ent.annual_revenue).toLocaleString()} $ / an
-                            </span>
-                            <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full inline-block ${
-                              ent.assigned_entity === 'BACK_OFFICE'
-                                ? 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
-                                : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                  <>
+                    <div className="flex flex-col gap-2">
+                      {paginatedEnterprises.map((ent) => (
+                        <div
+                          key={ent.id}
+                          className="bg-[#F6F5F2] dark:bg-[#242124] p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-medium text-[10px] shrink-0 ${
+                              ent.segment === 'GRAND_COMPTE'
+                                ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white font-medium'
+                                : ent.segment === 'PME'
+                                ? 'bg-[#4F6CE8]/15 text-[#4F6CE8] font-medium'
+                                : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] font-medium'
                             }`}>
-                              {ent.assigned_entity === 'BACK_OFFICE' ? 'Back-Office Terrain' : 'KAM Office'}
-                            </span>
+                              {ent.segment === 'GRAND_COMPTE' ? 'GC' : ent.segment === 'PME' ? 'PME' : 'TPE'}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-[#242124] dark:text-white">{ent.name}</span>
+                                <span className="text-[9px] font-medium text-[#6E6C67] dark:text-[#A1A1AA]">({ent.crm_id})</span>
+                              </div>
+                              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                                {ent.sector} • {ent.city} ({ent.commune}) • Connectivité : {ent.current_connectivity || "Standard"}
+                              </span>
+                            </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDirectiveToRecipient(
-                              ent.assigned_entity as any || 'KAM_OFFICE',
-                              0,
-                              ent.name
-                            )}
-                            className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-[#4F6CE8] text-[#6E6C67] hover:text-white transition-all shadow-sm cursor-pointer"
-                            title="Émettre une directive sur cette entreprise"
-                          >
-                            <Icons.Send size={12} />
-                          </button>
+                          <div className="flex items-center gap-3 self-end sm:self-auto">
+                            <div className="text-right">
+                              <span className="font-medium text-[#242124] dark:text-white block">
+                                {Number(ent.annual_revenue).toLocaleString()} $ / an
+                              </span>
+                              <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full inline-block ${
+                                ent.assigned_entity === 'BACK_OFFICE'
+                                  ? 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
+                                  : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                              }`}>
+                                {ent.assigned_entity === 'BACK_OFFICE' ? 'Back-Office Terrain' : 'KAM Office'}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+
+                    <Pagination
+                      currentPage={crmPage}
+                      totalPages={Math.ceil(filteredEnterprises.length / PAGE_SIZE)}
+                      onPageChange={setCrmPage}
+                      totalItems={filteredEnterprises.length}
+                      pageSize={PAGE_SIZE}
+                      itemName="entreprises"
+                    />
+                  </>
                 )}
               </div>
             </div>
@@ -1885,11 +1680,9 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Encadrement Terrain</span>
+
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Superviseurs Back-Office ({filteredSupervisors.length})</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Pilotage cartographique des commerciaux et supervision des plaques territoriales SOHO.
-                  </p>
+
                 </div>
                 <button
                   onClick={() => handleOpenCreateManager('SUPERVISOR')}
@@ -1921,20 +1714,11 @@ export default function AdminCockpitPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredSupervisors.map((sup) => (
+                        paginatedSupervisors.map((sup) => (
                           <tr key={sup.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                             <td className="py-3 px-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                                  <img
-                                    src={`/memojis/${(sup.avatar || 'memoji_031.png').replace('assets/memojis/', '')}`}
-                                    alt={sup.full_name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLElement).style.display = 'none';
-                                    }}
-                                  />
-                                </div>
+                                <UserAvatar src={sup.avatar} alt={sup.full_name} size="sm" />
                                 <div>
                                   <span className="font-medium text-[#242124] dark:text-white block">{sup.full_name}</span>
                                   <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">@{sup.username}</span>
@@ -1960,14 +1744,6 @@ export default function AdminCockpitPage() {
                             <td className="py-3 px-3 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => handleOpenDirectiveToRecipient('BACK_OFFICE', sup.id)}
-                                  className="px-2.5 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
-                                  title="Transmettre une directive opérationnelle"
-                                >
-                                  <Icons.Send size={11} />
-                                  <span>Directive</span>
-                                </button>
-                                <button
                                   onClick={() => handleToggleManagerActive(sup.id)}
                                   className="px-2.5 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer"
                                 >
@@ -1981,6 +1757,15 @@ export default function AdminCockpitPage() {
                     </tbody>
                   </table>
                 </div>
+
+                <Pagination
+                  currentPage={supervisorsPage}
+                  totalPages={Math.ceil(filteredSupervisors.length / PAGE_SIZE)}
+                  onPageChange={setSupervisorsPage}
+                  totalItems={filteredSupervisors.length}
+                  pageSize={PAGE_SIZE}
+                  itemName="superviseurs"
+                />
               </div>
             </div>
           )}
@@ -1992,11 +1777,9 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Direction Stratégique</span>
+
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Gérants KAM Office ({filteredKamManagers.length})</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Supervision des Key Account Managers et pilotage des portefeuilles PME & Grands Comptes.
-                  </p>
+
                 </div>
                 <button
                   onClick={() => handleOpenCreateManager('KAM_MANAGER')}
@@ -2024,24 +1807,15 @@ export default function AdminCockpitPage() {
                       {filteredKamManagers.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-12 text-center text-[#6E6C67] dark:text-[#A1A1AA]">
-                            Aucun gérant KAM ne correspond à votre recherche.
+                            Aucun gérant KAM Office ne correspond à votre recherche.
                           </td>
                         </tr>
                       ) : (
-                        filteredKamManagers.map((km) => (
+                        paginatedKamManagers.map((km) => (
                           <tr key={km.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                             <td className="py-3 px-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-2xl bg-[#4F6CE8]/10 border border-[#4F6CE8]/20 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                                  <img
-                                    src={`/memojis/${(km.avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-                                    alt={km.full_name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLElement).style.display = 'none';
-                                    }}
-                                  />
-                                </div>
+                                <UserAvatar src={km.avatar} alt={km.full_name} size="sm" />
                                 <div>
                                   <span className="font-medium text-[#242124] dark:text-white block">{km.full_name}</span>
                                   <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">@{km.username}</span>
@@ -2067,14 +1841,6 @@ export default function AdminCockpitPage() {
                             <td className="py-3 px-3 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => handleOpenDirectiveToRecipient('KAM_OFFICE', km.id)}
-                                  className="px-2.5 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
-                                  title="Transmettre une directive opérationnelle"
-                                >
-                                  <Icons.Send size={11} />
-                                  <span>Directive</span>
-                                </button>
-                                <button
                                   onClick={() => handleToggleManagerActive(km.id)}
                                   className="px-2.5 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer"
                                 >
@@ -2088,6 +1854,15 @@ export default function AdminCockpitPage() {
                     </tbody>
                   </table>
                 </div>
+
+                <Pagination
+                  currentPage={kamManagersPage}
+                  totalPages={Math.ceil(filteredKamManagers.length / PAGE_SIZE)}
+                  onPageChange={setKamManagersPage}
+                  totalItems={filteredKamManagers.length}
+                  pageSize={PAGE_SIZE}
+                  itemName="gérants KAM"
+                />
               </div>
             </div>
           )}
@@ -2099,11 +1874,9 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Force de Vente Terrain</span>
+
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Commerciaux & Plaques Cartographiques</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Suivi des visites, formulaires d'audit, points incentive et découpage géographique des plaques SOHO.
-                  </p>
+
                 </div>
 
                 {/* Switcher Sous-Onglets */}
@@ -2230,24 +2003,15 @@ export default function AdminCockpitPage() {
                           ) : filteredSalespersons.length === 0 ? (
                             <tr>
                               <td colSpan={8} className="py-12 text-center text-[#6E6C67] dark:text-[#A1A1AA]">
-                                Aucun commercial trouvé.
+                                Aucun commercial terrain ne correspond à votre recherche.
                               </td>
                             </tr>
                           ) : (
-                            filteredSalespersons.map((sp) => (
+                            paginatedSalespersons.map((sp) => (
                               <tr key={sp.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                                 <td className="py-3 px-3">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                                      <img
-                                        src={`/memojis/${(sp.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                        alt={sp.full_name}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          (e.target as HTMLElement).style.display = 'none';
-                                        }}
-                                      />
-                                    </div>
+                                    <UserAvatar src={sp.avatar} alt={sp.full_name} size="sm" />
                                     <div>
                                       <span className="font-medium text-[#242124] dark:text-white block">{sp.full_name}</span>
                                       <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">@{sp.username} • {sp.location || 'Kinshasa'}</span>
@@ -2305,14 +2069,6 @@ export default function AdminCockpitPage() {
                                     >
                                       <Icons.Map size={11} />
                                       <span>Plaques</span>
-                                    </button>
-                                    <button
-                                      onClick={() => handleOpenDirectiveToRecipient('BACK_OFFICE', sp.id)}
-                                      className="px-2.5 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
-                                      title="Envoyer une directive au commercial"
-                                    >
-                                      <Icons.Send size={11} />
-                                      <span>Directive</span>
                                     </button>
                                     <button
                                       onClick={() => handleToggleSalespersonActive(sp.id, sp.is_available)}
@@ -2378,7 +2134,7 @@ export default function AdminCockpitPage() {
                               <th className="pb-3 px-3">Code Plaque</th>
                               <th className="pb-3 px-3">Nom du Secteur</th>
                               <th className="pb-3 px-3">Ville</th>
-                              <th className="pb-3 px-3">Comptes SOHO Rattachés</th>
+                              <th className="pb-3 px-3">Comptes Plus petites entreprises Rattachés</th>
                               <th className="pb-3 px-3">Statut</th>
                               <th className="pb-3 px-3 text-right">Action</th>
                             </tr>
@@ -2447,11 +2203,8 @@ export default function AdminCockpitPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Desk KAM & Grands Comptes</span>
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Effectif des Key Account Managers ({filteredKamsTeam.length})</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Suivi des portefeuilles stratégiques, signatures enregistrées et chiffre d'affaires cumulé par KAM.
-                  </p>
+                 
                 </div>
               </div>
 
@@ -2564,20 +2317,11 @@ export default function AdminCockpitPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredKamsTeam.map((k) => (
+                        paginatedKamsTeam.map((k) => (
                           <tr key={k.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                             <td className="py-3 px-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-2xl bg-[#4F6CE8]/10 border border-[#4F6CE8]/20 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                                  <img
-                                    src={`/memojis/${(k.avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-                                    alt={k.full_name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLElement).style.display = 'none';
-                                    }}
-                                  />
-                                </div>
+                                <UserAvatar src={k.avatar} alt={k.full_name} size="sm" />
                                 <div>
                                   <span className="font-medium text-[#242124] dark:text-white block">{k.full_name}</span>
                                   <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">@{k.username}</span>
@@ -2617,14 +2361,6 @@ export default function AdminCockpitPage() {
                                   <Icons.Briefcase size={11} />
                                   <span>Portefeuille</span>
                                 </button>
-                                <button
-                                  onClick={() => handleOpenDirectiveToRecipient('KAM_OFFICE', k.id)}
-                                  className="px-2.5 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5 inline-flex"
-                                  title="Transmettre une consigne ou directive"
-                                >
-                                  <Icons.Send size={11} />
-                                  <span>Directive</span>
-                                </button>
                               </div>
                             </td>
                           </tr>
@@ -2633,278 +2369,20 @@ export default function AdminCockpitPage() {
                     </tbody>
                   </table>
                 </div>
+
+                <Pagination
+                  currentPage={kamsTeamPage}
+                  totalPages={Math.ceil(filteredKamsTeam.length / PAGE_SIZE)}
+                  onPageChange={setKamsTeamPage}
+                  totalItems={filteredKamsTeam.length}
+                  pageSize={PAGE_SIZE}
+                  itemName="Key Account Managers"
+                />
               </div>
             </div>
           )}
 
-          {/* ======================================================================= */}
-          {/* VUE 8 : DIRECTIVES & MESSAGES SUPER ADMIN                               */}
-          {/* ======================================================================= */}
-          {activeTab === 'directives' && (
-            <div className="flex flex-col gap-5">
-              <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Ligne Managériale Directe</span>
-                  <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Directives & Instructions Super Admin</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Consignes opérationnelles ciblées transmises aux KAMs ou au Back-Office avec accusé de traitement.
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    onClick={() => {
-                      setDirectiveForm({
-                        target_entity: 'KAM_OFFICE',
-                        recipient_id: '',
-                        title: '',
-                        instruction: '',
-                        priority: 'NORMAL',
-                        target_account_name: '',
-                      });
-                      setDirectiveErrorMsg('');
-                      setIsDirectiveModalOpen(true);
-                    }}
-                    className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-2xl text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2"
-                  >
-                    <Icons.Plus size={14} />
-                    <span>Émettre une Directive</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Filtres Combinés Directives */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#2D2A2D] p-4 rounded-3xl shadow-sm border border-black/5 dark:border-white/5">
-                <div className="flex flex-wrap items-center gap-4">
-                  {/* Filtre Origine / Multi-Admin */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Origine :</span>
-                    <div className="flex items-center gap-1 bg-[#F6F5F2] dark:bg-[#242124] p-1 rounded-xl">
-                      {(['ALL', 'MINE', 'OTHERS'] as const).map((orig) => (
-                        <button
-                          key={orig}
-                          onClick={() => setDirectiveFilterOrigin(orig)}
-                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            directiveFilterOrigin === orig
-                              ? 'bg-[#4F6CE8] text-white'
-                              : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                          }`}
-                        >
-                          {orig === 'ALL' ? 'Toutes' : orig === 'MINE' ? 'Mes Directives' : 'Autres Admins'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Filtre Entité */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Entité :</span>
-                    <div className="flex items-center gap-1 bg-[#F6F5F2] dark:bg-[#242124] p-1 rounded-xl">
-                      {(['ALL', 'KAM_OFFICE', 'BACK_OFFICE'] as const).map((ent) => (
-                        <button
-                          key={ent}
-                          onClick={() => setDirectiveFilterEntity(ent)}
-                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            directiveFilterEntity === ent
-                              ? 'bg-[#4F6CE8] text-white'
-                              : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                          }`}
-                        >
-                          {ent === 'ALL' ? 'Toutes' : ent === 'KAM_OFFICE' ? 'KAM Office' : 'Back-Office'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Statut :</span>
-                  <div className="flex items-center gap-1 bg-[#F6F5F2] dark:bg-[#242124] p-1 rounded-xl">
-                    {(['ALL', 'SENT', 'IN_PROGRESS', 'COMPLETED'] as const).map((st) => (
-                      <button
-                        key={st}
-                        onClick={() => setDirectiveFilterStatus(st)}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                          directiveFilterStatus === st
-                            ? 'bg-[#4F6CE8] text-white'
-                            : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                        }`}
-                      >
-                        {st === 'ALL' ? 'Tous' : st === 'SENT' ? 'Envoyée' : st === 'IN_PROGRESS' ? 'En cours' : 'Traitée'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Liste des Directives */}
-              <div className="flex flex-col gap-3">
-                {loadingDirectives ? (
-                  <div className="py-12 flex justify-center bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5">
-                    <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
-                  </div>
-                ) : filteredDirectives.length === 0 ? (
-                  <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA] shadow-sm border border-black/5 dark:border-white/5">
-                    Aucune directive trouvée pour les filtres sélectionnés.
-                  </div>
-                ) : (
-                  filteredDirectives.map((d) => (
-                    <div
-                      key={d.id}
-                      className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 text-xs"
-                    >
-                      {/* En-tête avec Traçabilité Multi-Admin (Émetteur -> Destinataire) */}
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
-                        <div className="flex flex-wrap items-center gap-3">
-                          {/* Émetteur (Super Admin) */}
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                              <img
-                                src={`/memojis/${(d.sender_avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                alt={d.sender_name || 'Admin'}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-xs text-[#242124] dark:text-white">
-                                  {d.sender_name || (d.sender_username ? `@${d.sender_username}` : 'Super Admin')}
-                                </span>
-                                <span className="px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-medium text-[9px] uppercase">
-                                  Émetteur
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                                {d.sender_username ? `@${d.sender_username}` : 'admin'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Flèche directionnelle */}
-                          <div className="text-[#4F6CE8] font-medium text-sm px-1">
-                            →
-                          </div>
-
-                          {/* Destinataire */}
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center font-medium text-xs overflow-hidden shrink-0">
-                              <img
-                                src={`/memojis/${(d.recipient_avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-                                alt={d.recipient_name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-xs text-[#242124] dark:text-white">{d.recipient_name}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase ${
-                                  d.target_entity === 'KAM_OFFICE'
-                                    ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                                    : 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
-                                }`}>
-                                  {d.target_entity === 'KAM_OFFICE' ? 'KAM Office' : 'Back-Office'}
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                                @{d.recipient_username}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Horodatage précis avec secondes */}
-                          <div className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] bg-[#F6F5F2] dark:bg-[#242124] px-2.5 py-1 rounded-xl font-medium">
-                            Émise le {new Date(d.created_at).toLocaleDateString()} à {new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 self-end lg:self-auto">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                            d.priority === 'CRITICAL'
-                              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                              : d.priority === 'HIGH'
-                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                              : 'bg-black/5 dark:bg-white/10 text-[#6E6C67] dark:text-[#A1A1AA]'
-                          }`}>
-                            {d.priority === 'CRITICAL' ? '● Priorité Critique' : d.priority === 'HIGH' ? '▲ Haute' : 'Normale'}
-                          </span>
-
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                            d.status === 'COMPLETED'
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                              : d.status === 'IN_PROGRESS'
-                              ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                              : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
-                          }`}>
-                            {d.status === 'COMPLETED' ? 'Traitée' : d.status === 'IN_PROGRESS' ? 'En cours' : 'Envoyée'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-sm text-[#242124] dark:text-white">{d.title}</h4>
-                          {d.target_account_name && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-medium text-[10px]">
-                              Compte : {d.target_account_name}
-                            </span>
-                          )}
-                        </div>
-                        <p className="p-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl text-xs text-[#242124] dark:text-white/90 leading-relaxed font-medium">
-                          {d.instruction}
-                        </p>
-                      </div>
-
-                      {d.acknowledgement_note && (
-                        <div className="p-3 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 text-xs">
-                          <span className="font-medium text-emerald-600 dark:text-emerald-400 block mb-0.5">Accusé / Note de réalisation :</span>
-                          <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{d.acknowledgement_note}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
-                        <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                          Dernière actualisation : {new Date(d.updated_at).toLocaleDateString()}
-                        </span>
-
-                        <div className="flex items-center gap-2">
-                          {d.status === 'SENT' && (
-                            <button
-                              onClick={() => handleUpdateDirectiveStatus(d.id, 'IN_PROGRESS')}
-                              className="px-3 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
-                            >
-                              Passer en cours
-                            </button>
-                          )}
-                          {d.status !== 'COMPLETED' ? (
-                            <button
-                              onClick={() => handleUpdateDirectiveStatus(d.id, 'COMPLETED')}
-                              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1"
-                            >
-                              <Icons.CheckCircle size={12} />
-                              <span>Marquer Traitée</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUpdateDirectiveStatus(d.id, 'IN_PROGRESS')}
-                              className="px-3 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[#6E6C67] dark:text-[#A1A1AA] rounded-xl text-xs font-medium transition-all cursor-pointer"
-                            >
-                              Rouvrir la directive
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
 
           {/* ======================================================================= */}
           {/* VUE 9 : RÈGLES & SEUILS DE SEGMENTATION FINANCIÈRE                      */}
@@ -2916,7 +2394,7 @@ export default function AdminCockpitPage() {
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-5 shadow-sm border border-black/5 dark:border-white/5 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-[#242124] dark:text-white">Règles & Seuils de Segmentation</h2>
-                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">Routage financier automatique des entreprises CRM</span>
+
                 </div>
                 <button
                   type="button"
@@ -2931,7 +2409,7 @@ export default function AdminCockpitPage() {
               {/* Formulaire de Réglage des Seuils */}
               <form onSubmit={handleSaveSegmentation} className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Seuil 1 : SOHO vs PME */}
+                  {/* Seuil 1 : Plus petites entreprises vs PME */}
                   <div className="flex flex-col gap-2 bg-[#F6F5F2] dark:bg-[#242124] p-4 rounded-2xl">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-[#242124] dark:text-white">Seuil Plafond SOHO</span>
@@ -3026,7 +2504,7 @@ export default function AdminCockpitPage() {
               {/* Répartition Actuelle (Design 60-30-10) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                  <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">SOHO (&lt; {tpeThreshold.toLocaleString()} $)</span>
+                  <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">Plus petites entreprises (&lt; {tpeThreshold.toLocaleString()} $)</span>
                   <span className="text-2xl font-extrabold text-[#242124] dark:text-white mt-1">{config?.stats?.tpe_count || 0}</span>
                   <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">Routés vers le Back-Office Terrain (Plaques)</span>
                 </div>
@@ -3047,6 +2525,13 @@ export default function AdminCockpitPage() {
           )}
 
           {/* ======================================================================= */}
+          {/* VUE 10 : MOTEUR DE SCORING ALGORITHMIQUE PARAMÉTRABLE PAR LE MSP        */}
+          {/* ======================================================================= */}
+          {activeTab === 'scoring' && (
+            <AdminScoringView />
+          )}
+
+          {/* ======================================================================= */}
           {/* VUE 7 : PARAMÈTRES DU COMPTE & FAQ CONSOLIDÉE                           */}
           {/* ======================================================================= */}
           {activeTab === 'settings' && (
@@ -3055,11 +2540,9 @@ export default function AdminCockpitPage() {
               {/* En-tête Paramètres */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#4F6CE8]">Configuration & FAQ</span>
-                  <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Paramètres & Base de Connaissances</h2>
-                  <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                    Personnalisez votre avatar Memoji Apple 3D et consultez les règles métier du système Onbora.
-                  </p>
+                  
+                  <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Paramètres</h2>
+
                 </div>
                 
                 {avatarSuccessMsg && (
@@ -3076,20 +2559,16 @@ export default function AdminCockpitPage() {
                 )}
               </div>
 
-              {/* 1. Carte de Profil & Sélecteur Memoji Universel */}
+              {/* 1. Carte de Profil & Photo de profil utilisateur */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 border-2 border-[#4F6CE8] flex items-center justify-center overflow-hidden shadow-lg shrink-0">
-                      <img
-                        src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                        alt="Memoji Actif"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
+                    <UserAvatar
+                      src={user?.profile_picture_url || user?.avatar}
+                      name={user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin'}
+                      size="xl"
+                      className="border-2 border-[#4F6CE8] shadow-md"
+                    />
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-semibold text-[#242124] dark:text-white">
@@ -3102,93 +2581,28 @@ export default function AdminCockpitPage() {
                       <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] block mt-0.5">
                         Identifiant : @{user?.username} • {user?.email || 'admin@onbora.cd'}
                       </span>
-                      <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block mt-0.5 font-medium">
-                        Memoji actuel : <span className="font-mono font-medium text-[#242124] dark:text-white">{(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}</span>
-                      </span>
                     </div>
                   </div>
-
-                  {/* Filtres de Genre pour Memojis */}
-                  <div className="flex items-center gap-1.5 bg-[#F6F5F2] dark:bg-[#242124] p-1.5 rounded-2xl self-start sm:self-auto shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('all')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                        memojiGenderFilter === 'all'
-                          ? 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      Tous ({memojisCatalog.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('homme')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                        memojiGenderFilter === 'homme'
-                          ? 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      Hommes ({memojisCatalog.filter(m => m.gender === 'homme').length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMemojiGenderFilter('femme')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                        memojiGenderFilter === 'femme'
-                          ? 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      Femmes ({memojisCatalog.filter(m => m.gender === 'femme').length})
-                    </button>
-                  </div>
                 </div>
 
-                {/* Galerie de sélection des 102 Memojis 3D */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[#242124] dark:text-white">
-                      Galerie des 102 Avatars Memoji (App Mobile & Web)
-                    </span>
-                    <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                      Cliquez sur un avatar pour le synchroniser immédiatement avec votre compte
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3 max-h-72 overflow-y-auto p-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl border border-black/5 dark:border-white/5">
-                    {filteredMemojis.map((memoji) => {
-                      const isSelected = (user?.avatar || 'memoji_056.png').replace('assets/memojis/', '') === memoji.filename;
-                      return (
-                        <button
-                          key={memoji.id}
-                          type="button"
-                          disabled={savingAvatar}
-                          onClick={() => handleSelectAvatar(memoji.filename)}
-                          title={`${memoji.filename} (${memoji.gender || 'avatar'})`}
-                          className={`relative aspect-square rounded-2xl p-1 transition-all cursor-pointer flex items-center justify-center ${
-                            isSelected
-                              ? 'bg-white dark:bg-[#2D2A2D] ring-3 ring-[#4F6CE8] shadow-md scale-105'
-                              : 'bg-white/60 dark:bg-[#2D2A2D]/60 hover:bg-white dark:hover:bg-[#27272A] hover:scale-105 border border-black/5 dark:border-white/5'
-                          }`}
-                        >
-                          <img
-                            src={`/memojis/${memoji.filename}`}
-                            alt={`Memoji ${memoji.id}`}
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                          />
-                          {isSelected && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#4F6CE8] text-white rounded-full flex items-center justify-center shadow-xs">
-                              <Icons.Check size={10} />
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Téléversement Photo de profil Administrateur */}
+                <ProfilePhotoUploader
+                  currentPhotoUrl={user?.profile_picture_url || user?.avatar}
+                  name={user?.username}
+                  title="Photo de profil de l'administrateur"
+                  description="Téléversez votre photo officielle (JPG, PNG ou WebP, max 5 Mo) ou glissez-déposez un fichier."
+                  allowSelfUpdate={true}
+                  onPhotoUploaded={(newUrl) => {
+                    setProfilePictureInput(newUrl);
+                    if (updateUser) {
+                      updateUser({ avatar: newUrl, profile_picture_url: newUrl } as any);
+                    }
+                  }}
+                  onPhotoRemoved={() => {
+                    setProfilePictureInput('');
+                    handleSaveProfilePicture('/avatars/default_avatar.svg');
+                  }}
+                />
               </div>
 
               {/* 2. FAQ INTERACTIVE & BASE DE CONNAISSANCES */}
@@ -3218,7 +2632,7 @@ export default function AdminCockpitPage() {
                           </p>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>
-                              <strong className="text-[#242124] dark:text-white">SOHO (Très Petites Entreprises / Commerce informel) :</strong> Chiffre d'affaires inférieur à <strong>200 $ / mois</strong> (soit &lt; 2 400 $ / an). Il s'agit des boutiques de quartier, kiosques, cabines télécom, artisans et petits commerces de proximité.
+                              <strong className="text-[#242124] dark:text-white">Plus petites entreprises (Très Petites Entreprises / Commerce informel) :</strong> Chiffre d'affaires inférieur à <strong>200 $ / mois</strong> (soit &lt; 2 400 $ / an). Il s'agit des boutiques de quartier, kiosques, cabines télécom, artisans et petits commerces de proximité.
                             </li>
                             <li>
                               <strong className="text-[#242124] dark:text-white">PME (Petites et Moyennes Entreprises) :</strong> Chiffre d'affaires compris entre <strong>200 $ et 2 500 $ / mois</strong> (soit 2 400 $ à 30 000 $ / an). Exemples : cliniques privées, cabinets comptables, écoles, distributeurs, bureaux d'études.
@@ -3231,11 +2645,11 @@ export default function AdminCockpitPage() {
                       )
                     },
                     {
-                      q: "2. Pourquoi le découpage par Plaques cartographiques est-il réservé aux SOHO ?",
+                      q: "2. Pourquoi le découpage par Plaques cartographiques est-il réservé aux Plus petites entreprises ?",
                       a: (
                         <div className="flex flex-col gap-2 text-xs leading-relaxed text-[#6E6C67] dark:text-[#A1A1AA]">
                           <p>
-                            La prospection des SOHO s'effectue exclusivement par des <strong>commerciaux terrain du Back-Office</strong> selon une méthode de quadrillage pédestre (porte-à-porte). Ce mode opératoire exige une très forte densité géographique continue :
+                            La prospection des Plus petites entreprises s'effectue exclusivement par des <strong>commerciaux terrain du Back-Office</strong> selon une méthode de quadrillage pédestre (porte-à-porte). Ce mode opératoire exige une très forte densité géographique continue :
                           </p>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>Les <strong>plaques cartographiques</strong> délimitent précisément les avenues, marchés et quartiers (Gombe, Limete, Lingwala, etc.) pour éviter tout chevauchement entre agents terrain.</li>
@@ -3342,10 +2756,7 @@ export default function AdminCockpitPage() {
             </div>
           )}
 
-          {/* VUE COPILOTE IA CONVERSATIONNEL DÉDIÉ SUPER ADMIN */}
-          {activeTab === 'copilot' && (
-            <CopilotChatView userRole="ADMIN" />
-          )}
+
 
           </main>
         </div>
@@ -3713,34 +3124,20 @@ export default function AdminCockpitPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
-                  Avatar Memoji attribué
-                </label>
-                <div className="flex items-center gap-3 bg-[#F6F5F2] dark:bg-[#242124] p-2.5 rounded-2xl">
-                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#2D2A2D] border-2 border-[#4F6CE8] flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                    <img
-                      src={`/memojis/${managerForm.avatar}`}
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1">
-                    {memojisCatalog.slice(0, 18).map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setManagerForm({ ...managerForm, avatar: m.filename })}
-                        className={`w-9 h-9 rounded-xl p-0.5 shrink-0 transition-all cursor-pointer ${
-                          managerForm.avatar === m.filename
-                            ? 'ring-2 ring-[#4F6CE8] scale-105 bg-white dark:bg-[#2D2A2D]'
-                            : 'opacity-60 hover:opacity-100 hover:scale-105'
-                        }`}
-                      >
-                        <img src={`/memojis/${m.filename}`} alt={m.filename} className="w-full h-full object-contain" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <ProfilePhotoUploader
+                  currentPhotoUrl={managerForm.avatar && managerForm.avatar.startsWith('/') ? managerForm.avatar : null}
+                  name={managerForm.username || "Nouveau manager"}
+                  title="Photo de profil du collaborateur"
+                  description="Téléversez la photo du collaborateur pour son profil Onbora officiel."
+                  allowSelfUpdate={false}
+                  size="sm"
+                  onPhotoUploaded={(uploadedUrl) => {
+                    setManagerForm({ ...managerForm, avatar: uploadedUrl });
+                  }}
+                  onPhotoRemoved={() => {
+                    setManagerForm({ ...managerForm, avatar: '/avatars/default_avatar.svg' });
+                  }}
+                />
               </div>
 
               <div className="flex justify-end gap-2.5 pt-3 border-t border-black/5 dark:border-white/5">
@@ -3842,206 +3239,6 @@ export default function AdminCockpitPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODALE : ÉMISSION D'UNE DIRECTIVE SUPER ADMIN                              */}
-      {/* ========================================================================= */}
-      {isDirectiveModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl w-full max-w-xl p-6 shadow-2xl flex flex-col gap-5 animate-scale-in text-[#242124] dark:text-white border border-black/5 dark:border-white/5 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start pb-3 border-b border-black/5 dark:border-white/5">
-              <div>
-                <span className="text-[9px] font-medium uppercase px-2 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8]">
-                  Consigne Managériale
-                </span>
-                <h3 className="text-base font-semibold mt-1">Émettre une Directive Super Admin</h3>
-                <p className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                  Transmettez une consigne opérationnelle prioritaire avec accusé de traitement et suivi en temps réel.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDirectiveModalOpen(false)}
-                className="p-1 rounded-full text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer"
-              >
-                <Icons.X size={16} />
-              </button>
-            </div>
-
-            {directiveErrorMsg && (
-              <div className="p-3 rounded-2xl bg-red-500/10 text-red-500 text-xs font-medium flex items-center gap-2">
-                <Icons.AlertCircle size={15} />
-                <span>{directiveErrorMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSendDirectiveSubmit} className="flex flex-col gap-3.5 text-xs">
-              {/* Entité Cible */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Entité Cible</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDirectiveForm({ ...directiveForm, target_entity: 'KAM_OFFICE', recipient_id: '' })}
-                    className={`py-2.5 px-3 rounded-xl font-medium flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                      directiveForm.target_entity === 'KAM_OFFICE'
-                        ? 'bg-[#4F6CE8] text-white shadow-sm'
-                        : 'bg-[#F6F5F2] dark:bg-[#242124] text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                    }`}
-                  >
-                    <Icons.Briefcase size={14} />
-                    <span>KAM Office (PME / Grands C.)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDirectiveForm({ ...directiveForm, target_entity: 'BACK_OFFICE', recipient_id: '' })}
-                    className={`py-2.5 px-3 rounded-xl font-medium flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                      directiveForm.target_entity === 'BACK_OFFICE'
-                        ? 'bg-[#4F6CE8] text-white shadow-sm'
-                        : 'bg-[#F6F5F2] dark:bg-[#242124] text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                    }`}
-                  >
-                    <Icons.Map size={14} />
-                    <span>Back-Office Terrain (SOHO)</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Destinataire */}
-              <div className="flex flex-col gap-1">
-                <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
-                  Destinataire Précis *
-                </label>
-                <select
-                  required
-                  value={directiveForm.recipient_id}
-                  onChange={(e) => setDirectiveForm({ ...directiveForm, recipient_id: e.target.value })}
-                  className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold text-xs focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 cursor-pointer"
-                >
-                  <option value="">Sélectionner un collaborateur...</option>
-                  {directiveForm.target_entity === 'KAM_OFFICE' ? (
-                    <>
-                      <optgroup label="Key Account Managers (KAMs)">
-                        {kamsTeam.map((k) => (
-                          <option key={k.id} value={k.id}>
-                            {k.full_name} (@{k.username}) - {k.company_name || 'KAM'}
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Gérants KAM Office">
-                        {kamManagersList.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.full_name} (@{m.username}) - Gérant KAM
-                          </option>
-                        ))}
-                      </optgroup>
-                    </>
-                  ) : (
-                    <>
-                      <optgroup label="Superviseurs Back-Office">
-                        {supervisorsList.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.full_name} (@{s.username}) - {s.location || 'Superviseur'}
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Commerciaux Terrain">
-                        {salespersons.map((sp) => (
-                          <option key={sp.id} value={sp.id}>
-                            {sp.full_name} (@{sp.username}) - {sp.location || 'Kinshasa'}
-                          </option>
-                        ))}
-                      </optgroup>
-                    </>
-                  )}
-                </select>
-              </div>
-
-              {/* Titre & Compte */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Titre de la Directive *</label>
-                  <input
-                    type="text"
-                    required
-                    value={directiveForm.title}
-                    onChange={(e) => setDirectiveForm({ ...directiveForm, title: e.target.value })}
-                    placeholder="Ex: Réactivation compte inactif"
-                    className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Compte Ciblé (Optionnel)</label>
-                  <input
-                    type="text"
-                    value={directiveForm.target_account_name}
-                    onChange={(e) => setDirectiveForm({ ...directiveForm, target_account_name: e.target.value })}
-                    placeholder="Ex: Rawbank Kinshasa"
-                    className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
-                  />
-                </div>
-              </div>
-
-              {/* Priorité */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Niveau de Priorité</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['NORMAL', 'HIGH', 'CRITICAL'] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setDirectiveForm({ ...directiveForm, priority: p })}
-                      className={`py-2 px-3 rounded-xl font-medium text-xs transition-all cursor-pointer ${
-                        directiveForm.priority === p
-                          ? p === 'CRITICAL'
-                            ? 'bg-rose-500 text-white shadow-sm'
-                            : p === 'HIGH'
-                            ? 'bg-amber-500 text-white shadow-sm'
-                            : 'bg-[#4F6CE8] text-white shadow-sm'
-                          : 'bg-[#F6F5F2] dark:bg-[#242124] text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
-                      }`}
-                    >
-                      {p === 'CRITICAL' ? '● Critique' : p === 'HIGH' ? '▲ Haute' : 'Normale'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="flex flex-col gap-1">
-                <label className="font-medium text-[#6E6C67] dark:text-[#A1A1AA]">Instruction / Consigne Managériale *</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={directiveForm.instruction}
-                  onChange={(e) => setDirectiveForm({ ...directiveForm, instruction: e.target.value })}
-                  placeholder="Décrivez précisément l'action à mener, les vérifications à effectuer ou la modification demandée..."
-                  className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 leading-relaxed font-normal"
-                />
-              </div>
-
-              {/* Actions Footer */}
-              <div className="flex justify-end gap-2.5 pt-3 border-t border-black/5 dark:border-white/5">
-                <button
-                  type="button"
-                  onClick={() => setIsDirectiveModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 font-medium hover:bg-black/10 transition-colors cursor-pointer"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={sendingDirective}
-                  className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <Icons.Send size={13} className={sendingDirective ? "animate-spin" : ""} />
-                  <span>{sendingDirective ? "Envoi en cours..." : "Transmettre la Directive"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
       {/* MODALE : PORTEFEUILLE DU KEY ACCOUNT MANAGER                              */}
       {/* ========================================================================= */}
       {selectedKamForPortfolio && (
@@ -4077,16 +3274,6 @@ export default function AdminCockpitPage() {
               </div>
 
               <div className="flex items-center gap-2 self-end sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleOpenDirectiveToRecipient('KAM_OFFICE', selectedKamForPortfolio.id);
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
-                >
-                  <Icons.Send size={12} />
-                  <span>Directive au KAM</span>
-                </button>
                 <button
                   onClick={() => setSelectedKamForPortfolio(null)}
                   className="p-2 rounded-full text-[#6E6C67] hover:text-[#242124] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
@@ -4166,63 +3353,47 @@ export default function AdminCockpitPage() {
                       <th className="py-2.5 px-3">Statut</th>
                       <th className="py-2.5 px-3">Localisation</th>
                       <th className="py-2.5 px-3">Interlocuteur Décideur</th>
-                      <th className="py-2.5 px-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/5 dark:divide-white/5">
                     {filteredKamPortfolioAccounts.map((acc) => {
                       const isConverted = Boolean(acc.is_converted || acc.conversion_status === 'CONVERTED');
                       return (
-                      <tr key={acc.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 px-3">
-                          <span className="font-medium text-[#242124] dark:text-white block">{acc.name}</span>
-                          <span className="font-mono text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{acc.crm_id}</span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${
-                            acc.segment === 'GRAND_COMPTE'
-                              ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                              : acc.segment === 'PME'
-                              ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
-                              : 'bg-black/5 dark:bg-white/10 text-[#6E6C67] dark:text-[#A1A1AA]'
-                          }`}>
-                            {acc.segment === 'GRAND_COMPTE' ? 'Grand Compte' : acc.segment}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 font-semibold text-[#242124] dark:text-white">
-                          {Number(acc.annual_revenue || 0).toLocaleString()} $
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                            isConverted
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                          }`}>
-                            {isConverted ? 'Converti' : 'En prospection'}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 text-[#6E6C67] dark:text-[#A1A1AA]">
-                          {acc.city} {acc.commune ? `(${acc.commune})` : ''}
-                        </td>
-                        <td className="py-2.5 px-3 text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <span className="font-medium text-[#242124] dark:text-white block">{acc.contact_name || "Non renseigné"}</span>
-                          <span className="text-[10px]">{acc.contact_role || acc.contact_phone || ""}</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedKamForPortfolio(null);
-                              handleOpenDirectiveToRecipient('KAM_OFFICE', selectedKamForPortfolio.id, acc.name);
-                            }}
-                            className="px-2.5 py-1 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[10px] font-medium transition-all cursor-pointer flex items-center gap-1 inline-flex"
-                            title="Envoyer une directive au KAM sur ce compte"
-                          >
-                            <Icons.Send size={10} />
-                            <span>Directive</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
+                        <tr key={acc.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                          <td className="py-2.5 px-3">
+                            <span className="font-medium text-[#242124] dark:text-white block">{acc.name}</span>
+                            <span className="font-mono text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{acc.crm_id}</span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              acc.segment === 'GRAND_COMPTE'
+                                ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
+                                : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                            }`}>
+                              {acc.segment === 'GRAND_COMPTE' ? 'Grand Compte' : 'PME'}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-[#242124] dark:text-white">
+                            {Number(acc.annual_revenue || 0).toLocaleString()} $
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              isConverted
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
+                            }`}>
+                              {isConverted ? 'Converti' : 'En prospection'}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-[#6E6C67] dark:text-[#A1A1AA]">
+                            {acc.city} {acc.commune ? `(${acc.commune})` : ''}
+                          </td>
+                          <td className="py-2.5 px-3 text-[#6E6C67] dark:text-[#A1A1AA]">
+                            <span className="font-medium text-[#242124] dark:text-white block">{acc.contact_name || "Non renseigné"}</span>
+                            <span className="text-[10px]">{acc.contact_role || acc.contact_phone || ""}</span>
+                          </td>
+                        </tr>
+                      );
                     })}
                   </tbody>
                 </table>
@@ -4242,158 +3413,6 @@ export default function AdminCockpitPage() {
               </button>
             </div>
 
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODALE : DÉTAIL DES PLAQUES ASSIGNÉES AU COMMERCIAL                       */}
-      {/* ========================================================================= */}
-      {selectedSalespersonForPlaques && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl w-full max-w-xl p-6 shadow-2xl flex flex-col gap-5 animate-scale-in text-[#242124] dark:text-white border border-black/5 dark:border-white/5">
-            <div className="flex justify-between items-start pb-3 border-b border-black/5 dark:border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-                  <img
-                    src={`/memojis/${(selectedSalespersonForPlaques.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                    alt={selectedSalespersonForPlaques.full_name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold">{selectedSalespersonForPlaques.full_name}</h3>
-                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                    @{selectedSalespersonForPlaques.username} • {selectedSalespersonForPlaques.location || 'Kinshasa'} • {selectedSalespersonForPlaques.incentive_points || 0} pts incentive
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedSalespersonForPlaques(null)}
-                className="p-1 rounded-full text-[#6E6C67] hover:text-[#242124] dark:hover:text-white cursor-pointer"
-              >
-                <Icons.X size={16} />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-[#4F6CE8]">
-                Plaques Cartographiques Attribuées ({selectedSalespersonForPlaques.assigned_plaques?.length || 0})
-              </span>
-              <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                Périmètres territoriaux d'affectation pour les opérations de prospection pédestre SOHO.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 max-h-64 overflow-y-auto">
-                {selectedSalespersonForPlaques.assigned_plaques && selectedSalespersonForPlaques.assigned_plaques.length > 0 ? (
-                  selectedSalespersonForPlaques.assigned_plaques.map((code, idx) => {
-                    const matchPlaque = plaques.find(p => p.code.toLowerCase() === code.toLowerCase() || p.name.toLowerCase().includes(code.toLowerCase()));
-                    return (
-                      <div key={idx} className="p-3.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl flex flex-col gap-2 border border-black/5 dark:border-white/5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-extrabold text-xs px-2 py-0.5 rounded-md bg-[#4F6CE8]/15 text-[#4F6CE8]">
-                            {code}
-                          </span>
-                          <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                            Active
-                          </span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-xs text-[#242124] dark:text-white">
-                            {matchPlaque?.name || `Secteur ${code}`}
-                          </h4>
-                          <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">
-                            Ville : {matchPlaque?.city || selectedSalespersonForPlaques.location || 'Kinshasa'}
-                          </span>
-                          {matchPlaque?.enterprises_count !== undefined && (
-                            <span className="text-[10px] text-[#4F6CE8] font-medium block mt-0.5">
-                              {matchPlaque.enterprises_count} comptes SOHO rattachés
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedSalespersonForPlaques(null);
-                            setFieldSubTab('plaques');
-                            setPlaqueViewMode('map');
-                          }}
-                          className="w-full mt-1 py-1.5 px-2.5 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-[#4F6CE8] hover:text-white text-[11px] font-medium text-[#242124] dark:text-white transition-all cursor-pointer flex items-center justify-center gap-1 shadow-2xs"
-                        >
-                          <Icons.Map size={11} />
-                          <span>Localiser sur la Carte</span>
-                        </button>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="col-span-2 py-8 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                    Aucune plaque assignée pour ce commercial actuellement.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-black/5 dark:border-white/5">
-              <button
-                type="button"
-                onClick={() => {
-                  const spId = selectedSalespersonForPlaques.id;
-                  setSelectedSalespersonForPlaques(null);
-                  handleOpenDirectiveToRecipient('BACK_OFFICE', spId);
-                }}
-                className="px-4 py-2 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5"
-              >
-                <Icons.Send size={12} />
-                <span>Envoyer Directive</span>
-              </button>
-
-              <button
-                onClick={() => setSelectedSalespersonForPlaques(null)}
-                className="px-5 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[#242124] dark:text-white rounded-xl text-xs font-medium cursor-pointer transition-all"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* ANIMATION GIVRÉE : ENVELOPPE VOLANTE & DIRECTIVE TRANSMISE                */}
-      {/* ========================================================================= */}
-      {isEnvelopeFlying && lastSentDirective && (
-        <div className="fixed inset-0 z-60 pointer-events-none flex items-center justify-center">
-          <div className="animate-flying-envelope flex flex-col items-center">
-            <div className="w-80 p-5 rounded-3xl bg-white/95 dark:bg-[#2D2A2D]/95 backdrop-blur-2xl shadow-2xl border-2 border-[#4F6CE8]/40 flex flex-col gap-3.5 relative overflow-hidden pointer-events-auto">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#4F6CE8] via-emerald-400 to-[#4F6CE8]" />
-
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center text-xl shadow-xs">
-                  
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px] uppercase">
-                  Directive Transmise
-                </span>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm text-[#242124] dark:text-white line-clamp-1">
-                  {lastSentDirective.title}
-                </h4>
-                <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                  Vers <span className="font-medium text-[#242124] dark:text-white">{lastSentDirective.recipientName}</span>
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                <span>{lastSentDirective.timestamp}</span>
-                <span className="font-medium text-[#4F6CE8]">En vol vers la console</span>
-              </div>
-            </div>
           </div>
         </div>
       )}
