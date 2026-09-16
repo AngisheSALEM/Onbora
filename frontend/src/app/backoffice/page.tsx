@@ -212,7 +212,7 @@ export default function BackofficeCommandCenterPage() {
     type: 'success' | 'error';
   } | null>(null);
 
-  // Filters State for Plus petites entreprises / TPE Accounts
+  // Filters State for de très petites entreprises / TPE Accounts
   const [sohoVisitFilter, setSohoVisitFilter] = useState<'ALL' | 'VISITED' | 'UNVISITED'>('ALL');
   const [sohoAssignmentFilter, setSohoAssignmentFilter] = useState<'ALL' | 'ASSIGNED' | 'UNASSIGNED'>('ALL');
   const [sohoPlaqueFilter, setSohoPlaqueFilter] = useState<string>('ALL');
@@ -248,7 +248,6 @@ export default function BackofficeCommandCenterPage() {
   const [isAddSalespersonOpen, setIsAddSalespersonOpen] = useState(false);
   const [creatingSalesperson, setCreatingSalesperson] = useState(false);
   const [salespersonCreateError, setSalespersonCreateError] = useState('');
-  const [showSalespersonPodium, setShowSalespersonPodium] = useState(false);
   const [salespersonForm, setSalespersonForm] = useState({
     first_name: '',
     last_name: '',
@@ -581,7 +580,7 @@ export default function BackofficeCommandCenterPage() {
       });
       setDispatchNotification({
         plaqueCode: plaque.code,
-        message: res.message || `${res.assigned_count || 0} comptes Plus petites entreprises affectés avec succès.`,
+        message: res.message || `${res.assigned_count || 0} comptes de très petites entreprises affectés avec succès.`,
         type: 'success',
       });
       await loadDashboardData();
@@ -721,12 +720,7 @@ export default function BackofficeCommandCenterPage() {
       });
   }, [salespersons, searchQuery]);
 
-  // Top 3 Salespersons for the discreet podium
-  const top3Salespersons = useMemo(() => {
-    return sortedSalespersons.slice(0, 3);
-  }, [sortedSalespersons]);
-
-  // Filtered Plus petites entreprises Managed Accounts (multi-critères avec recherche globale)
+  // Filtered de très petites entreprises Managed Accounts (multi-critères avec recherche globale)
   const filteredSohoAccounts = useMemo(() => {
     const list = Array.isArray(enterprises) ? enterprises : [];
     return list.filter((ent) => {
@@ -778,7 +772,7 @@ export default function BackofficeCommandCenterPage() {
     });
   }, [enterprises, getEnterpriseVisitInfo, sohoStatusFilter, sohoPlaqueFilter, sohoCommercialFilter, searchQuery]);
 
-  // Paginated Plus petites entreprises / TPE accounts
+  // Paginated de très petites entreprises / TPE accounts
   const paginatedSohoAccounts = useMemo(() => {
     const start = (sohoPage - 1) * sohoPageSize;
     return filteredSohoAccounts.slice(start, start + sohoPageSize);
@@ -824,7 +818,7 @@ export default function BackofficeCommandCenterPage() {
     return filteredPlaques.slice(start, start + plaquesPageSize);
   }, [filteredPlaques, plaquesPage, plaquesPageSize]);
 
-  // Plus petites entreprises Directory Accounts (avec filtres statut/visite et recherche)
+  // de très petites entreprises Directory Accounts (avec filtres statut/visite et recherche)
   const filteredDirectoryAccounts = useMemo(() => {
     const list = Array.isArray(enterprises) ? enterprises : [];
     return list.filter((ent) => {
@@ -985,21 +979,29 @@ export default function BackofficeCommandCenterPage() {
   const navItems = [
     {
       id: 'soho_managed' as BackofficeView,
-      label: 'Comptes TPE',
+      label: 'Comptes',
       icon: Icons.Building,
       badge: `${enterprises.length}`,
     },
-    {
-      id: 'daily_report' as BackofficeView,
-      label: 'Rapport de la journée',
-      icon: Icons.FileText,
-      badge: (recentReportsFeed.length + recentFormSubmissions.length) > 0 ? `${recentReportsFeed.length + recentFormSubmissions.length}` : null,
-    },
+
     {
       id: 'salespersons' as BackofficeView,
       label: 'Commerciaux Terrain',
       icon: Icons.Users,
       badge: `${salespersons.length}`,
+    },
+    {
+      id: 'daily_report' as BackofficeView,
+      label: 'Rapport de la journée',
+      icon: Icons.FileText,
+      badge: null,
+    },
+
+    {
+      id: 'plaques_list' as BackofficeView,
+      label: 'Plaques',
+      icon: Icons.Layers,
+      badge: `${plaques.length}`,
     },
     {
       id: 'map' as BackofficeView,
@@ -1008,20 +1010,14 @@ export default function BackofficeCommandCenterPage() {
       badge: null,
     },
     {
-      id: 'plaques_list' as BackofficeView,
-      label: 'Plaques & Auto dispatch',
-      icon: Icons.Layers,
-      badge: `${plaques.length}`,
-    },
-    {
       id: 'soho_directory' as BackofficeView,
-      label: 'Annuaire TPE',
+      label: 'Annuaire ',
       icon: Icons.FileText,
       badge: null,
     },
     {
       id: 'settings' as BackofficeView,
-      label: 'Paramètres & FAQ',
+      label: 'Paramètres',
       icon: Icons.Settings,
       badge: null,
     },
@@ -1249,7 +1245,7 @@ export default function BackofficeCommandCenterPage() {
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto pr-1">
 
-            {/* VIEW 1: Plus petites entreprises MANAGED ACCOUNTS */}
+            {/* VIEW 1: de très petites entreprises MANAGED ACCOUNTS */}
             {activeView === 'soho_managed' && (
               <div className="flex flex-col gap-4">
                 {/* KPI Summary Cards */}
@@ -1326,7 +1322,7 @@ export default function BackofficeCommandCenterPage() {
                   </span>
                 </div>
 
-                {/* Plus petites entreprises Accounts Table */}
+                {/* de très petites entreprises Accounts Table */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs min-w-[850px]">
@@ -2008,21 +2004,6 @@ export default function BackofficeCommandCenterPage() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      {top3Salespersons.length > 0 && (
-                        <button
-                          onClick={() => setShowSalespersonPodium(!showSalespersonPodium)}
-                          className={`px-3.5 py-1.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 border ${
-                            showSalespersonPodium
-                              ? 'bg-[#4F6CE8] text-white border-[#4F6CE8]'
-                              : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-[#242124] dark:text-white hover:bg-black/10 dark:hover:bg-white/10'
-                          }`}
-                        >
-                          <Icons.Trophy size={14} />
-                          <span>Podium Top 3 Performance</span>
-                          <Icons.ChevronDown size={13} className={`transition-transform duration-200 ${showSalespersonPodium ? 'rotate-180' : ''}`} />
-                        </button>
-                      )}
-
                       <button
                         onClick={() => setIsAddSalespersonOpen(true)}
                         className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
@@ -2032,57 +2013,6 @@ export default function BackofficeCommandCenterPage() {
                       </button>
                     </div>
                   </div>
-
-                  {/* Discreet Top 3 Podium */}
-                  {showSalespersonPodium && top3Salespersons.length > 0 && (
-                    <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-4 border border-black/5 dark:border-white/5 flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icons.Trophy size={14} className="text-[#4F6CE8]" />
-                          <span className="text-xs font-extrabold text-[#242124] dark:text-white">Top 3 Commerciaux Terrain • Classement Points</span>
-                        </div>
-                        <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">100 pts / signature • 20 pts / fiche • 10 pts / visite</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {top3Salespersons.map((sp, idx) => (
-                          <div
-                            key={sp.id}
-                            onClick={() => setSelectedSalespersonDetail(sp)}
-                            className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer hover:border-[#4F6CE8]/50 transition-all ${
-                              idx === 0
-                                ? 'bg-white dark:bg-[#363336] border-[#4F6CE8]/30 shadow-xs'
-                                : 'bg-white dark:bg-[#363336] border-black/5 dark:border-white/5'
-                            }`}
-                          >
-                            <div className="relative shrink-0">
-                              <img
-                                src={sp.profile_picture_url || sp.avatar || '/avatars/default_avatar.svg'}
-                                alt={sp.full_name}
-                                className="w-10 h-10 rounded-xl object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
-                                }}
-                              />
-                              <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white ${
-                                idx === 0 ? 'bg-[#4F6CE8]/10' : idx === 1 ? 'bg-slate-400' : 'bg-[#4F6CE8]/10'
-                              }`}>
-                                {idx + 1}
-                              </div>
-                            </div>
-                            <div className="flex flex-col min-w-0 flex-1">
-                              <span className="text-xs font-extrabold text-[#242124] dark:text-white truncate hover:text-[#4F6CE8] transition-colors">{sp.full_name}</span>
-                              <div className="flex items-center gap-2 text-[10px] mt-0.5">
-                                <span className="font-semibold text-[#4F6CE8]">{sp.incentive_points || 0} pts</span>
-                                <span className="text-emerald-600 dark:text-emerald-400 font-550">{sp.conversions_count || 0} sign.</span>
-                                <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{sp.visits_count || 0} vis.</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Salespersons Table */}
                   <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
@@ -2787,7 +2717,7 @@ export default function BackofficeCommandCenterPage() {
               )
             )}
 
-            {/* VIEW 5: Plus petites entreprises DIRECTORY */}
+            {/* VIEW 5: de très petites entreprises DIRECTORY */}
             {activeView === 'soho_directory' && (
               <div className="flex flex-col gap-4">
                 {/* Sticky Filter Bar */}
@@ -2844,7 +2774,7 @@ export default function BackofficeCommandCenterPage() {
 
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-extrabold text-[#242124] dark:text-white">Annuaire Exhaustif Plus petites entreprises & TPE</h3>
+                    <h3 className="text-sm font-extrabold text-[#242124] dark:text-white">Annuaire Exhaustif de très petites entreprises</h3>
                     <p className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
                       Coordonnées, RCCM, fiches contacts et offres recommandées pour le terrain.
                     </p>
@@ -3057,26 +2987,23 @@ export default function BackofficeCommandCenterPage() {
                               <strong className="text-[#242124] dark:text-white">Affecter un commercial à une plaque :</strong> Définit le groupe de commerciaux autorisés et prioritaires sur cette zone géographique. Vous pouvez le faire directement depuis la page des plaques ou depuis la carte.
                             </p>
                             <p>
-                              <strong className="text-[#242124] dark:text-white">Dispatcher les comptes :</strong> Distribue individuellement chaque entreprise Plus petites entreprises de la plaque à un commercial précis. Le commercial voit alors ces comptes apparaître instantanément dans sa liste de prospection sur son mobile.
+                              <strong className="text-[#242124] dark:text-white">Dispatcher les comptes :</strong> Distribue individuellement chaque entreprise de très petites entreprises de la plaque à un commercial précis. Le commercial voit alors ces comptes apparaître instantanément dans sa liste de prospection sur son mobile.
                             </p>
                           </div>
                         ),
                       },
                       {
-                        q: "4. Comment fonctionne le calcul des points de motivation et le podium des commerciaux ?",
+                        q: "4. Comment fonctionne le calcul des points d'activité des commerciaux ?",
                         a: (
                           <div className="flex flex-col gap-2 text-xs leading-relaxed text-[#6E6C67] dark:text-[#A1A1AA]">
                             <p>
-                              Chaque action terrain d'un commercial rapporte des points d'incentive automatiquement calculés :
+                              Chaque action terrain d'un commercial rapporte des points d'activité automatiquement calculés :
                             </p>
                             <ul className="list-disc pl-5 space-y-1">
                               <li><strong className="text-[#242124] dark:text-white">100 points :</strong> Pour chaque contrat client converti et signé.</li>
                               <li><strong className="text-[#242124] dark:text-white">20 points :</strong> Pour chaque formulaire d'audit ou de qualification terrain validé.</li>
                               <li><strong className="text-[#242124] dark:text-white">10 points :</strong> Pour chaque visite physique effectuée et confirmée par géolocalisation.</li>
                             </ul>
-                            <p>
-                              Le podium discret met en avant le Top 3 des commerciaux les plus performants en haut de la liste des commerciaux terrain.
-                            </p>
                           </div>
                         ),
                       },

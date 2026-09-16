@@ -346,97 +346,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Liste 3 : Classement & Primes Dénicheurs
-                ScaleTap(
-                  onTap: () => Get.toNamed(Routes.LEADERBOARD),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            CupertinoIcons.rosette,
-                            color: isDark ? Colors.white : AppConstants.textDark,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Performance Terrain & Primes',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark ? Colors.white : AppConstants.textDark,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF10B981),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'Rang #2',
-                                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${salesController?.userTotalPoints.value ?? 18} points cumulés • Voir le barème & primes',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          CupertinoIcons.chevron_right,
-                          color: Color(0xFF8E8E93),
-                          size: 16,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // 4. Paramètres Thème Sombre
+                // 3. Paramètres Thème Sombre
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
@@ -486,7 +396,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // 5. Bouton Déconnexion
+                // 4. Bouton Déconnexion
                 SizedBox(
                   width: double.infinity,
                   height: 48,

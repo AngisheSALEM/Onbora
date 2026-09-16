@@ -22,7 +22,6 @@ import '../modules/catalog/screen/catalog_screen.dart';
 import '../modules/profile/binding/profile_binding.dart';
 import '../modules/profile/screen/profile_screen.dart';
 
-import '../modules/sales/screen/leaderboard_screen.dart';
 import '../modules/sales/screen/field_intelligence_screen.dart';
 import '../modules/sales/screen/document_scan_screen.dart';
 import '../modules/sales/screen/visit_form_screen.dart';
@@ -87,13 +86,6 @@ class AppPages {
     GetPage(
       name: Routes.VISITS_HISTORY,
       page: () => const VisitsHistoryScreen(),
-      binding: SalesBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 200),
-    ),
-    GetPage(
-      name: Routes.LEADERBOARD,
-      page: () => const LeaderboardScreen(),
       binding: SalesBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),

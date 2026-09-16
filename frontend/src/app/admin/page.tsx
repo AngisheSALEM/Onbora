@@ -347,8 +347,7 @@ export default function AdminCockpitPage() {
   const [fieldSubTab, setFieldSubTab] = useState<'commerciaux' | 'plaques'>('commerciaux');
   const [plaqueViewMode, setPlaqueViewMode] = useState<'list' | 'map'>('list');
   const [selectedSalespersonForPlaques, setSelectedSalespersonForPlaques] = useState<SalespersonItem | null>(null);
-  const [showSalespersonPodium, setShowSalespersonPodium] = useState(false);
-  const [showKamPodium, setShowKamPodium] = useState(false);
+
 
   // 7. KAMs Team (Key Account Managers Effectif & Portefeuilles)
   const [kamsTeam, setKamsTeam] = useState<KamTeamMemberItem[]>([]);
@@ -945,32 +944,7 @@ export default function AdminCockpitPage() {
       });
   }, [kamsTeam, searchQuery]);
 
-  // Top 3 KAMs Podium (Ranked by CA signé desc, conversions desc, portfolio desc)
-  const top3Kams = useMemo(() => {
-    return [...kamsTeam]
-      .sort((a, b) => {
-        if ((b.converted_amount || 0) !== (a.converted_amount || 0)) {
-          return (b.converted_amount || 0) - (a.converted_amount || 0);
-        }
-        if ((b.converted_count || 0) !== (a.converted_count || 0)) {
-          return (b.converted_count || 0) - (a.converted_count || 0);
-        }
-        return (b.portfolio_count || 0) - (a.portfolio_count || 0);
-      })
-      .slice(0, 3);
-  }, [kamsTeam]);
-
-  // Top 3 Salespersons Podium (Ranked by points desc, conversions desc, visits desc)
-  const top3Salespersons = useMemo(() => {
-    return [...salespersons]
-      .sort((a, b) => {
-        const ptsA = a.incentive_points || ((a.conversions_count || 0) * 100 + (a.form_submissions_count || 0) * 20 + (a.visits_count || 0) * 10);
-        const ptsB = b.incentive_points || ((b.conversions_count || 0) * 100 + (b.form_submissions_count || 0) * 20 + (b.visits_count || 0) * 10);
-        return ptsB - ptsA;
-      })
-      .slice(0, 3);
-  }, [salespersons]);
-
+ 
   // Filtered KAM portfolio accounts for modal
   const filteredKamPortfolioAccounts = useMemo(() => {
     if (!kamPortfolioSearch) return kamPortfolioAccounts;
@@ -1283,7 +1257,7 @@ export default function AdminCockpitPage() {
                   <span className="text-2xl font-extrabold text-[#242124] dark:text-white mt-1">
                     {convertedSummary.back_office_signed_amount_usd.toLocaleString()} $
                   </span>
-                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">{convertedSummary.back_office_count} Plus petites entreprises & commerces de proximité</span>
+                  <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">{convertedSummary.back_office_count} très petites entreprises & commerces de proximité</span>
                 </div>
 
                 <div className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-1">
@@ -1567,7 +1541,7 @@ export default function AdminCockpitPage() {
                     <option value="ALL">Tous les Segments</option>
                     <option value="GRAND_COMPTE">Grands Comptes (Top C-Level)</option>
                     <option value="PME">PME (Moyennes structures)</option>
-                    <option value="TPE_INFORMEL">Plus petites entreprises (Commerces, Artisans, Proximité)</option>
+                    <option value="TPE_INFORMEL">très petites entreprises (Commerces, Artisans, Proximité)</option>
                   </select>
 
                   <select
@@ -1889,71 +1863,14 @@ export default function AdminCockpitPage() {
               {/* Vue Commerciaux */}
               {fieldSubTab === 'commerciaux' && (
                 <div className="flex flex-col gap-5">
-                  {/* Barre d'action supérieure avec option discrète Podium Top 3 */}
+                  {/* Barre d'action supérieure */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
                         {filteredSalespersons.length} commerciaux répertoriés
                       </span>
                     </div>
-
-                    {top3Salespersons.length > 0 && (
-                      <button
-                        onClick={() => setShowSalespersonPodium(!showSalespersonPodium)}
-                        className={`px-3.5 py-1.5 rounded-2xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 border ${
-                          showSalespersonPodium
-                            ? 'bg-[#4F6CE8] text-white border-[#4F6CE8]'
-                            : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-[#242124] dark:text-white hover:bg-black/10 dark:hover:bg-white/10'
-                        }`}
-                      >
-                        <Icons.Trophy size={14} />
-                        <span>Podium Top 3 Performance</span>
-                        <Icons.ChevronDown size={13} className={`transition-transform duration-200 ${showSalespersonPodium ? 'rotate-180' : ''}`} />
-                      </button>
-                    )}
                   </div>
-
-                  {/* Podium Discret et Compact des Commerciaux Terrain */}
-                  {showSalespersonPodium && top3Salespersons.length > 0 && (
-                    <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-4 border border-black/5 dark:border-white/5 flex flex-col gap-3 transition-all">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icons.Trophy size={14} className="text-[#4F6CE8]" />
-                          <span className="text-xs font-medium text-[#242124] dark:text-white">Top 3 Commerciaux Terrain • Incentive Méritocratique</span>
-                        </div>
-                        <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">100 pts / signature • 20 pts / fiche • 10 pts / visite</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {top3Salespersons.map((sp, idx) => (
-                          <div
-                            key={sp.id}
-                            className={`p-3 rounded-2xl border flex items-center gap-3 transition-all ${
-                              idx === 0
-                                ? 'bg-white dark:bg-[#363336] border-[#4F6CE8]/30 shadow-xs'
-                                : 'bg-white dark:bg-[#363336] border-black/5 dark:border-white/5'
-                            }`}
-                          >
-                            <div className="relative shrink-0">
-                              <UserAvatar src={sp.avatar} name={sp.full_name} size="md" />
-                              <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ${
-                                idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : 'bg-amber-700'
-                              }`}>
-                                {idx + 1}
-                              </div>
-                            </div>
-                            <div className="flex flex-col min-w-0 flex-1">
-                              <span className="text-xs font-medium text-[#242124] dark:text-white truncate">{sp.full_name}</span>
-                              <div className="flex items-center gap-2 text-[10px] mt-0.5">
-                                <span className="font-medium text-[#4F6CE8]">{sp.incentive_points || 0} pts</span>
-                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{sp.conversions_count || 0} sign.</span>
-                                <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{sp.visits_count || 0} vis.</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Table des Commerciaux */}
                   <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
@@ -2112,7 +2029,7 @@ export default function AdminCockpitPage() {
                               <th className="py-3 px-3.5">Code Plaque</th>
                               <th className="py-3 px-3.5">Nom du Secteur</th>
                               <th className="py-3 px-3.5">Ville</th>
-                              <th className="py-3 px-3.5">Comptes Plus petites entreprises Rattachés</th>
+                              <th className="py-3 px-3.5">Comptes très petites entreprises Rattachés</th>
                               <th className="py-3 px-3.5">Statut</th>
                               <th className="py-3 px-3.5 text-right">Action</th>
                             </tr>
@@ -2186,81 +2103,14 @@ export default function AdminCockpitPage() {
                 </div>
               </div>
 
-              {/* Barre d'action supérieure avec option discrète Podium Top 3 KAM */}
+              {/* Barre d'action supérieure */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
                     {filteredKamsTeam.length} Key Account Managers répertoriés
                   </span>
                 </div>
-
-                {top3Kams.length > 0 && (
-                  <button
-                    onClick={() => setShowKamPodium(!showKamPodium)}
-                    className={`px-3.5 py-1.5 rounded-2xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 border ${
-                      showKamPodium
-                        ? 'bg-[#4F6CE8] text-white border-[#4F6CE8]'
-                        : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-[#242124] dark:text-white hover:bg-black/10 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    <Icons.Trophy size={14} />
-                    <span>Podium Top 3 Performance</span>
-                    <Icons.ChevronDown size={13} className={`transition-transform duration-200 ${showKamPodium ? 'rotate-180' : ''}`} />
-                  </button>
-                )}
               </div>
-
-              {/* Podium Discret et Compact des KAMs */}
-              {showKamPodium && top3Kams.length > 0 && (
-                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-4 border border-black/5 dark:border-white/5 flex flex-col gap-3 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icons.Trophy size={14} className="text-[#4F6CE8]" />
-                      <span className="text-xs font-medium text-[#242124] dark:text-white">Top 3 Key Account Managers • Performance Portefeuille</span>
-                    </div>
-                    <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Classés par CA signé cumulé ($) et conversions</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {top3Kams.map((k, idx) => (
-                      <div
-                        key={k.id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
-                          idx === 0
-                            ? 'bg-white dark:bg-[#363336] border-[#4F6CE8]/30 shadow-xs'
-                            : 'bg-white dark:bg-[#363336] border-black/5 dark:border-white/5'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="relative shrink-0">
-                            <UserAvatar src={k.avatar} name={k.full_name} size="md" />
-                            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ${
-                              idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : 'bg-amber-700'
-                            }`}>
-                              {idx + 1}
-                            </div>
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-xs font-medium text-[#242124] dark:text-white truncate">{k.full_name}</span>
-                            <div className="flex items-center gap-2 text-[10px] mt-0.5">
-                              <span className="font-medium text-[#4F6CE8]">+{Number(k.converted_amount || 0).toLocaleString()} $</span>
-                              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{k.converted_count || 0} conv.</span>
-                              <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{k.portfolio_count || 0} comptes</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleOpenKamPortfolio(k)}
-                          className="p-1.5 rounded-xl bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white transition-colors cursor-pointer shrink-0"
-                          title="Inspecter le portefeuille"
-                        >
-                          <Icons.Briefcase size={13} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Table dense des KAMs */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
@@ -2383,7 +2233,7 @@ export default function AdminCockpitPage() {
               {/* Formulaire de Réglage des Seuils */}
               <form onSubmit={handleSaveSegmentation} className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Seuil 1 : Plus petites entreprises vs PME */}
+                  {/* Seuil 1 : très petites entreprises vs PME */}
                   <div className="flex flex-col gap-2 bg-[#F6F5F2] dark:bg-[#242124] p-4 rounded-2xl">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-[#242124] dark:text-white">Seuil Plafond SOHO</span>
@@ -2478,7 +2328,7 @@ export default function AdminCockpitPage() {
               {/* Répartition Actuelle (Design 60-30-10) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                  <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">Plus petites entreprises (&lt; {tpeThreshold.toLocaleString()} $)</span>
+                  <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">très petites entreprises (&lt; {tpeThreshold.toLocaleString()} $)</span>
                   <span className="text-2xl font-extrabold text-[#242124] dark:text-white mt-1">{config?.stats?.tpe_count || 0}</span>
                   <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">Routés vers le Back-Office Terrain (Plaques)</span>
                 </div>
@@ -2618,7 +2468,7 @@ export default function AdminCockpitPage() {
                           </p>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>
-                              <strong className="text-[#242124] dark:text-white">Plus petites entreprises (Très Petites Entreprises / Commerce informel) :</strong> Chiffre d'affaires inférieur à <strong>200 $ / mois</strong> (soit &lt; 2 400 $ / an). Il s'agit des boutiques de quartier, kiosques, cabines télécom, artisans et petits commerces de proximité.
+                              <strong className="text-[#242124] dark:text-white">très petites entreprises (Très Petites Entreprises / Commerce informel) :</strong> Chiffre d'affaires inférieur à <strong>200 $ / mois</strong> (soit &lt; 2 400 $ / an). Il s'agit des boutiques de quartier, kiosques, cabines télécom, artisans et petits commerces de proximité.
                             </li>
                             <li>
                               <strong className="text-[#242124] dark:text-white">PME (Petites et Moyennes Entreprises) :</strong> Chiffre d'affaires compris entre <strong>200 $ et 2 500 $ / mois</strong> (soit 2 400 $ à 30 000 $ / an). Exemples : cliniques privées, cabinets comptables, écoles, distributeurs, bureaux d'études.
@@ -2631,11 +2481,11 @@ export default function AdminCockpitPage() {
                       )
                     },
                     {
-                      q: "2. Pourquoi le découpage par Plaques cartographiques est-il réservé aux Plus petites entreprises ?",
+                      q: "2. Pourquoi le découpage par Plaques cartographiques est-il réservé aux très petites entreprises ?",
                       a: (
                         <div className="flex flex-col gap-2 text-xs leading-relaxed text-[#6E6C67] dark:text-[#A1A1AA]">
                           <p>
-                            La prospection des Plus petites entreprises s'effectue exclusivement par des <strong>commerciaux terrain du Back-Office</strong> selon une méthode de quadrillage pédestre (porte-à-porte). Ce mode opératoire exige une très forte densité géographique continue :
+                            La prospection des très petites entreprises s'effectue exclusivement par des <strong>commerciaux terrain du Back-Office</strong> selon une méthode de quadrillage pédestre (porte-à-porte). Ce mode opératoire exige une très forte densité géographique continue :
                           </p>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>Les <strong>plaques cartographiques</strong> délimitent précisément les avenues, marchés et quartiers (Gombe, Limete, Lingwala, etc.) pour éviter tout chevauchement entre agents terrain.</li>

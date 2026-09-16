@@ -941,12 +941,9 @@ class SalesController extends GetxController {
   Future<bool> transmitReportToKAM() => transmitReportToBackOffice();
 
   // =========================================================================
-  // FIELD INTELLIGENCE & LEADERBOARD
+  // FIELD INTELLIGENCE
   // =========================================================================
   final RxBool isSubmittingFieldIntelligence = false.obs;
-  final RxBool isLoadingLeaderboard = false.obs;
-  final RxInt userTotalPoints = 0.obs;
-  final RxList<LeaderboardEntryModel> leaderboardList = <LeaderboardEntryModel>[].obs;
   final Rx<FieldIntelligenceReportModel?> lastFieldIntelligenceReport = Rx<FieldIntelligenceReportModel?>(null);
 
   Future<bool> submitFieldIntelligenceReport(FieldIntelligenceReportModel report) async {
@@ -960,36 +957,15 @@ class SalesController extends GetxController {
       );
 
       final data = response as Map<String, dynamic>;
-      final points = data['points_earned'] as int? ?? 0;
-      userTotalPoints.value += points;
       lastFieldIntelligenceReport.value = FieldIntelligenceReportModel.fromJson(data['report'] as Map<String, dynamic>);
       
-      successMessage.value = data['message'] ?? "Rapport d'Intelligence Terrain enregistré (+ $points pts) !";
+      successMessage.value = data['message'] ?? "Rapport d'Intelligence Terrain enregistré avec succès !";
       isSubmittingFieldIntelligence.value = false;
-      fetchLeaderboard();
       return true;
     } catch (e) {
       errorMessage.value = "Erreur lors de l'enregistrement du rapport terrain.";
       isSubmittingFieldIntelligence.value = false;
       return false;
-    }
-  }
-
-  Future<void> fetchLeaderboard() async {
-    isLoadingLeaderboard.value = true;
-    try {
-      final response = await _apiClient.get('/api/sales/field-intelligence/leaderboard/');
-      if (response is List) {
-        leaderboardList.value = response
-            .map((item) => LeaderboardEntryModel.fromJson(item as Map<String, dynamic>))
-            .toList();
-      } else {
-        leaderboardList.value = [];
-      }
-    } catch (_) {
-      leaderboardList.value = [];
-    } finally {
-      isLoadingLeaderboard.value = false;
     }
   }
 
@@ -1158,7 +1134,6 @@ class SalesController extends GetxController {
       };
       final dynamic response = await _apiClient.post('/api/sales/visit-form/submit/', body: payload);
       if (response is Map<String, dynamic>) {
-        userTotalPoints.value += 20;
         await fetchVisitsHistory();
         await fetchDashboardStats();
       }
