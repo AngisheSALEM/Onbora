@@ -50,9 +50,9 @@ class BaseAIEngine:
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None) -> None:
         self.api_key = api_key or getattr(settings, "GEMINI_API_KEY", "")
-        self.model_name = model_name or getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")
+        self.model_name = model_name or getattr(settings, "GEMINI_MODEL", "gemini-3.6-flash")
         if "gemini-2.5" in self.model_name:
-            self.model_name = "gemini-3.5-flash-lite"
+            self.model_name = "gemini-3.6-flash"
         self._client = None
         self._init_client()
 

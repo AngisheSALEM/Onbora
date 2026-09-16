@@ -45,7 +45,7 @@ def _provider_display() -> dict[str, str]:
     if provider == "gemini":
         return {
             "provider": "Gemini",
-            "model": os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
+            "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
             "mode": "réel",
         }
     return {

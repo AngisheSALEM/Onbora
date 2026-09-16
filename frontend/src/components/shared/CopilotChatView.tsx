@@ -31,11 +31,87 @@ interface ChatMessage {
   action_result?: any;
   action_status?: string;
   created_at: string;
+  human_validation_required?: boolean;
+  session_id?: string;
+  decision_status?: string;
 }
 
 interface CopilotChatViewProps {
   userRole?: string;
 }
+
+const HitlActionCard = ({ message, onUpdate }: { message: ChatMessage, onUpdate: (m: ChatMessage) => void }) => {
+  const [loading, setLoading] = useState(false);
+  const [comment, setComment] = useState("");
+  
+  const handleDecision = async (decision: "approved" | "rejected") => {
+    if (!message.session_id) return;
+    setLoading(true);
+    try {
+      await fetchAPI('/api/ai/validate/', {
+        method: 'POST',
+        body: JSON.stringify({ session_id: message.session_id, decision, comment })
+      });
+      onUpdate({ ...message, decision_status: decision });
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la validation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (message.decision_status === 'approved') {
+    return (
+      <div className="mt-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
+        <Icons.Check size={16} className="text-emerald-600 dark:text-emerald-400" />
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Action approuvée</span>
+      </div>
+    );
+  }
+
+  if (message.decision_status === 'rejected') {
+    return (
+      <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
+        <Icons.X size={16} className="text-red-600 dark:text-red-400" />
+        <span className="text-[11px] font-bold text-red-700 dark:text-red-300">Action rejetée</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 space-y-3">
+      <div className="flex items-center gap-2">
+        <Icons.AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" />
+        <span className="text-xs font-bold text-amber-800 dark:text-amber-200">Validation Humaine Requise</span>
+      </div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Commentaire optionnel..."
+        disabled={loading}
+        className="w-full text-xs p-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-black/20 focus:outline-none text-zinc-900 dark:text-white"
+        rows={2}
+      />
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => handleDecision("approved")}
+          disabled={loading}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-none"
+        >
+          <Icons.Check size={14} /> Approuver
+        </button>
+        <button
+          onClick={() => handleDecision("rejected")}
+          disabled={loading}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-none"
+        >
+          <Icons.X size={14} /> Rejeter
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function CopilotChatView({ userRole }: CopilotChatViewProps) {
   const [profile, setProfile] = useState<AssistantProfile | null>(null);
@@ -472,6 +548,16 @@ export default function CopilotChatView({ userRole }: CopilotChatViewProps) {
                       </button>
                     </div>
                   </div>
+                )}
+
+                {/* HITL ACTION CARD */}
+                {m.human_validation_required && m.session_id && (
+                  <HitlActionCard
+                    message={m}
+                    onUpdate={(updatedMessage) => {
+                      setMessages(prev => prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg));
+                    }}
+                  />
                 )}
 
                 {/* Timestamp */}

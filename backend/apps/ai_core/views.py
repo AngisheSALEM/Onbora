@@ -63,7 +63,7 @@ class AICatalogServiceDetailView(APIView):
 
 class AIPreCallView(APIView):
     """Génération du dossier d'attaque Pre-Call avant visite client."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         try:
@@ -78,7 +78,7 @@ class AIPreCallView(APIView):
 
 class AIPostCallView(APIView):
     """Génération de l'email commercial, CRM payload et tâches post-visite."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         try:
@@ -93,7 +93,7 @@ class AIPostCallView(APIView):
 
 class AILeadScoringView(APIView):
     """Évaluation B2B Lead Scoring avec barème stratégique Orange."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         try:
@@ -108,7 +108,7 @@ class AILeadScoringView(APIView):
 
 class AIChurnRadarView(APIView):
     """Détection préventive d'attrition et plan d'action rétention sous 48h."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         try:
@@ -123,7 +123,7 @@ class AIChurnRadarView(APIView):
 
 class AISalesEnrichmentView(APIView):
     """Génération d'hypothèses commerciales basées sur le scraping web."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         try:
@@ -138,7 +138,7 @@ class AISalesEnrichmentView(APIView):
 
 class AIAnalyzeConversationView(APIView):
     """Analyse conversationnelle avec persistance de session et alerte HITL."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         session_id = request.data.get("session_id", "default_session")
@@ -160,7 +160,7 @@ class AIAnalyzeConversationView(APIView):
 
 class AIValidateActionView(APIView):
     """Enregistrement de l'approbation ou du rejet humain d'une action IA."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         session_id = request.data.get("session_id", "default_session")
@@ -181,7 +181,7 @@ class AIValidateActionView(APIView):
 
 class AISessionDetailView(APIView):
     """Consultation de la mémoire persistante d'une session IA."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, session_id: str) -> Response:
         session = AISessionService.get_or_create_session(session_id)
