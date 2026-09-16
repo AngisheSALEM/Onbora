@@ -16,6 +16,6 @@ def build_chat_model() -> ChatModel:
         return HeuristicFakeChatModel()
     if provider == "gemini":
         return GeminiChatModel(
-            model_name=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+            model_name=os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
         )
     raise ValueError(f"unsupported ONBORA_AI_PROVIDER: {provider}")

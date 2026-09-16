@@ -99,8 +99,18 @@ class AICoreAPITestCase(TestCase):
     """Tests des endpoints REST DRF du Core AI (/api/v1/ai/...)."""
 
     def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username="test_kam_ia",
+            password="testpass123",
+            email="kam_ia@onbora.test",
+        )
         self.client = APIClient()
 
+    # -------------------------------------------------------------------------
+    # Endpoints publics (AllowAny) — Santé et catalogue
+    # -------------------------------------------------------------------------
     def test_health_endpoint(self):
         response = self.client.get("/api/v1/ai/health/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -113,7 +123,11 @@ class AICoreAPITestCase(TestCase):
         self.assertIn("results", response.data)
         self.assertGreaterEqual(response.data.get("count", 0), 1)
 
-    def test_pre_call_endpoint(self):
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Pre-Call
+    # -------------------------------------------------------------------------
+    def test_pre_call_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
         payload = {
             "company_name": "Cabinet Dentaire Dr Ilunga",
             "sector": "SANTE",
@@ -125,7 +139,43 @@ class AICoreAPITestCase(TestCase):
         self.assertIn("key_decision_makers", response.data)
         self.assertIn("custom_pitch_angles", response.data)
 
-    def test_lead_scoring_endpoint(self):
+    def test_pre_call_endpoint_unauthenticated(self):
+        payload = {"company_name": "Test", "sector": "MINES", "locations_count": 1}
+        response = self.client.post("/api/v1/ai/pre-call/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Post-Call
+    # -------------------------------------------------------------------------
+    def test_post_call_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
+        payload = {
+            "kam_name": "Marc Lemaire",
+            "client_name": "Jean-Paul Kasongo",
+            "client_role": "DSI",
+            "company_name": "Tenke Fungurume Mining",
+            "meeting_transcript": "Entretien productif avec le DSI. Ils veulent du SD-WAN pour leurs sites miniers.",
+        }
+        response = self.client.post("/api/v1/ai/post-call/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("client_followup_email", response.data)
+        self.assertIn("crm_payload", response.data)
+        self.assertIn("action_tasks", response.data)
+
+    def test_post_call_endpoint_unauthenticated(self):
+        payload = {
+            "kam_name": "Test",
+            "company_name": "Test",
+            "meeting_transcript": "Test transcript",
+        }
+        response = self.client.post("/api/v1/ai/post-call/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Lead Scoring
+    # -------------------------------------------------------------------------
+    def test_lead_scoring_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
         payload = {
             "company_name": "Société Minière Test",
             "sector": "MINES",
@@ -141,7 +191,16 @@ class AICoreAPITestCase(TestCase):
         self.assertIn("lead_score", response.data)
         self.assertIn("scoring_tier", response.data)
 
-    def test_churn_radar_endpoint(self):
+    def test_lead_scoring_endpoint_unauthenticated(self):
+        payload = {"company_name": "Test", "sector": "TEST", "locations_count": 1}
+        response = self.client.post("/api/v1/ai/lead-scoring/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Churn Radar
+    # -------------------------------------------------------------------------
+    def test_churn_radar_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
         payload = {
             "company_name": "Supermarché Kinshasa",
             "current_services": ["Fibre Pro 50 Mbps"],
@@ -152,3 +211,61 @@ class AICoreAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("churn_risk_level", response.data)
         self.assertIn("retention_plan", response.data)
+
+    def test_churn_radar_endpoint_unauthenticated(self):
+        payload = {"company_name": "Test", "current_services": ["Fibre"]}
+        response = self.client.post("/api/v1/ai/churn-radar/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Sales Enrichment
+    # -------------------------------------------------------------------------
+    def test_sales_enrichment_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
+        payload = {
+            "company_name": "Rawbank RDC",
+            "sector": "BANQUE",
+            "website": "https://www.rawbank.com",
+        }
+        response = self.client.post("/api/v1/ai/sales-enrichment/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("hypotheses", response.data)
+        self.assertIn("tailored_pitch", response.data)
+
+    def test_sales_enrichment_endpoint_unauthenticated(self):
+        payload = {"company_name": "Test", "sector": "TEST"}
+        response = self.client.post("/api/v1/ai/sales-enrichment/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — HITL Validate
+    # -------------------------------------------------------------------------
+    def test_validate_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
+        payload = {
+            "session_id": "test_hitl_session",
+            "decision": "approved",
+            "comment": "Validé par le KAM après vérification terrain.",
+        }
+        response = self.client.post("/api/v1/ai/validate/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("decision"), "approved")
+
+    def test_validate_endpoint_unauthenticated(self):
+        payload = {"session_id": "test", "decision": "approved"}
+        response = self.client.post("/api/v1/ai/validate/", payload, format="json")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    # -------------------------------------------------------------------------
+    # Endpoints protégés — Session Detail
+    # -------------------------------------------------------------------------
+    def test_session_detail_endpoint_authenticated(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get("/api/v1/ai/session/test_session_detail/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("session_id", response.data)
+        self.assertIn("messages", response.data)
+
+    def test_session_detail_endpoint_unauthenticated(self):
+        response = self.client.get("/api/v1/ai/session/test_session/")
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])

@@ -40,6 +40,8 @@ Thumbs.db
 !PREVISITE_ARCHITECTURE.md
 !backend/README.md
 !backend/apps/ai_core/TESTING_GUIDE.md
+!backend/resources/prompts/**
+!backend/resources/**/*.md
 
 # Documentation local files
 doc_backend.md

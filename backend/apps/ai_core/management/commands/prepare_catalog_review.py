@@ -1,11 +1,22 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from catalog.intake.validate_intake import prepare_catalog_review_package
+
+def _load_validate_intake():
+    """Import dynamique depuis resources/catalog_ai/intake/validate_intake.py."""
+    module_path = Path(settings.BASE_DIR) / "resources" / "catalog_ai" / "intake" / "validate_intake.py"
+    spec = importlib.util.spec_from_file_location("validate_intake", module_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+prepare_catalog_review_package = _load_validate_intake().prepare_catalog_review_package
 
 
 class Command(BaseCommand):

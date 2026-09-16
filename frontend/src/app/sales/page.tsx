@@ -4,13 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
-import TrainingDrawer from '@/components/training/TrainingDrawer';
-import TrainingLauncher from '@/components/training/TrainingLauncher';
 import Logo from '@/components/shared/Logo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Icons } from '@/components/shared/Icons';
-import GoogleSlidesTwin from '@/components/shared/GoogleSlidesTwin';
-import BusinessTwinSlides from '@/components/shared/BusinessTwinSlides';
 
 interface Enterprise {
   id: number;
@@ -42,22 +38,6 @@ interface VisitReport {
   follow_up_email_draft: string;
 }
 
-interface Slide {
-  id: string;
-  title: string;
-  type: 'welcome' | 'diagnostic' | 'chart' | 'services' | 'roadmap' | 'custom';
-  content: {
-    subtitle?: string;
-    description?: string;
-    items?: string[];
-    targetItems?: string[];
-    metrics?: { label: string; before: number; after: number }[];
-    services?: { name: string; priority: string; reasoning: string }[];
-    roadmap?: string[];
-    customText?: string;
-  };
-  notes: string;
-}
 
 type WorkflowStep = 'search' | 'brief' | 'visit' | 'report' | 'transmitted';
 
@@ -91,13 +71,6 @@ export default function SalesDashboard() {
   const [emailDraft, setEmailDraft] = useState('');
   const [transmitting, setTransmitting] = useState(false);
   const [createdDossierId, setCreatedDossierId] = useState<number | null>(null);
-  const [trainingOpen, setTrainingOpen] = useState(false);
-
-  // Slideshow Twin states
-  const [slidesTwinData, setSlidesTwinData] = useState<any>(null);
-  const [slides, setSlides] = useState<Slide[]>([]);
-  const [activeTab, setActiveTab] = useState<'workflow' | 'slides'>('workflow');
-  const [isEditingSlides, setIsEditingSlides] = useState(false);
 
   // Auto-suggest on query change
   useEffect(() => {
@@ -135,91 +108,11 @@ export default function SalesDashboard() {
     };
   }, [isRecording]);
 
-  const getInitialSlides = (twin: any, companyName: string): Slide[] => {
-    return [
-      {
-        id: 'slide-1',
-        title: 'Transformation Technologique',
-        type: 'welcome',
-        content: {
-          subtitle: `Plan de transition numérique conçu pour ${companyName}`,
-          description: "Modélisation en temps réel générée par le copilote commercial Onbora."
-        },
-        notes: "Diapositive d'accueil. Présenter les objectifs généraux du plan d'accompagnement de transition numérique pour l'entreprise."
-      },
-      {
-        id: 'slide-2',
-        title: 'Diagnostic : Situation comparative',
-        type: 'diagnostic',
-        content: {
-          items: twin.current_state || [],
-          targetItems: twin.proposed_state || []
-        },
-        notes: "Détail du diagnostic. Mettre l'accent sur les dysfonctionnements identifiés et les solutions d'infrastructure cibles."
-      },
-      {
-        id: 'slide-3',
-        title: 'Graphique d\'impact de performance',
-        type: 'chart',
-        content: {
-          metrics: [
-            { label: 'Débit / Réseau', before: 20, after: 95 },
-            { label: 'Cybersécurité', before: 15, after: 98 },
-            { label: 'Collaboration', before: 35, after: 90 }
-          ]
-        },
-        notes: "Graphique d'impact. Expliquer le gain de performance en pourcentage suite aux raccordements de la Fibre et au déploiement du Cloud."
-      },
-      {
-        id: 'slide-4',
-        title: 'Solutions & Services recommandés',
-        type: 'services',
-        content: {
-          services: twin.recommended_services || []
-        },
-        notes: "Présentation des offres phares (Fibre Optique Pro, EDR & Firewall centralisé, Microsoft 365)."
-      },
-      {
-        id: 'slide-5',
-        title: 'Roadmap chronologique de déploiement',
-        type: 'roadmap',
-        content: {
-          roadmap: twin.roadmap || []
-        },
-        notes: "Présentation de la roadmap en 3 phases pour assurer la continuité de service lors du déploiement."
-      }
-    ];
-  };
-
   const handleSelectEnterprise = async (ent: Enterprise) => {
     setSelectedEnterprise(ent);
     setGeneratingBrief(true);
     setStep('brief');
     
-    // Set initial default slides template immediately so they are available in slides tab
-    const initialTwin = {
-      current_state: [
-        "Infrastructures WAN obsolètes",
-        "Processus collaboratifs fragmentés",
-        "Sécurité des accès distants non garantie"
-      ],
-      proposed_state: [
-        "Fibre Optique Sécurisée Orange",
-        "Espace collaboratif unifié",
-        "Accès VPN managé & Pare-feu"
-      ],
-      roadmap: [
-        "Phase 1 : Audit et étude d'éligibilité fibre",
-        "Phase 2 : Déploiement des accès et outils",
-        "Phase 3 : Accompagnement au changement"
-      ],
-      recommended_services: [
-        { name: "Fibre Optique Pro", priority: "CRITICAL", reasoning: "Remplacement du lien internet instable." }
-      ]
-    };
-    setSlidesTwinData(initialTwin);
-    setSlides(getInitialSlides(initialTwin, ent.name));
-
     try {
       const prep = await fetchAPI('/api/sales/visit-preparations/', {
         method: 'POST',
@@ -229,29 +122,7 @@ export default function SalesDashboard() {
       
       // Update slides template with live generated brief data
       if (prep) {
-        const updatedTwin = {
-          current_state: [
-            "Infrastructures WAN sous-dimensionnées",
-            "Absence de supervision proactive",
-            prep.hypothesis_to_verify || "Diagnostic en attente"
-          ],
-          proposed_state: [
-            "Liaison Fibre Orange Pro",
-            "Firewall de sécurité & WAN optimisé",
-            "Licences collaboratives centralisées"
-          ],
-          roadmap: [
-            "Phase 1: Raccordement physique de la Fibre (S1)",
-            "Phase 2: Configuration des switchs et pare-feux (S2)",
-            "Phase 3: Migration Cloud et accompagnement utilisateur (S3)"
-          ],
-          recommended_services: [
-            { name: "Fibre Pro Dédiée Orange", priority: "CRITICAL", reasoning: "Remplacement du lien ADSL saturé." },
-            { name: "Firewall managé Fortinet", priority: "HIGH", reasoning: "Filtrage et protection UTM centralisée." }
-          ]
-        };
-        setSlidesTwinData(updatedTwin);
-        setSlides(getInitialSlides(updatedTwin, ent.name));
+        // Slide template logic removed
       }
     } catch (err) {
       console.error("Erreur de génération du brief:", err);
@@ -264,37 +135,7 @@ export default function SalesDashboard() {
 
   const handleStartVisit = () => {
     if (visitPrep) {
-      const hypotheses = (selectedEnterprise as any)?.ai_hypotheses;
-      const initialCurrentState = Array.isArray(hypotheses) && hypotheses.length > 0
-        ? hypotheses.slice(0, 3)
-        : [
-            "Infrastructures WAN sous-dimensionnées",
-            "Absence de supervision proactive",
-            visitPrep.hypothesis_to_verify || "Diagnostic réseau en cours"
-          ];
-
-      const recommendedSol = (selectedEnterprise as any)?.recommended_solution || "Fibre Pro Dédiée Orange";
-      const tailoredPitch = (selectedEnterprise as any)?.ai_tailored_pitch || "Raccordement haut débit garanti avec bascule automatique.";
-
-      const twinData = {
-        current_state: initialCurrentState,
-        proposed_state: [
-          recommendedSol,
-          "Garantie de Temps de Rétablissement (GTR 4h signée)",
-          "Supervision & accompagnement Orange Business B2B"
-        ],
-        roadmap: [
-          "Phase 1: Test d'éligibilité et adduction Fibre (S1)",
-          "Phase 2: Configuration des équipements et routeur managé (S2)",
-          "Phase 3: Migration Cloud et accompagnement utilisateurs (S3)"
-        ],
-        recommended_services: [
-          { name: recommendedSol, priority: "CRITICAL", reasoning: tailoredPitch },
-          { name: "CyberSOC & Next-Gen Firewall", priority: "HIGH", reasoning: "Protection périmétrique et filtrage des flux 24/7." }
-        ]
-      };
-      setSlidesTwinData(twinData);
-      setSlides(getInitialSlides(twinData, selectedEnterprise?.name || ''));
+      // Slide logic removed
     }
     setStep('visit');
     // If not recording in background, reset notes. If already recording, keep it running!
@@ -407,23 +248,7 @@ export default function SalesDashboard() {
       setVisitReport(report);
       setEmailDraft(report.follow_up_email_draft);
 
-      const twinData = {
-        current_state: [
-          ...(report.objections_raised || []),
-          "Dysfonctionnements d'accès débits constatés"
-        ],
-        proposed_state: [
-          ...(report.confirmed_needs || []),
-          "Migration vers environnement managé Orange Pro"
-        ],
-        roadmap: (report.actions_todo || []).map((act: string, idx: number) => `Phase ${idx+1}: ${act}`),
-        recommended_services: [
-          { name: (selectedEnterprise as any)?.recommended_solution || "Fibre Optique Pro", priority: "CRITICAL", reasoning: (selectedEnterprise as any)?.ai_tailored_pitch || "Raccordement réseau dédié avec SLA 99.99%." },
-          { name: "Pack Collaboration Microsoft 365 Pro", priority: "MEDIUM", reasoning: "Uniformisation des outils collaboratifs d'entreprise." }
-        ]
-      };
-      setSlidesTwinData(twinData);
-      setSlides(getInitialSlides(twinData, selectedEnterprise?.name || ''));
+      // Slide logic removed
 
       setStep('report');
     } catch (err) {
@@ -501,10 +326,7 @@ export default function SalesDashboard() {
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial</p>
             </div>
             <ThemeToggle />
-            <TrainingLauncher 
-              onClick={() => setTrainingOpen(true)}
-              hasNewNotification={false}
-            />
+
             <button
               onClick={logout}
               className="px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 bg-transparent text-zinc-700 hover:text-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100 text-xs font-550 transition-all cursor-pointer flex items-center gap-1.5"
@@ -514,35 +336,16 @@ export default function SalesDashboard() {
           </div>
         </header>
 
-        {/* Dynamic sub-header navigation tabs */}
+        {/* Dynamic sub-header */}
         {selectedEnterprise && (
           <div className="w-full border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-950/20 py-2.5 px-6 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveTab('workflow')}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'workflow'
-                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
-                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                }`}
-              >
+              <div className="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]">
                 {step === 'brief' && "① Brief de prévisite"}
                 {step === 'visit' && "② Rendez-vous client"}
                 {step === 'report' && "③ Rapport de visite"}
                 {step === 'transmitted' && "④ Dossier Transmis"}
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('slides')}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'slides'
-                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.20)]'
-                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                }`}
-              >
-                <Icons.FileText size={14} />
-                Support de Présentation (Slides)
-              </button>
+              </div>
             </div>
 
             {/* Persistent background recording pill */}
@@ -562,9 +365,7 @@ export default function SalesDashboard() {
         )}
 
         {/* Dashboard Content */}
-        <main className={`flex-1 w-full mx-auto p-6 md:p-8 flex flex-col justify-center transition-all duration-300 ${
-          activeTab === 'slides' ? 'max-w-5xl' : 'max-w-3xl'
-        }`}>
+        <main className="flex-1 w-full mx-auto p-6 md:p-8 flex flex-col justify-center transition-all duration-300 max-w-3xl">
           
           {/* Step 1: Search & targeting */}
           {step === 'search' && (
@@ -616,8 +417,6 @@ export default function SalesDashboard() {
 
           {step !== 'search' && (
             <>
-              {activeTab === 'workflow' && (
-                <>
                   {/* Step 2: Brief pre-visit */}
                   {step === 'brief' && (
                     <div className="studio-card p-6 md:p-8 shadow-sm flex flex-col gap-6 animate-fade-in">
@@ -916,8 +715,8 @@ export default function SalesDashboard() {
                   {/* Step 5: Transmitted screen */}
                   {step === 'transmitted' && (
                     <div className="studio-card p-8 shadow-sm flex flex-col items-center gap-6 text-center animate-fade-in">
-                      <div className="w-14 h-14 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xl font-semibold shadow-[0_0_20px_rgba(37,99,235,0.20)]">
-                        ✓
+                      <div className="w-14 h-14 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.20)]">
+                        <Icons.Check size={24} />
                       </div>
                       <div className="flex flex-col gap-2">
                         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Dossier transmis avec succès</h2>
@@ -934,75 +733,11 @@ export default function SalesDashboard() {
                       </button>
                     </div>
                   )}
-                </>
-              )}
-
-              {activeTab === 'slides' && (
-                <div className="w-full flex flex-col studio-card p-6 shadow-sm animate-fade-in gap-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-zinc-150 dark:border-zinc-850 pb-4 gap-3">
-                    <div className="flex flex-col">
-                      <span className="px-2 py-0.5 mr-auto rounded bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-[9px] font-semibold uppercase tracking-wide">
-                        Livrable de Présentation
-                      </span>
-                      <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1">
-                        Diapositives commerciales pour {selectedEnterprise?.name}
-                      </h3>
-                    </div>
-                    
-                    {/* Slide mode toggler button */}
-                    <button
-                      onClick={() => setIsEditingSlides(!isEditingSlides)}
-                      className="px-4 py-2 rounded-xl border border-blue-600/20 hover:border-blue-600/40 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto shadow-sm"
-                    >
-                      {isEditingSlides ? (
-                        <>
-                          <Icons.FileText size={14} />
-                          Quitter l'éditeur (Mode Lecture)
-                        </>
-                      ) : (
-                        <>
-                          <Icons.FileEdit size={14} />
-                          Modifier le slide
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Slides view switcher */}
-                  <div className="w-full">
-                    {isEditingSlides ? (
-                      <GoogleSlidesTwin
-                        twin={slidesTwinData || {
-                          current_state: ["Diagnostic en attente"],
-                          proposed_state: ["Liaison Fibre Pro"],
-                          roadmap: ["S1: Déploiement"],
-                          recommended_services: []
-                        }}
-                        companyName={selectedEnterprise?.name || "l'entreprise"}
-                        slides={slides}
-                        onChangeSlides={setSlides}
-                      />
-                    ) : (
-                      <BusinessTwinSlides
-                        twin={slidesTwinData || {
-                          current_state: ["Diagnostic en attente"],
-                          proposed_state: ["Liaison Fibre Pro"],
-                          roadmap: ["S1: Déploiement"],
-                          recommended_services: []
-                        }}
-                        companyName={selectedEnterprise?.name || "l'entreprise"}
-                        slides={slides}
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
             </>
           )}
 
         </main>
       </div>
-      <TrainingDrawer isOpen={trainingOpen} onClose={() => setTrainingOpen(false)} />
     </ProtectedRoute>
   );
 }

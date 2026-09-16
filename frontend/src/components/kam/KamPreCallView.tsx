@@ -63,6 +63,31 @@ export default function KamPreCallView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Enrichment State
+  const [enrichmentData, setEnrichmentData] = useState<any>(null);
+  const [enriching, setEnriching] = useState(false);
+
+  const handleEnrich = async () => {
+    if (!briefingData) return;
+    setEnriching(true);
+    try {
+      const res = await fetchAPI('/api/ai/sales-enrichment/', {
+        method: 'POST',
+        body: JSON.stringify({
+          company_name: briefingData.enterprise_name,
+          sector: briefingData.company_overview?.summary || 'Inconnu',
+          website: ''
+        })
+      });
+      setEnrichmentData(res);
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l'enrichissement depuis le Web");
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   // RAG Catalog Explorer State
   const [ragQuery, setRagQuery] = useState('Fibre Dédiée');
   const [ragResults, setRagResults] = useState<any[]>([]);
@@ -108,6 +133,7 @@ export default function KamPreCallView({
   const fetchBriefing = async (accountId: string, forceRegenerate = false) => {
     setLoading(true);
     setError(null);
+    setEnrichmentData(null);
     try {
       const cleanId = String(accountId).replace('account-', '');
       const method = forceRegenerate ? 'POST' : 'GET';
@@ -219,6 +245,15 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
             {copied ? <Icons.Check size={14} /> : <Icons.Copy size={14} />}
             <span>{copied ? "Briefing copié !" : "Copier la fiche"}</span>
           </button>
+
+          <button
+            onClick={handleEnrich}
+            disabled={!briefingData || enriching}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 active:scale-95 text-white text-xs font-semibold rounded-2xl transition-all shadow-none cursor-pointer disabled:opacity-50"
+          >
+            <Icons.Globe size={14} className={enriching ? "animate-spin" : ""} />
+            <span>{enriching ? "Enrichissement..." : "Enrichir depuis le Web"}</span>
+          </button>
         </div>
       </div>
 
@@ -247,6 +282,50 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
         </div>
       ) : briefingData ? (
         <div className="space-y-6 max-w-6xl">
+
+          {/* ENRICHMENT PANEL */}
+          {enrichmentData && (
+            <div className="p-6 rounded-[28px] bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Icons.Globe size={18} className="text-[#4F6CE8]" />
+                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  Données enrichies depuis le Web
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Aperçu</h4>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">{enrichmentData.company_overview}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Hypothèses Commerciales</h4>
+                    <ul className="list-disc pl-4 text-xs text-zinc-700 dark:text-zinc-300 space-y-1">
+                      {enrichmentData.commercial_hypotheses?.map((h: string, i: number) => (
+                        <li key={i}>{h}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Pitch Adapté</h4>
+                    <div className="p-3 rounded-xl bg-white dark:bg-black/20 text-xs font-medium text-zinc-900 dark:text-white italic border border-black/5 dark:border-white/5">
+                      "{enrichmentData.tailored_pitch}"
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Questions Stratégiques</h4>
+                    <ul className="list-decimal pl-4 text-xs text-zinc-700 dark:text-zinc-300 space-y-1">
+                      {enrichmentData.strategic_questions?.map((q: string, i: number) => (
+                        <li key={i}>{q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Card 1: Overview & Metrics */}
           <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
