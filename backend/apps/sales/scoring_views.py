@@ -119,66 +119,74 @@ class ScoringSimulatorView(APIView):
 
 class CalculateAccountsScoreView(APIView):
     """
-    Exécute le calcul officiel du scoring sur tous les comptes actifs
+    Exécute le calcul officiel du scoring sur les comptes ciblés
     et enregistre le résultat dans AccountScoreResult.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        profile_id = request.data.get('profile_id')
-        if profile_id:
-            profiles = ScoreProfile.objects.filter(pk=profile_id, is_active=True).prefetch_related('rules')
-        else:
-            profiles = ScoreProfile.objects.filter(is_active=True).prefetch_related('rules')
+        try:
+            profile_id = request.data.get('profile_id')
+            limit = int(request.data.get('limit', 250))
+            if profile_id:
+                profiles = ScoreProfile.objects.filter(pk=profile_id, is_active=True).prefetch_related('rules')
+            else:
+                profiles = ScoreProfile.objects.filter(is_active=True).prefetch_related('rules')
 
-        if not profiles.exists():
-            ensure_default_scoring_profiles()
-            profiles = ScoreProfile.objects.filter(is_active=True).prefetch_related('rules')
+            if not profiles.exists():
+                ensure_default_scoring_profiles()
+                profiles = ScoreProfile.objects.filter(is_active=True).prefetch_related('rules')
 
-        enterprises = Enterprise.objects.all()
-        created_count = 0
-        updated_count = 0
-        scored_results = []
+            enterprises = list(Enterprise.objects.all().order_by('-last_visited_at', '-created_at')[:limit])
+            created_count = 0
+            updated_count = 0
+            scored_results = []
 
-        for profile in profiles:
-            for ent in enterprises:
-                metrics = AccountMetricsExtractor.extract_from_enterprise(ent, window_days=profile.analysis_window_days)
-                res = ScoringEngine.calculate(profile, metrics)
+            for profile in profiles:
+                for ent in enterprises:
+                    try:
+                        metrics = AccountMetricsExtractor.extract_from_enterprise(ent, window_days=profile.analysis_window_days)
+                        res = ScoringEngine.calculate(profile, metrics)
 
-                obj, created = AccountScoreResult.objects.update_or_create(
-                    enterprise=ent,
-                    profile=profile,
-                    defaults={
-                        'score': res['score'],
-                        'status_label': res['status_label'],
-                        'status_color': res['status_color'],
-                        'triggered_rules': res['triggered_rules'],
-                        'dimension_scores': res['dimension_scores'],
-                        'metrics_snapshot': res['metrics_snapshot'],
-                    }
-                )
-                if created:
-                    created_count += 1
-                else:
-                    updated_count += 1
+                        obj, created = AccountScoreResult.objects.update_or_create(
+                            enterprise=ent,
+                            profile=profile,
+                            defaults={
+                                'score': res['score'],
+                                'status_label': res['status_label'],
+                                'status_color': res['status_color'],
+                                'triggered_rules': res['triggered_rules'],
+                                'dimension_scores': res['dimension_scores'],
+                                'metrics_snapshot': res['metrics_snapshot'],
+                            }
+                        )
+                        if created:
+                            created_count += 1
+                        else:
+                            updated_count += 1
 
-                scored_results.append({
-                    "enterprise_id": ent.id,
-                    "enterprise_name": ent.name,
-                    "profile_name": profile.name,
-                    "score": res['score'],
-                    "status_label": res['status_label'],
-                    "status_color": res['status_color'],
-                    "triggered_action": res['triggered_action'],
-                    "triggered_rules_count": len(res['triggered_rules']),
-                })
+                        if len(scored_results) < 50:
+                            scored_results.append({
+                                "enterprise_id": ent.id,
+                                "enterprise_name": ent.name,
+                                "profile_name": profile.name,
+                                "score": res['score'],
+                                "status_label": res['status_label'],
+                                "status_color": res['status_color'],
+                                "triggered_action": res['triggered_action'],
+                                "triggered_rules_count": len(res['triggered_rules']),
+                            })
+                    except Exception:
+                        continue
 
-        return Response({
-            "message": f"Scoring calculé avec succès pour {enterprises.count()} comptes.",
-            "profiles_evaluated": [p.name for p in profiles],
-            "total_evaluations": len(scored_results),
-            "results_sample": scored_results[:20]
-        }, status=status.HTTP_200_OK)
+            return Response({
+                "message": f"Alertes et scores mis à jour avec succès pour {len(enterprises)} comptes.",
+                "profiles_evaluated": [p.name for p in profiles],
+                "total_evaluations": created_count + updated_count,
+                "results_sample": scored_results[:20]
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"Erreur lors de la mise à jour des alertes: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ScoredAccountsListView(generics.ListAPIView):

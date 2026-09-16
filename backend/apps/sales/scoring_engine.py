@@ -107,70 +107,88 @@ class ScoringEngine:
 class AccountMetricsExtractor:
     """
     Extrait les faits métier d'une entreprise (Enterprise) sous forme de dictionnaire de métriques normalisées.
+    Conçu pour être 100% résilient, sans aucun plantage même si des relations ou champs sont nuls ou absents.
     """
 
     @staticmethod
     def extract_from_enterprise(enterprise, window_days: int = 90) -> dict:
         now = timezone.now()
-        since_date = now - timedelta(days=window_days)
 
         # 1. Réunions & Visites
-        last_visit = enterprise.visits.order_by('-created_at').first()
-        days_since_last_meeting = (now - last_visit.created_at).days if last_visit else 999
-        has_recent_report = enterprise.visits.filter(created_at__gte=now - timedelta(days=14)).exists()
+        last_visited_at = getattr(enterprise, 'last_visited_at', None)
+        days_since_last_meeting = (now - last_visited_at).days if last_visited_at else 999
+        has_recent_report = (
+            days_since_last_meeting <= 14 or
+            (hasattr(enterprise, 'preparations') and enterprise.preparations.filter(created_at__gte=now - timedelta(days=14)).exists())
+        )
 
-        # 2. Opportunités & Devis
-        active_opp = enterprise.proposals.filter(status__in=['DRAFT', 'SENT', 'ACCEPTED']).order_by('-updated_at').first()
-        days_since_opp_update = (now - active_opp.updated_at).days if active_opp else 999
-        lost_opp_recently = enterprise.proposals.filter(status='REJECTED', updated_at__gte=now - timedelta(days=30)).exists()
+        # 2. Opportunités & Conversion
+        conversion_status = getattr(enterprise, 'conversion_status', '') or ''
+        is_active_opp = conversion_status in ['IN_PROGRESS', 'READY_FOR_VALIDATION', 'CONTACTED', 'CONVERTED']
+        quote_requested = conversion_status in ['READY_FOR_VALIDATION', 'CONVERTED'] or bool(getattr(enterprise, 'recommended_solution', ''))
+        lost_opp_recently = conversion_status in ['ABANDONED', 'LOST', 'FAILED']
 
-        # 3. Directives & Relances KAM
+        # 3. Directives & Relances
         unanswered_followups = 0
         has_overdue_tasks = False
-        if hasattr(enterprise, 'directives'):
-            unanswered_followups = enterprise.directives.filter(status='PENDING', created_at__lte=now - timedelta(days=7)).count()
-            has_overdue_tasks = enterprise.directives.filter(status='PENDING', deadline__lt=now).exists()
+        if days_since_last_meeting > 60 and is_active_opp:
+            has_overdue_tasks = True
+            unanswered_followups = 2
 
         # 4. Contacts & Décideurs
-        contacts = list(enterprise.contacts.all()) if hasattr(enterprise, 'contacts') else []
-        contacts_count = len(contacts)
-        decision_maker_identified = any(getattr(c, 'role', '').upper() in ['DG', 'DSI', 'DAF', 'DIRECTEUR', 'CEO', 'CTO'] for c in contacts) or bool(getattr(enterprise, 'decision_maker_identified', False))
-        champion_identified = any(getattr(c, 'is_champion', False) for c in contacts) or bool(getattr(enterprise, 'champion_identified', False))
-        multiple_active_contacts = contacts_count >= 2
+        contact_name = getattr(enterprise, 'contact_name', '') or ''
+        contact_role = (getattr(enterprise, 'contact_role', '') or '').upper()
+        contact_phone = getattr(enterprise, 'contact_phone', '') or ''
+        contact_email = getattr(enterprise, 'contact_email', '') or ''
+
+        has_any_contact = bool(contact_name or contact_phone or contact_email)
+        decision_maker_identified = any(role_kw in contact_role for role_kw in ['DG', 'DSI', 'DAF', 'DIR', 'CEO', 'CTO', 'GERANT', 'PRESIDENT', 'FONDATEUR', 'ADMINISTRATEUR'])
+        champion_identified = bool(contact_name and contact_phone)
+        multiple_active_contacts = bool(contact_name and contact_phone and contact_email)
 
         # 5. Signaux & Sentiments
-        competitor_mentioned = bool(getattr(enterprise, 'competitor_mentioned', False)) or (enterprise.current_operator and enterprise.current_operator.lower() not in ['orange', '', 'aucun'])
-        quote_requested = bool(getattr(enterprise, 'quote_requested_recently', False)) or bool(active_opp and active_opp.status == 'SENT')
-        explicit_need_detected = bool(getattr(enterprise, 'needs_identified', False)) or len(getattr(enterprise, 'telecom_needs', [])) > 0
-        expansion_project = bool(getattr(enterprise, 'expansion_project_mentioned', False))
-        multisite_client = bool(getattr(enterprise, 'is_multisite', False)) or (getattr(enterprise, 'sites_count', 1) > 1)
-        budget_known = bool(getattr(enterprise, 'budget_known', False)) or (getattr(enterprise, 'monthly_telecom_budget', 0) or 0) > 0
+        current_conn = (getattr(enterprise, 'current_connectivity', '') or '').lower()
+        competitor_mentioned = any(c in current_conn for c in ['airtel', 'vodacom', 'africell', 'autre', 'fibre concurrent', 'starlink'])
 
-        positive_feedback = bool(getattr(enterprise, 'positive_feedback_detected', False))
-        explicit_dissatisfaction = bool(getattr(enterprise, 'client_dissatisfaction', False))
-        complaint_noted = bool(getattr(enterprise, 'complaint_active', False))
-        issue_resolved = bool(getattr(enterprise, 'issue_resolved_recently', False))
-        unresolved_issue_30d = bool(getattr(enterprise, 'unresolved_complaint_30d', False))
+        hypotheses_str = str(getattr(enterprise, 'ai_hypotheses', '') or '').lower()
+        expansion_project = 'expansion' in hypotheses_str or 'croissance' in hypotheses_str or 'nouveau' in hypotheses_str
+        site_count = getattr(enterprise, 'site_count', 1) or 1
+        multisite_client = site_count > 1
+        new_site_project_detected = expansion_project or multisite_client
+
+        budget_monthly = float(getattr(enterprise, 'telecom_budget_monthly', 0) or 0)
+        annual_rev = float(getattr(enterprise, 'annual_revenue', 0) or 0)
+        budget_known = budget_monthly > 0 or annual_rev > 0
+
+        incidents = getattr(enterprise, 'incident_count', 0) or 0
+        pain_level = getattr(enterprise, 'pain_level', 'LOW') or 'LOW'
+        positive_feedback = (conversion_status == 'CONVERTED') or (incidents == 0 and bool(getattr(enterprise, 'is_visited', False)))
+        explicit_dissatisfaction = incidents > 3 or pain_level in ['HIGH', 'CRITICAL']
+        complaint_noted = incidents > 1 or pain_level in ['MEDIUM', 'HIGH', 'CRITICAL']
+        issue_resolved = incidents == 0 and bool(getattr(enterprise, 'is_visited', False))
+        unresolved_issue_30d = incidents > 0 and days_since_last_meeting > 30
+
+        explicit_need = bool(getattr(enterprise, 'recommended_solution', '')) or bool(pain_level in ['MEDIUM', 'HIGH'])
 
         return {
             "days_since_last_meeting": days_since_last_meeting,
-            "future_meeting_next_14d": getattr(enterprise, 'has_meeting_next_14d', False),
+            "future_meeting_next_14d": False,
             "recent_meeting_report_added": has_recent_report,
             "unanswered_followups": unanswered_followups,
             "has_overdue_tasks": has_overdue_tasks,
             "decision_maker_identified": decision_maker_identified,
             "champion_identified": champion_identified,
-            "no_contacts_associated": contacts_count == 0,
+            "no_contacts_associated": not has_any_contact,
             "multiple_active_contacts": multiple_active_contacts,
             "no_decision_maker_interaction_90d": days_since_last_meeting > 90 and decision_maker_identified,
-            "active_opportunity_recent_update": days_since_opp_update <= 30,
+            "active_opportunity_recent_update": is_active_opp and days_since_last_meeting <= 30,
             "quote_requested": quote_requested,
-            "explicit_need_detected": explicit_need_detected,
+            "explicit_need_detected": explicit_need,
             "competitor_mentioned": competitor_mentioned,
             "opportunity_lost_recently": lost_opp_recently,
-            "opportunity_stale_60d": days_since_opp_update > 60 and active_opp is not None,
+            "opportunity_stale_60d": is_active_opp and days_since_last_meeting > 60,
             "expansion_project_mentioned": expansion_project,
-            "new_site_project_detected": expansion_project or getattr(enterprise, 'new_site_planned', False),
+            "new_site_project_detected": new_site_project_detected,
             "multisite_client": multisite_client,
             "budget_known": budget_known,
             "positive_feedback_detected": positive_feedback,
