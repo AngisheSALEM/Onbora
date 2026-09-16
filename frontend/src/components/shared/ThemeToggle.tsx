@@ -14,6 +14,18 @@ export default function ThemeToggle() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    const handleExternalThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme: 'light' | 'dark' }>;
+      if (customEvent.detail?.theme) {
+        setTheme(customEvent.detail.theme);
+      }
+    };
+
+    window.addEventListener('onbora:theme_changed', handleExternalThemeChange);
+    return () => {
+      window.removeEventListener('onbora:theme_changed', handleExternalThemeChange);
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -26,6 +38,10 @@ export default function ThemeToggle() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    window.dispatchEvent(
+      new CustomEvent('onbora:theme_changed', { detail: { theme: newTheme } })
+    );
   };
 
   return (

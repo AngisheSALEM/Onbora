@@ -12,6 +12,8 @@ import BackofficePagination from '@/components/backoffice/BackofficePagination';
 import DailyReportView from '@/components/backoffice/DailyReportView';
 import EnterpriseActionsModal from '@/components/backoffice/EnterpriseActionsModal';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
+import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
+import UserAvatar from '@/components/kam/UserAvatar';
 
 const SupervisorTerritoryMap = dynamic(
   () => import('@/components/supervisor/SupervisorTerritoryMap'),
@@ -614,7 +616,7 @@ export default function BackofficeCommandCenterPage() {
         phone: '',
         password: '',
         location: 'Kinshasa',
-        avatar: 'memoji_056.png',
+        avatar: '',
       });
       await loadDashboardData();
     } catch (err: any) {
@@ -1226,7 +1228,7 @@ export default function BackofficeCommandCenterPage() {
                 <Icons.Refresh size={15} className={loading ? "animate-spin" : ""} />
               </button>
 
-              <ThemeToggle />
+               
             </div>
           </header>
 
@@ -1335,16 +1337,16 @@ export default function BackofficeCommandCenterPage() {
                 {/* Plus petites entreprises Accounts Table */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[850px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Entreprise TPE</th>
-                          <th className="pb-3 px-3">Secteur & Ville</th>
-                          <th className="pb-3 px-3">Plaque</th>
-                          <th className="pb-3 px-3">Commercial Assigné</th>
-                          <th className="pb-3 px-3">Statut Visite</th>
-                          <th className="pb-3 px-3">Statut Client</th>
-                          <th className="pb-3 px-3 text-right">Actions & Suivi</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[180px]">Entreprise TPE</th>
+                          <th className="py-3 px-3.5">Secteur & Ville</th>
+                          <th className="py-3 px-3.5">Plaque</th>
+                          <th className="py-3 px-3.5">Commercial Assigné</th>
+                          <th className="py-3 px-3.5">Statut Visite</th>
+                          <th className="py-3 px-3.5">Statut Client</th>
+                          <th className="py-3 px-3.5 text-right">Actions & Suivi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1685,15 +1687,15 @@ export default function BackofficeCommandCenterPage() {
                       {/* Accounts Table */}
                       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs">
+                          <table className="w-full text-left text-xs min-w-[800px]">
                             <thead>
-                              <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                                <th className="pb-3 px-3">Entreprise</th>
-                                <th className="pb-3 px-3">Plaque & Commune</th>
-                                <th className="pb-3 px-3">Contact Référent</th>
-                                <th className="pb-3 px-3">Statut Visite</th>
-                                <th className="pb-3 px-3">Statut SOHO</th>
-                                <th className="pb-3 px-3 text-right">Réaffectation</th>
+                              <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                                <th className="py-3 px-3.5 min-w-[180px]">Entreprise</th>
+                                <th className="py-3 px-3.5">Plaque & Commune</th>
+                                <th className="py-3 px-3.5">Contact Référent</th>
+                                <th className="py-3 px-3.5">Statut Visite</th>
+                                <th className="py-3 px-3.5">Statut SOHO</th>
+                                <th className="py-3 px-3.5 text-right">Réaffectation</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2093,16 +2095,16 @@ export default function BackofficeCommandCenterPage() {
                   {/* Salespersons Table */}
                   <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full text-left text-xs min-w-[850px]">
                         <thead>
-                          <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                            <th className="pb-3 px-3">Commercial</th>
-                            <th className="pb-3 px-3">Plaques Affectées</th>
-                            <th className="pb-3 px-3">Points Cumulés</th>
-                            <th className="pb-3 px-3">Signatures SOHO</th>
-                            <th className="pb-3 px-3">Visites Réalisées</th>
-                            <th className="pb-3 px-3">Statut</th>
-                            <th className="pb-3 px-3 text-right">Action</th>
+                          <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                            <th className="py-3 px-3.5 min-w-[180px]">Commercial</th>
+                            <th className="py-3 px-3.5">Plaques Affectées</th>
+                            <th className="py-3 px-3.5">Points Cumulés</th>
+                            <th className="py-3 px-3.5">Signatures SOHO</th>
+                            <th className="py-3 px-3.5">Visites Réalisées</th>
+                            <th className="py-3 px-3.5">Statut</th>
+                            <th className="py-3 px-3.5 text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2494,14 +2496,14 @@ export default function BackofficeCommandCenterPage() {
                   {/* Enterprises Table in this plaque */}
                   <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full text-left text-xs min-w-[750px]">
                         <thead>
-                          <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                            <th className="pb-3 px-3">Entreprise</th>
-                            <th className="pb-3 px-3">Contact Référent</th>
-                            <th className="pb-3 px-3">Statut Visite</th>
-                            <th className="pb-3 px-3">Statut SOHO</th>
-                            <th className="pb-3 px-3 text-right">Commercial Affecté</th>
+                          <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                            <th className="py-3 px-3.5 min-w-[180px]">Entreprise</th>
+                            <th className="py-3 px-3.5">Contact Référent</th>
+                            <th className="py-3 px-3.5">Statut Visite</th>
+                            <th className="py-3 px-3.5">Statut SOHO</th>
+                            <th className="py-3 px-3.5 text-right">Commercial Affecté</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2675,15 +2677,15 @@ export default function BackofficeCommandCenterPage() {
                   {/* Plaques Table */}
                   <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden flex flex-col gap-4">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full text-left text-xs min-w-[850px]">
                         <thead>
-                          <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                            <th className="pb-3 px-3">Code Plaque</th>
-                            <th className="pb-3 px-3">Nom & Ville</th>
-                            <th className="pb-3 px-3">Commerciaux Affectés</th>
-                            <th className="pb-3 px-3">Comptes SOHO</th>
-                            <th className="pb-3 px-3">Visités vs Non visités</th>
-                            <th className="pb-3 px-3 text-right">Actions & Répartition</th>
+                          <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                            <th className="py-3 px-3.5">Code Plaque</th>
+                            <th className="py-3 px-3.5 min-w-[180px]">Nom & Ville</th>
+                            <th className="py-3 px-3.5">Commerciaux Affectés</th>
+                            <th className="py-3 px-3.5">Comptes SOHO</th>
+                            <th className="py-3 px-3.5">Visités vs Non visités</th>
+                            <th className="py-3 px-3.5 text-right">Actions & Répartition</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2862,16 +2864,16 @@ export default function BackofficeCommandCenterPage() {
 
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[900px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Entreprise</th>
-                          <th className="pb-3 px-3">RCCM & Commune</th>
-                          <th className="pb-3 px-3">Contact Principal</th>
-                          <th className="pb-3 px-3">Commercial Affecté</th>
-                          <th className="pb-3 px-3">Opérateur Actuel</th>
-                          <th className="pb-3 px-3">Solution Recommandée</th>
-                          <th className="pb-3 px-3 text-right">Fiche</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[180px]">Entreprise</th>
+                          <th className="py-3 px-3.5">RCCM & Commune</th>
+                          <th className="py-3 px-3.5">Contact Principal</th>
+                          <th className="py-3 px-3.5">Commercial Affecté</th>
+                          <th className="py-3 px-3.5">Opérateur Actuel</th>
+                          <th className="py-3 px-3.5">Solution Recommandée</th>
+                          <th className="py-3 px-3.5 text-right">Fiche</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2930,7 +2932,7 @@ export default function BackofficeCommandCenterPage() {
                       Paramètres du Profil & Base de Connaissances
                     </h3>
                     <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
-                      Personnalisez votre avatar Memoji Apple 3D, consultez les règles métier terrain et gérez votre session.
+                      Gérez votre photo de profil officielle, consultez les règles métier terrain et administrez votre session.
                     </p>
                   </div>
                   {avatarSuccessMsg && (
@@ -2997,7 +2999,10 @@ export default function BackofficeCommandCenterPage() {
                   />
                 </div>
 
-                {/* 2. FAQ INTERACTIVE SUPERVISEUR */}
+                {/* 2. Préférences d'Affichage & Thème Visuel */}
+                <ThemeSettingCard />
+
+                {/* 3. FAQ INTERACTIVE SUPERVISEUR */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4">
                   <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                     <div>
@@ -3506,16 +3511,7 @@ export default function BackofficeCommandCenterPage() {
                         className="flex items-center justify-between p-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#4F6CE8]/15 overflow-hidden flex items-center justify-center shrink-0">
-                            <img
-                              src={`/memojis/${(sp.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                              alt={sp.full_name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
-                              }}
-                            />
-                          </div>
+                          <UserAvatar src={sp.avatar} name={sp.full_name} size="sm" />
                           <div className="flex flex-col">
                             <span className="font-semibold text-xs text-[#242124] dark:text-white">
                               {sp.full_name}

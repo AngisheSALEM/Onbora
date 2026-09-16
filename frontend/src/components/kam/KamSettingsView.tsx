@@ -7,6 +7,7 @@ import { Icons } from '@/components/shared/Icons';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 import KamActivityStatusSelector, { ACTIVITY_STATUSES } from './KamActivityStatusSelector';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
+import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
 
 export default function KamSettingsView() {
   const { user, updateUser, logout } = useAuth();
@@ -164,7 +165,7 @@ export default function KamSettingsView() {
               Mettez à jour votre statut pour informer l&apos;équipe et le KAM Office de votre disponibilité.
             </p>
           </div>
-          <KamActivityStatusSelector />
+           
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
@@ -220,7 +221,10 @@ export default function KamSettingsView() {
         />
       </div>
 
-      {/* 4. Base de Connaissances & FAQ Opérationnelle */}
+      {/* 4. Préférences d'Affichage & Thème Visuel */}
+      <ThemeSettingCard />
+
+      {/* 5. Base de Connaissances & FAQ Opérationnelle */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
         <div className="flex items-center gap-2 pb-2 border-b border-black/5 dark:border-white/5">
           <Icons.HelpCircle size={18} className="text-[#4F6CE8]" />

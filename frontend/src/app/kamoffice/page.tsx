@@ -13,6 +13,7 @@ import UserAvatar from '@/components/kam/UserAvatar';
 import KamActivityStatusSelector from '@/components/kam/KamActivityStatusSelector';
 import Pagination from '@/components/kam/Pagination';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
+import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
 
 export type KamOfficeView =
   | 'overview'
@@ -154,7 +155,11 @@ export default function KamOfficePage() {
   const reportsPageSize = 10;
   const [selectedReportDetail, setSelectedReportDetail] = useState<KamVisitRecord | null>(null);
 
-  // Pagination State for Grands Comptes, PME, KAMs
+  // Pagination State for Overview, Grands Comptes, PME, KAMs
+  const [overviewPage, setOverviewPage] = useState(1);
+  const overviewPageSize = 10;
+  const [selectedKamAccountsPage, setSelectedKamAccountsPage] = useState(1);
+  const selectedKamAccountsPageSize = 10;
   const [gcPage, setGcPage] = useState(1);
   const gcPageSize = 10;
   const [pmePage, setPmePage] = useState(1);
@@ -264,6 +269,16 @@ export default function KamOfficePage() {
     loadKamOfficeData();
     loadKamReports();
   }, [loadKamOfficeData, loadKamReports]);
+
+  useEffect(() => {
+    setOverviewPage(1);
+    setGcPage(1);
+    setPmePage(1);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setSelectedKamAccountsPage(1);
+  }, [selectedKamDetail]);
 
   // Sync profile picture input from user
   useEffect(() => {
@@ -555,6 +570,22 @@ export default function KamOfficePage() {
 
   const totalReportsPages = Math.ceil(filteredKamReports.length / reportsPageSize) || 1;
 
+  // Paginated Overview Accounts (Portefeuille & KPIs)
+  const paginatedOverviewAccounts = useMemo(() => {
+    const start = (overviewPage - 1) * overviewPageSize;
+    return filteredOverviewAccounts.slice(start, start + overviewPageSize);
+  }, [filteredOverviewAccounts, overviewPage, overviewPageSize]);
+
+  const totalOverviewPages = Math.ceil(filteredOverviewAccounts.length / overviewPageSize) || 1;
+
+  // Paginated Selected KAM Accounts
+  const paginatedSelectedKamAccounts = useMemo(() => {
+    const start = (selectedKamAccountsPage - 1) * selectedKamAccountsPageSize;
+    return selectedKamAccounts.slice(start, start + selectedKamAccountsPageSize);
+  }, [selectedKamAccounts, selectedKamAccountsPage, selectedKamAccountsPageSize]);
+
+  const totalSelectedKamAccountsPages = Math.ceil(selectedKamAccounts.length / selectedKamAccountsPageSize) || 1;
+
   // Paginated Grands Comptes
   const paginatedGrandsComptes = useMemo(() => {
     const start = (gcPage - 1) * gcPageSize;
@@ -587,18 +618,18 @@ export default function KamOfficePage() {
       icon: Icons.Sliders,
       badge: metrics ? metrics.total_accounts : undefined,
     },
-    {
-      id: 'leadscoring' as KamOfficeView,
-      label: "Pipeline & Scoring B2B",
-      icon: Icons.Award,
-      badge: "Priorités",
-    },
-    {
-      id: 'churnradar' as KamOfficeView,
-      label: "Radar Taux d'abandon & Alertes",
-      icon: Icons.AlertTriangle,
-      badge: undefined,
-    },
+    // {
+    //   id: 'leadscoring' as KamOfficeView,
+    //   label: "Pipeline & Scoring B2B",
+    //   icon: Icons.Award,
+    //   badge: "Priorités",
+    // },
+    // {
+    //   id: 'churnradar' as KamOfficeView,
+    //   label: "Radar Taux d'abandon & Alertes",
+    //   icon: Icons.AlertTriangle,
+    //   badge: undefined,
+    // },
     {
       id: 'kams' as KamOfficeView,
       label: "Équipe KAM & Effectifs",
@@ -836,9 +867,9 @@ export default function KamOfficePage() {
                 <Icons.Refresh size={15} className={loadingData || loadingKamReports ? "animate-spin" : ""} />
               </button>
 
-              <KamActivityStatusSelector />
+              
 
-              <ThemeToggle />
+               
             </div>
           </header>
 
@@ -927,7 +958,10 @@ export default function KamOfficePage() {
                       <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Segment :</span>
                       <select
                         value={overviewSegmentFilter}
-                        onChange={(e) => setOverviewSegmentFilter(e.target.value as any)}
+                        onChange={(e) => {
+                          setOverviewSegmentFilter(e.target.value as any);
+                          setOverviewPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
                       >
                         <option value="ALL">Tous les segments</option>
@@ -941,7 +975,10 @@ export default function KamOfficePage() {
                       <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Affectation :</span>
                       <select
                         value={overviewAssignmentFilter}
-                        onChange={(e) => setOverviewAssignmentFilter(e.target.value as any)}
+                        onChange={(e) => {
+                          setOverviewAssignmentFilter(e.target.value as any);
+                          setOverviewPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
                       >
                         <option value="ALL">Tous les statuts</option>
@@ -955,7 +992,10 @@ export default function KamOfficePage() {
                       <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">KAM :</span>
                       <select
                         value={overviewKamFilter}
-                        onChange={(e) => setOverviewKamFilter(e.target.value)}
+                        onChange={(e) => {
+                          setOverviewKamFilter(e.target.value);
+                          setOverviewPage(1);
+                        }}
                         className="bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#242124] dark:text-white outline-none cursor-pointer"
                       >
                         <option value="ALL">Tous les KAMs</option>
@@ -969,24 +1009,24 @@ export default function KamOfficePage() {
                   </div>
 
                   <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
-                    {filteredOverviewAccounts.length} comptes affichés
+                    {filteredOverviewAccounts.length} comptes au total
                   </span>
                 </div>
 
                 {/* Accounts Table */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[950px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Compte & Entreprise</th>
-                          <th className="pb-3 px-3">Segment</th>
-                          <th className="pb-3 px-3">CA Annuel</th>
-                          <th className="pb-3 px-3">Localisation</th>
-                          <th className="pb-3 px-3">Opérateur Actuel</th>
-                          <th className="pb-3 px-3">Contact Décideur</th>
-                          <th className="pb-3 px-3">KAM Assigné</th>
-                          <th className="pb-3 px-3 text-right">Action</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[200px]">Compte & Entreprise</th>
+                          <th className="py-3 px-3.5">Segment</th>
+                          <th className="py-3 px-3.5">CA Annuel</th>
+                          <th className="py-3 px-3.5">Localisation</th>
+                          <th className="py-3 px-3.5">Opérateur Actuel</th>
+                          <th className="py-3 px-3.5 min-w-[150px]">Contact Décideur</th>
+                          <th className="py-3 px-3.5">KAM Assigné</th>
+                          <th className="py-3 px-3.5 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -997,7 +1037,7 @@ export default function KamOfficePage() {
                             </td>
                           </tr>
                         ) : (
-                          filteredOverviewAccounts.map((acc) => (
+                          paginatedOverviewAccounts.map((acc) => (
                             <tr key={acc.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
                               <td className="py-3.5 px-3">
                                 <div className="flex flex-col">
@@ -1060,16 +1100,7 @@ export default function KamOfficePage() {
                               <td className="py-3.5 px-3">
                                 {acc.assigned_kam ? (
                                   <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-[#4F6CE8]/20 flex items-center justify-center text-[10px] font-bold text-[#4F6CE8] overflow-hidden shrink-0">
-                                      <img
-                                        src={`/memojis/${(acc.assigned_kam.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                        alt={acc.assigned_kam.full_name}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          (e.currentTarget as HTMLElement).style.display = 'none';
-                                        }}
-                                      />
-                                    </div>
+                                    <UserAvatar src={acc.assigned_kam.avatar} name={acc.assigned_kam.full_name} size="xs" />
                                     <span className="font-semibold text-zinc-900 dark:text-white">
                                       {acc.assigned_kam.full_name}
                                     </span>
@@ -1095,6 +1126,15 @@ export default function KamOfficePage() {
                       </tbody>
                     </table>
                   </div>
+
+                  <Pagination
+                    currentPage={overviewPage}
+                    totalPages={totalOverviewPages}
+                    onPageChange={setOverviewPage}
+                    totalItems={filteredOverviewAccounts.length}
+                    pageSize={overviewPageSize}
+                    itemName="comptes stratégiques"
+                  />
                 </div>
               </div>
             )}
@@ -1156,13 +1196,12 @@ export default function KamOfficePage() {
 
                     {/* Profile Header Card */}
                     <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
-                      <div className="w-20 h-20 rounded-3xl bg-[#4F6CE8]/15 border border-[#4F6CE8]/30 flex items-center justify-center overflow-hidden shrink-0">
-                        <img
-                          src={`/memojis/${(selectedKamDetail.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                          alt={selectedKamDetail.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <UserAvatar
+                        src={selectedKamDetail.avatar}
+                        name={selectedKamDetail.full_name}
+                        size="xl"
+                        className="border border-[#4F6CE8]/30 shadow-md shrink-0"
+                      />
 
                       <div className="flex-1 text-center sm:text-left">
                         <div className="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
@@ -1237,16 +1276,16 @@ export default function KamOfficePage() {
                       </div>
 
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs">
+                        <table className="w-full text-left text-xs min-w-[850px]">
                           <thead>
-                            <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                              <th className="pb-3 px-3">Compte</th>
-                              <th className="pb-3 px-3">Segment</th>
-                              <th className="pb-3 px-3">CA Annuel</th>
-                              <th className="pb-3 px-3">Localisation</th>
-                              <th className="pb-3 px-3">Contact</th>
-                              <th className="pb-3 px-3">Statut</th>
-                              <th className="pb-3 px-3 text-right">Action</th>
+                            <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                              <th className="py-3 px-3.5 min-w-[180px]">Compte</th>
+                              <th className="py-3 px-3.5">Segment</th>
+                              <th className="py-3 px-3.5">CA Annuel</th>
+                              <th className="py-3 px-3.5">Localisation</th>
+                              <th className="py-3 px-3.5">Contact</th>
+                              <th className="py-3 px-3.5">Statut</th>
+                              <th className="py-3 px-3.5 text-right">Action</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1257,7 +1296,7 @@ export default function KamOfficePage() {
                                 </td>
                               </tr>
                             ) : (
-                              selectedKamAccounts.map((acc) => (
+                              paginatedSelectedKamAccounts.map((acc) => (
                                 <tr key={acc.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
                                   <td className="py-3 px-3">
                                     <button
@@ -1302,6 +1341,15 @@ export default function KamOfficePage() {
                           </tbody>
                         </table>
                       </div>
+
+                      <Pagination
+                        currentPage={selectedKamAccountsPage}
+                        totalPages={totalSelectedKamAccountsPages}
+                        onPageChange={setSelectedKamAccountsPage}
+                        totalItems={selectedKamAccounts.length}
+                        pageSize={selectedKamAccountsPageSize}
+                        itemName="comptes affectés"
+                      />
                     </div>
                   </div>
                 ) : (
@@ -1528,16 +1576,16 @@ export default function KamOfficePage() {
                 {/* Table */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[900px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Grand Compte</th>
-                          <th className="pb-3 px-3">CA Annuel</th>
-                          <th className="pb-3 px-3">Localisation</th>
-                          <th className="pb-3 px-3">Statut Conversion</th>
-                          <th className="pb-3 px-3">Contact Décideur</th>
-                          <th className="pb-3 px-3">KAM Référent</th>
-                          <th className="pb-3 px-3 text-right">Action</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[200px]">Grand Compte</th>
+                          <th className="py-3 px-3.5">CA Annuel</th>
+                          <th className="py-3 px-3.5">Localisation</th>
+                          <th className="py-3 px-3.5">Statut Conversion</th>
+                          <th className="py-3 px-3.5 min-w-[150px]">Contact Décideur</th>
+                          <th className="py-3 px-3.5">KAM Référent</th>
+                          <th className="py-3 px-3.5 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1727,16 +1775,16 @@ export default function KamOfficePage() {
                 {/* Table */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[900px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">PME Stratégique</th>
-                          <th className="pb-3 px-3">CA Annuel</th>
-                          <th className="pb-3 px-3">Localisation</th>
-                          <th className="pb-3 px-3">Statut Conversion</th>
-                          <th className="pb-3 px-3">Contact Décideur</th>
-                          <th className="pb-3 px-3">KAM Référent</th>
-                          <th className="pb-3 px-3 text-right">Action</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[200px]">PME Stratégique</th>
+                          <th className="py-3 px-3.5">CA Annuel</th>
+                          <th className="py-3 px-3.5">Localisation</th>
+                          <th className="py-3 px-3.5">Statut Conversion</th>
+                          <th className="py-3 px-3.5 min-w-[150px]">Contact Décideur</th>
+                          <th className="py-3 px-3.5">KAM Référent</th>
+                          <th className="py-3 px-3.5 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1906,16 +1954,16 @@ export default function KamOfficePage() {
                 {/* Liste des Rapports */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[950px]">
                       <thead>
-                        <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <th className="pb-3 px-3">Compte Entreprise</th>
-                          <th className="pb-3 px-3">Format</th>
-                          <th className="pb-3 px-3">Contact Décideur</th>
-                          <th className="pb-3 px-3">Synthèse & BANT</th>
-                          <th className="pb-3 px-3">Statut Conversion</th>
-                          <th className="pb-3 px-3">Date</th>
-                          <th className="pb-3 px-3 text-right">Détail</th>
+                        <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                          <th className="py-3 px-3.5 min-w-[200px]">Compte Entreprise</th>
+                          <th className="py-3 px-3.5">Format</th>
+                          <th className="py-3 px-3.5 min-w-[150px]">Contact Décideur</th>
+                          <th className="py-3 px-3.5 min-w-[280px]">Synthèse & BANT</th>
+                          <th className="py-3 px-3.5">Statut Conversion</th>
+                          <th className="py-3 px-3.5">Date</th>
+                          <th className="py-3 px-3.5 text-right">Détail</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1937,18 +1985,18 @@ export default function KamOfficePage() {
                         ) : (
                           paginatedKamReports.map((report) => (
                             <tr key={report.id} className="hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
-                              <td className="py-3.5 px-3">
+                              <td className="py-2.5 px-3 min-w-[200px]">
                                 <div className="flex flex-col">
                                   <span className="font-semibold text-zinc-900 dark:text-white">
                                     {report.enterprise_name}
                                   </span>
-                                  <span className="text-[10px] font-mono text-[#6E6C67] dark:text-[#A1A1AA]">
+                                  <span className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 font-medium">
                                     {report.crm_id} • {report.enterprise_sector || 'Secteur Entreprise'}
                                   </span>
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-3">
+                              <td className="py-2.5 px-3 whitespace-nowrap">
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                                   report.meeting_type === 'PHYSICAL'
                                     ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
@@ -1963,23 +2011,23 @@ export default function KamOfficePage() {
                                 </span>
                               </td>
 
-                              <td className="py-3.5 px-3">
+                              <td className="py-2.5 px-3 min-w-[150px]">
                                 <div className="flex flex-col">
                                   <span className="font-medium text-zinc-900 dark:text-white">
                                     {report.contact_name}
                                   </span>
-                                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                                  <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
                                     {report.contact_role || 'Décideur'}
                                   </span>
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-3 max-w-xs">
-                                <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
+                              <td className="py-2.5 px-3 min-w-[280px] max-w-lg">
+                                <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 leading-relaxed" title={report.executive_summary}>
                                   {report.executive_summary || 'Synthèse non disponible'}
                                 </p>
                                 {report.bant_scores?.total !== undefined && (
-                                  <span className="text-[10px] font-mono text-[#4F6CE8] font-bold">
+                                  <span className="text-[11px] font-mono text-[#4F6CE8] font-bold block mt-0.5">
                                     Score BANT : {report.bant_scores.total}/100
                                   </span>
                                 )}
@@ -2089,7 +2137,10 @@ export default function KamOfficePage() {
                   </div>
                 </div>
 
-                {/* 2. FAQ & Règles de Gestion KAM Office */}
+                {/* 2. Préférences d'Affichage & Thème Visuel */}
+                <ThemeSettingCard />
+
+                {/* 3. FAQ & Règles de Gestion KAM Office */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                     <Icons.HelpCircle size={18} className="text-[#4F6CE8]" />

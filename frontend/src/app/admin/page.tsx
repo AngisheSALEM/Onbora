@@ -12,6 +12,7 @@ import Pagination from '@/components/kam/Pagination';
 import UserAvatar from '@/components/kam/UserAvatar';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 import AdminScoringView from '@/components/admin/AdminScoringView';
+import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
 
 const AdminPlaqueMapOnly = dynamic(
   () => import('@/components/admin/AdminPlaqueMapOnly'),
@@ -247,14 +248,12 @@ export default function AdminCockpitPage() {
     phone: '',
     password: '',
     location: '',
-    avatar: 'memoji_056.png',
+    avatar: '',
   });
   const [managerCreateError, setManagerCreateError] = useState('');
   const [creatingManager, setCreatingManager] = useState(false);
 
-  // Settings & Memojis State
-  const [memojisCatalog, setMemojisCatalog] = useState<{ id: number; filename: string; gender?: string; ethnicity?: string }[]>([]);
-  const [memojiGenderFilter, setMemojiGenderFilter] = useState<'all' | 'homme' | 'femme'>('all');
+  // Settings State
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [avatarSuccessMsg, setAvatarSuccessMsg] = useState('');
   const [avatarErrorMsg, setAvatarErrorMsg] = useState('');
@@ -624,7 +623,7 @@ export default function AdminCockpitPage() {
       phone: '',
       password: '',
       location: role === 'SUPERVISOR' ? 'Direction Régionale Kinshasa' : 'Kinshasa & Portefeuille National',
-      avatar: role === 'SUPERVISOR' ? 'memoji_031.png' : 'memoji_019.png',
+      avatar: '',
     });
     setManagerCreateError('');
     setIsManagerModalOpen(true);
@@ -819,11 +818,6 @@ export default function AdminCockpitPage() {
   const supervisorsList = useMemo(() => managers.filter(m => m.role === 'SUPERVISOR').sort((a, b) => new Date(b.date_joined).getTime() - new Date(a.date_joined).getTime()), [managers]);
   const kamManagersList = useMemo(() => managers.filter(m => m.role === 'KAM_MANAGER').sort((a, b) => new Date(b.date_joined).getTime() - new Date(a.date_joined).getTime()), [managers]);
 
-  // Filtered Memojis catalog
-  const filteredMemojis = useMemo(() => {
-    if (memojiGenderFilter === 'all') return memojisCatalog;
-    return memojisCatalog.filter((m) => m.gender === memojiGenderFilter);
-  }, [memojisCatalog, memojiGenderFilter]);
 
   // Filtered Converted Accounts
   const filteredConvertedAccounts = useMemo(() => {
@@ -1113,11 +1107,11 @@ export default function AdminCockpitPage() {
                   label: 'Règles de Segmentation',
                   icon: <Icons.Sliders size={16} />,
                 },
-                {
-                  id: 'scoring',
-                  label: 'Moteur de Scoring',
-                  icon: <Icons.Target size={16} />,
-                },
+                // {
+                //   id: 'scoring',
+                //   label: 'Moteur de Scoring',
+                //   icon: <Icons.Target size={16} />,
+                // },
                 {
                   id: 'settings',
                   label: 'Paramètres & FAQ',
@@ -1153,24 +1147,20 @@ export default function AdminCockpitPage() {
             </nav>
           </div>
 
-          {/* Profil Administrateur avec Memoji & Déconnexion */}
+          {/* Profil Administrateur & Déconnexion */}
           <div className="flex flex-col gap-3 pt-4 border-t border-black/5 dark:border-white/5">
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-1`}>
               <button
                 onClick={() => setActiveTab('settings')}
                 className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5'} text-left cursor-pointer group`}
-                title={isCollapsed ? "Mon Profil & Memoji" : "Accéder aux paramètres et changer mon Memoji"}
+                title={isCollapsed ? "Mon Profil" : "Accéder aux paramètres"}
               >
-                <div className="w-9 h-9 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center font-medium text-xs shadow-sm overflow-hidden group-hover:ring-2 group-hover:ring-[#4F6CE8] transition-all shrink-0">
-                  <img
-                    src={`/memojis/${(user?.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                    alt="Memoji"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                </div>
+                <UserAvatar
+                  src={user?.profile_picture_url || user?.avatar}
+                  name={user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin Onbora'}
+                  size="sm"
+                  className="shrink-0 group-hover:ring-2 group-hover:ring-[#4F6CE8] transition-all"
+                />
                 {!isCollapsed && (
                   <div className="flex flex-col truncate max-w-[130px]">
                     <span className="text-xs font-medium leading-tight text-[#242124] dark:text-white truncate group-hover:text-[#4F6CE8] transition-colors">
@@ -1252,7 +1242,7 @@ export default function AdminCockpitPage() {
               )}
 
               {/* Theme Toggle */}
-              <ThemeToggle />
+               
             </div>
           </header>
 
@@ -1696,14 +1686,14 @@ export default function AdminCockpitPage() {
               {/* Table dense des Superviseurs */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[760px]">
                     <thead>
-                      <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                        <th className="pb-3 px-3">Superviseur</th>
-                        <th className="pb-3 px-3">Plaque / Territoire</th>
-                        <th className="pb-3 px-3">Contact</th>
-                        <th className="pb-3 px-3">Statut</th>
-                        <th className="pb-3 px-3 text-right">Actions</th>
+                      <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                        <th className="py-3 px-3.5">Superviseur</th>
+                        <th className="py-3 px-3.5">Plaque / Territoire</th>
+                        <th className="py-3 px-3.5">Contact</th>
+                        <th className="py-3 px-3.5">Statut</th>
+                        <th className="py-3 px-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1793,14 +1783,14 @@ export default function AdminCockpitPage() {
               {/* Table dense des Gérants KAM */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[760px]">
                     <thead>
-                      <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                        <th className="pb-3 px-3">Gérant KAM</th>
-                        <th className="pb-3 px-3">Direction / Pôle</th>
-                        <th className="pb-3 px-3">Contact</th>
-                        <th className="pb-3 px-3">Statut</th>
-                        <th className="pb-3 px-3 text-right">Actions</th>
+                      <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                        <th className="py-3 px-3.5">Gérant KAM</th>
+                        <th className="py-3 px-3.5">Direction / Pôle</th>
+                        <th className="py-3 px-3.5">Contact</th>
+                        <th className="py-3 px-3.5">Statut</th>
+                        <th className="py-3 px-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -1952,11 +1942,7 @@ export default function AdminCockpitPage() {
                             }`}
                           >
                             <div className="relative shrink-0">
-                              <img
-                                src={`/memojis/${(sp.avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                                alt={sp.full_name}
-                                className="w-10 h-10 rounded-xl object-cover"
-                              />
+                              <UserAvatar src={sp.avatar} name={sp.full_name} size="md" />
                               <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ${
                                 idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : 'bg-amber-700'
                               }`}>
@@ -1980,17 +1966,17 @@ export default function AdminCockpitPage() {
                   {/* Table des Commerciaux */}
                   <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full text-left text-xs min-w-[850px]">
                         <thead>
-                          <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                            <th className="pb-3 px-3">Commercial</th>
-                            <th className="pb-3 px-3">Plaques Affectées</th>
-                            <th className="pb-3 px-3">Signatures</th>
-                            <th className="pb-3 px-3">Visites</th>
-                            <th className="pb-3 px-3">Formulaires</th>
-                            <th className="pb-3 px-3">Incentive</th>
-                            <th className="pb-3 px-3">Statut</th>
-                            <th className="pb-3 px-3 text-right">Actions</th>
+                          <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                            <th className="py-3 px-3.5">Commercial</th>
+                            <th className="py-3 px-3.5">Plaques Affectées</th>
+                            <th className="py-3 px-3.5">Signatures</th>
+                            <th className="py-3 px-3.5">Visites</th>
+                            <th className="py-3 px-3.5">Formulaires</th>
+                            <th className="py-3 px-3.5">Incentive</th>
+                            <th className="py-3 px-3.5">Statut</th>
+                            <th className="py-3 px-3.5 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2128,15 +2114,15 @@ export default function AdminCockpitPage() {
                     /* Mode Tableau des Plaques */
                     <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs">
+                        <table className="w-full text-left text-xs min-w-[750px]">
                           <thead>
-                            <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                              <th className="pb-3 px-3">Code Plaque</th>
-                              <th className="pb-3 px-3">Nom du Secteur</th>
-                              <th className="pb-3 px-3">Ville</th>
-                              <th className="pb-3 px-3">Comptes Plus petites entreprises Rattachés</th>
-                              <th className="pb-3 px-3">Statut</th>
-                              <th className="pb-3 px-3 text-right">Action</th>
+                            <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                              <th className="py-3 px-3.5">Code Plaque</th>
+                              <th className="py-3 px-3.5">Nom du Secteur</th>
+                              <th className="py-3 px-3.5">Ville</th>
+                              <th className="py-3 px-3.5">Comptes Plus petites entreprises Rattachés</th>
+                              <th className="py-3 px-3.5">Statut</th>
+                              <th className="py-3 px-3.5 text-right">Action</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2254,11 +2240,7 @@ export default function AdminCockpitPage() {
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="relative shrink-0">
-                            <img
-                              src={`/memojis/${(k.avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-                              alt={k.full_name}
-                              className="w-10 h-10 rounded-xl object-cover"
-                            />
+                            <UserAvatar src={k.avatar} name={k.full_name} size="md" />
                             <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ${
                               idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : 'bg-amber-700'
                             }`}>
@@ -2291,16 +2273,16 @@ export default function AdminCockpitPage() {
               {/* Table dense des KAMs */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[850px]">
                     <thead>
-                      <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                        <th className="pb-3 px-3">Key Account Manager</th>
-                        <th className="pb-3 px-3">Pôle / Spécialisation</th>
-                        <th className="pb-3 px-3">Portefeuille</th>
-                        <th className="pb-3 px-3">Signatures</th>
-                        <th className="pb-3 px-3">CA Signé ($)</th>
-                        <th className="pb-3 px-3">Contact</th>
-                        <th className="pb-3 px-3 text-right">Actions</th>
+                      <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                        <th className="py-3 px-3.5">Key Account Manager</th>
+                        <th className="py-3 px-3.5">Pôle / Spécialisation</th>
+                        <th className="py-3 px-3.5">Portefeuille</th>
+                        <th className="py-3 px-3.5">Signatures</th>
+                        <th className="py-3 px-3.5">CA Signé ($)</th>
+                        <th className="py-3 px-3.5">Contact</th>
+                        <th className="py-3 px-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -2605,7 +2587,10 @@ export default function AdminCockpitPage() {
                 />
               </div>
 
-              {/* 2. FAQ INTERACTIVE & BASE DE CONNAISSANCES */}
+              {/* 2. Préférences d'Affichage & Thème Visuel */}
+              <ThemeSettingCard />
+
+              {/* 3. FAQ INTERACTIVE & BASE DE CONNAISSANCES */}
               <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4">
                 <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                   <div>
@@ -3248,16 +3233,12 @@ export default function AdminCockpitPage() {
             {/* Header du Portefeuille */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5 shrink-0">
               <div className="flex items-center gap-3.5">
-                <div className="w-13 h-13 rounded-2xl bg-[#4F6CE8]/10 border-2 border-[#4F6CE8]/30 flex items-center justify-center overflow-hidden shadow-sm shrink-0">
-                  <img
-                    src={`/memojis/${(selectedKamForPortfolio.avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-                    alt={selectedKamForPortfolio.full_name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                </div>
+                <UserAvatar
+                  src={selectedKamForPortfolio.avatar}
+                  name={selectedKamForPortfolio.full_name}
+                  size="lg"
+                  className="shrink-0 border-2 border-[#4F6CE8]/30 shadow-sm"
+                />
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold text-[#242124] dark:text-white">
@@ -3344,8 +3325,8 @@ export default function AdminCockpitPage() {
                   {kamPortfolioSearch ? "Aucun compte ne correspond à votre recherche dans ce portefeuille." : "Aucune entreprise assignée à ce KAM pour le moment."}
                 </div>
               ) : (
-                <table className="w-full text-left text-xs">
-                  <thead className="sticky top-0 bg-[#F6F5F2] dark:bg-[#242124] border-b border-black/5 dark:border-white/5 text-[10px] font-medium uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
+                <table className="w-full text-left text-xs min-w-[760px]">
+                  <thead className="sticky top-0 bg-[#F6F5F2] dark:bg-[#242124] border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                     <tr>
                       <th className="py-2.5 px-3">Entreprise & CRM ID</th>
                       <th className="py-2.5 px-3">Segment</th>
