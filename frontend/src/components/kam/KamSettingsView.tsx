@@ -147,7 +147,8 @@ export default function KamSettingsView() {
 
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+          title="Se déconnecter de votre session KAM"
         >
           <Icons.LogOut size={16} />
           <span>Se déconnecter</span>
@@ -290,10 +291,14 @@ export default function KamSettingsView() {
                 Annuler
               </button>
               <button
-                onClick={() => logout()}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer transition-all shadow-sm"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  logout();
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-none"
               >
-                Se déconnecter
+                <Icons.LogOut size={14} />
+                <span>Oui, me déconnecter</span>
               </button>
             </div>
           </div>

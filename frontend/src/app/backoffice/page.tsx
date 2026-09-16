@@ -1156,15 +1156,7 @@ export default function BackofficeCommandCenterPage() {
                 </div>
               )}
 
-              {!isSidebarCollapsed && (
-                <button
-                  onClick={logout}
-                  title="Se déconnecter"
-                  className="p-2 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Icons.LogOut size={16} />
-                </button>
-              )}
+             
             </div>
           </div>
         </aside>
@@ -2977,6 +2969,15 @@ export default function BackofficeCommandCenterPage() {
                         </span>
                       </div>
                     </div>
+
+                    <button
+                      onClick={() => logout()}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+                      title="Se déconnecter du Back-Office"
+                    >
+                      <Icons.LogOut size={16} />
+                      <span>Se déconnecter</span>
+                    </button>
                   </div>
 
                   {/* Téléversement de la Photo de Profil Superviseur */}

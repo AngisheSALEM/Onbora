@@ -1172,15 +1172,7 @@ export default function AdminCockpitPage() {
                   </div>
                 )}
               </button>
-              {!isCollapsed && (
-                <button
-                  onClick={logout}
-                  title="Se déconnecter"
-                  className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#6E6C67] dark:text-[#A1A1AA] hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  <Icons.LogOut size={15} />
-                </button>
-              )}
+              
             </div>
           </div>
         </aside>
@@ -2565,6 +2557,15 @@ export default function AdminCockpitPage() {
                       </span>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => logout()}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+                    title="Se déconnecter du portail Administrateur"
+                  >
+                    <Icons.LogOut size={16} />
+                    <span>Se déconnecter</span>
+                  </button>
                 </div>
 
                 {/* Téléversement Photo de profil Administrateur */}

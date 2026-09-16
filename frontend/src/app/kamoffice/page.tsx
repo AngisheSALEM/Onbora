@@ -789,15 +789,7 @@ export default function KamOfficePage() {
                 </div>
               )}
 
-              {!isSidebarCollapsed && (
-                <button
-                  onClick={logout}
-                  title="Se déconnecter"
-                  className="p-2 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Icons.LogOut size={16} />
-                </button>
-              )}
+              
             </div>
           </div>
         </aside>
@@ -2087,20 +2079,31 @@ export default function KamOfficePage() {
               <div className="flex flex-col gap-6 max-w-4xl">
                 {/* 1. Profil & Photo de profil */}
                 <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-5">
-                  <div className="flex items-center gap-4">
-                    <UserAvatar
-                      src={profilePictureInput || user?.profile_picture_url || user?.avatar}
-                      alt="Avatar"
-                      size="lg"
-                    />
-                    <div>
-                      <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                        {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
-                      </h3>
-                      <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-                        Gérant de la Direction KAM Office • {user?.email}
-                      </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-4">
+                      <UserAvatar
+                        src={profilePictureInput || user?.profile_picture_url || user?.avatar}
+                        alt="Avatar"
+                        size="lg"
+                      />
+                      <div>
+                        <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                          {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
+                        </h3>
+                        <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
+                          Gérant de la Direction KAM Office • {user?.email}
+                        </p>
+                      </div>
                     </div>
+
+                    <button
+                      onClick={() => logout()}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+                      title="Se déconnecter du portail KAM Office"
+                    >
+                      <Icons.LogOut size={16} />
+                      <span>Se déconnecter</span>
+                    </button>
                   </div>
 
                   {avatarSuccessMsg && (
