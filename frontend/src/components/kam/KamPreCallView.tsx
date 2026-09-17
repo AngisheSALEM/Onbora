@@ -413,7 +413,7 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
               <div className="flex items-center gap-2">
                 <Icons.Layers size={18} className="text-[#4F6CE8]" />
                 <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                  Recherche RAG Catalogue Orange B2B en Direct
+                  Recherche dans le  Catalogue Orange B2B en Direct
                 </h3>
               </div>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">

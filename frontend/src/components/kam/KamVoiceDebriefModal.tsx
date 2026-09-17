@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI, uploadAudioAPI } from '@/lib/api';
+import { evaluateVerbatimQuality } from './KamVocalVisitModal';
 
 interface KamVoiceDebriefModalProps {
   visit: StrategicVisit | null;
@@ -255,7 +256,7 @@ export default function KamVoiceDebriefModal({
         if (res.visit && onDebriefSaved) {
           onDebriefSaved(res.visit);
         }
-        setSuccessMessage("Rapport exécutif et analyse RAG générés avec succès !");
+        setSuccessMessage("Rapport exécutif et analyse générés avec succès !");
         setTimeout(() => setSuccessMessage(''), 4000);
       } else {
         setErrorMessage("Une erreur est survenue lors de la synthèse Core AI.");
@@ -281,7 +282,8 @@ export default function KamVoiceDebriefModal({
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
-  const totalWords = `${voiceTranscript} ${writtenNotes}`.split(/\s+/).filter(Boolean).length;
+  const quality = evaluateVerbatimQuality(voiceTranscript, writtenNotes);
+  const totalWords = quality.totalWords;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/70 backdrop-blur-md animate-fade-in overflow-y-auto select-none">
@@ -298,10 +300,7 @@ export default function KamVoiceDebriefModal({
                 <h2 className="text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
                   Dictaphone de Débriefing Post-Visite — {visit.account_name}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>RAG Catalogue B2B + OpenAI Whisper</span>
-                </span>
+               
               </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Dictez vos impressions ou notez vos observations. Core AI combinera les deux pour extraire besoins, engagements et email.
@@ -384,7 +383,7 @@ export default function KamVoiceDebriefModal({
                 className="px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 text-xs font-semibold rounded-full shadow-md transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Icons.Sparkles size={16} className={isGenerating ? 'animate-spin' : ''} />
-                <span>{isGenerating ? "Génération IA en cours..." : `Générer Rapport & Offres RAG (${totalWords} mots)`}</span>
+                <span>{isGenerating ? "Génération IA en cours..." : `Générer Rapport & Offres (${totalWords} mots)`}</span>
               </button>
             </div>
 
@@ -395,10 +394,34 @@ export default function KamVoiceDebriefModal({
               </div>
             )}
 
-            {isInsufficientAudio && (
-              <div className="mt-3 p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs flex items-center gap-2">
-                <Icons.AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
-                <span>Audio trop court ou simple salutation : aucun besoin technique n&apos;a été inventé. Complétez vos notes ci-dessous avant de générer.</span>
+            {/* Jauge d'évaluation de la qualité du verbatim en temps réel */}
+            {!isRecording && !isTranscribing && quality.status === 'SUFFICIENT' && (
+              <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
+                <Icons.CheckCircle size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                    <span>{quality.label}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono">
+                      {quality.substantiveCount} mot(s) métier
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-700/90 dark:text-emerald-300/90">{quality.guidance}</p>
+                </div>
+              </div>
+            )}
+
+            {!isRecording && !isTranscribing && quality.status === 'INSUFFICIENT' && (
+              <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
+                <Icons.AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                    <span>{quality.label}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono">
+                      {quality.substantiveCount}/2 mots métier
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">{quality.guidance}</p>
+                </div>
               </div>
             )}
 
@@ -517,7 +540,7 @@ export default function KamVoiceDebriefModal({
                 Synthèse IA en cours par Onbora Core AI...
               </div>
               <div className="text-xs text-zinc-500">
-                Extraction des engagements, matching catalogue Orange B2B par RAG et rédaction de l&apos;email client.
+                Extraction des engagements, matching catalogue Orange B2B et rédaction de l&apos;email client.
               </div>
             </div>
           )}
@@ -586,7 +609,7 @@ export default function KamVoiceDebriefModal({
                   <div className="flex items-center gap-2">
                     <Icons.TrendingUp size={16} className="text-[#4F6CE8]" />
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                      Offres B2B Recommandées par RAG ({debriefData.recommended_packages.length})
+                      Offres B2B Recommandées  ({debriefData.recommended_packages.length})
                     </h3>
                   </div>
 

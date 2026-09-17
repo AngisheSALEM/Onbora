@@ -49,6 +49,52 @@ function getSupportedAudioMime(): string {
   return '';
 }
 
+export function evaluateVerbatimQuality(voice: string, notes: string) {
+  const combined = `${voice} ${notes}`.trim().toLowerCase();
+  if (!combined) {
+    return {
+      isSufficient: false,
+      totalWords: 0,
+      substantiveCount: 0,
+      status: 'EMPTY',
+      label: 'En attente de contenu vocal ou écrit',
+      guidance: 'Enregistrez votre voix ou cliquez sur les puces rapides pour alimenter le débriefing.'
+    };
+  }
+
+  const words = combined.match(/\b\w+\b/g)?.filter((w) => w.length > 1) || [];
+  const trivialWords = new Set([
+    'bonjour', 'bonsoir', 'salut', 'allo', 'hello', 'hi', 'ok', 'merci',
+    'oui', 'non', 'daccord', 'test', 'micro', 'audio', 'coucou', 'yo',
+    'bienvenue', 'aurevoir', 'bonne', 'journée', 'matin', 'après', 'midi',
+    'remercie', 'présent', 'ça', 'va', 'comment', 'vas', 'tu', 'le', 'la',
+    'les', 'un', 'une', 'des', 'de', 'du', 'et', 'en', 'à', 'pour', 'avec',
+    'dans', 'sur', 'par', 'ce', 'cet', 'cette', 'ces', 'mon', 'ton', 'son',
+    'qui', 'que', 'quoi', 'dont', 'où', 'est', 'sont', 'ont', 'fait', 'faire'
+  ]);
+  const substantiveWords = words.filter((w) => !trivialWords.has(w));
+
+  if (words.length < 4 || substantiveWords.length < 2) {
+    return {
+      isSufficient: false,
+      totalWords: words.length,
+      substantiveCount: substantiveWords.length,
+      status: 'INSUFFICIENT',
+      label: 'Échange court / Salutations seules',
+      guidance: `Encore ${Math.max(1, 2 - substantiveWords.length)} mot(s) métier clé(s) (ex: fibre, coupures, budget, SD-WAN) pour une qualification B2B complète.`
+    };
+  }
+
+  return {
+    isSufficient: true,
+    totalWords: words.length,
+    substantiveCount: substantiveWords.length,
+    status: 'SUFFICIENT',
+    label: 'Matière commerciale suffisante',
+    guidance: `Besoins métier exploitables détectés (${substantiveWords.slice(0, 4).join(', ')}...). Core AI peut générer l'analyse et le matching d'offres.`
+  };
+}
+
 export default function KamVocalVisitModal({
   isOpen,
   appointment,
@@ -276,7 +322,8 @@ export default function KamVocalVisitModal({
 
   if (!isOpen || !appointment) return null;
 
-  const totalWords = `${voiceTranscript} ${writtenNotes}`.split(/\s+/).filter(Boolean).length;
+  const quality = evaluateVerbatimQuality(voiceTranscript, writtenNotes);
+  const totalWords = quality.totalWords;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 select-none">
@@ -373,10 +420,34 @@ export default function KamVocalVisitModal({
               </div>
             )}
 
-            {isInsufficientAudio && !isRecording && !isTranscribing && (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-medium text-left flex items-center gap-2">
-                <Icons.AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
-                <span>Propos courts ou salutation simple : aucun besoin technique n&apos;a été inventé. Vos notes ci-dessous serviront à enrichir la qualification.</span>
+            {/* Jauge d'évaluation de la qualité du verbatim en temps réel */}
+            {!isRecording && !isTranscribing && quality.status === 'SUFFICIENT' && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
+                <Icons.CheckCircle size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                    <span>{quality.label}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono">
+                      {quality.substantiveCount} mot(s) métier
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-700/90 dark:text-emerald-300/90">{quality.guidance}</p>
+                </div>
+              </div>
+            )}
+
+            {!isRecording && !isTranscribing && quality.status === 'INSUFFICIENT' && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
+                <Icons.AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                    <span>{quality.label}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono">
+                      {quality.substantiveCount}/2 mots métier
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">{quality.guidance}</p>
+                </div>
               </div>
             )}
 

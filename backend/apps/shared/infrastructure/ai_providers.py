@@ -28,7 +28,7 @@ def is_insufficient_verbatim(transcript: str) -> bool:
         return True
     text = transcript.strip().lower()
     words = [w for w in re.findall(r'\b\w+\b', text) if len(w) > 1]
-    if len(words) < 5:
+    if len(words) < 3:
         return True
 
     trivial_words = {
@@ -38,7 +38,7 @@ def is_insufficient_verbatim(transcript: str) -> bool:
         'remercie', 'présent', 'ça', 'va', 'comment', 'vas', 'tu'
     }
     substantive_words = [w for w in words if w not in trivial_words]
-    return len(substantive_words) < 3
+    return len(substantive_words) < 2
 
 
 def extract_employees_count(size_val: Any, default: int = 10) -> int:
