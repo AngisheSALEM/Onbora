@@ -40,7 +40,6 @@ export async function uploadAudioAPI(endpoint: string, formData: FormData) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: 'POST',
     headers,
-    credentials: 'include',
     body: formData,
   });
 
