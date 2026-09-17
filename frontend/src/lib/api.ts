@@ -40,12 +40,19 @@ export async function uploadAudioAPI(endpoint: string, formData: FormData) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: formData,
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Erreur lors du traitement audio.');
+    const errorMsg =
+      errorData.detail ||
+      errorData.error ||
+      errorData.message ||
+      errorData.non_field_errors?.[0] ||
+      `Erreur serveur HTTP ${response.status} (${response.statusText || 'Échec de transcription'})`;
+    throw new Error(errorMsg);
   }
 
   return response.json();

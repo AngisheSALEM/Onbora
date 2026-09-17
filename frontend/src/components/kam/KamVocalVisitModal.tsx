@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchAPI, uploadAudioAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 
@@ -71,6 +71,24 @@ export default function KamVocalVisitModal({
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        if (mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.requestData();
+        }
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn("Erreur arrêt MediaRecorder:", e);
+      }
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setIsRecording(false);
+  }, []);
+
   // Timer actif uniquement lors de l'enregistrement audio réel
   useEffect(() => {
     if (isRecording) {
@@ -103,7 +121,7 @@ export default function KamVocalVisitModal({
         streamRef.current = null;
       }
     }
-  }, [isOpen]);
+  }, [isOpen, stopRecording]);
 
   const sendAudioToWhisper = async (audioBlob: Blob, mimeType: string) => {
     setIsTranscribing(true);
@@ -192,24 +210,6 @@ export default function KamVocalVisitModal({
       }
       setIsRecording(false);
     }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        if (mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.requestData();
-        }
-        mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.warn("Erreur arrêt MediaRecorder:", e);
-      }
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsRecording(false);
   };
 
   const toggleRecording = () => {

@@ -1,7 +1,15 @@
+import os
+import sys
+import logging
+import tempfile
+
+logger = logging.getLogger(__name__)
+
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import ProspectDossier, KamAppointment, KamVisitReport
 from twin.models import BusinessTwin
 from .serializers import ProspectDossierSerializer, BusinessTwinSerializer
@@ -926,7 +934,8 @@ class KamAudioTranscribeView(APIView):
     avec OpenAI Whisper officiel (local PyTorch ou API).
     ZÉRO hallucination / ZÉRO mock.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         import tempfile

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI, uploadAudioAPI } from '@/lib/api';
@@ -52,6 +52,24 @@ export default function KamVoiceDebriefModal({
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        if (mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.requestData();
+        }
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn("Erreur arrêt MediaRecorder:", e);
+      }
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setIsRecording(false);
+  }, []);
+
   // Timer actif uniquement lors de l'enregistrement audio réel
   useEffect(() => {
     if (isRecording) {
@@ -100,7 +118,7 @@ export default function KamVoiceDebriefModal({
         streamRef.current = null;
       }
     }
-  }, [isOpen, visit]);
+  }, [isOpen, visit, stopRecording]);
 
   const sendAudioToWhisper = async (audioBlob: Blob, mimeType: string) => {
     setIsTranscribing(true);
@@ -191,24 +209,6 @@ export default function KamVoiceDebriefModal({
       }
       setIsRecording(false);
     }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        if (mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.requestData();
-        }
-        mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.warn("Erreur arrêt MediaRecorder:", e);
-      }
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsRecording(false);
   };
 
   const handleAddContextChip = (text: string) => {
