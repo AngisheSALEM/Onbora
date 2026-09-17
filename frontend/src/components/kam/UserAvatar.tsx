@@ -73,19 +73,29 @@ export default function UserAvatar({
     return path;
   };
 
-  const finalSrc = resolveSrc(validSrc && !imageError ? validSrc : null);
+  // Only use image if we have a valid, non-memoji source and no load error
+  const hasRealPhoto = Boolean(validSrc && !imageError);
+  const initials = getInitials(name);
 
   return (
     <div className={`relative inline-flex items-center justify-center shrink-0 rounded-2xl overflow-visible select-none ${className}`}>
-      <div className={`relative flex items-center justify-center rounded-2xl overflow-hidden bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-white font-extrabold border border-black/5 dark:border-white/5 ${SIZE_CLASSES[size]}`}>
-        {imageError && !validSrc ? (
-          <span className="font-semibold">{getInitials(name)}</span>
-        ) : (
+      <div className={`relative flex items-center justify-center rounded-2xl overflow-hidden font-extrabold border border-black/5 dark:border-white/5 ${SIZE_CLASSES[size]} ${
+        hasRealPhoto ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-white' : 'bg-[#4F6CE8]/12 dark:bg-[#4F6CE8]/20 text-[#4F6CE8] dark:text-[#7C97F8]'
+      }`}>
+        {hasRealPhoto ? (
           <img
-            src={finalSrc}
+            src={resolveSrc(validSrc)}
             alt={alt || name || 'Photo de profil'}
             className="w-full h-full object-cover"
             onError={() => setImageError(true)}
+          />
+        ) : initials && initials !== 'U' ? (
+          <span className="font-bold tracking-tight select-none">{initials}</span>
+        ) : (
+          <img
+            src="/avatars/default_avatar.svg"
+            alt={alt || name || 'Avatar par défaut'}
+            className="w-full h-full object-cover opacity-80"
           />
         )}
       </div>

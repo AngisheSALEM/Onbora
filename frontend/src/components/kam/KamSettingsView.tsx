@@ -156,52 +156,7 @@ export default function KamSettingsView() {
       </div>
 
       {/* 2. Statut d'Activité CAM */}
-      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
-          <div>
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-              Statut d&apos;Activité Opérationnel
-            </h3>
-            <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-              Mettez à jour votre statut pour informer l&apos;équipe et le KAM Office de votre disponibilité.
-            </p>
-          </div>
-           
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-          {ACTIVITY_STATUSES.map((item) => {
-            const isCurrent = item.key === activityStatus;
-            return (
-              <div
-                key={item.key}
-                className={`p-3.5 rounded-2xl border transition-all ${
-                  isCurrent
-                    ? 'bg-white dark:bg-[#363336] border-[#4F6CE8]/50 shadow-xs'
-                    : 'bg-white/60 dark:bg-[#363336]/60 border-black/5 dark:border-white/5 opacity-80'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className={`w-2.5 h-2.5 rounded-full ${item.dotColor}`} />
-                  <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                    {item.label}
-                  </span>
-                  {isCurrent && (
-                    <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-[#4F6CE8]">
-                      Actif
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">
-                  {item.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Photo de Profil & Avatar */}
+           {/* 3. Photo de Profil & Avatar */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
         <ProfilePhotoUploader
           currentPhotoUrl={user?.profile_picture_url || user?.avatar}

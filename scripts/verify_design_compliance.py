@@ -68,7 +68,7 @@ RELEVANT_EXTENSIONS = ('.tsx', '.jsx', '.ts', '.js', '.dart', '.html', '.css', '
 IGNORED_DIRS = {
     '.git', 'node_modules', '.next', '.dart_tool', 'build', 'dist', 
     'cpio_out', '.stitch-mcp', 'venv', '.venv', '__pycache__',
-    'ios', 'android', 'windows', 'linux', 'macos'
+    'ios', 'android', 'windows', 'linux', 'macos', 'vendor', 'static'
 }
 
 # Icon suggestions helper for common emojis

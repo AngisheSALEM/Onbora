@@ -134,6 +134,15 @@ export interface MeetingDebrief {
   audio_duration_seconds: number;
   transcript_text: string;
   executive_summary: string;
+  confirmed_needs?: string[];
+  objections_raised?: string[];
+  recommended_packages?: {
+    id?: string;
+    title: string;
+    price_range: string;
+    description: string;
+    match_reason: string;
+  }[];
   client_followup_email: {
     subject: string;
     body: string;

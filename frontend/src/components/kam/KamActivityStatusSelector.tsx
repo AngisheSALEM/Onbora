@@ -168,7 +168,7 @@ export default function KamActivityStatusSelector({
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        title="Modifier mon statut d'activité CAM"
+        title="Modifier mon statut d'activité kam"
         className={`flex items-center gap-2 rounded-2xl transition-all cursor-pointer border ${activeConfig.borderColor} ${activeConfig.badgeBg} hover:opacity-90 active:scale-98 select-none ${
           compact ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs font-semibold'
         }`}

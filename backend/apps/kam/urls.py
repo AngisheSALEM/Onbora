@@ -5,7 +5,7 @@ from .views import (
     KamStrategicAccountListView, KamBriefingDetailView, KamAccountDebriefView,
     KamAccountUpdateInfoView,
     KamAppointmentListCreateView, KamAppointmentDetailView, KamCompleteVocalMeetingView,
-    KamVisitHistoryListView, KamVisitReportDetailView
+    KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView
 )
 from .commercial_intelligence_views import (
     PreCallBriefingDetailView, PreCallBriefingListView,
@@ -35,6 +35,7 @@ urlpatterns = [
     path('briefing/<int:account_id>/', KamBriefingDetailView.as_view(), name='kam-briefing-detail'),
     
     # Agenda, Rendez-vous & Clôture vocale connectée à Core AI
+    path('transcribe/', KamAudioTranscribeView.as_view(), name='kam-transcribe'),
     path('appointments/', KamAppointmentListCreateView.as_view(), name='kam-appointments-list-create'),
     path('appointments/<int:pk>/', KamAppointmentDetailView.as_view(), name='kam-appointment-detail'),
     path('appointments/<int:pk>/complete-vocal/', KamCompleteVocalMeetingView.as_view(), name='kam-appointment-complete-vocal'),

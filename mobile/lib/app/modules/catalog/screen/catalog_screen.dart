@@ -188,38 +188,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           // 1. Collapsible Large Title (Apple Music Scroll Animation)
           AppleLargeTitleSliverAppBar(
             title: AppConstants.catalogTitle,
-            actions: [
-              GestureDetector(
-                onTap: () => RoiSimulatorModal.show(context),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        CupertinoIcons.chart_bar_alt_fill,
-                        size: 14,
-                        color: isDark ? Colors.white : AppConstants.textDark,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Simulateur ROI',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : AppConstants.textDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+           
           ),
 
             // 2. Search, Filter and Solutions Content

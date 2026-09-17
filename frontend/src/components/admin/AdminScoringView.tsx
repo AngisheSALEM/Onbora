@@ -475,9 +475,9 @@ export default function AdminScoringView() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[650px]">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-black/10 dark:border-white/10 text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px] font-bold bg-black/[0.02] dark:bg-white/[0.02]">
+                  <tr className="border-b border-black/5 dark:border-white/5 text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider text-[10px]">
                     <th className="py-3 px-4 font-bold">Situation détectée</th>
                     <th className="py-3 px-4 font-bold">Impact sur la priorité</th>
                     {showAdvancedParams && <th className="py-3 px-4 font-bold">Signal technique & Points</th>}

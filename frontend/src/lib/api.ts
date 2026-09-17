@@ -29,3 +29,24 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 
   return response.json();
 }
+
+export async function uploadAudioAPI(endpoint: string, formData: FormData) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Token ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Erreur lors du traitement audio.');
+  }
+
+  return response.json();
+}

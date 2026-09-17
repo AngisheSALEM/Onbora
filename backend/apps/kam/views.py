@@ -1,7 +1,7 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ProspectDossier, KamAppointment, KamVisitReport
 from twin.models import BusinessTwin
 from .serializers import ProspectDossierSerializer, BusinessTwinSerializer
@@ -401,22 +401,32 @@ class KamAccountDebriefView(APIView):
             return Response({"detail": "Accès refusé : vous n'êtes pas le KAM assigné à ce compte."}, status=status.HTTP_403_FORBIDDEN)
 
         data = request.data
-        conversion_notes_val = data.get('conversion_notes')
+        conversion_notes_val = data.get('conversion_notes', '').strip()
+        notes_val = data.get('notes', '').strip() or conversion_notes_val
         transcript_val = data.get('transcript', '').strip()
         generate_ai = data.get('generate_ai', False)
 
         from apps.ai_core.unified_engine import get_unified_core_ai
         engine = get_unified_core_ai()
-        effective_transcript = transcript_val or conversion_notes_val or f"Compte-rendu de réunion d'affaires avec {enterprise.contact_name or 'la Direction'} chez {enterprise.name}."
+
+        # Combinaison intelligente : Transcription vocale Whisper + Notes écrites du KAM
+        if transcript_val and notes_val:
+            effective_transcript = f"[Transcription Vocale Whisper] :\n{transcript_val}\n\n[Notes & Observations du KAM] :\n{notes_val}"
+        elif transcript_val:
+            effective_transcript = transcript_val
+        elif notes_val:
+            effective_transcript = notes_val
+        else:
+            effective_transcript = f"Compte-rendu de réunion d'affaires avec {enterprise.contact_name or 'la Direction'} chez {enterprise.name}."
         
         debrief_result = None
-        if generate_ai or transcript_val:
+        if generate_ai or transcript_val or notes_val:
             ai_data = engine.generate_post_call_execution(enterprise, user, effective_transcript)
             if not conversion_notes_val and ai_data.get("executive_summary"):
                 conversion_notes_val = ai_data["executive_summary"]
             debrief_result = _build_kam_debrief_result(enterprise, user, data, ai_data, effective_transcript)
 
-        _apply_kam_debrief_updates(enterprise, user, data, conversion_notes_val)
+        _apply_kam_debrief_updates(enterprise, user, data, conversion_notes_val or notes_val)
 
         log_demo_event(
             'KAM_DEBRIEF_SUBMITTED',
@@ -720,6 +730,33 @@ class KamAppointmentDetailView(APIView):
 
 def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
     """Runs qualification engine and returns (executive_summary, needs, objections, actions_todo, email, bant_scores)."""
+    from shared.infrastructure.ai_providers import is_insufficient_verbatim
+
+    # Zéro hallucination si verbatim insuffisant (ex: juste 'bonjour' ou inaudible)
+    if is_insufficient_verbatim(transcript):
+        executive_summary = (
+            f"Données insuffisantes pour formaliser un compte-rendu pour {appointment.enterprise.name}. "
+            "L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections."
+        )
+        confirmed_needs = []
+        objections_raised = []
+        actions_todo = [f"Recontacter {appointment.contact_name or 'le client'} pour planifier un entretien approfondi"]
+        follow_up_email = (
+            f"Bonjour {appointment.contact_name or 'Madame, Monsieur'},\n\n"
+            f"Suite à notre brève prise de contact au sujet de {appointment.enterprise.name}, je me permets de revenir vers vous afin d'organiser un échange de 20 minutes pour faire le point sur vos enjeux d'infrastructure et de connectivité.\n\n"
+            f"Quelles seraient vos disponibilités dans les prochains jours ?\n\n"
+            f"Bien cordialement,\n{user.get_full_name() or user.username}\nKey Account Manager — Orange Business B2B"
+        )
+        bant_scores = {
+            "budget": 0,
+            "authority": 5,
+            "need": 0,
+            "timeline": 0,
+            "total": 5,
+            "status": "INSUFFICIENT_DATA"
+        }
+        return executive_summary, confirmed_needs, objections_raised, actions_todo, follow_up_email, bant_scores
+
     from sales.services.qualification_service import BANTQualificationService
     qualification_service = BANTQualificationService()
 
@@ -803,12 +840,23 @@ class KamCompleteVocalMeetingView(APIView):
 
         data = request.data
         transcript = data.get('transcript', '').strip()
+        notes = data.get('notes', '').strip()
         conversion_status_val = data.get('conversion_status', 'IN_NEGOTIATION')
         audio_file_path = data.get('audio_file_path', '')
 
-        exec_sum, needs, objections, actions_todo, email, bant_scores = _qualify_vocal_meeting(appointment, transcript, user)
+        # Combinaison intelligente : Transcription vocale Whisper + Notes écrites du KAM
+        if transcript and notes:
+            combined_transcript = f"[Transcription Vocale Whisper] :\n{transcript}\n\n[Notes & Observations du KAM] :\n{notes}"
+        elif transcript:
+            combined_transcript = transcript
+        elif notes:
+            combined_transcript = notes
+        else:
+            combined_transcript = ""
+
+        exec_sum, needs, objections, actions_todo, email, bant_scores = _qualify_vocal_meeting(appointment, combined_transcript, user)
         report, enterprise = _persist_meeting_report(
-            appointment, user, transcript, audio_file_path, conversion_status_val,
+            appointment, user, combined_transcript, audio_file_path, conversion_status_val,
             exec_sum, needs, objections, actions_todo, email, bant_scores
         )
 
@@ -870,3 +918,64 @@ class KamVisitReportDetailView(APIView):
             return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(serialize_kam_visit_report(report), status=status.HTTP_200_OK)
+
+
+class KamAudioTranscribeView(APIView):
+    """
+    POST: Transcrit un flux ou fichier audio envoyé par le KAM (WebM, WAV, MP3, M4A, OGG)
+    avec OpenAI Whisper officiel (local PyTorch ou API).
+    ZÉRO hallucination / ZÉRO mock.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        import tempfile
+        try:
+            from sales.whisper_service import transcribe_audio_file
+        except ImportError:
+            from apps.sales.whisper_service import transcribe_audio_file
+        from shared.infrastructure.ai_providers import is_insufficient_verbatim
+
+        audio_file = request.FILES.get('audio') or request.FILES.get('file') or request.FILES.get('audio_file')
+        if not audio_file:
+            return Response({"detail": "Aucun flux audio reçu par le serveur."}, status=status.HTTP_400_BAD_REQUEST)
+
+        orig_name = getattr(audio_file, 'name', '') or 'recording.webm'
+        ext = os.path.splitext(orig_name)[1] or '.webm'
+        if not ext.startswith('.'):
+            ext = f".{ext}"
+
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+            for chunk in audio_file.chunks():
+                tmp.write(chunk)
+            tmp.flush()
+            tmp_path = tmp.name
+
+        try:
+            res = transcribe_audio_file(tmp_path, model_name="base")
+            transcript = (res.get("text") or "").strip()
+            is_insufficient = is_insufficient_verbatim(transcript)
+
+            return Response({
+                "success": res.get("success", False) or bool(transcript),
+                "transcript": transcript,
+                "language": res.get("language", "fr"),
+                "provider": res.get("provider", "openai-whisper"),
+                "is_insufficient": is_insufficient,
+                "message": "Transcription Whisper réussie" if transcript else "Aucune voix distincte détectée dans l'enregistrement."
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Erreur transcription Whisper: {e}")
+            return Response({
+                "success": False,
+                "transcript": "",
+                "error": str(e),
+                "provider": "openai-whisper",
+                "is_insufficient": True,
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        finally:
+            if os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass

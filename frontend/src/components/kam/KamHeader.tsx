@@ -19,30 +19,7 @@ export default function KamHeader({
   searchQuery,
   onSearchChange
 }: KamHeaderProps) {
-  const getTitle = () => {
-    switch (activeView) {
-      case 'precall':
-        return 'Pre-Call Intelligence — Préparation Stratégique';
-      case 'leadscoring':
-        return 'Pipeline & Lead Scoring B2B';
-      case 'churnradar':
-        return "Radar Taux d'abandon & Opportunités de Vente additionnelle";
-      case 'accounts':
-        return ''; // Retiré car le grand titre est affiché dans le corps de page
-      case 'briefing':
-        return accountName ? `Info — ${accountName}` : 'Info Client';
-      case 'agenda':
-        return 'Agenda & Planification des Rendez-vous';
-      case 'visits':
-        return 'Historique des Visites & Rapports Exécutifs';
-      case 'signals':
-        return 'Notes & Ingestion (Desk G-Notes)';
-      case 'settings':
-        return 'Paramètres & Base de Connaissances FAQ';
-      default:
-        return 'Cockpit Grands Comptes';
-    }
-  };
+  
 
   const showHeaderSearch = activeView === 'accounts';
 
@@ -50,9 +27,9 @@ export default function KamHeader({
     <header className="h-16 px-8 flex items-center justify-between shrink-0 select-none border-b border-black/5 dark:border-white/5">
       {/* Left : Page Title (empty for accounts to avoid duplicate with large body title) */}
       <div className="flex items-center gap-3">
-        {getTitle() && (
+        { (
           <h1 className="text-sm md:text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
-            {getTitle()}
+            
           </h1>
         )}
       </div>
@@ -82,10 +59,10 @@ export default function KamHeader({
         )}
 
         {/* CAM Activity Status Selector */}
-        <KamActivityStatusSelector />
+         
 
         {/* Theme Toggle Sun / Moon */}
-        <ThemeToggle />
+         
       </div>
     </header>
   );

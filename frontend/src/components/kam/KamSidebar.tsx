@@ -51,22 +51,22 @@ export default function KamSidebar({
   const navItems = [
     {
       id: 'accounts' as KamView,
-      label: 'Mes Comptes Clés',
+      label: 'Comptes ',
       icon: Icons.Building,
       badge: null
     },
-    {
-      id: 'leadscoring' as KamView,
-      label: 'Lead Scoring & Pipeline',
-      icon: Icons.Award,
-      badge: 'B2B'
-    },
-    {
-      id: 'churnradar' as KamView,
-      label: "Radar Taux d'abandon & Vente additionnelle",
-      icon: Icons.AlertTriangle,
-      badge: null
-    },
+    // {
+    //   id: 'leadscoring' as KamView,
+    //   label: 'Scoring',
+    //   icon: Icons.Award,
+    //   badge: null
+    // },
+    // {
+    //   id: 'churnradar' as KamView,
+    //   label: "Radar Taux d'abanbando",
+    //   icon: Icons.AlertTriangle,
+    //   badge: null
+    // },
     {
       id: 'agenda' as KamView,
       label: 'Agenda & Rendez-vous',
@@ -75,7 +75,7 @@ export default function KamSidebar({
     },
     {
       id: 'visits' as KamView,
-      label: 'Post-Call & Visites',
+      label: 'Historique des visites',
       icon: Icons.FileText,
       badge: null
     },
@@ -218,15 +218,7 @@ export default function KamSidebar({
           )}
         </div>
 
-        {/* Dedicated "Se déconnecter" button at bottom of sidebar */}
-        <button
-          onClick={() => setShowLogoutModal(true)}
-          title="Se déconnecter"
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-4 py-2.5'} rounded-2xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border border-black/5 dark:border-white/5`}
-        >
-          <Icons.LogOut size={16} className="text-rose-500 shrink-0" />
-          {!isCollapsed && <span>Se déconnecter</span>}
-        </button>
+        
       </div>
 
       {/* Logout Confirmation Modal */}
@@ -236,14 +228,7 @@ export default function KamSidebar({
             <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center mx-auto">
               <Icons.LogOut size={22} />
             </div>
-            <div className="text-center space-y-1">
-              <h3 className="font-extrabold text-base text-zinc-900 dark:text-white">
-                Confirmer la déconnexion
-              </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Êtes-vous certain de vouloir vous déconnecter de votre espace KAM ?
-              </p>
-            </div>
+            
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowLogoutModal(false)}

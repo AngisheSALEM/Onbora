@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI } from '@/lib/api';
+import Pagination from '@/components/kam/Pagination';
 
 interface ScoreDriver {
   factor: string;
@@ -57,13 +58,29 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
     }
   };
 
-  const filteredLeads = leads.filter(l => {
-    const matchTier = tierFilter === 'ALL' || l.scoring_tier === tierFilter;
-    const matchSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.city.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchTier && matchSearch;
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [tierFilter, searchQuery]);
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter(l => {
+      const matchTier = tierFilter === 'ALL' || l.scoring_tier === tierFilter;
+      const matchSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.city.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchTier && matchSearch;
+    });
+  }, [leads, tierFilter, searchQuery]);
+
+  const paginatedLeads = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLeads.slice(start, start + pageSize);
+  }, [filteredLeads, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredLeads.length / pageSize) || 1;
 
   const tier1Count = leads.filter(l => l.scoring_tier === 'TIER_1_PRIORITY').length;
   const totalPipelineMrr = leads.reduce((acc, curr) => acc + curr.estimated_mrr_usd, 0);
@@ -171,89 +188,100 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredLeads.map((lead) => {
-            const isTier1 = lead.scoring_tier === 'TIER_1_PRIORITY';
-            return (
-              <div
-                key={lead.enterprise_id}
-                className="p-5 rounded-[26px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-[#F6F5F2] dark:hover:bg-[#363336] transition-colors"
-              >
-                {/* Left: Score Gauge & Enterprise Info */}
-                <div className="flex items-start gap-4 flex-1">
-                  <div
-                    className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 font-extrabold ${
-                      isTier1
-                        ? 'bg-[#4F6CE8] text-white'
-                        : lead.scoring_tier === 'TIER_2_PROSPECT'
-                        ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200'
-                        : 'bg-black/5 dark:bg-white/5 text-zinc-400'
-                    }`}
-                  >
-                    <span className="text-lg leading-none">{lead.lead_score}</span>
-                    <span className="text-[9px] uppercase tracking-wider opacity-80">Score</span>
-                  </div>
-
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
-                        {lead.name}
-                      </h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
-                        {lead.sector}
-                      </span>
-                      <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
-                        • {lead.city}
-                      </span>
-                      <span className="text-[10px] font-semibold text-zinc-500">
-                        • Opérateur actuel : <strong className="text-zinc-800 dark:text-zinc-200">{lead.current_operator}</strong>
-                      </span>
-                    </div>
-
-                    {/* Score Drivers Tags */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {lead.score_drivers.map((drv, idx) => (
-                        <span
-                          key={idx}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-[#ECEAE5] dark:bg-[#3B373D] text-zinc-700 dark:text-zinc-300"
-                        >
-                          <strong className="text-[#4F6CE8] mr-1">{drv.points}</strong>
-                          {drv.factor}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Recommended Approach */}
-                    <div className="text-xs text-zinc-700 dark:text-zinc-300 pt-1">
-                      <span className="font-semibold text-zinc-900 dark:text-white">Angle d&apos;attaque recommandé : </span>
-                      {lead.recommended_approach}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: Revenue Estimate & Action CTA */}
-                <div className="flex md:flex-col items-center md:items-end justify-between gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-black/5 dark:border-white/5">
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider block">
-                      Potentiel MRR
-                    </span>
-                    <span className="text-sm font-extrabold text-[#4F6CE8]">
-                      ~{lead.estimated_mrr_usd.toLocaleString('fr-FR')} $/mois
-                    </span>
-                  </div>
-
-                  {onOpenPreCallForLead && (
-                    <button
-                      onClick={() => onOpenPreCallForLead(lead.enterprise_id)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-xl shadow-none cursor-pointer transition-all"
+          <div className="space-y-4">
+            {paginatedLeads.map((lead) => {
+              const isTier1 = lead.scoring_tier === 'TIER_1_PRIORITY';
+              return (
+                <div
+                  key={lead.enterprise_id}
+                  className="p-5 rounded-[26px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-[#F6F5F2] dark:hover:bg-[#363336] transition-colors"
+                >
+                  {/* Left: Score Gauge & Enterprise Info */}
+                  <div className="flex items-start gap-4 flex-1">
+                    <div
+                      className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 font-extrabold ${
+                        isTier1
+                          ? 'bg-[#4F6CE8] text-white'
+                          : lead.scoring_tier === 'TIER_2_PROSPECT'
+                          ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200'
+                          : 'bg-black/5 dark:bg-white/5 text-zinc-400'
+                      }`}
                     >
-                      <Icons.Sparkles size={13} />
-                      <span>Préparer le Pre-Call</span>
-                    </button>
-                  )}
+                      <span className="text-lg leading-none">{lead.lead_score}</span>
+                      <span className="text-[9px] uppercase tracking-wider opacity-80">Score</span>
+                    </div>
+
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
+                          {lead.name}
+                        </h3>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
+                          {lead.sector}
+                        </span>
+                        <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
+                          • {lead.city}
+                        </span>
+                        <span className="text-[10px] font-semibold text-zinc-500">
+                          • Opérateur actuel : <strong className="text-zinc-800 dark:text-zinc-200">{lead.current_operator}</strong>
+                        </span>
+                      </div>
+
+                      {/* Score Drivers Tags */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {lead.score_drivers.map((drv, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-[#ECEAE5] dark:bg-[#3B373D] text-zinc-700 dark:text-zinc-300"
+                          >
+                            <strong className="text-[#4F6CE8] mr-1">{drv.points}</strong>
+                            {drv.factor}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Recommended Approach */}
+                      <div className="text-xs text-zinc-700 dark:text-zinc-300 pt-1">
+                        <span className="font-semibold text-zinc-900 dark:text-white">Angle d&apos;attaque recommandé : </span>
+                        {lead.recommended_approach}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Revenue Estimate & Action CTA */}
+                  <div className="flex md:flex-col items-center md:items-end justify-between gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-black/5 dark:border-white/5">
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider block">
+                        Potentiel MRR
+                      </span>
+                      <span className="text-sm font-extrabold text-[#4F6CE8]">
+                        ~{lead.estimated_mrr_usd.toLocaleString('fr-FR')} $/mois
+                      </span>
+                    </div>
+
+                    {onOpenPreCallForLead && (
+                      <button
+                        onClick={() => onOpenPreCallForLead(lead.enterprise_id)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-xl shadow-none cursor-pointer transition-all"
+                      >
+                        <Icons.Sparkles size={13} />
+                        <span>Préparer le Pre-Call</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredLeads.length}
+            pageSize={pageSize}
+            itemName="leads prioritaires"
+          />
         </div>
       )}
 

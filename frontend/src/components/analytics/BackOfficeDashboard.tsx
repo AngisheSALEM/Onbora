@@ -868,13 +868,12 @@ export default function BackOfficeDashboard({
             </div>
           </div>
 
-          {/* Unconverted Clients Table */}
           <div className="overflow-x-auto rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-100/80 dark:bg-zinc-800/60 text-zinc-500 uppercase text-[10px] font-extrabold tracking-wider">
+            <table className="w-full text-left text-xs min-w-[850px]">
+              <thead className="bg-zinc-100 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 uppercase text-[11px] font-bold tracking-wider">
                 <tr>
-                  <th className="py-3 px-4">Client / Entreprise</th>
-                  <th className="py-3 px-3">Point de Blocage</th>
+                  <th className="py-3 px-4 min-w-[200px]">Client / Entreprise</th>
+                  <th className="py-3 px-3 min-w-[160px]">Point de Blocage</th>
                   <th className="py-3 px-3">Inactivité & Urgence</th>
                   <th className="py-3 px-3">Score IA & MRR</th>
                   <th className="py-3 px-3">KAM Assigné</th>
@@ -1140,7 +1139,7 @@ export default function BackOfficeDashboard({
               </button>
               <button
                 onClick={() => handleSendWhatsApp(selectedClientModal)}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-sm"
               >
                 <Icons.MessageCircle size={14} /> Envoyer sur WhatsApp
               </button>

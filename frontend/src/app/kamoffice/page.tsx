@@ -1011,7 +1011,7 @@ export default function KamOfficePage() {
                     <table className="w-full text-left text-xs min-w-[950px]">
                       <thead>
                         <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
-                          <th className="py-3 px-3.5 min-w-[200px]">Compte & Entreprise</th>
+                          <th className="py-3 px-3.5 min-w-[200px]">Comptes</th>
                           <th className="py-3 px-3.5">Segment</th>
                           <th className="py-3 px-3.5">CA Annuel</th>
                           <th className="py-3 px-3.5">Localisation</th>

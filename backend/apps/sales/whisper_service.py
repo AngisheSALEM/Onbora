@@ -4,41 +4,73 @@ from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# Cache global model instance
-_whisper_model = None
+# Cache global models by name
+_whisper_models: Dict[str, Any] = {}
+
+
+def ensure_ffmpeg_on_path():
+    """Ensure ffmpeg is available in PATH using imageio_ffmpeg binary if available."""
+    try:
+        import imageio_ffmpeg
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+        target = os.path.join(ffmpeg_dir, "ffmpeg.exe")
+        if not os.path.exists(target):
+            import shutil
+            shutil.copyfile(ffmpeg_exe, target)
+        if ffmpeg_dir not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+    except Exception as e:
+        logger.debug(f"imageio_ffmpeg check: {e}")
 
 
 def get_whisper_model(model_name: str = "base"):
-    """Load local OpenAI Whisper model lazily."""
-    global _whisper_model
-    if _whisper_model is not None:
-        return _whisper_model
+    """Load local OpenAI Whisper model lazily with CPU fp16=False safety."""
+    global _whisper_models
+    if model_name in _whisper_models:
+        return _whisper_models[model_name]
+
+    ensure_ffmpeg_on_path()
     try:
         import whisper
         logger.info(f"Chargement du modèle OpenAI Whisper local: {model_name}")
-        _whisper_model = whisper.load_model(model_name)
-        return _whisper_model
+        model = whisper.load_model(model_name)
+        _whisper_models[model_name] = model
+        return model
     except Exception as e:
-        logger.warning(f"Impossible de charger le modèle Whisper local ({e}).")
+        logger.warning(f"Impossible de charger le modèle Whisper local {model_name} ({e}).")
+        if model_name != "tiny":
+            try:
+                import whisper
+                logger.info("Tentative de repli sur le modèle Whisper local 'tiny'...")
+                model = whisper.load_model("tiny")
+                _whisper_models["tiny"] = model
+                return model
+            except Exception as e2:
+                logger.warning(f"Échec chargement Whisper 'tiny' ({e2}).")
         return None
 
 
 def transcribe_audio_file(file_path: str, model_name: str = "base") -> Dict[str, Any]:
     """
-    Transcrit un fichier audio (.mp3, .wav, .webm, .m4a) avec OpenAI Whisper.
-    Supporte l'inférence locale PyTorch, l'API OpenAI Whisper-1, et un fallback sécurisé.
+    Transcrit un fichier audio (.mp3, .wav, .webm, .m4a, .ogg) avec OpenAI Whisper officiel.
+    ZÉRO hallucination / ZÉRO mock : si l'enregistrement est vide, silencieux ou inaudible,
+    renvoie une chaîne vide sans jamais inventer de faux besoins.
     """
     if not os.path.exists(file_path):
-        return {"success": False, "text": "", "error": f"Fichier introuvable: {file_path}"}
+        return {"success": False, "text": "", "error": f"Fichier introuvable: {file_path}", "provider": "openai-whisper"}
+
+    ensure_ffmpeg_on_path()
 
     # 1. Essai avec le modèle local OpenAI Whisper
     try:
         model = get_whisper_model(model_name)
         if model is not None:
-            result = model.transcribe(file_path, fp16=False)
+            result = model.transcribe(file_path, fp16=False, language="fr")
+            text = (result.get("text") or "").strip()
             return {
                 "success": True,
-                "text": result.get("text", "").strip(),
+                "text": text,
                 "language": result.get("language", "fr"),
                 "segments": result.get("segments", []),
                 "provider": "openai-whisper-local"
@@ -68,23 +100,10 @@ def transcribe_audio_file(file_path: str, model_name: str = "base") -> Dict[str,
         except Exception as e:
             logger.warning(f"Échec de l'appel API OpenAI Whisper: {e}")
 
-    # 3. Fallback d'extraction s'il manque ffmpeg ou si le fichier est un mock audio
-    path_lower = file_path.lower()
-    if "médical" in path_lower or "santé" in path_lower or "clinique" in path_lower or "test_recording" in path_lower:
-        text = (
-            "Transcription OpenAI Whisper : Discussion avec la clinique concernant les besoins d'Hébergement "
-            "de Données de Santé (HDS), la liaison Fibre Optique Pro avec basculement automatique et un Firewall Managé."
-        )
-    else:
-        text = (
-            "Transcription OpenAI Whisper : Discussion avec le prospect concernant les besoins de très haut débit, "
-            "le raccordement Fibre Optique Pro avec basculement automatique, un Firewall Managé et "
-            "le déploiement de la suite collaboratives Microsoft 365 Pro & Teams."
-        )
-
+    # 3. Zéro mock : échec explicite sans inventer de faux texte
     return {
-        "success": True,
-        "text": text,
-        "language": "fr",
-        "provider": "whisper-simulated"
+        "success": False,
+        "text": "",
+        "error": "Aucune voix exploitable détectée dans l'audio ou modèle Whisper indisponible.",
+        "provider": "openai-whisper"
     }

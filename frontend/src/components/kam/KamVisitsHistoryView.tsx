@@ -370,16 +370,13 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
         /* Backoffice-Style High-Fidelity Table */
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[980px]">
               <thead>
-                <tr className="border-b border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] text-zinc-400 font-extrabold uppercase text-[10px] tracking-wider">
-                  <th className="py-3.5 px-5">Date & Heure</th>
-                  <th className="py-3.5 px-5">Compte Client</th>
-                  <th className="py-3.5 px-5">Type de RDV</th>
-                  <th className="py-3.5 px-5">Décideur Rencontré</th>
-                  <th className="py-3.5 px-5">Statut Commercial</th>
-                  <th className="py-3.5 px-5">Synthèse Core AI</th>
-                  <th className="py-3.5 px-5 text-right">Actions</th>
+                <tr className="border-b border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 font-bold uppercase text-[11px] tracking-wider">
+                  <th className="py-3 px-4 whitespace-nowrap">Date & Heure</th>
+                  <th className="py-3 px-4 min-w-[220px]">Compte Client</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Type de RDV</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Statut Commercial</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -390,26 +387,32 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                     className="hover:bg-white/60 dark:hover:bg-black/20 transition-colors cursor-pointer group"
                   >
                     {/* Date */}
-                    <td className="py-4 px-5 whitespace-nowrap">
-                      <span className="font-mono text-zinc-800 dark:text-zinc-200 font-semibold block">
+                    <td className="py-2.5 px-4 whitespace-nowrap">
+                      <span className="font-sf text-zinc-900 dark:text-zinc-100 font-semibold text-xs block">
                         {formatDate(visit.created_at)}
                       </span>
-                      <span className="text-[10px] text-zinc-400 block mt-0.5 font-mono">
-                        Rapport #{visit.id}
+                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400 block mt-0.5 font-mono">
+                      
                       </span>
                     </td>
 
-                    {/* Enterprise */}
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center font-bold text-xs shrink-0">
-                          {visit.enterprise_name.charAt(0)}
+                    {/* Enterprise / Compte Client */}
+                    <td className="py-2.5 px-4 min-w-[220px]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/12 dark:bg-[#4F6CE8]/25 text-[#4F6CE8] dark:text-[#7C97F8] flex items-center justify-center font-bold text-xs shrink-0 border border-[#4F6CE8]/20">
+                          {visit.enterprise_name.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                          <span className="font-bold text-zinc-900 dark:text-white block group-hover:text-[#4F6CE8] transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className="font-semibold text-zinc-900 dark:text-white block group-hover:text-[#4F6CE8] transition-colors truncate text-xs"
+                            title={visit.enterprise_name}
+                          >
                             {visit.enterprise_name}
                           </span>
-                          <span className="text-[10px] text-zinc-400 block font-mono">
+                          <span
+                            className="text-[11px] text-zinc-600 dark:text-zinc-400 block font-medium mt-0.5 truncate"
+                            title={visit.enterprise_sector || visit.crm_id}
+                          >
                             {visit.enterprise_sector || visit.crm_id}
                           </span>
                         </div>
@@ -417,45 +420,22 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                     </td>
 
                     {/* Meeting Type */}
-                    <td className="py-4 px-5 whitespace-nowrap">
+                    <td className="py-2.5 px-4 whitespace-nowrap">
                       {getMeetingTypeBadge(visit.meeting_type)}
                     </td>
 
-                    {/* Stakeholder */}
-                    <td className="py-4 px-5">
-                      <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">
-                        {visit.contact_name || 'Direction'}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 block">
-                        {visit.contact_role || 'Décideur C-Level'}
-                      </span>
-                    </td>
+
 
                     {/* Conversion Status */}
-                    <td className="py-4 px-5 whitespace-nowrap">
+                    <td className="py-2.5 px-4 whitespace-nowrap">
                       {getConversionBadge(visit.conversion_status)}
                     </td>
 
                     {/* Core AI Summary Preview */}
-                    <td className="py-4 px-5 max-w-xs">
-                      <p className="text-[11px] text-zinc-600 dark:text-zinc-300 line-clamp-2 leading-relaxed">
-                        {visit.executive_summary || "Entretien stratégique consigné en base."}
-                      </p>
-                    </td>
+
 
                     {/* Actions */}
-                    <td className="py-4 px-5 text-right whitespace-nowrap">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedReport(visit);
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
-                      >
-                        <Icons.Eye size={13} />
-                        <span>Rapport</span>
-                      </button>
-                    </td>
+                    
                   </tr>
                 ))}
               </tbody>

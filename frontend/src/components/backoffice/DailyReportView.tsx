@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import BackofficePagination from './BackofficePagination';
+import UserAvatar from '@/components/kam/UserAvatar';
 
 export interface DailyVisitItem {
   id: string;
@@ -497,15 +498,15 @@ export default function DailyReportView({
       {/* Chronological Visits Table */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-5 border border-black/5 dark:border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[850px]">
             <thead>
-              <tr className="border-b border-black/5 dark:border-white/5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6C67] dark:text-[#A1A1AA]">
-                <th className="pb-3 px-3">Heure</th>
-                <th className="pb-3 px-3">Commercial</th>
-                <th className="pb-3 px-3">Compte TPE</th>
-                <th className="pb-3 px-3">Besoins & Objections</th>
-                <th className="pb-3 px-3">Statut & Qualification</th>
-                <th className="pb-3 px-3 text-right">Rapport</th>
+              <tr className="border-b border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.03] dark:bg-white/[0.03]">
+                <th className="py-3 px-3.5 whitespace-nowrap">Heure</th>
+                <th className="py-3 px-3.5 min-w-[180px]">Commercial</th>
+                <th className="py-3 px-3.5 min-w-[180px]">Compte TPE</th>
+                <th className="py-3 px-3.5 min-w-[200px]">Besoins & Objections</th>
+                <th className="py-3 px-3.5">Statut & Qualification</th>
+                <th className="py-3 px-3.5 text-right">Rapport</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -563,23 +564,18 @@ export default function DailyReportView({
                       </td>
 
                       {/* 2. Commercial */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-2.5 px-3.5 min-w-[180px]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
-                            <img
-                              src={avatarSrc}
-                              alt={visit.salesperson_name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = '/avatars/default_avatar.svg';
-                              }}
-                            />
-                          </div>
+                          <UserAvatar
+                            src={visit.salesperson_profile_picture_url || visit.salesperson_avatar}
+                            name={visit.salesperson_name}
+                            size="sm"
+                          />
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-[#242124] dark:text-white truncate">
                               {visit.salesperson_name}
                             </span>
-                            <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                            <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
                               {visit.type === 'GUIDED_FORM' ? 'Formulaire Guidé' : 'Dictaphone IA'}
                             </span>
                           </div>

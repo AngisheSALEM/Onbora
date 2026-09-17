@@ -238,93 +238,93 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
               const SizedBox(height: 4),
 
               // 1.1 Territoire & Plaques affectées au commercial terrain
-              Obx(() {
-                final myPlaques = salesController.myAssignedPlaques;
-                if (myPlaques.isEmpty) return const SizedBox.shrink();
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? const Color(0x33FFFFFF) : const Color(0x15000000),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(CupertinoIcons.location_fill, size: 14, color: isDark ? Colors.white : AppConstants.primaryBlack),
-                          const SizedBox(width: 6),
-                          Text(
-                            'MES PLAQUES AFFECTÉES (${myPlaques.length})',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                              color: isDark ? Colors.white70 : const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: myPlaques.map((plq) {
-                          final isSelected = salesController.activePlaqueCode.value == plq.code;
-                          return ScaleTap(
-                            onTap: () {
-                              salesController.filterByPlaque(plq.code);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (isDark ? Colors.white : const Color(0xFF18181B))
-                                    : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.transparent
-                                      : (isDark ? Colors.white12 : const Color(0x15000000)),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    plq.code,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: isSelected
-                                          ? (isDark ? const Color(0xFF121214) : Colors.white)
-                                          : (isDark ? Colors.white : AppConstants.textDark),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '(${plq.totalEnterprises})',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: isSelected
-                                          ? (isDark ? const Color(0xFF3F3F46) : Colors.white70)
-                                          : const Color(0xFF8E8E93),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+              // Obx(() {
+              //   final myPlaques = salesController.myAssignedPlaques;
+              //   if (myPlaques.isEmpty) return const SizedBox.shrink();
+              //   return Container(
+              //     margin: const EdgeInsets.only(bottom: 14),
+              //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              //     decoration: BoxDecoration(
+              //       color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+              //       borderRadius: BorderRadius.circular(14),
+              //       border: Border.all(
+              //         color: isDark ? const Color(0x33FFFFFF) : const Color(0x15000000),
+              //       ),
+              //     ),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Row(
+              //           children: [
+              //             Icon(CupertinoIcons.location_fill, size: 14, color: isDark ? Colors.white : AppConstants.primaryBlack),
+              //             const SizedBox(width: 6),
+              //             Text(
+              //               'MES PLAQUES AFFECTÉES (${myPlaques.length})',
+              //               style: TextStyle(
+              //                 fontSize: 11,
+              //                 fontWeight: FontWeight.w700,
+              //                 letterSpacing: 0.5,
+              //                 color: isDark ? Colors.white70 : const Color(0xFF6B7280),
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //         const SizedBox(height: 8),
+              //         Wrap(
+              //           spacing: 6,
+              //           runSpacing: 6,
+              //           children: myPlaques.map((plq) {
+              //             final isSelected = salesController.activePlaqueCode.value == plq.code;
+              //             return ScaleTap(
+              //               onTap: () {
+              //                 salesController.filterByPlaque(plq.code);
+              //               },
+              //               child: Container(
+              //                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              //                 decoration: BoxDecoration(
+              //                   color: isSelected
+              //                       ? (isDark ? Colors.white : const Color(0xFF18181B))
+              //                       : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
+              //                   borderRadius: BorderRadius.circular(10),
+              //                   border: Border.all(
+              //                     color: isSelected
+              //                         ? Colors.transparent
+              //                         : (isDark ? Colors.white12 : const Color(0x15000000)),
+              //                   ),
+              //                 ),
+              //                 child: Row(
+              //                   mainAxisSize: MainAxisSize.min,
+              //                   children: [
+              //                     Text(
+              //                       plq.code,
+              //                       style: TextStyle(
+              //                         fontSize: 11,
+              //                         fontWeight: FontWeight.w700,
+              //                         color: isSelected
+              //                             ? (isDark ? const Color(0xFF121214) : Colors.white)
+              //                             : (isDark ? Colors.white : AppConstants.textDark),
+              //                       ),
+              //                     ),
+              //                     const SizedBox(width: 4),
+              //                     Text(
+              //                       '(${plq.totalEnterprises})',
+              //                       style: TextStyle(
+              //                         fontSize: 10,
+              //                         color: isSelected
+              //                             ? (isDark ? const Color(0xFF3F3F46) : Colors.white70)
+              //                             : const Color(0xFF8E8E93),
+              //                       ),
+              //                     ),
+              //                   ],
+              //                 ),
+              //               ),
+              //             );
+              //           }).toList(),
+              //         ),
+              //       ],
+              //     ),
+              //   );
+              // }),
 
               // Section Visites : Visite en cours OU Carrousel 16:9
               Obx(() {
