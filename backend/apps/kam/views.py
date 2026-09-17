@@ -954,16 +954,20 @@ class KamAudioTranscribeView(APIView):
         if not ext.startswith('.'):
             ext = f".{ext}"
 
-        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
-            for chunk in audio_file.chunks():
-                tmp.write(chunk)
-            tmp.flush()
-            tmp_path = tmp.name
-
+        logger.info(f"[Whisper] Réception audio: nom={orig_name}, taille={audio_file.size} octets")
+        tmp_path = None
         try:
-            res = transcribe_audio_file(tmp_path, model_name="base")
+            with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                for chunk in audio_file.chunks():
+                    tmp.write(chunk)
+                tmp.flush()
+                tmp_path = tmp.name
+
+            # Utilisation du modèle 'tiny' optimisé pour CPU (réponse en 2-3s vs 2-3min sur CPU)
+            res = transcribe_audio_file(tmp_path, model_name="tiny")
             transcript = (res.get("text") or "").strip()
             is_insufficient = is_insufficient_verbatim(transcript)
+            logger.info(f"[Whisper] Résultat transcription: {len(transcript)} caractères, insuffisant={is_insufficient}, provider={res.get('provider')}")
 
             return Response({
                 "success": res.get("success", False) or bool(transcript),
@@ -974,7 +978,7 @@ class KamAudioTranscribeView(APIView):
                 "message": "Transcription Whisper réussie" if transcript else "Aucune voix distincte détectée dans l'enregistrement."
             }, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error(f"Erreur transcription Whisper: {e}")
+            logger.error(f"[Whisper] Erreur transcription: {e}", exc_info=True)
             return Response({
                 "success": False,
                 "transcript": "",
@@ -983,7 +987,7 @@ class KamAudioTranscribeView(APIView):
                 "is_insufficient": True,
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         finally:
-            if os.path.exists(tmp_path):
+            if tmp_path and os.path.exists(tmp_path):
                 try:
                     os.remove(tmp_path)
                 except Exception:

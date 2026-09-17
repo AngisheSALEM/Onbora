@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/catalog_controller.dart';
 import 'widget/catalog_item_card.dart';
-import 'widget/roi_simulator_modal.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/skeleton_loader.dart';
 import '../../../common/screen/widget/scale_tap.dart';

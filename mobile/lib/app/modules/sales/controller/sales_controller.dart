@@ -15,6 +15,7 @@ import '../../catalog/model/offer_questionnaire_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../common/constants/app_constants.dart';
+import '../../../routes/app_routes.dart';
 import '../../auth/controller/auth_controller.dart';
 
 class SalesController extends GetxController {
@@ -722,6 +723,99 @@ class SalesController extends GetxController {
     } finally {
       isLoadingVisits.value = false;
       kpiVisitsCount.value = visitsHistory.length;
+    }
+  }
+
+  /// Ouvre le détail complet du compte-rendu de visite sélectionné dans l'historique
+  Future<void> openVisitReportFromHistory(VisitHistoryItem item) async {
+    isLoadingVisits.value = true;
+    errorMessage.value = '';
+
+    try {
+      Map<String, dynamic>? reportData;
+
+      // 1. Si report_id est disponible directement
+      if (item.reportId != null && item.reportId! > 0) {
+        final res = await _apiClient.get('/api/sales/visit-reports/${item.reportId}/');
+        if (res is Map<String, dynamic>) {
+          reportData = res;
+        }
+      }
+
+      // 2. Fallback via preparation_id
+      if (reportData == null && item.id > 0) {
+        final resList = await _apiClient.get(
+          '/api/sales/visit-reports/',
+          queryParams: {'preparation_id': item.id.toString()},
+        );
+        if (resList is List && resList.isNotEmpty) {
+          reportData = Map<String, dynamic>.from(resList.first as Map);
+        }
+      }
+
+      // 3. Fallback via enterprise_id
+      if (reportData == null && item.enterpriseId != null && item.enterpriseId! > 0) {
+        final resList = await _apiClient.get(
+          '/api/sales/visit-reports/',
+          queryParams: {'enterprise_id': item.enterpriseId.toString()},
+        );
+        if (resList is List && resList.isNotEmpty) {
+          reportData = Map<String, dynamic>.from(resList.first as Map);
+        }
+      }
+
+      if (reportData != null) {
+        final parsedReport = VisitReportModel.fromJson(reportData);
+        currentReport.value = parsedReport;
+
+        // Configuration de l'entreprise associée pour l'en-tête et les métadonnées
+        if (item.enterpriseId != null) {
+          final ent = _allEnterprises.firstWhereOrNull((e) => e.id == item.enterpriseId);
+          if (ent != null) {
+            selectedEnterprise.value = ent;
+          } else {
+            selectedEnterprise.value = EnterpriseModel(
+              id: item.enterpriseId!,
+              name: item.enterpriseName,
+              sector: item.sector,
+              location: item.location,
+              plaqueCode: '',
+              approximateSize: '10-50',
+            );
+          }
+        } else {
+          selectedEnterprise.value = EnterpriseModel(
+            id: parsedReport.preparationId,
+            name: item.enterpriseName,
+            sector: item.sector,
+            location: item.location,
+            plaqueCode: '',
+            approximateSize: '10-50',
+          );
+        }
+
+        Get.toNamed(Routes.VISIT_REPORT_DETAIL);
+      } else {
+        Get.snackbar(
+          'Compte-rendu de visite',
+          'Aucun rapport détaillé disponible pour cette visite.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF1C1C1E),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      debugPrint("[SalesController] Erreur ouverture rapport visite : $e");
+      Get.snackbar(
+        'Erreur',
+        'Impossible de charger les détails du rapport de visite.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingVisits.value = false;
     }
   }
 

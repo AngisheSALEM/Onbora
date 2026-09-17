@@ -17,6 +17,7 @@ class VisitReportModel {
   final int? aiFeedbackRating;
   final String aiFeedbackComments;
   final double? processingTimeSeconds;
+  final bool hasDossier;
 
   VisitReportModel({
     required this.id,
@@ -37,6 +38,7 @@ class VisitReportModel {
     this.aiFeedbackRating,
     this.aiFeedbackComments = '',
     this.processingTimeSeconds,
+    this.hasDossier = false,
   });
 
   factory VisitReportModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class VisitReportModel {
       aiFeedbackRating: json['ai_feedback_rating'] as int?,
       aiFeedbackComments: json['ai_feedback_comments'] as String? ?? '',
       processingTimeSeconds: rawProcessingTime?.toDouble(),
+      hasDossier: json['has_dossier'] as bool? ?? false,
     );
   }
 

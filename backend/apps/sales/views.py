@@ -972,6 +972,8 @@ class VisitPreparationCreateView(APIView):
             date_val = p.report.created_at if (has_report and hasattr(p.report, 'created_at')) else p.created_at
             results.append({
                 "id": p.id,
+                "preparation_id": p.id,
+                "report_id": p.report.id if has_report else None,
                 "enterprise_id": p.enterprise.id,
                 "enterprise_name": p.enterprise.name,
                 "sector": p.enterprise.sector or "Services B2B",
@@ -1002,6 +1004,7 @@ class VisitReportCreateView(APIView):
         user = request.user
         sp_id = request.query_params.get('salesperson_id')
         ent_id = request.query_params.get('enterprise_id')
+        prep_id = request.query_params.get('preparation_id')
         reports = VisitReport.objects.select_related('preparation__enterprise', 'preparation__salesperson', 'preparation__enterprise__plaque_rel').order_by('-created_at')
 
         if user.is_authenticated and user.role == 'SALESPERSON':
@@ -1011,6 +1014,9 @@ class VisitReportCreateView(APIView):
 
         if ent_id:
             reports = reports.filter(preparation__enterprise_id=ent_id)
+
+        if prep_id:
+            reports = reports.filter(preparation_id=prep_id)
 
         results = []
         for r in reports:
@@ -1070,6 +1076,31 @@ class VisitReportCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except VisitPreparationNotFoundException:
             return Response({"detail": "Fiche de préparation introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VisitReportDetailView(APIView):
+    """
+    GET: Retourne le détail complet et structuré d'un compte-rendu de visite (BANT, COI, Packages, Handover).
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request, pk):
+        user = request.user
+        try:
+            report = VisitReport.objects.select_related(
+                'preparation__enterprise',
+                'preparation__salesperson',
+                'preparation__enterprise__plaque_rel'
+            ).get(pk=pk)
+        except VisitReport.DoesNotExist:
+            return Response({"detail": "Rapport de visite introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_authenticated and user.role == 'SALESPERSON':
+            if report.preparation.salesperson_id != user.id:
+                return Response({"detail": "Accès refusé à ce rapport."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = VisitReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class VisitReportTransmitView(APIView):

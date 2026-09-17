@@ -51,23 +51,27 @@ export default function KamVoiceDebriefModal({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn("Erreur arrêt recognition:", e);
+      }
+      recognitionRef.current = null;
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
-        if (mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.requestData();
-        }
         mediaRecorderRef.current.stop();
       } catch (e) {
         console.warn("Erreur arrêt MediaRecorder:", e);
       }
     }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
+    // Les pistes audio du stream sont coupées dans onstop pour éviter la corruption du buffer final
     setIsRecording(false);
   }, []);
 
@@ -124,7 +128,6 @@ export default function KamVoiceDebriefModal({
   const sendAudioToWhisper = async (audioBlob: Blob, mimeType: string) => {
     setIsTranscribing(true);
     setErrorMessage('');
-    setSuccessMessage('');
 
     try {
       const extension = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('wav') ? 'wav' : 'webm';
@@ -135,17 +138,39 @@ export default function KamVoiceDebriefModal({
 
       if (data && data.transcript && data.transcript.trim()) {
         const text = data.transcript.trim();
-        setVoiceTranscript((prev) => (prev.trim() ? `${prev.trim()}\n${text}` : text));
+        setVoiceTranscript((prev) => {
+          const current = prev.trim();
+          if (!current) return text;
+          if (current.toLowerCase().includes(text.toLowerCase())) return current;
+          if (text.toLowerCase().includes(current.toLowerCase())) return text;
+          return `${current}\n${text}`;
+        });
         setIsInsufficientAudio(Boolean(data.is_insufficient));
-        setSuccessMessage("Transcription Whisper reçue et ajoutée avec succès !");
+        setSuccessMessage("Transcription vocale validée et intégrée avec succès !");
         setTimeout(() => setSuccessMessage(''), 4000);
       } else {
-        setIsInsufficientAudio(true);
-        setErrorMessage("Aucune voix distincte détectée dans l'enregistrement. Vous pouvez compléter vos notes par écrit.");
+        setVoiceTranscript((prev) => {
+          if (prev.trim()) {
+            setSuccessMessage("Transcription vocale en direct enregistrée.");
+            setTimeout(() => setSuccessMessage(''), 4000);
+            return prev;
+          }
+          setIsInsufficientAudio(true);
+          setErrorMessage("Aucune voix distincte détectée dans l'enregistrement. Vous pouvez compléter vos notes par écrit.");
+          return prev;
+        });
       }
     } catch (err: any) {
       console.error("Erreur transcription Whisper:", err);
-      setErrorMessage(`Erreur transcription : ${err.message || 'Serveur indisponible'}`);
+      setVoiceTranscript((prev) => {
+        if (prev.trim()) {
+          setSuccessMessage("Transcription vocale en direct conservée.");
+          setTimeout(() => setSuccessMessage(''), 4000);
+          return prev;
+        }
+        setErrorMessage(`Erreur transcription : ${err.message || 'Serveur indisponible'}`);
+        return prev;
+      });
     } finally {
       setIsTranscribing(false);
     }
@@ -174,6 +199,38 @@ export default function KamVoiceDebriefModal({
       });
       streamRef.current = stream;
 
+      // Démarrage de la reconnaissance vocale native en temps réel (si disponible)
+      if (typeof window !== 'undefined') {
+        const SpeechRecClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecClass) {
+          try {
+            const rec = new SpeechRecClass();
+            rec.continuous = true;
+            rec.interimResults = true;
+            rec.lang = 'fr-FR';
+
+            rec.onresult = (event: any) => {
+              let liveText = '';
+              for (let i = 0; i < event.results.length; ++i) {
+                liveText += event.results[i][0].transcript + ' ';
+              }
+              if (liveText.trim()) {
+                setVoiceTranscript(liveText.trim());
+              }
+            };
+
+            rec.onerror = (e: any) => {
+              console.warn("SpeechRec error:", e.error);
+            };
+
+            rec.start();
+            recognitionRef.current = rec;
+          } catch (e) {
+            console.warn("SpeechRec start error:", e);
+          }
+        }
+      }
+
       const mimeType = getSupportedAudioMime();
       const mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -186,17 +243,24 @@ export default function KamVoiceDebriefModal({
       };
 
       mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach((track) => track.stop());
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
         const actualType = mediaRecorder.mimeType || mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: actualType });
         if (audioBlob.size > 100) {
           await sendAudioToWhisper(audioBlob, actualType);
         } else {
-          setErrorMessage("Prise de son trop brève : aucun signal exploitable.");
+          setVoiceTranscript((prev) => {
+            if (prev.trim()) return prev;
+            setErrorMessage("Prise de son trop brève ou micro inaudible.");
+            return prev;
+          });
         }
       };
 
-      mediaRecorder.start(250);
+      mediaRecorder.start(500);
       setIsRecording(true);
       setRecordingSeconds(0);
     } catch (err: any) {
@@ -394,7 +458,7 @@ export default function KamVoiceDebriefModal({
               </div>
             )}
 
-            {/* Jauge d'évaluation de la qualité du verbatim en temps réel */}
+            {/* Jauge d'évaluation du contenu en temps réel */}
             {!isRecording && !isTranscribing && quality.status === 'SUFFICIENT' && (
               <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
                 <Icons.CheckCircle size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
@@ -402,7 +466,7 @@ export default function KamVoiceDebriefModal({
                   <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
                     <span>{quality.label}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono">
-                      {quality.substantiveCount} mot(s) métier
+                      {quality.totalWords} mots consignés
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-700/90 dark:text-emerald-300/90">{quality.guidance}</p>
@@ -417,7 +481,7 @@ export default function KamVoiceDebriefModal({
                   <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-2">
                     <span>{quality.label}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono">
-                      {quality.substantiveCount}/2 mots métier
+                      {quality.totalWords} mot(s)
                     </span>
                   </div>
                   <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">{quality.guidance}</p>

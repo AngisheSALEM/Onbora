@@ -50,48 +50,35 @@ function getSupportedAudioMime(): string {
 }
 
 export function evaluateVerbatimQuality(voice: string, notes: string) {
-  const combined = `${voice} ${notes}`.trim().toLowerCase();
+  const combined = `${voice} ${notes}`.trim();
   if (!combined) {
     return {
       isSufficient: false,
       totalWords: 0,
-      substantiveCount: 0,
-      status: 'EMPTY',
+      status: 'EMPTY' as const,
       label: 'En attente de contenu vocal ou écrit',
-      guidance: 'Enregistrez votre voix ou cliquez sur les puces rapides pour alimenter le débriefing.'
+      guidance: 'Enregistrez votre voix ou écrivez vos notes pour alimenter le débriefing.'
     };
   }
 
   const words = combined.match(/\b\w+\b/g)?.filter((w) => w.length > 1) || [];
-  const trivialWords = new Set([
-    'bonjour', 'bonsoir', 'salut', 'allo', 'hello', 'hi', 'ok', 'merci',
-    'oui', 'non', 'daccord', 'test', 'micro', 'audio', 'coucou', 'yo',
-    'bienvenue', 'aurevoir', 'bonne', 'journée', 'matin', 'après', 'midi',
-    'remercie', 'présent', 'ça', 'va', 'comment', 'vas', 'tu', 'le', 'la',
-    'les', 'un', 'une', 'des', 'de', 'du', 'et', 'en', 'à', 'pour', 'avec',
-    'dans', 'sur', 'par', 'ce', 'cet', 'cette', 'ces', 'mon', 'ton', 'son',
-    'qui', 'que', 'quoi', 'dont', 'où', 'est', 'sont', 'ont', 'fait', 'faire'
-  ]);
-  const substantiveWords = words.filter((w) => !trivialWords.has(w));
 
-  if (words.length < 4 || substantiveWords.length < 2) {
+  if (words.length < 5) {
     return {
       isSufficient: false,
       totalWords: words.length,
-      substantiveCount: substantiveWords.length,
-      status: 'INSUFFICIENT',
-      label: 'Échange court / Salutations seules',
-      guidance: `Encore ${Math.max(1, 2 - substantiveWords.length)} mot(s) métier clé(s) (ex: fibre, coupures, budget, SD-WAN) pour une qualification B2B complète.`
+      status: 'INSUFFICIENT' as const,
+      label: 'Échange très court',
+      guidance: 'Propos trop brefs pour qualifier des besoins ou un budget. Veuillez dicter vos échanges ou noter les points clés abordés.'
     };
   }
 
   return {
     isSufficient: true,
     totalWords: words.length,
-    substantiveCount: substantiveWords.length,
-    status: 'SUFFICIENT',
-    label: 'Matière commerciale suffisante',
-    guidance: `Besoins métier exploitables détectés (${substantiveWords.slice(0, 4).join(', ')}...). Core AI peut générer l'analyse et le matching d'offres.`
+    status: 'SUFFICIENT' as const,
+    label: 'Contenu prêt pour l\'analyse IA',
+    guidance: `${words.length} mots consignés. Core AI qualifiera les besoins réels, objections et offres correspondantes.`
   };
 }
 
@@ -115,23 +102,27 @@ export default function KamVocalVisitModal({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn("Erreur arrêt recognition:", e);
+      }
+      recognitionRef.current = null;
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
-        if (mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.requestData();
-        }
         mediaRecorderRef.current.stop();
       } catch (e) {
         console.warn("Erreur arrêt MediaRecorder:", e);
       }
     }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
+    // Note: les pistes audio du stream sont arrêtées dans onstop pour éviter de corrompre le buffer final
     setIsRecording(false);
   }, []);
 
@@ -172,7 +163,6 @@ export default function KamVocalVisitModal({
   const sendAudioToWhisper = async (audioBlob: Blob, mimeType: string) => {
     setIsTranscribing(true);
     setErrorMsg('');
-    setSuccessMsg('');
 
     try {
       const extension = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('wav') ? 'wav' : 'webm';
@@ -183,17 +173,39 @@ export default function KamVocalVisitModal({
 
       if (data && data.transcript && data.transcript.trim()) {
         const text = data.transcript.trim();
-        setVoiceTranscript((prev) => (prev.trim() ? `${prev.trim()}\n${text}` : text));
+        setVoiceTranscript((prev) => {
+          const current = prev.trim();
+          if (!current) return text;
+          if (current.toLowerCase().includes(text.toLowerCase())) return current;
+          if (text.toLowerCase().includes(current.toLowerCase())) return text;
+          return `${current}\n${text}`;
+        });
         setIsInsufficientAudio(Boolean(data.is_insufficient));
-        setSuccessMsg("Transcription Whisper reçue avec succès !");
+        setSuccessMsg("Transcription vocale confirmée avec succès !");
         setTimeout(() => setSuccessMsg(''), 4000);
       } else {
-        setIsInsufficientAudio(true);
-        setErrorMsg("Aucune voix distincte détectée dans l'audio. Vous pouvez compléter vos notes par écrit.");
+        setVoiceTranscript((prev) => {
+          if (prev.trim()) {
+            setSuccessMsg("Transcription vocale en direct enregistrée.");
+            setTimeout(() => setSuccessMsg(''), 4000);
+            return prev;
+          }
+          setIsInsufficientAudio(true);
+          setErrorMsg("Aucune voix distincte détectée dans l'audio. Vous pouvez compléter vos notes par écrit.");
+          return prev;
+        });
       }
     } catch (err: any) {
       console.error("Erreur transcription Whisper:", err);
-      setErrorMsg(`Erreur transcription : ${err.message || 'Impossible de joindre le serveur'}`);
+      setVoiceTranscript((prev) => {
+        if (prev.trim()) {
+          setSuccessMsg("Transcription vocale en direct conservée.");
+          setTimeout(() => setSuccessMsg(''), 4000);
+          return prev;
+        }
+        setErrorMsg(`Erreur transcription : ${err.message || 'Impossible de joindre le serveur'}`);
+        return prev;
+      });
     } finally {
       setIsTranscribing(false);
     }
@@ -220,6 +232,38 @@ export default function KamVocalVisitModal({
       });
       streamRef.current = stream;
 
+      // Démarrage de la reconnaissance vocale native en temps réel (si disponible)
+      if (typeof window !== 'undefined') {
+        const SpeechRecClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecClass) {
+          try {
+            const rec = new SpeechRecClass();
+            rec.continuous = true;
+            rec.interimResults = true;
+            rec.lang = 'fr-FR';
+
+            rec.onresult = (event: any) => {
+              let liveText = '';
+              for (let i = 0; i < event.results.length; ++i) {
+                liveText += event.results[i][0].transcript + ' ';
+              }
+              if (liveText.trim()) {
+                setVoiceTranscript(liveText.trim());
+              }
+            };
+
+            rec.onerror = (e: any) => {
+              console.warn("SpeechRec error:", e.error);
+            };
+
+            rec.start();
+            recognitionRef.current = rec;
+          } catch (e) {
+            console.warn("SpeechRec start error:", e);
+          }
+        }
+      }
+
       const mimeType = getSupportedAudioMime();
       const mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -232,17 +276,24 @@ export default function KamVocalVisitModal({
       };
 
       mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach((track) => track.stop());
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
         const actualType = mediaRecorder.mimeType || mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: actualType });
         if (audioBlob.size > 100) {
           await sendAudioToWhisper(audioBlob, actualType);
         } else {
-          setErrorMsg("Prise de son trop brève : aucun signal exploitable.");
+          setVoiceTranscript((prev) => {
+            if (prev.trim()) return prev;
+            setErrorMsg("Prise de son trop brève ou micro inaudible.");
+            return prev;
+          });
         }
       };
 
-      mediaRecorder.start(250);
+      mediaRecorder.start(500);
       setIsRecording(true);
       setRecordingSeconds(0);
     } catch (err: any) {
@@ -420,7 +471,7 @@ export default function KamVocalVisitModal({
               </div>
             )}
 
-            {/* Jauge d'évaluation de la qualité du verbatim en temps réel */}
+            {/* Jauge d'évaluation du contenu en temps réel */}
             {!isRecording && !isTranscribing && quality.status === 'SUFFICIENT' && (
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs font-medium text-left flex items-start gap-2.5 w-full">
                 <Icons.CheckCircle size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
@@ -428,7 +479,7 @@ export default function KamVocalVisitModal({
                   <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
                     <span>{quality.label}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono">
-                      {quality.substantiveCount} mot(s) métier
+                      {quality.totalWords} mots consignés
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-700/90 dark:text-emerald-300/90">{quality.guidance}</p>
@@ -443,7 +494,7 @@ export default function KamVocalVisitModal({
                   <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-2">
                     <span>{quality.label}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono">
-                      {quality.substantiveCount}/2 mots métier
+                      {quality.totalWords} mot(s)
                     </span>
                   </div>
                   <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">{quality.guidance}</p>
