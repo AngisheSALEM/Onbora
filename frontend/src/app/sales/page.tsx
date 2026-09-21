@@ -196,10 +196,9 @@ export default function SalesDashboard() {
           });
         } catch (err) {
           console.error("Erreur de transcription audio:", err);
-          alert("Erreur lors de la transcription automatique de l'audio. Reprise de la simulation.");
           setRawNotes(prev => {
             const base = prev.trim() ? prev + "\n\n" : "";
-            return base + "Discussion client : Le prospect souhaite raccorder son site médical à une fibre pro sécurisée HDS. Ils ont des soucis de standard téléphonique (obsolète) et s'inquiètent du budget.";
+            return base + "[Transcription automatique indisponible. Veuillez saisir vos notes manuellement ci-dessous.]";
           });
         } finally {
           setIsProcessingAudio(false);

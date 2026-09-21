@@ -28,6 +28,9 @@ class DictaphoneController extends GetxController {
   String _currentSessionWords = "";
   String _lastDispatchedText = "";
 
+  // Guard pour éviter les tentatives de relance concurrentes (ERROR_BUSY)
+  bool _isRelaunching = false;
+
   final stt.SpeechToText _speechToText = stt.SpeechToText();
 
   @override
@@ -42,8 +45,13 @@ class DictaphoneController extends GetxController {
         onStatus: _handleSpeechStatus,
         onError: (errorNotification) {
           speechStatus.value = "Erreur: ${errorNotification.errorMsg}";
-          if (_state.value == RecordingState.recording) {
-            _scheduleContinuousRestart();
+          // Ne relancer QUE si l'erreur n'est pas permanente et qu'on est
+          // toujours en mode enregistrement.
+          // Les erreurs permanentes (ex: microphone indisponible, permission
+          // refusée) ne doivent PAS provoquer de relance infinie.
+          if (!errorNotification.permanent &&
+              _state.value == RecordingState.recording) {
+            _scheduleErrorRestart();
           }
         },
       );
@@ -55,26 +63,52 @@ class DictaphoneController extends GetxController {
 
   void _handleSpeechStatus(String status) {
     speechStatus.value = status;
-    // Si le moteur STT s'arrête (après une pause ou un silence), on le relance immédiatement en continu
-    if ((status == 'done' || status == 'notListening') && _state.value == RecordingState.recording) {
+    // Quand le moteur Android signale la fin d'une session d'ecoute
+    // (pause naturelle apres silence), on consolide et on relance.
+    if ((status == 'done' || status == 'notListening') &&
+        _state.value == RecordingState.recording) {
       if (_currentSessionWords.trim().isNotEmpty) {
-        _accumulatedWords = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+        _accumulatedWords = (_accumulatedWords.isEmpty
+                ? _currentSessionWords
+                : "$_accumulatedWords $_currentSessionWords")
+            .trim();
         _currentSessionWords = "";
         transcribedText.value = _accumulatedWords;
       }
-      _scheduleContinuousRestart();
+      _scheduleStatusRestart();
     }
   }
 
-  void _scheduleContinuousRestart() {
+  /// Relance apres un changement de status (done/notListening).
+  /// Delai : 600ms — laisse au moteur Android le temps de liberer le micro.
+  void _scheduleStatusRestart() {
+    if (_isRelaunching) return;
     _restartListenTimer?.cancel();
     if (_state.value != RecordingState.recording) return;
 
-    _restartListenTimer = Timer(const Duration(milliseconds: 150), () {
+    _restartListenTimer = Timer(const Duration(milliseconds: 600), () {
+      _isRelaunching = false;
       if (_state.value == RecordingState.recording && !_speechToText.isListening) {
         _startListeningLoop();
       }
     });
+    _isRelaunching = true;
+  }
+
+  /// Relance apres une erreur non-permanente (ex: timeout reseau).
+  /// Delai : 1200ms — plus long pour eviter ERROR_BUSY (Code 8 Android).
+  void _scheduleErrorRestart() {
+    if (_isRelaunching) return;
+    _restartListenTimer?.cancel();
+    if (_state.value != RecordingState.recording) return;
+
+    _restartListenTimer = Timer(const Duration(milliseconds: 1200), () {
+      _isRelaunching = false;
+      if (_state.value == RecordingState.recording && !_speechToText.isListening) {
+        _startListeningLoop();
+      }
+    });
+    _isRelaunching = true;
   }
 
   String get formattedDuration {
@@ -88,7 +122,7 @@ class DictaphoneController extends GetxController {
     if (!micPerm.isGranted) {
       Get.snackbar(
         'Permission requise',
-        'Veuillez autoriser l\'accès au microphone pour enregistrer.',
+        'Veuillez autoriser l\'acces au microphone pour enregistrer.',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -102,6 +136,7 @@ class DictaphoneController extends GetxController {
     _lastDispatchedText = "";
     lastSpeechChunk.value = "";
     isVADSpeaking.value = false;
+    _isRelaunching = false;
 
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -117,16 +152,20 @@ class DictaphoneController extends GetxController {
 
   Future<void> _startListeningLoop() async {
     if (_state.value != RecordingState.recording) return;
+    _isRelaunching = false;
 
     try {
       await _speechToText.listen(
         onResult: (result) {
           _currentSessionWords = result.recognizedWords;
-          final fullText = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+          final fullText = (_accumulatedWords.isEmpty
+                  ? _currentSessionWords
+                  : "$_accumulatedWords $_currentSessionWords")
+              .trim();
           transcribedText.value = fullText;
           isVADSpeaking.value = true;
 
-          // Réinitialisation de la fenêtre temporelle de silence (VAD 500-600ms)
+          // Reinitialisation de la fenetre temporelle de silence (VAD)
           _silenceDebounceTimer?.cancel();
           _silenceDebounceTimer = Timer(const Duration(milliseconds: 600), () {
             _onSilenceDetected();
@@ -142,19 +181,24 @@ class DictaphoneController extends GetxController {
           cancelOnError: false,
           partialResults: true,
           onDevice: false,
-          pauseFor: const Duration(seconds: 4),
+          // pauseFor : arret de reconnaissance apres 5s de silence
+          // (plus long que la valeur precedente de 4s pour reduire les
+          // rechargements intempestifs sur Android)
+          pauseFor: const Duration(seconds: 5),
           listenFor: const Duration(hours: 1),
           localeId: 'fr_FR',
         ),
       );
     } catch (_) {
+      // En cas d'exception au demarrage (ex: ressource micro occupee),
+      // on utilise le delai long pour eviter la boucle ERROR_BUSY.
       if (_state.value == RecordingState.recording) {
-        _scheduleContinuousRestart();
+        _scheduleErrorRestart();
       }
     }
   }
 
-  /// Déclenché dès qu'un silence de clôture (500-600ms) est détecté après une prise de parole
+  /// Declenche quand un silence post-parole est detecte (VAD 600ms).
   void _onSilenceDetected() {
     isVADSpeaking.value = false;
     final currentFull = transcribedText.value.trim();
@@ -184,15 +228,19 @@ class DictaphoneController extends GetxController {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
     _restartListenTimer?.cancel();
+    _isRelaunching = false;
     isVADSpeaking.value = false;
 
     if (_currentSessionWords.trim().isNotEmpty) {
-      _accumulatedWords = (_accumulatedWords.isEmpty ? _currentSessionWords : "$_accumulatedWords $_currentSessionWords").trim();
+      _accumulatedWords = (_accumulatedWords.isEmpty
+              ? _currentSessionWords
+              : "$_accumulatedWords $_currentSessionWords")
+          .trim();
       _currentSessionWords = "";
       transcribedText.value = _accumulatedWords;
     }
 
-    // Dispatch final turn si reliquat de parole
+    // Dispatch final si reliquat de parole non encore envoye
     final currentFull = transcribedText.value.trim();
     if (currentFull.length > _lastDispatchedText.length) {
       final newChunk = currentFull.substring(_lastDispatchedText.length).trim();
@@ -204,7 +252,9 @@ class DictaphoneController extends GetxController {
     }
 
     _state.value = RecordingState.stopped;
-    audioPath.value = "/media/voice_uploads/visit_recording_${DateTime.now().millisecondsSinceEpoch}.m4a";
+    // audioPath reste null : l'app mobile utilise la transcription STT locale,
+    // pas un fichier audio enregistre sur le disque.
+    audioPath.value = null;
 
     if (_speechToText.isListening) {
       await _speechToText.stop();
@@ -215,15 +265,17 @@ class DictaphoneController extends GetxController {
     _state.value = RecordingState.uploading;
     isUploading.value = true;
 
-    // Si Speech-to-text a capturé la voix réelle de l'utilisateur
+    // Si Speech-to-text a capture la voix reelle de l'utilisateur, l'utiliser
     if (transcribedText.value.trim().isNotEmpty) {
       isUploading.value = false;
       _state.value = RecordingState.completed;
       return transcribedText.value;
     }
 
-    // Si aucune voix n'a été détectée par le microphone
-    transcribedText.value = "Aucun son capturé ou microphone non configuré.";
+    // Si aucune parole n'a ete detectee par le moteur STT local
+    const noSpeechMsg = "Aucune parole detectee. Verifiez que le microphone est "
+        "actif et que la langue francaise est disponible sur votre appareil.";
+    transcribedText.value = noSpeechMsg;
     isUploading.value = false;
     _state.value = RecordingState.completed;
     return transcribedText.value;
@@ -233,6 +285,7 @@ class DictaphoneController extends GetxController {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
     _restartListenTimer?.cancel();
+    _isRelaunching = false;
     if (_speechToText.isListening) {
       _speechToText.stop();
     }
@@ -252,6 +305,7 @@ class DictaphoneController extends GetxController {
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
     _restartListenTimer?.cancel();
+    _isRelaunching = false;
     if (_speechToText.isListening) {
       _speechToText.stop();
     }

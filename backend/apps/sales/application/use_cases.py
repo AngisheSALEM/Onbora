@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from typing import List, Dict, Any, Optional, Tuple
@@ -5,6 +6,8 @@ from django.db.models import Q, Count
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, VisitFormSubmission
 from sales.domain.exceptions import (
@@ -981,17 +984,24 @@ class ProcessVoiceUploadUseCase(BaseUseCase[Tuple[Any, Optional[int], Any], Voic
         uploaded_file_url = fs.url(filename)
         full_audio_path = fs.path(filename)
 
-        from sales.whisper_service import transcribe_audio_file
-        whisper_res = transcribe_audio_file(full_audio_path)
-        transcript = whisper_res.get("text") or (
-            f"Discussion commerciale chez {enterprise_name} : "
-            "Le prospect confirme le besoin de raccorder ses locaux en Fibre Optique Pro Orange B2B avec basculement 4G, "
-            "de sécuriser son réseau par Firewall et de migrer sa messagerie vers Microsoft 365 Pro & Teams."
-        )
+        from apps.ai_core.services.audio_transcription_service import transcribe_audio_with_gemini
+        whisper_res = transcribe_audio_with_gemini(full_audio_path, language="fr")
+        transcript = whisper_res.get("text", "").strip()
+        success = whisper_res.get("success", False)
+        if not success or not transcript:
+            error_msg = whisper_res.get("error", "Transcription indisponible.")
+            logger.warning(
+                "[ProcessVoiceUpload] Transcription Gemini echouee pour %s: %s",
+                enterprise_name, error_msg
+            )
+            transcript = (
+                f"[Transcription automatique indisponible : {error_msg}] "
+                "Veuillez compléter les notes manuellement dans le rapport."
+            )
 
         log_demo_event(
             'AUDIO_RECORDED',
-            f"Fichier audio de visite téléversé et transcrit via Whisper ({whisper_res.get('provider', 'whisper')}) pour: {enterprise_name}",
+            f"Fichier audio de visite téléversé et transcrit via Gemini ({whisper_res.get('provider', 'gemini-audio')}) pour: {enterprise_name}",
             user=user,
             metadata={"filename": filename, "file_url": uploaded_file_url, "provider": whisper_res.get("provider")}
         )
@@ -999,7 +1009,7 @@ class ProcessVoiceUploadUseCase(BaseUseCase[Tuple[Any, Optional[int], Any], Voic
         return VoiceUploadResultDTO(
             audio_file_path=uploaded_file_url,
             transcript=transcript,
-            provider=whisper_res.get("provider", "whisper")
+            provider=whisper_res.get("provider", "gemini-audio")
         )
 
 

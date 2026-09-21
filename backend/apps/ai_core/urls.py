@@ -12,6 +12,7 @@ from .views import (
     AIValidateActionView,
     AISessionDetailView,
     AIToolsListView,
+    AIAudioTranscribeView,
 )
 
 urlpatterns = [
@@ -22,6 +23,9 @@ urlpatterns = [
     # RAG Catalogue Orange Business
     path("catalog/search/", AICatalogSearchView.as_view(), name="catalog_search"),
     path("catalog/service/<str:service_id>/", AICatalogServiceDetailView.as_view(), name="catalog_service_detail"),
+
+    # Transcription audio via Gemini (STT unifié)
+    path("transcribe/", AIAudioTranscribeView.as_view(), name="audio_transcribe"),
 
     # 5 Moteurs d'action B2B
     path("pre-call/", AIPreCallView.as_view(), name="pre_call"),

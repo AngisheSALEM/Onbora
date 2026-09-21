@@ -13,7 +13,7 @@ from .application.use_cases import CreateConversationUseCase, SendMessageUseCase
 from .domain.exceptions import ConversationNotFoundException, EmptyMessageException
 from .ai_engine import parse_message_for_profile, generate_next_step
 from .core_ai_client import is_core_ai_available, call_core_ai_turn
-from sales.whisper_service import transcribe_audio_file
+from apps.ai_core.services.audio_transcription_service import transcribe_audio_with_gemini
 from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from reporting.utils import log_demo_event
@@ -302,13 +302,23 @@ class ConversationVoiceMessageView(APIView):
         filename = fs.save(audio_file.name, audio_file)
         full_audio_path = fs.path(filename)
 
-        whisper_res = transcribe_audio_file(full_audio_path)
-        transcribed_text = whisper_res.get("text", "").strip() or "Bonjour, je souhaite me renseigner sur les offres de Fibre Pro et de Sécurité."
+        whisper_res = transcribe_audio_with_gemini(full_audio_path, language="fr")
+        transcribed_text = whisper_res.get("text", "").strip()
+        if not transcribed_text:
+            # Retourner une erreur exploitable plutôt qu'un texte générique
+            return Response(
+                {
+                    "detail": "Transcription vocale indisponible.",
+                    "error": whisper_res.get("error", "Contenu audio non reconnu."),
+                    "provider": whisper_res.get("provider", "gemini-audio"),
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
 
         ClientConversationMessage.objects.create(
             conversation=conversation,
             sender=ClientConversationMessage.USER,
-            content=f"[Vocal Whisper] {transcribed_text}"
+            content=f"[Vocal STT] {transcribed_text}"
         )
 
         current_profile = conversation.extracted_profile or {}

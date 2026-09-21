@@ -20,10 +20,19 @@ class KamDebriefController extends GetxController {
   final RxString transcribedSpeech = "".obs;
   final Rx<KamDebriefModel?> generatedDebrief = Rx<KamDebriefModel?>(null);
 
-  final RxInt currentTabIndex = 0.obs; // 0: Synthèse, 1: Engagements, 2: Email Suivi
+  final RxInt currentTabIndex = 0.obs; // 0: Synthese, 1: Engagements, 2: Email Suivi
 
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   final RxBool isSpeechAvailable = false.obs;
+  final RxString speechStatus = "".obs;
+
+  // Accumulation multi-segments (identique au DictaphoneController)
+  String _accumulatedWords = "";
+  String _currentSessionWords = "";
+
+  // Guard anti-ERROR_BUSY
+  bool _isRelaunching = false;
+  Timer? _restartListenTimer;
 
   @override
   void onInit() {
@@ -33,11 +42,52 @@ class KamDebriefController extends GetxController {
 
   Future<void> _initSTT() async {
     try {
-      final available = await _speechToText.initialize();
+      final available = await _speechToText.initialize(
+        onStatus: _handleSpeechStatus,
+        onError: (errorNotification) {
+          speechStatus.value = "Erreur: ${errorNotification.errorMsg}";
+          if (!errorNotification.permanent &&
+              recordingState.value == DebriefRecordingState.recording) {
+            _scheduleRestart(delayMs: 1200);
+          }
+        },
+      );
       isSpeechAvailable.value = available;
     } catch (_) {
       isSpeechAvailable.value = false;
     }
+  }
+
+  void _handleSpeechStatus(String status) {
+    speechStatus.value = status;
+    if ((status == 'done' || status == 'notListening') &&
+        recordingState.value == DebriefRecordingState.recording) {
+      // Consolider le segment courant dans l'accumulation globale
+      if (_currentSessionWords.trim().isNotEmpty) {
+        _accumulatedWords = (_accumulatedWords.isEmpty
+                ? _currentSessionWords
+                : "$_accumulatedWords $_currentSessionWords")
+            .trim();
+        _currentSessionWords = "";
+        transcribedSpeech.value = _accumulatedWords;
+      }
+      _scheduleRestart(delayMs: 600);
+    }
+  }
+
+  void _scheduleRestart({required int delayMs}) {
+    if (_isRelaunching) return;
+    _restartListenTimer?.cancel();
+    if (recordingState.value != DebriefRecordingState.recording) return;
+
+    _restartListenTimer = Timer(Duration(milliseconds: delayMs), () {
+      _isRelaunching = false;
+      if (recordingState.value == DebriefRecordingState.recording &&
+          !_speechToText.isListening) {
+        _startListeningLoop();
+      }
+    });
+    _isRelaunching = true;
   }
 
   String get formattedDuration {
@@ -49,33 +99,77 @@ class KamDebriefController extends GetxController {
   Future<void> startRecording() async {
     final micPerm = await Permission.microphone.request();
     if (!micPerm.isGranted) {
-      Get.snackbar('Microphone requis', 'Veuillez autoriser l\'accès au microphone.');
+      Get.snackbar('Microphone requis', 'Veuillez autoriser l\'acces au microphone.');
       return;
     }
 
     recordingState.value = DebriefRecordingState.recording;
     recordingSeconds.value = 0;
     transcribedSpeech.value = "";
+    _accumulatedWords = "";
+    _currentSessionWords = "";
+    _isRelaunching = false;
 
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => recordingSeconds.value++);
 
+    if (!isSpeechAvailable.value) {
+      await _initSTT();
+    }
+
+    _startListeningLoop();
+  }
+
+  Future<void> _startListeningLoop() async {
+    if (recordingState.value != DebriefRecordingState.recording) return;
+    _isRelaunching = false;
+
     try {
       await _speechToText.listen(
         onResult: (result) {
-          transcribedSpeech.value = result.recognizedWords;
+          _currentSessionWords = result.recognizedWords;
+          final fullText = (_accumulatedWords.isEmpty
+                  ? _currentSessionWords
+                  : "$_accumulatedWords $_currentSessionWords")
+              .trim();
+          transcribedSpeech.value = fullText;
+
+          if (result.finalResult) {
+            _accumulatedWords = fullText;
+            _currentSessionWords = "";
+          }
         },
         listenOptions: stt.SpeechListenOptions(
           localeId: 'fr_FR',
           listenMode: stt.ListenMode.dictation,
           cancelOnError: false,
+          partialResults: true,
+          pauseFor: const Duration(seconds: 5),
+          listenFor: const Duration(hours: 1),
         ),
       );
-    } catch (_) {}
+    } catch (_) {
+      if (recordingState.value == DebriefRecordingState.recording) {
+        _scheduleRestart(delayMs: 1200);
+      }
+    }
   }
 
   Future<void> stopRecording() async {
     _timer?.cancel();
+    _restartListenTimer?.cancel();
+    _isRelaunching = false;
+
+    // Consolider le dernier segment
+    if (_currentSessionWords.trim().isNotEmpty) {
+      _accumulatedWords = (_accumulatedWords.isEmpty
+              ? _currentSessionWords
+              : "$_accumulatedWords $_currentSessionWords")
+          .trim();
+      _currentSessionWords = "";
+      transcribedSpeech.value = _accumulatedWords;
+    }
+
     recordingState.value = DebriefRecordingState.stopped;
     if (_speechToText.isListening) {
       await _speechToText.stop();
@@ -91,33 +185,36 @@ class KamDebriefController extends GetxController {
     final account = _kamCtrl.selectedAccount.value;
     final accountName = account?.name ?? "Rawbank RDC";
 
+    // Utilise la vraie transcription capturee, avec un fallback indicatif
+    final rawTranscript = transcribedSpeech.value.trim().isNotEmpty
+        ? transcribedSpeech.value.trim()
+        : "Debriefing enregistre sans transcription vocale disponible.";
+
     generatedDebrief.value = KamDebriefModel(
       accountId: account?.id ?? 1,
       accountName: accountName,
-      meetingDate: "Aujourd'hui à 15h15",
-      rawTranscript: transcribedSpeech.value.isNotEmpty
-          ? transcribedSpeech.value
-          : "Discussion approfondie avec le DSI (Dieudonné Mwembo) et la Directrice des Achats (Patricia Lumumba). Point critique sur la redondance du lien Siège et validation de principe pour le POC SD-WAN.",
-      meetingAtmosphere: "Très constructif et stratégique",
-      executiveSummary: "Réunion décisive avec le DSI et les Achats. Le client a confirmé sa volonté de renouveler le lien Fibre Siège (18k\$/mois) sous condition de remise d'un plan de continuité haute disponibilité. Forte traction sur notre offre SD-WAN Managé pour leurs 12 nouvelles agences provinciales.",
+      meetingDate: "Aujourd'hui a 15h15",
+      rawTranscript: rawTranscript,
+      meetingAtmosphere: "Tres constructif et strategique",
+      executiveSummary: "Reunion decisive avec le DSI et les Achats. Le client a confirme sa volonte de renouveler le lien Fibre Siege (18k\$/mois) sous condition de remise d'un plan de continuite haute disponibilite. Forte traction sur notre offre SD-WAN Manage pour leurs 12 nouvelles agences provinciales.",
       agreedKeyPoints: [
-        "Accord de principe sur le renouvellement de la Fibre Siège avec intégration d'un backup 5G Entreprise.",
-        "Validation pour organiser un atelier technique d'architecture SD-WAN le mardi 8 septembre avec l'ingénieur avant-vente Orange.",
-        "Les Achats ont accepté de suspendre leur consultation concurrente si nous fournissons l'offre globale avant le 15 septembre.",
+        "Accord de principe sur le renouvellement de la Fibre Siege avec integration d'un backup 5G Entreprise.",
+        "Validation pour organiser un atelier technique d'architecture SD-WAN le mardi 8 septembre avec l'ingenieur avant-vente Orange.",
+        "Les Achats ont accepte de suspendre leur consultation concurrente si nous fournissons l'offre globale avant le 15 septembre.",
       ],
       clientObjections: [
-        "Exigence d'un engagement SLA à 99.99% avec pénalités automatiques de facturation en cas de coupure > 15 min.",
-        "Demande d'une réduction de 5% sur le parc MPLS provincial existant lors du renouvellement.",
+        "Exigence d'un engagement SLA a 99.99% avec penalites automatiques de facturation en cas de coupure > 15 min.",
+        "Demande d'une reduction de 5% sur le parc MPLS provincial existant lors du renouvellement.",
       ],
       commitments: [
         KamCommitment(
-          action: "Transmettre la matrice technique de haute disponibilité Fibre + 5G au DSI",
+          action: "Transmettre la matrice technique de haute disponibilite Fibre + 5G au DSI",
           owner: "Orange (KAM & Avant-Vente)",
           dueDate: "04/09/2026",
           priority: "HAUTE",
         ),
         KamCommitment(
-          action: "Envoyer l'invitation pour l'atelier d'architecture SD-WAN avec les équipes réseau",
+          action: "Envoyer l'invitation pour l'atelier d'architecture SD-WAN avec les equipes reseau",
           owner: "Orange (KAM)",
           dueDate: "05/09/2026",
           priority: "HAUTE",
@@ -131,18 +228,18 @@ class KamDebriefController extends GetxController {
       ],
       followUpEmailDraft: """Madame Lumumba, Monsieur Mwembo,
 
-Je tiens à vous remercier chaleureusement pour la qualité et la franchise de nos échanges de ce jour au sein de votre siège.
+Je tiens a vous remercier chaleureusement pour la qualite et la franchise de nos echanges de ce jour au sein de votre siege.
 
-Comme convenu lors de notre réunion, voici le récapitulatif des orientations stratégiques partagées :
-1. Sécurisation du Siège : Nous finalisons la proposition de redondance active (Fibre Dédiée + Secours 5G Entreprise) garantissant un SLA de 99.99%.
-2. Modernisation SD-WAN : Nos équipes avant-vente animeront l'atelier technique d'architecture le mardi 8 septembre prochain afin de dimensionner l'interconnexion de vos 12 futures agences provinciales.
-3. Proposition Commerciale Globale : Notre offre financière consolidée vous parviendra d'ici le 15 septembre.
+Comme convenu lors de notre reunion, voici le recapitulatif des orientations strategiques partagees :
+1. Securisation du Siege : Nous finalisons la proposition de redondance active (Fibre Dediee + Secours 5G Entreprise) garantissant un SLA de 99.99%.
+2. Modernisation SD-WAN : Nos equipes avant-vente animeront l'atelier technique d'architecture le mardi 8 septembre prochain afin de dimensionner l'interconnexion de vos 12 futures agences provinciales.
+3. Proposition Commerciale Globale : Notre offre financiere consolidee vous parviendra d'ici le 15 septembre.
 
-Je reste à votre entière disposition pour tout complément et vous réitère l'engagement d'Orange Business à accompagner la croissance de la Rawbank.
+Je reste a votre entiere disposition pour tout complement et vous reitere l'engagement d'Orange Business a accompagner la croissance de la Rawbank.
 
 Bien cordialement,
 Votre Key Account Manager — Orange Business""",
-      nextSteps: "Planifier l'atelier avant-vente et saisir les opportunités dans le CRM Kaabu.",
+      nextSteps: "Planifier l'atelier avant-vente et saisir les opportunites dans le CRM Kaabu.",
     );
 
     recordingState.value = DebriefRecordingState.completed;
@@ -153,8 +250,8 @@ Votre Key Account Manager — Orange Business""",
     if (email != null && email.isNotEmpty) {
       Clipboard.setData(ClipboardData(text: email));
       Get.snackbar(
-        'Email Copié',
-        'Le brouillon d\'email C-Level a été copié dans votre presse-papier.',
+        'Email Copie',
+        'Le brouillon d\'email C-Level a ete copie dans votre presse-papier.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppConstants.primaryBlack,
         colorText: Colors.white,
@@ -164,18 +261,24 @@ Votre Key Account Manager — Orange Business""",
 
   void reset() {
     _timer?.cancel();
+    _restartListenTimer?.cancel();
+    _isRelaunching = false;
     if (_speechToText.isListening) {
       _speechToText.stop();
     }
     recordingState.value = DebriefRecordingState.idle;
     recordingSeconds.value = 0;
     transcribedSpeech.value = "";
+    _accumulatedWords = "";
+    _currentSessionWords = "";
     generatedDebrief.value = null;
   }
 
   @override
   void onClose() {
     _timer?.cancel();
+    _restartListenTimer?.cancel();
+    _isRelaunching = false;
     if (_speechToText.isListening) {
       _speechToText.stop();
     }

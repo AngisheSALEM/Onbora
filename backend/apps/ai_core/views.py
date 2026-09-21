@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Dict
 from django.conf import settings
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -206,3 +208,73 @@ class AIToolsListView(APIView):
 
     def get(self, request) -> Response:
         return Response({"tools": get_available_ai_tools()})
+
+
+class AIAudioTranscribeView(APIView):
+    """
+    POST /api/ai/transcribe/ — Transcription audio via Google Gemini.
+
+    Accepte un fichier audio multipart (champ 'audio').
+    Retourne la transcription brute en JSON.
+
+    Utilisé par :
+    - Le frontend web Next.js (client B2B, dictaphone commercial)
+    - L'application mobile Flutter en mode fallback réseau
+    """
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request) -> Response:
+        from django.core.files.storage import FileSystemStorage
+
+        audio_file = request.FILES.get("audio")
+        if not audio_file:
+            return Response(
+                {"detail": "Parametre 'audio' obligatoire (fichier multipart)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        MAX_SIZE = 25 * 1024 * 1024  # 25 Mo
+        if audio_file.size > MAX_SIZE:
+            return Response(
+                {"detail": "Fichier trop volumineux. Taille maximale : 25 Mo."},
+                status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            )
+
+        language = request.data.get("language", "fr")
+
+        import tempfile
+        with tempfile.NamedTemporaryFile(
+            suffix=os.path.splitext(audio_file.name)[1] or ".webm",
+            delete=False,
+        ) as tmp:
+            for chunk in audio_file.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name
+
+        try:
+            from .services.audio_transcription_service import transcribe_audio_with_gemini
+            result = transcribe_audio_with_gemini(tmp_path, language=language)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+        if not result.get("success"):
+            return Response(
+                {
+                    "success": False,
+                    "text": "",
+                    "error": result.get("error", "Transcription echouee."),
+                    "provider": result.get("provider", "gemini-audio"),
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        return Response({
+            "success": True,
+            "text": result["text"],
+            "language": result.get("language", language),
+            "provider": result.get("provider", "gemini-audio"),
+        }, status=status.HTTP_200_OK)
