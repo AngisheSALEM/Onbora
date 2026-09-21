@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${DB_USER:-onbora_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-onbora_pass}
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -17,7 +17,7 @@ services:
     image: redis:7-alpine
     container_name: onbora_redis
     ports:
-      - "6379:6379"
+      - "6381:6379"
 
   backend:
     build:

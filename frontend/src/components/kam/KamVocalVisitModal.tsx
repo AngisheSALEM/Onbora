@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchAPI, uploadAudioAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
+import { KamVisitPurpose } from './kamVisitPurpose';
 
 export interface AppointmentData {
   id: number;
@@ -20,6 +21,11 @@ export interface AppointmentData {
   contact_name: string;
   contact_role: string;
   objective: string;
+  visit_purpose: KamVisitPurpose | null;
+  visit_purpose_label: string;
+  purpose_source: 'AUTO' | 'MANUAL' | null;
+  purpose_reason: string;
+  previous_kam_visits: number;
   status: string;
   status_label: string;
   has_report: boolean;
@@ -389,7 +395,7 @@ export default function KamVocalVisitModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
-                  Clôture & Synthèse IA du Rendez-vous
+                  {appointment.status === 'IN_PROGRESS' ? 'Réunion en cours & Synthèse IA' : 'Clôture & Synthèse IA du Rendez-vous'}
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
                   OpenAI Whisper + Core AI

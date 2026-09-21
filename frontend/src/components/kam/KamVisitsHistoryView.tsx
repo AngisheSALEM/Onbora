@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
+import { KamVisitPurpose, VISIT_PURPOSE_LABELS } from './kamVisitPurpose';
 
 export interface KamVisitRecord {
   id: number;
@@ -13,6 +14,8 @@ export interface KamVisitRecord {
   crm_id: string;
   meeting_type: 'PHYSICAL' | 'GOOGLE_MEET' | 'CALL';
   meeting_type_label: string;
+  visit_purpose: KamVisitPurpose | null;
+  visit_purpose_label: string;
   contact_name: string;
   contact_role: string;
   raw_transcript: string;
@@ -43,6 +46,7 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'CONVERTED' | 'IN_NEGOTIATION' | 'PROSPECT' | 'LOST'>('ALL');
+  const [purposeFilter, setPurposeFilter] = useState<'ALL' | KamVisitPurpose>('ALL');
   const [selectedReport, setSelectedReport] = useState<KamVisitRecord | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [isVerbatimExpanded, setIsVerbatimExpanded] = useState(false);
@@ -95,6 +99,7 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
 
   // Filter logic
   const filteredVisits = visits.filter((v) => {
+    if (purposeFilter !== 'ALL' && v.visit_purpose !== purposeFilter) return false;
     if (statusFilter !== 'ALL' && v.conversion_status !== statusFilter) {
       return false;
     }
@@ -286,6 +291,14 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
           )}
         </div>
 
+        <label className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
+          Type de visite
+          <select value={purposeFilter} onChange={(event) => setPurposeFilter(event.target.value as 'ALL' | KamVisitPurpose)} className="px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-900 dark:text-white focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">
+            <option value="ALL">Tous les types</option>
+            {(Object.keys(VISIT_PURPOSE_LABELS) as KamVisitPurpose[]).map((purpose) => <option key={purpose} value={purpose}>{VISIT_PURPOSE_LABELS[purpose]}</option>)}
+          </select>
+        </label>
+
         {/* Status filter capsules */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           {[
@@ -415,6 +428,7 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                           >
                             {visit.enterprise_sector || visit.crm_id}
                           </span>
+                          <span className="text-[11px] text-[#4F6CE8] block mt-0.5">{visit.visit_purpose_label || 'Type non renseigné'}</span>
                         </div>
                       </div>
                     </td>
@@ -466,6 +480,7 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                     Rapport de visite #{selectedReport.id} • Réalisé le {formatDate(selectedReport.created_at)} • Interlocuteur : <strong className="text-zinc-800 dark:text-zinc-200">{selectedReport.contact_name} ({selectedReport.contact_role})</strong>
                   </p>
+                  <p className="mt-1 text-xs font-semibold text-[#4F6CE8]">{selectedReport.visit_purpose_label || 'Type non renseigné'}</p>
                 </div>
               </div>
 

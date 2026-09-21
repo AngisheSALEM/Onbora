@@ -6,6 +6,10 @@ from discovery.models import ClientConversation
 from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from rest_framework.authtoken.models import Token
+from datetime import timedelta
+from django.utils import timezone
+from sales.models import Enterprise
+from kam.models import KamAppointment, KamVisitReport
 
 class KamAPITestCase(APITestCase):
     def setUp(self):
@@ -115,3 +119,153 @@ class KamAPITestCase(APITestCase):
         response = self.client.post(provision_url, {'service': 'fibre', 'action': 'complete'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['raw_conversation_data']['provisioning']['fibre'], 'COMPLETED')
+
+
+class KamAppointmentPurposeTests(APITestCase):
+    def setUp(self):
+        self.kam = User.objects.create_user(username='purpose_kam', password='testpass', role=User.KAM)
+        self.other_kam = User.objects.create_user(username='purpose_other', password='testpass', role=User.KAM)
+        self.enterprise = Enterprise.objects.create(
+            name='Entreprise Test', assigned_kam=self.kam, conversion_status='PROSPECT',
+            sector='Télécoms', current_operator='Vodacom',
+        )
+        self.client.force_authenticate(user=self.kam)
+        self.suggestion_url = reverse('kam-appointment-purpose-suggestion')
+        self.appointments_url = reverse('kam-appointments-list-create')
+
+    def suggest(self):
+        return self.client.get(self.suggestion_url, {'enterprise_id': self.enterprise.id})
+
+    def test_registered_prospect_with_prior_visit_stays_discovery(self):
+        self.enterprise.is_visited = True
+        self.enterprise.save(update_fields=['is_visited'])
+        response = self.suggest()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['suggested_purpose'], 'DISCOVERY')
+        self.assertEqual(response.data['completed_kam_visits'], 0)
+        self.assertTrue(response.data['prior_contact_recorded'])
+
+    def test_confirmed_need_advances_prospect_and_counts_completed_only(self):
+        previous = KamAppointment.objects.create(
+            kam=self.kam, enterprise=self.enterprise, title='Découverte',
+            scheduled_at=timezone.now() - timedelta(days=7), status='COMPLETED',
+        )
+        KamVisitReport.objects.create(
+            appointment=previous, kam=self.kam, enterprise=self.enterprise,
+            confirmed_needs=['Fibre dédiée'],
+        )
+        KamAppointment.objects.create(
+            kam=self.kam, enterprise=self.enterprise, title='Annulé',
+            scheduled_at=timezone.now() - timedelta(days=2), status='CANCELLED',
+        )
+        response = self.suggest()
+        self.assertEqual(response.data['suggested_purpose'], 'QUALIFICATION')
+        self.assertEqual(response.data['completed_kam_visits'], 1)
+
+    def test_signed_account_is_follow_up_even_without_kam_history(self):
+        self.enterprise.conversion_status = 'CONVERTED'
+        self.enterprise.save(update_fields=['conversion_status'])
+        self.assertEqual(self.suggest().data['suggested_purpose'], 'FOLLOW_UP')
+
+    def test_recorded_growth_project_suggests_development(self):
+        self.enterprise.conversion_status = 'CONVERTED'
+        self.enterprise.existing_crm_data = {'growth_project': 'Ouverture de deux sites'}
+        self.enterprise.save(update_fields=['conversion_status', 'existing_crm_data'])
+        self.assertEqual(self.suggest().data['suggested_purpose'], 'GROWTH')
+
+    def test_renewal_requires_orange_contract_and_real_date(self):
+        self.enterprise.conversion_status = 'CONVERTED'
+        self.enterprise.contract_end_date = timezone.localdate() + timedelta(days=60)
+        self.enterprise.save(update_fields=['conversion_status', 'contract_end_date'])
+        self.assertEqual(self.suggest().data['suggested_purpose'], 'FOLLOW_UP')
+        self.enterprise.existing_crm_data = {
+            'orange_contract_end_date': self.enterprise.contract_end_date.isoformat()
+        }
+        self.enterprise.save(update_fields=['existing_crm_data'])
+        self.assertEqual(self.suggest().data['suggested_purpose'], 'GROWTH')
+
+    def test_manual_choice_is_saved_and_reported_without_reclassification(self):
+        response = self.client.post(self.appointments_url, {
+            'enterprise_id': self.enterprise.id,
+            'title': 'Développement du compte',
+            'scheduled_at': (timezone.now() + timedelta(days=2)).isoformat(),
+            'visit_purpose': 'GROWTH',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['visit_purpose'], 'GROWTH')
+        self.assertEqual(response.data['purpose_source'], 'MANUAL')
+        self.enterprise.conversion_status = 'CONVERTED'
+        self.enterprise.save(update_fields=['conversion_status'])
+        detail = self.client.get(reverse('kam-appointment-detail', kwargs={'pk': response.data['id']}))
+        self.assertEqual(detail.data['visit_purpose'], 'GROWTH')
+
+    def test_auto_classification_is_saved_and_exposed_in_history(self):
+        self.enterprise.contact_name = 'Contact du compte'
+        self.enterprise.contact_role = 'Direction générale'
+        self.enterprise.save(update_fields=['contact_name', 'contact_role'])
+        response = self.client.post(self.appointments_url, {
+            'enterprise_id': self.enterprise.id,
+            'title': 'Découverte des besoins',
+            'scheduled_at': (timezone.now() + timedelta(days=2)).isoformat(),
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['visit_purpose'], 'DISCOVERY')
+        self.assertEqual(response.data['purpose_source'], 'AUTO')
+        self.assertEqual(response.data['contact_name'], '')
+        self.assertEqual(response.data['contact_role'], '')
+        appointment = KamAppointment.objects.get(pk=response.data['id'])
+        appointment.status = 'COMPLETED'
+        appointment.save(update_fields=['status'])
+        KamVisitReport.objects.create(kam=self.kam, enterprise=self.enterprise, appointment=appointment)
+        history = self.client.get(reverse('kam-visits-history'))
+        self.assertEqual(history.data['visits'][0]['visit_purpose'], 'DISCOVERY')
+
+    def test_express_meeting_starts_immediately_without_schedule_fields(self):
+        before = timezone.now()
+        response = self.client.post(self.appointments_url, {
+            'enterprise_id': self.enterprise.id,
+            'meeting_type': 'CALL',
+            'start_immediately': True,
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['status'], 'IN_PROGRESS')
+        self.assertEqual(response.data['meeting_type'], 'CALL')
+        self.assertEqual(response.data['visit_purpose'], 'DISCOVERY')
+        self.assertEqual(response.data['purpose_source'], 'AUTO')
+        self.assertIn('Réunion express', response.data['title'])
+        self.assertGreaterEqual(KamAppointment.objects.get(pk=response.data['id']).scheduled_at, before)
+
+    def test_account_update_records_verified_signals(self):
+        expiry = timezone.localdate() + timedelta(days=45)
+        response = self.client.patch(
+            reverse('kam-account-update-info', kwargs={'account_id': self.enterprise.id}),
+            {'orange_contract_end_date': expiry.isoformat(), 'growth_project': 'Nouveaux sites'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['visit']['orange_contract_end_date'], expiry.isoformat())
+        self.enterprise.refresh_from_db()
+        self.assertEqual(self.enterprise.existing_crm_data['growth_project'], 'Nouveaux sites')
+        self.enterprise.conversion_status = 'CONVERTED'
+        self.enterprise.save(update_fields=['conversion_status'])
+        self.assertEqual(self.suggest().data['suggested_purpose'], 'GROWTH')
+
+    def test_preparation_uses_saved_purpose_and_known_facts(self):
+        appointment = KamAppointment.objects.create(
+            kam=self.kam, enterprise=self.enterprise, title='Découverte',
+            visit_purpose='DISCOVERY', scheduled_at=timezone.now() + timedelta(days=2),
+        )
+        response = self.client.get(reverse('kam-appointment-preparation', kwargs={'pk': appointment.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['visit_purpose'], 'DISCOVERY')
+        self.assertFalse(any(fact['label'].startswith('Échéance') for fact in response.data['visit_facts']))
+        self.assertEqual(len(response.data['questions_to_confirm']), 3)
+
+    def test_other_kam_cannot_inspect_suggestion_or_preparation(self):
+        appointment = KamAppointment.objects.create(
+            kam=self.kam, enterprise=self.enterprise, title='Découverte',
+            scheduled_at=timezone.now() + timedelta(days=2),
+        )
+        self.client.force_authenticate(user=self.other_kam)
+        self.assertEqual(self.suggest().status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get(reverse('kam-appointment-preparation', kwargs={'pk': appointment.id})).status_code, status.HTTP_403_FORBIDDEN)

@@ -14,7 +14,6 @@ import KamSettingsView from '@/components/kam/KamSettingsView';
 import KamPreCallView from '@/components/kam/KamPreCallView';
 import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
 import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
-import KamCreateAccountModal from '@/components/kam/KamCreateAccountModal';
 import KamVoiceDebriefModal from '@/components/kam/KamVoiceDebriefModal';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
@@ -25,7 +24,6 @@ export default function KamCommandCenterPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
   const [activeView, setActiveView] = useState<KamView>('accounts');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
   const [activeDebriefVisit, setActiveDebriefVisit] = useState<StrategicVisit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,12 +68,6 @@ export default function KamCommandCenterPage() {
   const handleOpenDebriefForAccount = (visit: StrategicVisit) => {
     setSelectedVisitId(visit.id);
     setActiveDebriefVisit(visit);
-  };
-
-  const handleAddNewAccount = (newAccount: StrategicVisit) => {
-    setVisits((prev) => [newAccount, ...prev]);
-    setSelectedVisitId(newAccount.id);
-    setActiveView('briefing');
   };
 
   const handleDebriefSaved = (updatedVisit: StrategicVisit) => {
@@ -160,7 +152,6 @@ export default function KamCommandCenterPage() {
                     onSelectAccount={handleOpenBriefingForAccount}
                     onOpenBriefing={handleOpenBriefingForAccount}
                     onOpenDebrief={handleOpenDebriefForAccount}
-                    onOpenCreateAccount={() => setIsCreateAccountOpen(true)}
                   />
                 )
               )}
@@ -194,6 +185,7 @@ export default function KamCommandCenterPage() {
                 <KamAgendaView
                   assignedAccounts={visits}
                   onOpenVisitsHistory={() => setActiveView('visits')}
+                  onAccountUpdated={(updated) => setVisits((previous) => previous.map((account) => account.id === updated.id ? updated : account))}
                 />
               )}
 
@@ -217,13 +209,6 @@ export default function KamCommandCenterPage() {
           )}
 
         </main>
-
-        {/* CREATE NEW STRATEGIC ACCOUNT MODAL */}
-        <KamCreateAccountModal
-          isOpen={isCreateAccountOpen}
-          onClose={() => setIsCreateAccountOpen(false)}
-          onAddAccount={handleAddNewAccount}
-        />
 
         {/* POST-VISIT VOCAL DEBRIEF DICTAPHONE MODAL */}
         <KamVoiceDebriefModal

@@ -13,6 +13,7 @@ import UserAvatar from '@/components/kam/UserAvatar';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 import AdminScoringView from '@/components/admin/AdminScoringView';
 import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
+import AdminCreateEnterpriseModal, { AdminEnterpriseCreatePayload } from '@/components/admin/AdminCreateEnterpriseModal';
 
 const AdminPlaqueMapOnly = dynamic(
   () => import('@/components/admin/AdminPlaqueMapOnly'),
@@ -306,6 +307,11 @@ export default function AdminCockpitPage() {
   const [loadingCRM, setLoadingCRM] = useState(false);
   const [crmSegmentFilter, setCrmSegmentFilter] = useState<string>('ALL');
   const [crmEntityFilter, setCrmEntityFilter] = useState<string>('ALL');
+  const [isEnterpriseModalOpen, setIsEnterpriseModalOpen] = useState(false);
+  const [enterpriseModalKey, setEnterpriseModalKey] = useState(0);
+  const [creatingEnterprise, setCreatingEnterprise] = useState(false);
+  const [enterpriseCreateError, setEnterpriseCreateError] = useState('');
+  const [enterpriseCreateSuccess, setEnterpriseCreateSuccess] = useState('');
 
   // 5. B2B Offers State (Core AI Catalog)
   const [b2bOffers, setB2bOffers] = useState<B2BOfferItem[]>([]);
@@ -505,6 +511,26 @@ export default function AdminCockpitPage() {
       console.error("Erreur chargement CRM:", err);
     } finally {
       setLoadingCRM(false);
+    }
+  };
+
+  const handleCreateEnterprise = async (payload: AdminEnterpriseCreatePayload) => {
+    setCreatingEnterprise(true);
+    setEnterpriseCreateError('');
+    try {
+      const data = await fetchAPI('/api/sales/enterprises/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setIsEnterpriseModalOpen(false);
+      setCrmPage(1);
+      setEnterpriseCreateSuccess(`L’entreprise « ${data.enterprise.name} » a été ajoutée au CRM.`);
+      await loadEnterprises();
+      setTimeout(() => setEnterpriseCreateSuccess(''), 4000);
+    } catch (err: any) {
+      setEnterpriseCreateError(err.message || "Impossible de créer l’entreprise.");
+    } finally {
+      setCreatingEnterprise(false);
     }
   };
 
@@ -1528,7 +1554,7 @@ export default function AdminCockpitPage() {
                 <div>
 
                   <h2 className="text-xl font-semibold text-[#242124] dark:text-white mt-1">Entreprises CRM</h2>
-                 
+                  {enterpriseCreateSuccess && <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">{enterpriseCreateSuccess}</p>}
                 </div>
 
                 {/* Filtres Combinés */}
@@ -1553,6 +1579,17 @@ export default function AdminCockpitPage() {
                     <option value="BACK_OFFICE">Back-Office Terrain (Commerciaux)</option>
                     <option value="KAM_OFFICE">KAM Office (Desk KAM)</option>
                   </select>
+                  <button
+                    onClick={() => {
+                      setEnterpriseCreateError('');
+                      setEnterpriseModalKey((current) => current + 1);
+                      setIsEnterpriseModalOpen(true);
+                    }}
+                    className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <Icons.Building size={14} />
+                    <span>Nouvelle entreprise</span>
+                  </button>
                 </div>
               </div>
 
@@ -1628,6 +1665,15 @@ export default function AdminCockpitPage() {
               </div>
             </div>
           )}
+
+          <AdminCreateEnterpriseModal
+            key={enterpriseModalKey}
+            isOpen={isEnterpriseModalOpen}
+            isSaving={creatingEnterprise}
+            error={enterpriseCreateError}
+            onClose={() => setIsEnterpriseModalOpen(false)}
+            onSubmit={handleCreateEnterprise}
+          />
 
           {/* ======================================================================= */}
           {/* VUE 4 : SUPERVISEURS BACK-OFFICE (LISTE DENSE & ACTIONS MANcontext)     */}

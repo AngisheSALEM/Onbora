@@ -10,7 +10,6 @@ interface KamAccountsListViewProps {
   onSelectAccount: (visit: StrategicVisit) => void;
   onOpenBriefing: (visit: StrategicVisit) => void;
   onOpenDebrief: (visit: StrategicVisit) => void;
-  onOpenCreateAccount?: () => void;
 }
 
 const formatNumber = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -22,8 +21,7 @@ export default function KamAccountsListView({
   searchQuery = '',
   onSelectAccount,
   onOpenBriefing,
-  onOpenDebrief,
-  onOpenCreateAccount
+  onOpenDebrief
 }: KamAccountsListViewProps) {
   // Filter States
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
@@ -163,7 +161,7 @@ export default function KamAccountsListView({
             </p>
           </div>
 
-          {/* Action Buttons : Filter Capsule + Add Account */}
+          {/* Action Buttons : Filter Capsule */}
           <div className="flex items-center gap-2.5">
             
             {/* Filter Toggle Button */}
@@ -192,17 +190,6 @@ export default function KamAccountsListView({
                 title="Effacer tous les filtres"
               >
                 Réinitialiser
-              </button>
-            )}
-
-            {/* Add Account Button */}
-            {onOpenCreateAccount && (
-              <button
-                onClick={onOpenCreateAccount}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-sm"
-              >
-                <Icons.Plus size={15} />
-                <span>Nouveau Compte</span>
               </button>
             )}
 
@@ -333,16 +320,6 @@ export default function KamAccountsListView({
                       </button>
                     )}
 
-                    {/* Add Account Shortcut */}
-                    {onOpenCreateAccount && (
-                      <button
-                        onClick={onOpenCreateAccount}
-                        className="px-3 py-1 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-blue-600 hover:text-white text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <Icons.Plus size={14} />
-                        <span>Ajouter</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 

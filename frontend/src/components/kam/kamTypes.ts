@@ -108,6 +108,14 @@ export interface StrategicVisit {
   id: string;
   account_id: string;
   account_name: string;
+  contact_name?: string;
+  contact_role?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  current_operator?: string;
+  current_connectivity?: string;
+  orange_contract_end_date?: string;
+  growth_project?: string;
   meeting_title: string;
   meeting_time: string;
   meeting_date: string; // YYYY-MM-DD

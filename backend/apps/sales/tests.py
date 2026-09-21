@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from accounts.models import User
-from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession
+from sales.models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, SegmentationConfig
 from kam.models import ProspectDossier
 from twin.models import BusinessTwin
 from rest_framework.authtoken.models import Token
@@ -226,6 +226,65 @@ class SalesAPITestCase(APITestCase):
         response = self.client.post(list_url, post_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['platform'], 'LINKEDIN')
+
+
+class AdminEnterpriseCreationAPITestCase(APITestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='enterprise_admin', password='password123', role=User.ADMIN
+        )
+        self.sales_user = User.objects.create_user(
+            username='enterprise_sales', password='password123', role=User.SALESPERSON
+        )
+        self.url = reverse('enterprise-list-full')
+        self.payload = {
+            'name': 'Entreprise Admin Test',
+            'crm_id': 'CRM-ADMIN-001',
+            'sector': 'Services financiers',
+            'annual_revenue': '50000.00',
+            'employee_count': 45,
+            'city': 'Kinshasa',
+            'commune': 'Gombe',
+            'contact_name': 'Jean Test',
+            'contact_email': 'jean.test@example.com',
+            'current_connectivity': 'Fibre Optique',
+        }
+
+    def authenticate(self, user):
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
+    def test_admin_can_create_enterprise_with_automatic_segmentation(self):
+        config = SegmentationConfig.get_active()
+        config.tpe_max_revenue = 2400
+        config.pme_max_revenue = 30000
+        config.save()
+        self.authenticate(self.admin_user)
+
+        response = self.client.post(self.url, self.payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['enterprise']['name'], self.payload['name'])
+        self.assertEqual(response.data['enterprise']['segment'], 'GRAND_COMPTE')
+        self.assertEqual(response.data['enterprise']['assigned_entity'], 'KAM_OFFICE')
+        enterprise = Enterprise.objects.get(crm_id=self.payload['crm_id'])
+        self.assertEqual(enterprise.employee_count, 45)
+
+    def test_non_admin_cannot_create_enterprise(self):
+        self.authenticate(self.sales_user)
+
+        response = self.client.post(self.url, self.payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_duplicate_crm_identifier_is_rejected(self):
+        self.authenticate(self.admin_user)
+        Enterprise.objects.create(name='Entreprise existante', crm_id=self.payload['crm_id'])
+
+        response = self.client.post(self.url, self.payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('crm_id', response.data)
 
 
 from sales.integrations.kaabu import KaabuClient
