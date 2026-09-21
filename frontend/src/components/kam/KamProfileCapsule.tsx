@@ -1,11 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Icons } from '@/components/shared/Icons';
+import UserAvatar, { ActivityStatus } from './UserAvatar';
 
 export default function KamProfileCapsule() {
   const { user, logout } = useAuth();
+  const [activityStatus, setActivityStatus] = useState<ActivityStatus>('AVAILABLE');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('onbora_kam_activity_status') as ActivityStatus | null;
+      if (saved) setActivityStatus(saved);
+    } catch {
+      // ignore
+    }
+
+    const handleStatusChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ status: ActivityStatus }>;
+      if (customEvent.detail?.status) {
+        setActivityStatus(customEvent.detail.status);
+      }
+    };
+
+    window.addEventListener('kam:activity_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('kam:activity_status_changed', handleStatusChange);
+    };
+  }, []);
 
   const displayName = user ? `${user.first_name || user.username}` : 'Salem';
   const roleLabel = 'Directeur Grands Comptes (KAM)';
@@ -15,17 +38,13 @@ export default function KamProfileCapsule() {
     <div className="w-full flex items-center justify-between p-3.5 bg-[#0B0B0F] rounded-full shadow-lg">
       <div className="flex items-center gap-3">
         {/* Avatar with Status Dot */}
-        <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-zinc-800 border border-white/10 text-white font-extrabold text-sm shadow-sm shrink-0 overflow-hidden">
-          <img
-            src={`/memojis/${(user?.avatar || 'memoji_019.png').replace('assets/memojis/', '')}`}
-            alt="Memoji"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
-          <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-[#0B0B0F]" />
-        </div>
+        <UserAvatar
+          src={user?.profile_picture_url || user?.avatar}
+          name={displayName}
+          size="md"
+          showStatusDot
+          status={activityStatus}
+        />
 
         {/* User Info */}
         <div className="flex flex-col">

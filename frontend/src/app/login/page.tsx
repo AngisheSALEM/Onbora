@@ -87,7 +87,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4 relative bg-[#F6F5F2] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans select-none transition-colors duration-300">
       <div className="absolute top-6 right-6 z-20">
-        <ThemeToggle />
+         
       </div>
 
       <div className="w-full max-w-md bg-white dark:bg-[#2F2C30] rounded-3xl p-8 sm:p-10 flex flex-col gap-6 shadow-2xl animate-fade-in border-0">

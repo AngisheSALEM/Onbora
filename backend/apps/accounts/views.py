@@ -1,5 +1,9 @@
-from rest_framework import status
+import os
+import uuid
+from django.conf import settings
+from rest_framework import status, generics
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import IsAdmin
@@ -8,6 +12,7 @@ from .models import User
 from .application.use_cases import RegisterUserUseCase, LoginUserUseCase, GetMeUseCase, ListKAMsUseCase
 from .application.dtos import RegisterRequestDTO, LoginRequestDTO
 from .domain.exceptions import DomainException
+from shared.pagination import StandardResultsSetPagination
 
 
 class RegisterView(APIView):
@@ -70,6 +75,7 @@ class MeView(APIView):
     
     def get(self, request):
         user_dto = GetMeUseCase().execute(request.user)
+        avatar_val = request.user.profile_picture_url or request.user.avatar or user_dto.avatar or "/avatars/default_avatar.svg"
         return Response({
             "id": user_dto.id,
             "username": user_dto.username,
@@ -79,7 +85,8 @@ class MeView(APIView):
             "company_name": user_dto.company_name,
             "first_name": user_dto.first_name,
             "last_name": user_dto.last_name,
-            "avatar": user_dto.avatar or "memoji_056.png",
+            "avatar": avatar_val,
+            "profile_picture_url": avatar_val,
         }, status=status.HTTP_200_OK)
 
     def patch(self, request):
@@ -87,6 +94,8 @@ class MeView(APIView):
         data = request.data
         if 'avatar' in data:
             user.avatar = str(data['avatar']).strip()
+        if 'profile_picture_url' in data:
+            user.profile_picture_url = str(data['profile_picture_url']).strip()
         if 'first_name' in data:
             user.first_name = str(data['first_name']).strip()
         if 'last_name' in data:
@@ -97,6 +106,69 @@ class MeView(APIView):
         return Response({
             "message": "Profil mis à jour avec succès.",
             "user": UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
+
+
+class AvatarUploadView(APIView):
+    """
+    Téléversement sécurisé de photo de profil pour l'utilisateur connecté ou pour attribution.
+    Supporte les formats JPEG, PNG, WebP avec validation stricte de taille (< 5 Mo).
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp'}
+    ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
+
+    def post(self, request):
+        file_obj = request.FILES.get('file') or request.FILES.get('avatar') or request.FILES.get('photo')
+        if not file_obj:
+            return Response({"detail": "Aucun fichier image fourni."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if file_obj.size > self.MAX_FILE_SIZE:
+            return Response({"detail": "La taille du fichier ne doit pas dépasser 5 Mo."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ext = os.path.splitext(file_obj.name)[1].lower()
+        if ext not in self.ALLOWED_EXTENSIONS:
+            return Response({"detail": "Format de fichier non supporté. Formats acceptés : JPEG, PNG, WebP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hasattr(file_obj, 'content_type') and file_obj.content_type not in self.ALLOWED_MIME_TYPES:
+            return Response({"detail": "Type MIME non autorisé. Seules les images JPEG, PNG et WebP sont acceptées."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Créer le répertoire média avatars
+        avatars_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
+        os.makedirs(avatars_dir, exist_ok=True)
+
+        filename = f"avatar_u{request.user.id}_{uuid.uuid4().hex[:10]}{ext}"
+        filepath = os.path.join(avatars_dir, filename)
+
+        with open(filepath, 'wb+') as destination:
+            for chunk in file_obj.chunks():
+                destination.write(chunk)
+
+        media_url = settings.MEDIA_URL.rstrip('/')
+        relative_url = f"{media_url}/avatars/{filename}"
+        if not relative_url.startswith('/'):
+            relative_url = f"/{relative_url}"
+
+        # Mettre à jour le profil connecté sauf si apply_to_self=false (ex: pré-upload admin)
+        apply_to_self_param = request.data.get('apply_to_self', 'true')
+        apply_to_self = True
+        if isinstance(apply_to_self_param, str):
+            apply_to_self = apply_to_self_param.lower() in ('true', '1', 'yes')
+
+        if apply_to_self:
+            request.user.avatar = relative_url
+            request.user.profile_picture_url = relative_url
+            request.user.save(update_fields=['avatar', 'profile_picture_url'])
+
+        return Response({
+            "message": "Photo de profil téléversée avec succès.",
+            "url": relative_url,
+            "avatar": relative_url,
+            "profile_picture_url": relative_url,
+            "user": UserSerializer(request.user).data
         }, status=status.HTTP_200_OK)
 
 
@@ -174,6 +246,7 @@ class ManagersView(APIView):
     Gestion des comptes d'encadrement créés par l'Admin :
     - Superviseurs Back-Office Terrain (SUPERVISOR)
     - Gérants KAM Office / Direction Grands Comptes (KAM_MANAGER)
+    Supporte la pagination serveur avec ?page= et ?page_size=.
     """
     permission_classes = [IsAdmin]
 
@@ -183,6 +256,32 @@ class ManagersView(APIView):
         if role_filter in [User.SUPERVISOR, User.KAM_MANAGER]:
             qs = qs.filter(role=role_filter)
         
+        # Support de la pagination serveur automatique (Option B : CBV)
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            page = paginator.paginate_queryset(qs, request)
+            users_data = [
+                {
+                    "id": u.id,
+                    "username": u.username,
+                    "email": u.email,
+                    "first_name": u.first_name,
+                    "last_name": u.last_name,
+                    "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
+                    "role": u.role,
+                    "role_display": u.get_role_display(),
+                    "phone": u.phone,
+                    "company_name": u.company_name,
+                    "location": u.location,
+                    "is_active": u.is_active,
+                    "avatar": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
+                    "profile_picture_url": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
+                    "date_joined": u.date_joined.isoformat() if u.date_joined else None
+                }
+                for u in page
+            ]
+            return paginator.get_paginated_response(users_data)
+
         users_data = []
         for u in qs:
             users_data.append({
@@ -198,7 +297,8 @@ class ManagersView(APIView):
                 "company_name": u.company_name,
                 "location": u.location,
                 "is_active": u.is_active,
-                "avatar": u.avatar or "memoji_056.png",
+                "avatar": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
+                "profile_picture_url": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
                 "date_joined": u.date_joined.isoformat() if u.date_joined else None
             })
         return Response(users_data, status=status.HTTP_200_OK)
@@ -213,7 +313,8 @@ class ManagersView(APIView):
         last_name = data.get('last_name', '').strip()
         phone = data.get('phone', '').strip()
         location = data.get('location', '').strip()
-        avatar = data.get('avatar', 'memoji_056.png').strip() or 'memoji_056.png'
+        avatar = data.get('avatar', '').strip() or data.get('profile_picture_url', '').strip() or '/avatars/default_avatar.svg'
+        profile_picture_url = data.get('profile_picture_url', '').strip() or (avatar if avatar.startswith('/') or avatar.startswith('http') else '')
 
         if not username or not password:
             return Response({"detail": "Le nom d'utilisateur et le mot de passe sont obligatoires."}, status=status.HTTP_400_BAD_REQUEST)
@@ -236,6 +337,7 @@ class ManagersView(APIView):
             company_name="Onbora Direction Commerciale" if role == User.SUPERVISOR else "Onbora Direction Grands Comptes"
         )
         user.avatar = avatar
+        user.profile_picture_url = profile_picture_url
         user.is_staff = True
         user.save()
 
@@ -251,9 +353,27 @@ class ManagersView(APIView):
                 "phone": user.phone,
                 "location": user.location,
                 "is_active": user.is_active,
-                "avatar": user.avatar
+                "avatar": user.avatar,
+                "profile_picture_url": user.profile_picture_url
             }
         }, status=status.HTTP_201_CREATED)
+
+
+class ManagerListAPIView(generics.ListAPIView):
+    """
+    Option B : Vue basée sur une classe (CBV - Recommandé)
+    Django / DRF gère la pagination automatiquement via StandardResultsSetPagination.
+    """
+    serializer_class = UserSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        role_filter = self.request.query_params.get('role', None)
+        qs = User.objects.filter(role__in=[User.SUPERVISOR, User.KAM_MANAGER]).order_by('-date_joined')
+        if role_filter in [User.SUPERVISOR, User.KAM_MANAGER]:
+            qs = qs.filter(role=role_filter)
+        return qs
 
 
 class ManagerToggleActiveView(APIView):

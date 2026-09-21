@@ -321,7 +321,7 @@ export default function SalesDashboard() {
               <p className="text-xs font-550 text-zinc-900 dark:text-zinc-50">{user?.first_name} {user?.last_name}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Commercial</p>
             </div>
-            <ThemeToggle />
+             
 
             <button
               onClick={logout}

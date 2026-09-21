@@ -3,7 +3,7 @@ import json
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
 from .models import User, UserAIAssistant, AIAssistantConversation, AIAssistantMessage
-from sales.models import Enterprise, Plaque, AdminDirective
+from sales.models import Enterprise, Plaque
 from kam.models import KamAppointment, KamVisitReport
 
 # Role-based default configurations

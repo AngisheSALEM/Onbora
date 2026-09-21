@@ -248,14 +248,14 @@ export default function AdvProvisioningConsole() {
 
         {/* Table Content */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[750px]">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 font-semibold">
-                <th className="py-3 px-3">Dossier / Entreprise</th>
-                <th className="py-3 px-3">Contact & Email</th>
-                <th className="py-3 px-3">RCCM Validé</th>
-                <th className="py-3 px-3 text-center">Statut Provisioning</th>
-                <th className="py-3 px-3 text-right">Action ADV</th>
+              <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 bg-black/[0.02] dark:bg-white/[0.02]">
+                <th className="py-3 px-3.5 min-w-[180px]">Dossier / Entreprise</th>
+                <th className="py-3 px-3.5">Contact & Email</th>
+                <th className="py-3 px-3.5">RCCM Validé</th>
+                <th className="py-3 px-3.5 text-center">Statut Provisioning</th>
+                <th className="py-3 px-3.5 text-right">Action ADV</th>
               </tr>
             </thead>
             <tbody>

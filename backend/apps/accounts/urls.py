@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import RegisterView, LoginView, MeView, KAMListView, FCMTokenUpdateView, ManagersView, ManagerToggleActiveView
+from .views import (
+    RegisterView,
+    LoginView,
+    MeView,
+    AvatarUploadView,
+    KAMListView,
+    FCMTokenUpdateView,
+    ManagersView,
+    ManagerListAPIView,
+    ManagerToggleActiveView
+)
 from .copilot_views import (
     CopilotProfileView,
     CopilotConversationListView,
@@ -11,9 +21,12 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
     path('me/', MeView.as_view(), name='me'),
+    path('me/avatar/', AvatarUploadView.as_view(), name='me_avatar'),
+    path('upload-avatar/', AvatarUploadView.as_view(), name='upload_avatar'),
     path('kams/', KAMListView.as_view(), name='kams'),
     path('fcm-token/', FCMTokenUpdateView.as_view(), name='fcm_token_update'),
     path('managers/', ManagersView.as_view(), name='managers'),
+    path('managers/paginated/', ManagerListAPIView.as_view(), name='managers_paginated'),
     path('managers/<int:pk>/toggle-active/', ManagerToggleActiveView.as_view(), name='manager_toggle_active'),
     
     # Copilote IA Dédié par Compte

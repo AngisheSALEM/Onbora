@@ -97,8 +97,8 @@ export const mockStrategicVisits: StrategicVisit[] = [
         }
       ],
       missing_stakeholders_alert: [
-        '⚠️ Aucun contact formellement identifié à la Direction des Achats & Marchés.',
-        '⚠️ Le Responsable des Infrastructures Télécoms n\'a pas participé aux 2 derniers comités.'
+        'Aucun contact formellement identifié à la Direction des Achats & Marchés.',
+        'Le Responsable des Infrastructures Télécoms n\'a pas participé aux 2 derniers comités.'
       ],
       trigger_signals: [
         {
@@ -236,7 +236,7 @@ export const mockStrategicVisits: StrategicVisit[] = [
         }
       ],
       missing_stakeholders_alert: [
-        '⚠️ Le Responsable Cybersécurité n\'a pas encore validé l\'annexe technique du SOC.'
+        'Le Responsable Cybersécurité n\'a pas encore validé l\'annexe technique du SOC.'
       ],
       trigger_signals: [
         {
@@ -344,7 +344,7 @@ export const mockStrategicVisits: StrategicVisit[] = [
         }
       ],
       missing_stakeholders_alert: [
-        '⚠️ Le Directeur des Marchés Publics doit être intégré à la prochaine séance.'
+        'Le Directeur des Marchés Publics doit être intégré à la prochaine séance.'
       ],
       trigger_signals: [
         {
@@ -403,7 +403,7 @@ export const mockStrategicVisits: StrategicVisit[] = [
     duration_minutes: 45,
     location: 'Gare de Treichville, Direction Générale',
     dot_color: 'red',
-    status_label: 'Incident & Risque Churn',
+    status_label: 'Incident & Risque d\'abandon',
     is_prepared: false,
     preparation_time_minutes: 0,
     golden_rule: 'Régler impérativement le litige de coupure sur le tronçon Bouaké-Ferké avant toute autre discussion.',
@@ -450,7 +450,7 @@ export const mockStrategicVisits: StrategicVisit[] = [
         }
       ],
       missing_stakeholders_alert: [
-        '⚠️ Rétablir d\'urgence le lien avec le DSI Groupe basé à Paris.'
+        'Rétablir d\'urgence le lien avec le DSI Groupe basé à Paris.'
       ],
       trigger_signals: [
         {

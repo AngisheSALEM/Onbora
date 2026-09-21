@@ -29,3 +29,30 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 
   return response.json();
 }
+
+export async function uploadAudioAPI(endpoint: string, formData: FormData) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Token ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMsg =
+      errorData.detail ||
+      errorData.error ||
+      errorData.message ||
+      errorData.non_field_errors?.[0] ||
+      `Erreur serveur HTTP ${response.status} (${response.statusText || 'Échec de transcription'})`;
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}

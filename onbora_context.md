@@ -146,11 +146,30 @@ Les fichiers clés disponibles dans le dépôt :
 
 ---
 
-## 9. Prochaine Action Planifiée
-*   **Intégration d'AI Core dans l'Interface KAM** :
-    *   Branchement du microphone / dictaphone vocal (`KamVocalVisitModal.tsx`) avec les endpoints IA d'analyse et de transcription (`/api/ai/analyze-visit/` ou `/api/kam/strategic-accounts/<id>/debrief/`).
-    *   Génération automatique des rapports de visite avec le moteur IA unifié (synthèse exécutive, analyse BANT, besoins et objections détectés, email de suivi J+1 pré-rédigé, tâches d'action).
-    *   Recommandations de catalogue augmentées par RAG TF-IDF directement dans le desk opérationnel KAM.
+*   **Intégration d'OpenAI Whisper Local & Dictaphone Vocal Découplé (Septembre 2026)** :
+    *   **OpenAI Whisper Local 100% In-Process & Sans Clé API** :
+        *   Mise en œuvre du service [`backend/apps/sales/whisper_service.py`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/sales/whisper_service.py) exploitant le paquet officiel `openai-whisper` en local (CPU/GPU) via PyTorch avec binaires `ffmpeg` automatiquement injectés par `imageio-ffmpeg`.
+        *   Fonctionnement 100% autonome et gratuit : aucune clé API OpenAI n'est requise pour transcrire les fichiers et flux audio (fallback API disponible uniquement si spécifié).
+        *   Optimisation du modèle sur CPU (`tiny`) pour une exécution ultra-rapide (2 à 3 secondes) et fermeture propre des descripteurs de fichiers temporaires sous Windows.
+        *   Endpoint DRF dédié [`KamAudioTranscribeView`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/kam/views.py#L923) (`POST /api/kam/transcribe/`) avec `MultiPartParser`, `FormParser`, et permissions ouvertes pour un traitement audio stateless instantané.
+    *   **Transcription en Direct & Double Canal (Web Next.js)** :
+        *   Intégration de la reconnaissance vocale continue en direct (`webkitSpeechRecognition`) dans [`KamVocalVisitModal.tsx`](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/kam/KamVocalVisitModal.tsx) et [`KamVoiceDebriefModal.tsx`](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/kam/KamVoiceDebriefModal.tsx) : les mots s'affichent au fil de la parole avec fluidité.
+        *   Élimination intégrale du jargon interne (« mots métiers ») remplacé par un indicateur de complétude ergonomique et compteur de mots transparent.
+        *   Séparation nette entre la transcription vocale Whisper (canal 1) et les notes manuelles / puces rapides rédigées (canal 2) : aucune écrasement intempestif des notes.
+        *   Fusion automatique côté frontend et backend : Core AI reçoit l'intégralité cumulée `[Transcription Vocale Whisper] + [Notes & Observations du KAM]`.
+        *   Gestion robuste de `MediaRecorder` : synchronisation stricte du compteur avec le flux audio réel, évacuation forcée du buffer (`requestData()`), gestion des erreurs de permission micro dans le navigateur.
+    *   **Éradication Complète des Hallucinations & Faux Besoins** :
+        *   Suppression des phrases de fallback synthétiques.
+        *   Détection de verbatim insuffisant (`is_insufficient_verbatim`) : renvoie un rapport neutre avec 0 faux besoins inventés si l'audio est trop bref ou consiste en une simple salutation.
+
+*   **Consultation des Rapports de Visite Mobile & Backend Django (Septembre 2026)** :
+    *   **Consultation Directe depuis l'Historique Mobile (Flutter)** :
+        *   Liaison interactive de chaque élément de la liste dans [`VisitsHistoryScreen`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/app/modules/sales/screen/visits_history_screen.dart) avec retour haptique et icône chevron.
+        *   Méthode dédiée `openVisitReportFromHistory` dans [`sales_controller.dart`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/app/modules/sales/controller/sales_controller.dart) chargeant le rapport complet et redirigeant sans rupture vers [`VisitReportDetailScreen`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/app/modules/sales/screen/visit_report_detail_screen.dart).
+        *   Enrichissement des modèles [`VisitHistoryItem`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/app/modules/sales/model/visit_history_item.dart) et [`VisitReportModel`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/app/modules/sales/model/visit_report_model.dart) (`reportId`, `enterpriseId`, `hasDossier`).
+    *   **Endpoint de Détail de Rapport Dédié (DRF)** :
+        *   Ajout de la vue [`VisitReportDetailView`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/sales/views.py) sur `GET /api/sales/visit-reports/<int:pk>/` avec contrôle des permissions et sérialisation complète.
+        *   Support de filtre par `preparation_id` dans [`VisitReportCreateView`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/sales/views.py) et inclusion des identifiants clés dans la liste des visites.
 
 ---
 

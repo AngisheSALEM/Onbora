@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../controller/sales_controller.dart';
 import '../model/visit_history_item.dart';
@@ -148,6 +149,7 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
 
   Widget _buildVisitsList(BuildContext context, List<VisitHistoryItem> visits, String emptyMessage) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final salesController = Get.find<SalesController>();
 
     if (visits.isEmpty) {
       return Center(
@@ -183,69 +185,87 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
         final visit = visits[index];
         final isTransmitted = visit.status == 'TRANSMIS';
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            children: [
-              // Vignette 44x44 style Apple Music
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  isTransmitted ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.doc_text_fill,
-                  size: 20,
-                  color: isTransmitted ? const Color(0xFF10B981) : const Color(0xFF8E8E93),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Contenu Textuel : Nom + Métadonnées
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      visit.enterpriseName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppConstants.headlineStyle(isDark),
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              salesController.openVisitReportFromHistory(visit);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+              child: Row(
+                children: [
+                  // Vignette 44x44 style Apple Music
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${visit.sector} • ${visit.location} • ${_formatFrenchDate(visit.visitDate)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppConstants.subheadStyle(isDark),
+                    child: Icon(
+                      isTransmitted ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.doc_text_fill,
+                      size: 20,
+                      color: isTransmitted ? const Color(0xFF10B981) : const Color(0xFF8E8E93),
                     ),
-                  ],
-                ),
-              ),
-
-              // Trailing Status Tag
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isTransmitted
-                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                      : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA)),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  isTransmitted ? 'KAM' : 'Fait',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isTransmitted
-                        ? const Color(0xFF10B981)
-                        : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
                   ),
-                ),
+                  const SizedBox(width: 12),
+
+                  // Contenu Textuel : Nom + Métadonnées
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          visit.enterpriseName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppConstants.headlineStyle(isDark),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${visit.sector} • ${visit.location} • ${_formatFrenchDate(visit.visitDate)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppConstants.subheadStyle(isDark),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Trailing Status Tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isTransmitted
+                          ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                          : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      isTransmitted ? 'KAM' : 'Fait',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: isTransmitted
+                            ? const Color(0xFF10B981)
+                            : (isDark ? Colors.white70 : AppConstants.textSecondaryLight),
+                      ),
+                    ),
+                  ),
+
+                  // Chevron iOS indiquant la navigabilité
+                  const SizedBox(width: 8),
+                  Icon(
+                    CupertinoIcons.chevron_right,
+                    size: 14,
+                    color: isDark ? const Color(0x55FFFFFF) : const Color(0x35000000),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },

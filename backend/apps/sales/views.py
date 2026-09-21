@@ -374,13 +374,6 @@ class PlaqueKMLDownloadView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class PlaqueDrawAndSaveView(APIView):
-    """
-    POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
-    génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
-    """
-    permission_classes = [IsSupervisorOrAdmin]
-
 def _notify_plaque_drawn_salespersons(plaque, salespersons):
     """Dispatches in-app and FCM push notifications to assigned salespersons."""
     from shared.infrastructure.firebase_service import send_push_notification_to_user
@@ -469,6 +462,13 @@ def _persist_drawn_plaque(data: dict) -> tuple:
 
     return plaque, salespersons
 
+
+class PlaqueDrawAndSaveView(APIView):
+    """
+    POST: Enregistre une zone / polygone tracé depuis la carte Back-Office,
+    génère automatiquement le KML, et envoie les notifications aux commerciaux affectés.
+    """
+    permission_classes = [IsSupervisorOrAdmin]
 
     def post(self, request):
         try:
@@ -972,6 +972,8 @@ class VisitPreparationCreateView(APIView):
             date_val = p.report.created_at if (has_report and hasattr(p.report, 'created_at')) else p.created_at
             results.append({
                 "id": p.id,
+                "preparation_id": p.id,
+                "report_id": p.report.id if has_report else None,
                 "enterprise_id": p.enterprise.id,
                 "enterprise_name": p.enterprise.name,
                 "sector": p.enterprise.sector or "Services B2B",
@@ -1002,6 +1004,7 @@ class VisitReportCreateView(APIView):
         user = request.user
         sp_id = request.query_params.get('salesperson_id')
         ent_id = request.query_params.get('enterprise_id')
+        prep_id = request.query_params.get('preparation_id')
         reports = VisitReport.objects.select_related('preparation__enterprise', 'preparation__salesperson', 'preparation__enterprise__plaque_rel').order_by('-created_at')
 
         if user.is_authenticated and user.role == 'SALESPERSON':
@@ -1011,6 +1014,9 @@ class VisitReportCreateView(APIView):
 
         if ent_id:
             reports = reports.filter(preparation__enterprise_id=ent_id)
+
+        if prep_id:
+            reports = reports.filter(preparation_id=prep_id)
 
         results = []
         for r in reports:
@@ -1070,6 +1076,31 @@ class VisitReportCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except VisitPreparationNotFoundException:
             return Response({"detail": "Fiche de préparation introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VisitReportDetailView(APIView):
+    """
+    GET: Retourne le détail complet et structuré d'un compte-rendu de visite (BANT, COI, Packages, Handover).
+    """
+    permission_classes = [IsSalespersonOrAdmin]
+
+    def get(self, request, pk):
+        user = request.user
+        try:
+            report = VisitReport.objects.select_related(
+                'preparation__enterprise',
+                'preparation__salesperson',
+                'preparation__enterprise__plaque_rel'
+            ).get(pk=pk)
+        except VisitReport.DoesNotExist:
+            return Response({"detail": "Rapport de visite introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_authenticated and user.role == 'SALESPERSON':
+            if report.preparation.salesperson_id != user.id:
+                return Response({"detail": "Accès refusé à ce rapport."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = VisitReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class VisitReportTransmitView(APIView):
@@ -1948,16 +1979,6 @@ class ConvertedAccountsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class EnterpriseListFullView(APIView):
-    """
-    GET: Banque de données CRM des 400 entreprises congolaises avec filtrage granulaire :
-    - segment (GRAND_COMPTE, PME, TPE_INFORMEL)
-    - assigned_entity (BACK_OFFICE, KAM_OFFICE)
-    - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
-    - city & recherche textuelle
-    """
-    permission_classes = [IsAuthenticated]
-
 def _filter_enterprises_for_list(request):
     """Filters Enterprise queryset based on request parameters and user permissions."""
     segment = request.query_params.get('segment')
@@ -2029,6 +2050,16 @@ def _filter_enterprises_for_list(request):
     return qs
 
 
+class EnterpriseListFullView(APIView):
+    """
+    GET: Banque de données CRM des 400 entreprises congolaises avec filtrage granulaire :
+    - segment (GRAND_COMPTE, PME, TPE_INFORMEL)
+    - assigned_entity (BACK_OFFICE, KAM_OFFICE)
+    - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
+    - city & recherche textuelle
+    """
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         limit = int(request.query_params.get('limit', 1000))
         offset = int(request.query_params.get('offset', 0))
@@ -2047,151 +2078,10 @@ def _filter_enterprises_for_list(request):
         }, status=status.HTTP_200_OK)
 
 
-class AdminDirectivesListView(APIView):
-    """
-    GET: Liste toutes les directives administratives émises par le Super Admin (filtrables par entité, destinataire, statut, expéditeur).
-    POST: Émission d'une nouvelle directive ciblée vers un KAM ou un commercial/superviseur back-office.
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        from .models import AdminDirective
-        from .serializers import AdminDirectiveSerializer
-        qs = AdminDirective.objects.select_related('sender', 'recipient').all()
-
-        target_entity = request.query_params.get('target_entity')
-        if target_entity and target_entity != 'ALL':
-            qs = qs.filter(target_entity=target_entity)
-
-        recipient_id = request.query_params.get('recipient_id')
-        if recipient_id:
-            qs = qs.filter(recipient_id=recipient_id)
-
-        sender_id = request.query_params.get('sender_id')
-        if sender_id:
-            qs = qs.filter(sender_id=sender_id)
-
-        status_param = request.query_params.get('status')
-        if status_param and status_param != 'ALL':
-            qs = qs.filter(status=status_param)
-
-        search = request.query_params.get('search')
-        if search:
-            qs = qs.filter(
-                models.Q(title__icontains=search) |
-                models.Q(instruction__icontains=search) |
-                models.Q(recipient__username__icontains=search) |
-                models.Q(recipient__first_name__icontains=search) |
-                models.Q(recipient__last_name__icontains=search) |
-                models.Q(sender__username__icontains=search) |
-                models.Q(sender__first_name__icontains=search) |
-                models.Q(target_account_name__icontains=search)
-            )
-
-        serializer = AdminDirectiveSerializer(qs, many=True)
-        return Response({
-            "total": qs.count(),
-            "directives": serializer.data
-        }, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        from .models import AdminDirective, SalesNotification
-        from .serializers import AdminDirectiveSerializer
-        from accounts.models import User
-
-        if not (request.user.role in ['SUPERVISOR', 'ADMIN', 'KAM_MANAGER'] or request.user.is_superuser):
-            return Response({"detail": "Action non autorisée. Seuls les superviseurs et administrateurs peuvent émettre des directives."}, status=status.HTTP_403_FORBIDDEN)
-
-        recipient_id = request.data.get('recipient_id')
-        title = request.data.get('title', '').strip()
-        instruction = request.data.get('instruction', '').strip()
-        priority = request.data.get('priority', 'NORMAL')
-        target_entity = request.data.get('target_entity', 'KAM_OFFICE')
-        target_account_name = request.data.get('target_account_name', '').strip()
-
-        if not recipient_id or not title or not instruction:
-            return Response(
-                {"detail": "Le collaborateur destinataire, l'objet et l'instruction sont obligatoires."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            recipient = User.objects.get(pk=recipient_id)
-        except User.DoesNotExist:
-            return Response({"detail": "Collaborateur destinataire introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        sender = request.user if request.user.is_authenticated else None
-
-        directive = AdminDirective.objects.create(
-            sender=sender,
-            target_entity=target_entity,
-            recipient=recipient,
-            title=title,
-            instruction=instruction,
-            priority=priority,
-            target_account_name=target_account_name,
-            status='SENT'
-        )
-
-        # Si le destinataire est un commercial terrain, générer également une notification Sales
-        if recipient.role == User.SALESPERSON:
-            SalesNotification.objects.create(
-                recipient=recipient,
-                title=f"Directive Admin [{priority}]: {title}",
-                message=instruction,
-                notification_type='ALERT',
-                payload={"directive_id": directive.id, "target_account": target_account_name}
-            )
-
-        serializer = AdminDirectiveSerializer(directive)
-        recipient_display = f"{recipient.first_name} {recipient.last_name}".strip() or recipient.username
-        return Response({
-            "message": f"Directive transmise avec succès à {recipient_display}.",
-            "directive": serializer.data
-        }, status=status.HTTP_201_CREATED)
-
-
-class AdminDirectiveDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, pk):
-        from .models import AdminDirective
-        from .serializers import AdminDirectiveSerializer
-        try:
-            directive = AdminDirective.objects.get(pk=pk)
-        except AdminDirective.DoesNotExist:
-            return Response({"detail": "Directive introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        new_status = request.data.get('status')
-        acknowledgement_note = request.data.get('acknowledgement_note')
-
-        if new_status:
-            directive.status = new_status
-        if acknowledgement_note is not None:
-            directive.acknowledgement_note = acknowledgement_note
-        directive.save()
-
-        return Response({
-            "message": "Directive mise à jour.",
-            "directive": AdminDirectiveSerializer(directive).data
-        }, status=status.HTTP_200_OK)
-
-    def delete(self, request, pk):
-        if not (request.user.role in ['SUPERVISOR', 'ADMIN'] or request.user.is_superuser):
-            return Response({"detail": "Action non autorisée."}, status=status.HTTP_403_FORBIDDEN)
-        from .models import AdminDirective
-        try:
-            directive = AdminDirective.objects.get(pk=pk)
-            directive.delete()
-            return Response({"message": "Directive archivée avec succès."}, status=status.HTTP_200_OK)
-        except AdminDirective.DoesNotExist:
-            return Response({"detail": "Directive introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-
 class AutoDispatchPlaqueView(APIView):
     """
     POST: Déclenche l'algorithme d'affectation automatique intelligente des commerciaux terrain
-    sur les comptes SOHO de la plaque, avec anti-collision stricte et affinité sectorielle.
+    sur les comptes TPE de la plaque, avec anti-collision stricte et affinité sectorielle.
     """
     permission_classes = [IsSupervisorOrAdmin]
 

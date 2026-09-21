@@ -19,6 +19,7 @@ from .views import (
     LiveCopilotTogglePackageView,
     VisitPreparationCreateView,
     VisitReportCreateView,
+    VisitReportDetailView,
     VisitReportGenerateFromAIView,
     VisitReportFeedbackView,
     VisitReportTransmitView,
@@ -42,8 +43,6 @@ from .views import (
     ResegmentEnterprisesView,
     ConvertedAccountsView,
     EnterpriseListFullView,
-    AdminDirectivesListView,
-    AdminDirectiveDetailView,
     AutoDispatchPlaqueView,
     EnterpriseAssignSalespersonView,
 )
@@ -52,12 +51,25 @@ from .b2b_offers_views import (
     B2BOfferDetailView,
     B2BOffersImportView,
 )
+from .scoring_views import (
+    ScoreProfileListCreateView,
+    ScoreProfileDetailView,
+    ScoreRuleListCreateView,
+    ScoreRuleDetailView,
+    ScoringSimulatorView,
+    CalculateAccountsScoreView,
+    ScoredAccountsListView,
+)
 
 urlpatterns = [
-    # Directives & Instructions Super Admin (KAM Office & Back-Office)
-    path('directives/', AdminDirectivesListView.as_view(), name='admin-directives-list'),
-    path('directives/<int:pk>/', AdminDirectiveDetailView.as_view(), name='admin-directive-detail'),
-
+    # Moteur de Scoring Algorithmique Déterministe & Laboratoire de Simulation
+    path('scoring/profiles/', ScoreProfileListCreateView.as_view(), name='scoring-profiles-list-create'),
+    path('scoring/profiles/<int:pk>/', ScoreProfileDetailView.as_view(), name='scoring-profile-detail'),
+    path('scoring/profiles/<int:profile_id>/rules/', ScoreRuleListCreateView.as_view(), name='scoring-rules-list-create'),
+    path('scoring/rules/<int:pk>/', ScoreRuleDetailView.as_view(), name='scoring-rule-detail'),
+    path('scoring/simulate/', ScoringSimulatorView.as_view(), name='scoring-simulate'),
+    path('scoring/calculate/', CalculateAccountsScoreView.as_view(), name='scoring-calculate'),
+    path('scoring/results/', ScoredAccountsListView.as_view(), name='scoring-results-list'),
     # Moteur de Segmentation Financière CRM, Comptes Convertis & Base Entreprises
     path('segmentation-config/', SegmentationConfigView.as_view(), name='segmentation-config'),
     path('segmentation-config/resegment/', ResegmentEnterprisesView.as_view(), name='segmentation-resegment'),
@@ -112,6 +124,7 @@ urlpatterns = [
     path('visit-form/submissions/', VisitFormSubmissionListView.as_view(), name='visit-form-submissions'),
     path('visit-preparations/', VisitPreparationCreateView.as_view(), name='visit-preparation-create'),
     path('visit-reports/', VisitReportCreateView.as_view(), name='visit-report-create'),
+    path('visit-reports/<int:pk>/', VisitReportDetailView.as_view(), name='visit-report-detail'),
     path('visit-reports/generate-from-ai/', VisitReportGenerateFromAIView.as_view(), name='visit-report-generate-ai'),
     path('visit-reports/<int:pk>/feedback/', VisitReportFeedbackView.as_view(), name='visit-report-feedback'),
     path('visit-reports/<int:pk>/transmit/', VisitReportTransmitView.as_view(), name='visit-report-transmit'),

@@ -40,10 +40,16 @@ class User(AbstractUser):
         null=True,
         help_text="Segmentation du KAM dans le KAM Office"
     )
-    avatar = models.CharField(max_length=255, blank=True, default='memoji_056.png', help_text="Nom du fichier memoji choisi")
+    avatar = models.CharField(max_length=255, blank=True, default='', help_text="Nom du fichier avatar ou fallback")
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='', help_text="URL de la photo de profil utilisateur")
     fcm_token = models.TextField(blank=True, null=True, help_text="Jeton FCM de l'appareil principal")
 
     objects = CustomUserManager()
+
+    @property
+    def profile_picture(self):
+        """Retourne l'URL de profil ou fallback vers avatar ou image silhouette par défaut"""
+        return self.profile_picture_url or self.avatar or '/avatars/default_avatar.svg'
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

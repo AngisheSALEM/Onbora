@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
+import UserAvatar from '@/components/kam/UserAvatar';
 
 export interface KamDirectiveItem {
   id: number;
@@ -246,39 +247,35 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
                 {/* En-tête de la carte avec Bitmojis Expéditeur & Destinataire */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-3 flex-wrap">
-                    {/* Bitmoji de l'expéditeur (Super Admin / Manager) */}
+                    {/* Avatar officiel de l'expéditeur (Super Admin / Manager) */}
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-[#4F6CE8]/10 flex items-center justify-center overflow-hidden shrink-0 border border-black/5 dark:border-white/5">
-                        <img
-                          src={`/memojis/${(directive.sender_avatar || 'memoji_056.png').replace('assets/memojis/', '')}`}
-                          alt="Expéditeur"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <UserAvatar
+                        src={directive.sender_avatar}
+                        name={directive.sender_name || 'Direction KAM'}
+                        size="sm"
+                      />
                       <div className="flex flex-col">
                         <span className="font-bold text-xs text-[#242124] dark:text-white">
                           Émis par {directive.sender_name || 'Direction KAM Office'}
                         </span>
-                        <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
+                        <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
                           {new Date(directive.created_at).toLocaleDateString('fr-FR')} à {new Date(directive.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>
 
-                    {/* Bitmoji du destinataire (Le KAM connecté) */}
+                    {/* Avatar officiel du destinataire (Le KAM connecté) */}
                     <div className="flex items-center gap-2 sm:ml-4 sm:pl-4 sm:border-l border-black/10 dark:border-white/10">
-                      <div className="w-7 h-7 rounded-full bg-[#4F6CE8]/10 flex items-center justify-center overflow-hidden shrink-0 border border-black/5 dark:border-white/5">
-                        <img
-                          src={`/memojis/${(user?.avatar || directive.recipient_avatar || 'memoji_044.png').replace('assets/memojis/', '')}`}
-                          alt="Destinataire"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <UserAvatar
+                        src={user?.profile_picture_url || user?.avatar || directive.recipient_avatar}
+                        name={directive.recipient_name || user?.username || 'KAM'}
+                        size="xs"
+                      />
                       <div className="flex flex-col">
-                        <span className="font-semibold text-[11px] text-zinc-700 dark:text-zinc-300">
+                        <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200">
                           Assigné à : <strong className="font-bold">{directive.recipient_name || user?.username}</strong>
                         </span>
-                        <span className="text-[9px] text-zinc-400">
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                           Key Account Manager
                         </span>
                       </div>
@@ -347,7 +344,7 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
                       setAckNote(directive.acknowledgement_note || '');
                       setAckStatus(directive.status === 'COMPLETED' ? 'COMPLETED' : 'IN_PROGRESS');
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-sm shadow-[#4F6CE8]/20 flex items-center gap-2"
+                    className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-2"
                   >
                     <Icons.MessageSquare size={14} />
                     <span>{isCompleted ? "Mettre à jour mon compte-rendu" : "Prendre en charge / Répondre"}</span>
@@ -437,7 +434,7 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
                 <button
                   type="submit"
                   disabled={savingAck}
-                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm shadow-[#4F6CE8]/20"
+                  className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm"
                 >
                   {savingAck ? "Envoi en cours..." : "Transmettre ma réponse"}
                 </button>

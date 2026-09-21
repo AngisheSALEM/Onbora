@@ -226,7 +226,7 @@ export default function KamBriefingView({
           </button>
           <button
             onClick={() => onLaunchDebrief(selectedVisit)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold rounded-full shadow-md shadow-[#4F6CE8]/20 transition-all shrink-0 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold rounded-full shadow-sm transition-all shrink-0 cursor-pointer"
           >
             <Icons.Mic size={15} />
             <span>Lancer Débriefing</span>

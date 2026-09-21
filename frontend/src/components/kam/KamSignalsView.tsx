@@ -200,7 +200,7 @@ export default function KamSignalsView({
               {/* Bouton Ajouter une Note */}
               <button
                 onClick={handleCreateNewDoc}
-                className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-2 transition-all cursor-pointer shrink-0"
+                className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-sm flex items-center gap-2 transition-all cursor-pointer shrink-0"
               >
                 <Icons.Plus size={15} />
                 <span>Nouvelle Note</span>
@@ -287,7 +287,7 @@ export default function KamSignalsView({
                 </div>
                 <button
                   onClick={handleCreateNewDoc}
-                  className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-full text-xs font-bold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 cursor-pointer transition-all"
+                  className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-full text-xs font-bold shadow-sm flex items-center gap-1.5 cursor-pointer transition-all"
                 >
                   <Icons.Plus size={14} />
                   <span>Rédiger une note</span>
@@ -346,7 +346,7 @@ export default function KamSignalsView({
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={handleRunAiAnalysis}
-                className="px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-md shadow-[#4F6CE8]/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Icons.Sparkles size={14} className={isAnalyzing ? 'animate-spin' : ''} />
                 <span>{isAnalyzing ? 'Analyse en cours...' : 'Extraction IA'}</span>
@@ -594,7 +594,7 @@ export default function KamSignalsView({
 
                   <button
                     onClick={() => onOpenBriefingForAccount(visits[0])}
-                    className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-md shadow-[#4F6CE8]/20 shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-sm shrink-0 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <span>Insérer dans le Briefing</span>
                     <Icons.ArrowRight size={14} />

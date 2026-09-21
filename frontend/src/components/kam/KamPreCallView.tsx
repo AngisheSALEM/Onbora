@@ -190,18 +190,12 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
               title="Retour au portefeuille des comptes"
             >
               <Icons.ChevronLeft size={16} />
-              <span>Portefeuille</span>
+            
             </button>
           )}
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#4F6CE8]/10 text-[#4F6CE8]">
-                <Icons.Sparkles size={12} />
-                Pre-Call Intelligence
-              </span>
-              <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                Briefing d&apos;attaque en 2 minutes
-              </span>
+
             </div>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
               {briefingData?.enterprise_name ? briefingData.enterprise_name : "Préparation Stratégique Avant Rendez-vous"}
@@ -211,23 +205,7 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
 
         {/* Account Selector & Action Buttons */}
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <select
-              value={selectedAccountId}
-              onChange={(e) => setSelectedAccountId(e.target.value)}
-              className="appearance-none bg-[#FFFFFF] dark:bg-[#2F2C30] text-xs font-semibold text-zinc-900 dark:text-white py-2.5 pl-3.5 pr-8 rounded-2xl shadow-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4F6CE8]"
-            >
-              {assignedAccounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
-                  {acc.account_name} ({acc.briefing?.industry || 'B2B'})
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-              <Icons.ChevronDown size={14} />
-            </div>
-          </div>
-
+         
           <button
             onClick={() => fetchBriefing(selectedAccountId, true)}
             disabled={loading}
@@ -435,7 +413,7 @@ ${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
               <div className="flex items-center gap-2">
                 <Icons.Layers size={18} className="text-[#4F6CE8]" />
                 <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                  Recherche RAG Catalogue Orange B2B en Direct
+                  Recherche dans le  Catalogue Orange B2B en Direct
                 </h3>
               </div>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">

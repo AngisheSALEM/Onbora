@@ -294,7 +294,7 @@ export default function ClientProfilePage() {
 
                   {transmissionSuccess && (
                     <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl text-[11px] leading-normal font-550 flex gap-2 items-start">
-                      <span className="text-sm">✓</span>
+                      <Icons.Check size={14} className="shrink-0 mt-0.5" />
                       <span>Vos coordonnées sont verrouillées car une commande a été validée et transmise à votre conseiller.</span>
                     </div>
                   )}
@@ -361,8 +361,9 @@ export default function ClientProfilePage() {
                         </button>
                         
                         {profileSaveSuccess && (
-                          <span className="text-[10px] text-emerald-500 font-semibold text-center animate-pulse">
-                            ✓ Modifications enregistrées avec succès !
+                          <span className="text-[10px] text-emerald-500 font-semibold text-center animate-pulse flex items-center justify-center gap-1">
+                            <Icons.Check size={12} />
+                            <span>Modifications enregistrées avec succès !</span>
                           </span>
                         )}
                       </div>
@@ -433,7 +434,7 @@ export default function ClientProfilePage() {
                                           ? 'bg-blue-100 border-blue-600 text-blue-600 animate-pulse'
                                           : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-450'
                                     }`}>
-                                      {st.done ? '✓' : sidx + 1}
+                                      {st.done ? <Icons.Check size={12} /> : sidx + 1}
                                     </div>
                                     <span className={st.done || st.active ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-zinc-400'}>{st.label}</span>
                                   </div>
@@ -502,7 +503,7 @@ export default function ClientProfilePage() {
                         <div className="flex flex-wrap gap-1.5">
                           {profile.current_tools.map((t, idx) => (
                             <span key={idx} className="text-[9px] font-semibold px-2 py-1 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/10 uppercase tracking-wide flex items-center gap-1">
-                              🎓 {t}
+                              <Icons.BookOpen size={10} /> {t}
                             </span>
                           ))}
                         </div>
@@ -561,16 +562,7 @@ export default function ClientProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-end self-end sm:self-center">
-                  <button
-                    onClick={logout}
-                    className="py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-rose-500/10 active:scale-98"
-                    title="Se déconnecter de votre compte Onbora"
-                  >
-                    <Icons.LogOut size={14} />
-                    <span>Déconnexion</span>
-                  </button>
-                </div>
+                
               </div>
             </>
           )}
