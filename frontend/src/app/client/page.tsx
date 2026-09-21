@@ -254,7 +254,7 @@ export default function ClientDiscoveryPage() {
               const data = await res.json();
               setMessages(prev => [
                 ...prev,
-                { id: Date.now(), sender: 'USER', content: `🎤 [Whisper STT] ${data.transcription}`, created_at: new Date().toISOString() },
+                { id: Date.now(), sender: 'USER', content: `[Vocal STT] ${data.transcription}`, created_at: new Date().toISOString() },
                 { id: Date.now() + 1, sender: 'AI', content: data.ai_message, created_at: new Date().toISOString() }
               ]);
               if (data.extracted_profile) {
@@ -866,7 +866,7 @@ export default function ClientDiscoveryPage() {
       const tempAiMsg: Message = {
         id: Date.now() + 1,
         sender: 'AI',
-        content: "⚠️ **Le service de découverte d'Onbora est momentanément ralenti (Timeout).** Vos informations ont été sauvegardées localement. Veuillez cliquer sur le bouton ci-dessous pour renvoyer votre message.",
+        content: "**Le service de découverte d'Onbora est momentanément ralenti (Timeout).** Vos informations ont été sauvegardées localement. Veuillez cliquer sur le bouton ci-dessous pour renvoyer votre message.",
         created_at: new Date().toISOString(),
         is_error: true,
         retry_payload: userText
@@ -1160,7 +1160,7 @@ export default function ClientDiscoveryPage() {
                         className="w-full text-left py-1.5 px-2 rounded-lg text-[10px] font-550 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150/40 dark:hover:bg-zinc-900/50 transition-all cursor-pointer truncate"
                         title={t.title}
                       >
-                        🎓 {t.title}
+                        {t.title}
                       </button>
                     ))}
                   </div>
@@ -1270,7 +1270,7 @@ export default function ClientDiscoveryPage() {
 
                         {transmissionSuccess ? (
                           <div className="p-2 bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 rounded-xl text-[9px] font-550 text-center animate-fade-in flex flex-col leading-normal">
-                            <span>✓ Dossier contractuel transmis !</span>
+                            <span>Dossier contractuel transmis !</span>
                             <span className="text-[8px] text-blue-500 dark:text-blue-300">
                               {dossierDetails?.is_complete ? "Dossier complet." : "Le conseiller vous contactera par téléphone."}
                             </span>
@@ -1681,7 +1681,7 @@ export default function ClientDiscoveryPage() {
             {/* Hangup button */}
             <button
               onClick={endVoiceCall}
-              className="p-5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-transparent"
+              className="p-5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-transparent"
               title="Raccrocher"
             >
               <Icons.PhoneOff size={24} />
