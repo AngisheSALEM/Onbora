@@ -15,6 +15,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import ProspectDossier, KamAppointment, KamVisitReport, RelationshipCoverage
 from .services.visit_purpose_service import build_appointment_preparation, suggest_visit_purpose
+from .services.account_update_service import update_enterprise_account_info
 from twin.models import BusinessTwin
 from .serializers import ProspectDossierSerializer, BusinessTwinSerializer, RelationshipCoverageSerializer
 from .application.use_cases import ManageProvisioningUseCase
@@ -494,88 +495,13 @@ class KamAccountUpdateInfoView(APIView):
         if user.role == User.KAM and enterprise.assigned_kam_id != user.id:
             return Response({"detail": "Accès refusé : vous n'êtes pas le KAM assigné à ce compte."}, status=status.HTTP_403_FORBIDDEN)
 
-        data = request.data
-
-        # Mise à jour des contacts et décideurs
-        if 'contact_name' in data:
-            enterprise.contact_name = str(data['contact_name']).strip()
-        if 'contact_role' in data:
-            enterprise.contact_role = str(data['contact_role']).strip()
-        if 'contact_phone' in data:
-            enterprise.contact_phone = str(data['contact_phone']).strip()
-        if 'contact_email' in data:
-            enterprise.contact_email = str(data['contact_email']).strip()
-
-        # Métriques d'entreprise
-        if 'employee_count' in data:
-            try:
-                enterprise.employee_count = max(1, int(data['employee_count']))
-            except (ValueError, TypeError):
-                pass
-        if 'site_count' in data:
-            try:
-                enterprise.site_count = max(1, int(data['site_count']))
-            except (ValueError, TypeError):
-                pass
-        if 'annual_revenue' in data:
-            try:
-                enterprise.annual_revenue = max(0, float(data['annual_revenue']))
-            except (ValueError, TypeError):
-                pass
-
-        # Concurrence et connectivité
-        if 'current_connectivity' in data:
-            enterprise.current_connectivity = str(data['current_connectivity']).strip()
-
-        if any(key in data for key in ('current_operator', 'orange_contract_end_date', 'growth_project')):
-            crm_data = dict(enterprise.existing_crm_data) if isinstance(enterprise.existing_crm_data, dict) else {}
-            if 'current_operator' in data:
-                current_operator = str(data['current_operator'] or '').strip()[:100]
-                if current_operator:
-                    crm_data['current_operator'] = current_operator
-                else:
-                    crm_data.pop('current_operator', None)
-            if 'orange_contract_end_date' in data:
-                raw_date = str(data['orange_contract_end_date'] or '').strip()
-                if raw_date:
-                    try:
-                        date.fromisoformat(raw_date)
-                    except ValueError:
-                        return Response({"detail": "Date de fin du contrat Orange invalide."}, status=status.HTTP_400_BAD_REQUEST)
-                    crm_data['orange_contract_end_date'] = raw_date
-                else:
-                    crm_data.pop('orange_contract_end_date', None)
-            if 'growth_project' in data:
-                project = str(data['growth_project'] or '').strip()[:255]
-                if project:
-                    crm_data['growth_project'] = project
-                else:
-                    crm_data.pop('growth_project', None)
-            enterprise.existing_crm_data = crm_data
-
-        # Adresse
-        if 'address' in data:
-            enterprise.address = str(data['address']).strip()
-        if 'commune' in data:
-            enterprise.commune = str(data['commune']).strip()
-        if 'city' in data:
-            enterprise.city = str(data['city']).strip()
-
-        enterprise.save()
-
-        log_demo_event(
-            'KAM_ACCOUNT_INFO_UPDATED',
-            f"Fiche client mise à jour par le KAM {user.username} pour {enterprise.name} (Contact: {enterprise.contact_name}, Rôle: {enterprise.contact_role})",
-            user=user if user.is_authenticated else None,
-            metadata={
-                "enterprise_id": enterprise.id,
-                "contact_name": enterprise.contact_name,
-                "contact_role": enterprise.contact_role,
-            }
-        )
+        try:
+            enterprise, detail_msg = update_enterprise_account_info(enterprise, request.data, user)
+        except ValueError as err:
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
-            "detail": f"Fiche client de {enterprise.name} mise à jour avec succès.",
+            "detail": detail_msg,
             "visit": serialize_enterprise_to_kam_visit(enterprise)
         }, status=status.HTTP_200_OK)
 
