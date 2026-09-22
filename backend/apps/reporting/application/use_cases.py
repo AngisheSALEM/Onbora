@@ -350,7 +350,7 @@ class GetDemoStatsUseCase(BaseUseCase[Any, DemoStatsDTO]):
 
         # 8. Recent Event Logs
         recent_logs = []
-        for log in DemoEvent.objects.all()[:20]:
+        for log in DemoEvent.objects.select_related('user').all()[:20]:
             recent_logs.append({
                 "id": log.id,
                 "event_type": log.event_type,
@@ -385,7 +385,7 @@ class GetDemoStatsUseCase(BaseUseCase[Any, DemoStatsDTO]):
 class GetDemoLogsUseCase(BaseUseCase[Any, List[Dict[str, Any]]]):
     def execute(self, request: Any = None) -> List[Dict[str, Any]]:
         logs = []
-        for log in DemoEvent.objects.all():
+        for log in DemoEvent.objects.select_related('user').all():
             logs.append({
                 "id": log.id,
                 "event_type": log.event_type,

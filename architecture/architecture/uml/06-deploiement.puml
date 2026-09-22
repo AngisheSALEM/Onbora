@@ -1,0 +1,70 @@
+@startuml
+title Onbora - Déploiement cible initial
+!pragma layout smetana
+skinparam shadowing false
+
+node "Terminal mobile" as Phone {
+  artifact "App Flutter" as Flutter
+  database "Base locale chiffrée\nbriefs + brouillons + outbox" as LocalDB
+  Flutter --> LocalDB
+}
+
+node "Navigateur" as Browser {
+  artifact "Web Next.js" as Next
+}
+
+cloud "Plateforme applicative" as Platform {
+  node "Service web\nImage Onbora" as WebNode {
+    artifact "Django REST + modules métier\n+ Core AI in-process" as Django
+  }
+
+  node "Worker\nMême image et même code" as WorkerNode {
+    artifact "Outbox, collecte, scoring planifié" as Worker
+  }
+
+  database "PostgreSQL / Neon" as PG
+  database "Redis optionnel" as Redis
+  database "Stockage objet privé" as Blob
+}
+
+cloud "Écosystème Microsoft / MSP" as EnterpriseSystems {
+  node "Dynamics 365 Sales" as Dynamics
+  node "Field Service" as FSM
+  node "Outlook / Teams" as O365
+  node "ERP / CPQ / CLM" as Backoffice
+  node "Power BI / Fabric" as BI
+}
+
+cloud "Fournisseurs externes" as External {
+  node "Gemini / LLM configuré" as LLM
+  node "Sources publiques autorisées" as Sources
+  node "Cartographie / navigation" as Maps
+}
+
+Phone --> Django : TLS 1.2+\nOAuth/OIDC + API versionnée
+Browser --> Next
+Next --> Django : TLS + jeton utilisateur
+Django --> PG : TLS
+Worker --> PG : outbox avec verrouillage
+Django --> Redis : cache non critique
+Worker --> Redis : verrou court / quota
+Django --> Blob : URL signées
+Worker --> Dynamics : OAuth2, timeout, retry borné
+Worker --> FSM : lecture du contexte
+Worker --> O365 : calendrier / action validée
+Worker --> Backoffice : statut et deep-link
+Worker --> BI : export de métriques
+Django --> LLM : données minimisées
+Worker --> Sources : collecte respectueuse des quotas
+Django --> Maps : deep-link / géocodage
+
+note bottom of WorkerNode
+  Pas de microservice métier au MVP.
+  Le worker est un second processus du monolithe.
+end note
+
+note bottom of PG
+  Sauvegardes testées.
+  Isolation par tenant et contrôles serveur.
+end note
+@enduml

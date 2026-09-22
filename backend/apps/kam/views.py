@@ -10,14 +10,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import ProspectDossier, KamAppointment, KamVisitReport
+from .models import ProspectDossier, KamAppointment, KamVisitReport, RelationshipCoverage
 from twin.models import BusinessTwin
-from .serializers import ProspectDossierSerializer, BusinessTwinSerializer
+from .serializers import ProspectDossierSerializer, BusinessTwinSerializer, RelationshipCoverageSerializer
 from .application.use_cases import ManageProvisioningUseCase
 from .domain.exceptions import DossierNotFoundException
 from accounts.permissions import IsKAMOrAdmin
 from reporting.utils import log_demo_event
 from onbora.exports import get_export_response
+from shared.pagination import StandardResultsSetPagination
 
 
 class DossierListView(generics.ListAPIView):
@@ -215,6 +216,14 @@ class KamStrategicAccountListView(APIView):
                 ).order_by('-annual_revenue')[:100]
         else:
             enterprises = Enterprise.objects.none()
+
+        page = request.query_params.get('page')
+        if page:
+            paginator = StandardResultsSetPagination()
+            page_obj = paginator.paginate_queryset(enterprises, request)
+            if page_obj is not None:
+                visits = [serialize_enterprise_to_kam_visit(ent) for ent in page_obj]
+                return paginator.get_paginated_response(visits, extra_context={'accounts': visits})
 
         visits = [serialize_enterprise_to_kam_visit(ent) for ent in enterprises]
         return Response({
@@ -903,6 +912,14 @@ class KamVisitHistoryListView(APIView):
         else:
             reports = KamVisitReport.objects.all().select_related('appointment', 'enterprise').order_by('-created_at')
 
+        page = request.query_params.get('page')
+        if page:
+            paginator = StandardResultsSetPagination()
+            page_obj = paginator.paginate_queryset(reports, request)
+            if page_obj is not None:
+                serialized = [serialize_kam_visit_report(r) for r in page_obj]
+                return paginator.get_paginated_response(serialized, extra_context={'visits': serialized})
+
         return Response({
             "count": reports.count(),
             "visits": [serialize_kam_visit_report(r) for r in reports]
@@ -992,3 +1009,111 @@ class KamAudioTranscribeView(APIView):
                     os.remove(tmp_path)
                 except Exception:
                     pass
+
+
+class RelationshipCoverageListCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        enterprise_id = request.query_params.get('enterprise_id')
+        qs = RelationshipCoverage.objects.select_related('enterprise', 'last_interaction_proof').all()
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        serializer = RelationshipCoverageSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RelationshipCoverageSerializer(data=request.data)
+        if serializer.is_valid():
+            coverage = serializer.save()
+            from .services.relationship_service import RelationshipCoverageService
+            diag = RelationshipCoverageService.evaluate_account_relationship_coverage(coverage.enterprise_id)
+            return Response({
+                "coverage": RelationshipCoverageSerializer(coverage).data,
+                "diagnostic": diag
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RelationshipCoverageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = RelationshipCoverageSerializer
+    queryset = RelationshipCoverage.objects.select_related('enterprise', 'last_interaction_proof').all()
+
+
+class RelationshipCoverageDiagnosticView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, enterprise_id):
+        from .services.relationship_service import RelationshipCoverageService
+        diag = RelationshipCoverageService.evaluate_account_relationship_coverage(enterprise_id)
+        if "error" in diag:
+            return Response(diag, status=status.HTTP_404_NOT_FOUND)
+        return Response(diag, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# EPIC 5 VIEWS : RADAR DE RISQUE EXPLICABLE & MÉMOIRE DE COMPTE (HANDOVER)
+# ============================================================================
+
+class AccountMemoryEventListCreateView(APIView):
+    """
+    GET / POST: Registre de mémoire de compte (Epic 5).
+    Consigne les décisions, promesses, incidents majeurs et jalons avec pièces justificatives.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, enterprise_id):
+        from .models import AccountMemoryEvent
+        from .serializers import AccountMemoryEventSerializer
+        events = AccountMemoryEvent.objects.filter(enterprise_id=enterprise_id).select_related('created_by', 'evidence').order_by('-occurred_at')
+        return Response(AccountMemoryEventSerializer(events, many=True).data, status=status.HTTP_200_OK)
+
+    def post(self, request, enterprise_id):
+        from .services.account_memory_service import AccountMemoryService
+        from .serializers import AccountMemoryEventSerializer
+        event = AccountMemoryService.record_event(
+            enterprise_id=enterprise_id,
+            user=request.user,
+            event_type=request.data.get('event_type', 'DECISION'),
+            summary=request.data.get('summary', ''),
+            details=request.data.get('details', ''),
+            occurred_at=request.data.get('occurred_at'),
+            evidence_id=request.data.get('evidence_id'),
+            is_critical=bool(request.data.get('is_critical', False))
+        )
+        return Response(AccountMemoryEventSerializer(event).data, status=status.HTTP_201_CREATED)
+
+
+class AccountHandoverPackView(APIView):
+    """
+    GET: Génération en un clic du dossier de passation stratégique (Handover Pack).
+    Fournit au KAM entrant l'historique complet, les promesses, les risques et la cartographie.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, enterprise_id):
+        from .services.account_memory_service import AccountMemoryService
+        pack = AccountMemoryService.generate_handover_pack(
+            enterprise_id=enterprise_id,
+            outgoing_kam=request.user
+        )
+        if "error" in pack:
+            return Response(pack, status=status.HTTP_404_NOT_FOUND)
+        return Response(pack, status=status.HTTP_200_OK)
+
+
+class AccountRiskSignalsView(APIView):
+    """
+    GET: Retourne les signaux radar explicables (échéance contrat, mono-champion, inactivité).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, enterprise_id):
+        from .services.radar_service import SignalRuleEvaluator
+        signals = SignalRuleEvaluator.evaluate_account_signals(enterprise_id)
+        if "error" in signals:
+            return Response(signals, status=status.HTTP_404_NOT_FOUND)
+        return Response(signals, status=status.HTTP_200_OK)
+
+

@@ -4,7 +4,8 @@ from accounts.models import User
 from .models import (
     Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession,
     ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig,
-    SalesIncentivePoint
+    SalesIncentivePoint, AccountProjection, AccountPortfolioAssignment,
+    SourceObservation, Evidence
 )
 
 
@@ -654,5 +655,73 @@ class SubmitVisitFormRequestSerializer(serializers.Serializer):
     answers = serializers.ListField(child=serializers.DictField())
     objections_noted = serializers.CharField(required=False, allow_blank=True, default='')
     custom_notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class AccountProjectionSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    source_system_display = serializers.CharField(source='get_source_system_display', read_only=True)
+    sync_status_display = serializers.CharField(source='get_sync_status_display', read_only=True)
+
+    class Meta:
+        model = AccountProjection
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'crm_account_id',
+            'source_system', 'source_system_display', 'source_version',
+            'raw_crm_payload', 'last_pulled_at', 'last_pushed_at',
+            'sync_status', 'sync_status_display', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class AccountPortfolioAssignmentSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    user_name = serializers.ReadOnlyField(source='user.get_full_name')
+    user_email = serializers.ReadOnlyField(source='user.email')
+    assignment_type_display = serializers.CharField(source='get_assignment_type_display', read_only=True)
+
+    class Meta:
+        model = AccountPortfolioAssignment
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'user', 'user_name',
+            'user_email', 'assignment_type', 'assignment_type_display',
+            'assigned_at', 'assigned_by', 'is_active', 'notes'
+        ]
+        read_only_fields = ['id', 'assigned_at']
+
+
+class SourceObservationSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    source_type_display = serializers.CharField(source='get_source_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    captured_by_name = serializers.ReadOnlyField(source='captured_by.get_full_name')
+
+    class Meta:
+        model = SourceObservation
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'source_type',
+            'source_type_display', 'source_uri', 'source_title',
+            'observed_at', 'captured_at', 'excerpt_text', 'excerpt_hash',
+            'status', 'status_display', 'captured_by', 'captured_by_name'
+        ]
+        read_only_fields = ['id', 'captured_at', 'excerpt_hash']
+
+
+class EvidenceSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+    review_status_display = serializers.CharField(source='get_review_status_display', read_only=True)
+    reviewed_by_name = serializers.ReadOnlyField(source='reviewed_by.get_full_name')
+
+    class Meta:
+        model = Evidence
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'observation', 'kind',
+            'kind_display', 'category', 'statement', 'confidence_score',
+            'review_status', 'review_status_display', 'reviewed_by',
+            'reviewed_by_name', 'reviewed_at', 'valid_from', 'valid_until',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
 
 

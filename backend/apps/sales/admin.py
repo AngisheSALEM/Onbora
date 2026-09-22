@@ -7,7 +7,11 @@ from .models import (
     VisitReport,
     VisitFormSubmission,
     SalesNotification,
-    LiveVisitSession
+    LiveVisitSession,
+    AccountProjection,
+    AccountPortfolioAssignment,
+    SourceObservation,
+    Evidence
 )
 
 
@@ -73,3 +77,36 @@ class SalesNotificationAdmin(admin.ModelAdmin):
 class LiveVisitSessionAdmin(admin.ModelAdmin):
     list_display = ['id', 'salesperson', 'enterprise', 'session_status', 'created_at']
     list_filter = ['session_status']
+
+
+@admin.register(AccountProjection)
+class AccountProjectionAdmin(admin.ModelAdmin):
+    list_display = ['crm_account_id', 'enterprise', 'source_system', 'source_version', 'sync_status', 'last_pulled_at', 'last_pushed_at']
+    list_select_related = ['enterprise']
+    list_filter = ['source_system', 'sync_status']
+    search_fields = ['crm_account_id', 'enterprise__name']
+
+
+@admin.register(AccountPortfolioAssignment)
+class AccountPortfolioAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['enterprise', 'user', 'assignment_type', 'is_active', 'assigned_at', 'assigned_by']
+    list_select_related = ['enterprise', 'user', 'assigned_by']
+    list_filter = ['assignment_type', 'is_active']
+    search_fields = ['enterprise__name', 'user__username', 'user__email']
+
+
+@admin.register(SourceObservation)
+class SourceObservationAdmin(admin.ModelAdmin):
+    list_display = ['enterprise', 'source_type', 'source_title', 'observed_at', 'status', 'captured_by']
+    list_select_related = ['enterprise', 'captured_by']
+    list_filter = ['source_type', 'status']
+    search_fields = ['enterprise__name', 'source_title', 'source_uri', 'excerpt_text']
+
+
+@admin.register(Evidence)
+class EvidenceAdmin(admin.ModelAdmin):
+    list_display = ['enterprise', 'kind', 'category', 'statement', 'confidence_score', 'review_status', 'reviewed_by', 'valid_from']
+    list_select_related = ['enterprise', 'observation', 'reviewed_by']
+    list_filter = ['kind', 'category', 'review_status']
+    search_fields = ['enterprise__name', 'statement', 'category']
+

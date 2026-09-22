@@ -118,7 +118,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
             <button
               disabled={selectedOptionIndex === null}
               onClick={handleSubmit}
-              className="flex-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)]"
+              className="flex-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
             >
               Valider ma réponse
             </button>
@@ -126,7 +126,7 @@ export default function QuizComponent({ quiz, onSuccess, onCancel }: QuizCompone
         ) : (
           <button
             onClick={onSuccess}
-            className="w-full py-2.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-green-500/10"
+            className="w-full py-2.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 shadow-md"
           >
             <Icons.CheckCircle size={14} className="text-white" />
             {isCorrect ? 'Terminer et valider le module' : 'Recommencer ou Terminer'}

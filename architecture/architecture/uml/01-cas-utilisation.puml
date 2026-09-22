@@ -1,0 +1,78 @@
+@startuml
+title Onbora - Cas d'utilisation cibles
+left to right direction
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Prospecteur / Prestataire terrain\n(SOHO)" as SOHOSales
+actor "KAM\n(PME & Grands Comptes)" as KAM
+actor "Manager commercial" as Manager
+actor "Administrateur MSP" as Admin
+
+rectangle "Onbora - Intelligence et Exécution Commerciale" {
+  usecase "Consulter la liste de visites\npriorisée et géolocalisée" as UC1
+  usecase "Préparer une visite avec un\nbrief sourcé et segmenté" as UC2
+  usecase "Exécuter une qualification\nguidée (SOHO / PME / KAM)" as UC3
+  usecase "Capturer le résultat sur site\n(hors ligne / dictaphone)" as UC4
+  usecase "Requalifier et basculer de segment\n(Handoff SOHO -> KAM PME)" as UC3_Pivot
+  usecase "Valider les faits, actions et\nmises à jour CRM" as UC5
+  usecase "Consulter la mémoire du compte,\npromesses et handover" as UC6
+  usecase "Cartographier la couverture\nrelationnelle et multi-threading" as UC7
+  usecase "Traiter un signal de risque\nou d'opportunité explicable" as UC8
+  usecase "Piloter la qualité d'exécution\net la couverture de portefeuille" as UC9
+  usecase "Configurer règles, sources,\npondérations et segments" as UC10
+  usecase "Synchroniser les changements\napprouvés avec Dynamics 365" as UC11
+}
+
+' Parcours Prospecteur SOHO (Terrain / Prestataire)
+SOHOSales --> UC1
+SOHOSales --> UC2
+SOHOSales --> UC3
+SOHOSales --> UC4
+SOHOSales --> UC3_Pivot
+SOHOSales --> UC5
+
+' Parcours KAM (PME & Grands Comptes) - Terrain et Portefeuille
+KAM --> UC1
+KAM --> UC2
+KAM --> UC3
+KAM --> UC4
+KAM --> UC5
+KAM --> UC6
+KAM --> UC7
+KAM --> UC8
+
+' Parcours Management & Admin
+Manager --> UC7
+Manager --> UC8
+Manager --> UC9
+Admin --> UC10
+
+' Dépendances fonctionnelles
+UC2 .> UC6 : <<include>>
+UC3 .> UC5 : <<include>>
+UC4 .> UC5 : <<include>>
+UC3_Pivot .> UC5 : <<include>>
+UC5 .> UC11 : <<include>>
+UC8 .> UC5 : <<extend>>
+
+note bottom of SOHOSales
+  Prestataire ou agent terrain de masse :
+  qualification rapide SOHO, check-in, détection
+  d'éligibilité et bascule PME si potentiel détecté.
+end note
+
+note bottom of KAM
+  Gère PME et Grands Comptes de bout en bout :
+  du brief mobile terrain jusqu'au pilotage
+  stratégique, multi-threading et mémoire de compte.
+end note
+
+note bottom of UC11
+  Onbora propose et synchronise.
+  Dynamics 365 reste maître des comptes,
+  contacts, opportunités et activités.
+end note
+@enduml

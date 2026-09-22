@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Onbora Technical Debt & Architecture Linter
-===========================================
-Ce script audite les dettes techniques sur Onbora en s'appuyant sur :
+Onbora Technical Debt, Architecture & Connectivity Linter
+=========================================================
+Ce script audite les dettes techniques et l'intégrité de connectivité sur Onbora en s'appuyant sur :
 1. Les compétences d'architecture logicielle (`software-architecture-system-design` & `architecture-agent`) :
-   - Clean Architecture (séparation stricte de la logique métier vs vues/contrôleurs).
+   - Clean Architecture (Règle de dépendance : les modèles de domaine n'importent jamais de vues).
    - Modularité et Domain-Driven Design (isolation des contextes B2B, Sales, KAM, Admin).
    - Détection des composants volumineux (God Classes / Fat Views > 90 lignes).
+   - Intégrité du câblage système : validation du montage des URLconf et vérification des contrats d'API client (Next.js & Flutter).
 2. Les compétences Django & Python Backend (`django-backend-python`) :
    - Détection des risques de requêtes N+1 (absence de select_related / prefetch_related dans serializers).
    - Détection de requêtes SQL brutes ou secrets hardcodés.
@@ -37,6 +38,7 @@ GREEN = "\033[92m"
 YELLOW = "\033[93m"
 BLUE = "\033[94m"
 MAGENTA = "\033[95m"
+CYAN = "\033[96m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
@@ -63,6 +65,13 @@ RAW_SQL_PATTERN = re.compile(
 MOCK_REPORT_PATTERN = re.compile(
     r'(?:confirmed_needs|detected_needs)\s*=\s*\[\s*["\']Lien Fibre Optique|actions_todo\s*=\s*\[\s*f?["\']Transmettre le devis technique personnalisé'
 )
+
+REVERSE_IMPORT_PATTERN = re.compile(
+    r'^\s*(?:from\s+[a-zA-Z0-9_.]+\s+import\s+.*(?:views|viewsets)|import\s+[a-zA-Z0-9_.]*(?:views|viewsets))',
+    re.MULTILINE
+)
+
+INTERNAL_TOOL_APPS = {'workbench', 'api', 'reports'}
 
 def is_ignored(path: str) -> bool:
     normalized = path.replace('\\', '/').lower()
@@ -98,13 +107,14 @@ def analyze_django_file(file_path: str) -> list:
     norm_path = file_path.replace('\\', '/')
     is_view = 'views' in norm_path or 'viewsets' in norm_path
     is_serializer = 'serializers' in norm_path or 'serializer' in norm_path
+    is_model = 'models' in norm_path
 
     try:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
             content = "".join(lines)
 
-            # A. God Views / Fat Views (> 120 lines in a single view method)
+            # A. God Views / Fat Views (> 90 lines in a single view method)
             if is_view:
                 current_func = None
                 func_start = 0
@@ -127,14 +137,26 @@ def analyze_django_file(file_path: str) -> list:
                 for match in SERIALIZER_QUERY_PATTERN.finditer(content):
                     line_no = content[:match.start()].count('\n') + 1
                     issues.append({
-                        "type": "DJANGO_N_PLUS_ONE_RISK",
+                                "type": "DJANGO_N_PLUS_ONE_RISK",
+                                "line_no": line_no,
+                                "skill": "django-backend-python (Optimisation ORM)",
+                                "message": "Requête ORM dans SerializerMethodField. Risque de N+1 queries. Utilisez select_related / prefetch_related dans le queryset.",
+                                "snippet": content[match.start():match.start()+60].replace('\n', ' ')
+                            })
+
+            # C. Clean Architecture Dependency Inversion : les modèles ne doivent jamais importer des vues
+            if is_model:
+                for match in REVERSE_IMPORT_PATTERN.finditer(content):
+                    line_no = content[:match.start()].count('\n') + 1
+                    issues.append({
+                        "type": "CLEAN_ARCHITECTURE_REVERSE_IMPORT",
                         "line_no": line_no,
-                        "skill": "django-backend-python (Optimisation ORM)",
-                        "message": "Requête ORM dans SerializerMethodField. Risque de N+1 queries. Utilisez select_related / prefetch_related dans le queryset.",
-                        "snippet": content[match.start():match.start()+60].replace('\n', ' ')
+                        "skill": "software-architecture-system-design (Dependency Rule)",
+                        "message": "Violation de la règle de dépendance Clean Architecture : un modèle de domaine importe une vue ou un contrôleur externe.",
+                        "snippet": match.group(0).strip()
                     })
 
-            # C. Secrets hardcodes
+            # D. Secrets hardcodes
             for line_no, line in enumerate(lines, 1):
                 if SECRET_KEY_PATTERN.search(line) and 'test' not in norm_path:
                     issues.append({
@@ -145,7 +167,7 @@ def analyze_django_file(file_path: str) -> list:
                         "snippet": line.strip()[:80]
                     })
 
-                # D. Raw SQL injection risk
+                # E. Raw SQL injection risk
                 if RAW_SQL_PATTERN.search(line):
                     issues.append({
                         "type": "DJANGO_RAW_SQL_RISK",
@@ -155,7 +177,7 @@ def analyze_django_file(file_path: str) -> list:
                         "snippet": line.strip()[:80]
                     })
 
-                # E. Anti-Pattern : Fausses données mockées / diagnostiques hardcodés
+                # F. Anti-Pattern : Fausses données mockées / diagnostiques hardcodés
                 if ('views' in norm_path or 'service' in norm_path) and 'test' not in norm_path:
                     if MOCK_REPORT_PATTERN.search(line):
                         issues.append({
@@ -171,11 +193,132 @@ def analyze_django_file(file_path: str) -> list:
 
     return issues
 
+def audit_connectivity_and_wiring(base_dir: str = ".") -> list:
+    """
+    Audite la connectivité globale du système :
+    1. Câblage des URLconf Django (toutes les apps exposées sont-elles montées ?).
+    2. Résolution des modules d'URL référencés dans backend/onbora/urls.py.
+    3. Cohérence des contrats d'appels API clients (Frontend Next.js et Mobile Flutter).
+    """
+    connectivity_issues = []
+    backend_urls_path = os.path.join(base_dir, "backend", "onbora", "urls.py")
+    apps_dir = os.path.join(base_dir, "backend", "apps")
+
+    if not os.path.exists(backend_urls_path):
+        return [{"type": "MISSING_MAIN_URLS", "message": f"Fichier principal {backend_urls_path} introuvable."}]
+
+    try:
+        with open(backend_urls_path, 'r', encoding='utf-8') as f:
+            urls_content = f.read()
+    except Exception as e:
+        return [{"type": "READ_ERROR", "message": f"Erreur de lecture de urls.py: {e}"}]
+
+    # 1. Nettoyage des docstrings et commentaires pour éviter les faux positifs (ex: blog.urls)
+    clean_urls_content = re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'', '', urls_content)
+    clean_urls_content = re.sub(r'#.*', '', clean_urls_content)
+
+    # Extraction des routes et inclusions réelles
+    include_pattern = re.compile(r"path\(\s*['\"]([^'\"]*)['\"]\s*,\s*include\(\s*['\"]([^'\"]+)['\"]\s*\)")
+    mounted_routes = []
+    mounted_modules = set()
+
+    for match in include_pattern.finditer(clean_urls_content):
+        prefix, module = match.groups()
+        mounted_routes.append(prefix.strip('/'))
+        mounted_modules.add(module)
+
+    # 2. Vérification de l'existence des modules montés
+    for module in mounted_modules:
+        parts = module.split('.')
+        # Gère 'apps.ai_core.urls' ou 'accounts.urls'
+        candidate_paths = [
+            os.path.join(base_dir, "backend", *parts) + ".py",
+            os.path.join(base_dir, "backend", "apps", *parts) + ".py",
+        ]
+        if len(parts) >= 2 and parts[0] == 'apps':
+            candidate_paths.append(os.path.join(base_dir, "backend", *parts) + ".py")
+        elif len(parts) >= 2:
+            candidate_paths.append(os.path.join(base_dir, "backend", "apps", parts[0], parts[1] + ".py"))
+
+        exists = any(os.path.exists(p) for p in candidate_paths)
+        if not exists:
+            connectivity_issues.append({
+                "type": "BROKEN_URL_MODULE_REFERENCE",
+                "skill": "software-architecture-system-design (Wiring Integrity)",
+                "message": f"Le module d'URL `{module}` référencé dans onbora/urls.py est introuvable sur le disque.",
+                "details": f"Chemins testés : {candidate_paths[0]}"
+            })
+
+    # 3. Vérification des apps définissant un urls.py non monté
+    if os.path.exists(apps_dir):
+        for app_name in os.listdir(apps_dir):
+            app_path = os.path.join(apps_dir, app_name)
+            if os.path.isdir(app_path) and app_name not in IGNORED_PARTS and app_name not in INTERNAL_TOOL_APPS:
+                app_urls = os.path.join(app_path, "urls.py")
+                if os.path.exists(app_urls):
+                    # Vérifier si l'app est mentionnée dans mounted_modules
+                    is_mounted = any(app_name in m for m in mounted_modules)
+                    if not is_mounted:
+                        connectivity_issues.append({
+                            "type": "UNMOUNTED_APP_URLCONF",
+                            "skill": "software-architecture-system-design (Modular Architecture)",
+                            "message": f"L'application `{app_name}` contient un fichier `urls.py` non monté dans `backend/onbora/urls.py`.",
+                            "details": f"Fichier orphelin : {app_urls}"
+                        })
+
+    # 4. Vérification des contrats d'appels API clients (Frontend & Mobile)
+    known_prefixes = set()
+    for r in mounted_routes:
+        segments = [s for s in r.split('/') if s and s != 'v1']
+        if len(segments) >= 2 and segments[0] == 'api':
+            known_prefixes.add(segments[1])
+        elif segments:
+            known_prefixes.add(segments[0])
+
+    client_endpoints = set()
+    client_dirs = [
+        os.path.join(base_dir, "frontend", "src"),
+        os.path.join(base_dir, "mobile", "lib")
+    ]
+
+    api_call_pattern = re.compile(r'["\']/(api/(?:v1/)?([a-zA-Z0-9_\-]+))')
+
+    for cdir in client_dirs:
+        if not os.path.exists(cdir):
+            continue
+        for root, _, files in os.walk(cdir):
+            for f in files:
+                if f.endswith(('.ts', '.tsx', '.dart')):
+                    fpath = os.path.join(root, f)
+                    try:
+                        with open(fpath, 'r', encoding='utf-8', errors='ignore') as fp:
+                            fcontent = fp.read()
+                            for m in api_call_pattern.finditer(fcontent):
+                                prefix = m.group(2)
+                                client_endpoints.add((prefix, fpath.replace('\\', '/')))
+                    except Exception:
+                        pass
+
+    for prefix, source_file in client_endpoints:
+        # Tolérer les endpoints standards Django ou utilitaires
+        if prefix in {'schema', 'docs', 'health', 'token', 'me'}:
+            continue
+        if prefix not in known_prefixes:
+            connectivity_issues.append({
+                "type": "UNCONNECTED_CLIENT_API_CONTRACT",
+                "skill": "software-architecture-system-design (Client-Server Contract)",
+                "message": f"Le client appelle le préfixe d'API `/api/{prefix}/` qui n'est monté dans aucun `urlpatterns` Django.",
+                "details": f"Appelé dans : {source_file}"
+            })
+
+    return connectivity_issues
+
 def main():
-    parser = argparse.ArgumentParser(description="Vérificateur de dettes techniques & architecture Onbora.")
+    parser = argparse.ArgumentParser(description="Auditeur de dettes techniques, architecture & connectivité Onbora.")
     parser.add_argument("--staged", action="store_true", help="Vérifier uniquement les fichiers Python stagés.")
     parser.add_argument("--all", action="store_true", help="Vérifier tous les fichiers backend Django.")
     parser.add_argument("--files", nargs="*", help="Fichiers spécifiques à vérifier.")
+    parser.add_argument("--check-connectivity", action="store_true", default=True, help="Auditer le câblage système et les contrats clients.")
     args = parser.parse_args()
 
     if args.files:
@@ -189,29 +332,45 @@ def main():
         files = staged if staged else get_all_python_backend_files("backend")
 
     print(f"\n{BOLD}{MAGENTA}================================================================{RESET}")
-    print(f"{BOLD}{MAGENTA}🏗️  ONBORA — Hook d'Audit de Dette Technique & Architecture{RESET}")
+    print(f"{BOLD}{MAGENTA}[AUDIT] ONBORA — Hook d'Audit de Dette Technique & Connectivité{RESET}")
     print(f"{BOLD}{MAGENTA}================================================================{RESET}")
-    print(f"Fichiers Python analysés : {len(files)}")
+    print(f"{CYAN}Analyse en cours : {len(files)} fichier(s) Python backend...{RESET}")
 
-    total_issues = 0
+    total_code_issues = 0
     for f in files:
         issues = analyze_django_file(f)
         if issues:
-            total_issues += len(issues)
-            print(f"\n{BOLD}{RED}⚠️ DETTE TECHNIQUE DÉTECTÉE : {f.replace('\\', '/')}{RESET}")
+            total_code_issues += len(issues)
+            print(f"\n{BOLD}{RED}[ALERTE DETTE] {f.replace('\\', '/')}{RESET}")
             for iss in issues:
                 print(f"  {YELLOW}Ligne {iss['line_no']}{RESET} [{BOLD}{iss['type']}{RESET}]")
                 print(f"    {BOLD}Skill référent :{RESET} {iss['skill']}")
                 print(f"    {BOLD}Alerte :{RESET} {iss['message']}")
                 print(f"    {BOLD}Extrait :{RESET} {iss['snippet']}")
 
+    print(f"\n{CYAN}Audit de connectivité et de câblage architectural en cours...{RESET}")
+    connectivity_issues = audit_connectivity_and_wiring(".")
+    total_conn_issues = len(connectivity_issues)
+
+    if connectivity_issues:
+        print(f"\n{BOLD}{RED}[ALERTE CONNECTIVITE] Anomalie(s) de routage ou de contrat client détectée(s) :{RESET}")
+        for c_iss in connectivity_issues:
+            print(f"  [{BOLD}{c_iss['type']}{RESET}]")
+            print(f"    {BOLD}Skill référent :{RESET} {c_iss.get('skill', 'software-architecture-system-design')}")
+            print(f"    {BOLD}Alerte :{RESET} {c_iss['message']}")
+            if 'details' in c_iss:
+                print(f"    {BOLD}Détails :{RESET} {c_iss['details']}")
+
+    total_issues = total_code_issues + total_conn_issues
     print(f"\n{BOLD}----------------------------------------------------------------{RESET}")
     if total_issues > 0:
-        print(f"{BOLD}{YELLOW}⚡ {total_issues} point(s) de dette technique ou d'architecture soulevé(s).{RESET}")
+        print(f"{BOLD}{YELLOW}[STATUT] {total_issues} point(s) de dette ou d'anomalie de câblage détecté(s).{RESET}")
         print(f"{BLUE}Recommandations : Consultez les skills `software-architecture-system-design` et `django-backend-python`.{RESET}\n")
+        sys.exit(1)
     else:
-        print(f"{BOLD}{GREEN}✅ EXCELLENT ! Aucune dette technique critique ou anti-pattern détecté.{RESET}")
-        print(f"{GREEN}Architecture Clean SoC et bonnes pratiques Django/DRF parfaitement respectées.{RESET}\n")
+        print(f"{BOLD}{GREEN}[STATUT : SUCCES] Aucune dette technique ni anomalie de connectivité.{RESET}")
+        print(f"{GREEN}Architecture Clean SoC, contrats de routage et bonnes pratiques Django/DRF parfaitement respectés.{RESET}\n")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()

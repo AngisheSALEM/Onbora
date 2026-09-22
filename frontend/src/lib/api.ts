@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -9,10 +9,19 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     headers.set('Authorization', `Token ${token}`);
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const targetUrl = `${API_URL}${endpoint}`;
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, {
+      ...options,
+      headers,
+    });
+  } catch (networkError: unknown) {
+    console.error(`[API Network Error] Impossible de joindre ${targetUrl}:`, networkError);
+    throw new Error(
+      `Impossible de joindre le serveur backend (${API_URL}). Vérifiez que Django est démarré sur le port 8000.`
+    );
+  }
 
   if (!response.ok) {
     if (response.status === 401 && typeof window !== 'undefined') {
@@ -37,11 +46,20 @@ export async function uploadAudioAPI(endpoint: string, formData: FormData) {
     headers['Authorization'] = `Token ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method: 'POST',
-    headers,
-    body: formData,
-  });
+  const targetUrl = `${API_URL}${endpoint}`;
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+  } catch (networkError: unknown) {
+    console.error(`[API Network Error] Impossible de joindre ${targetUrl}:`, networkError);
+    throw new Error(
+      `Impossible de joindre le serveur backend (${API_URL}). Vérifiez que Django est démarré sur le port 8000.`
+    );
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

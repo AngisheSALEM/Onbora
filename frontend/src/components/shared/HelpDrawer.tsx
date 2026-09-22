@@ -65,7 +65,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
 
             <div className="flex flex-col gap-4">
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">1</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">1</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Ciblage & Recherche</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -75,7 +75,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">2</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">2</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Brief pré-visite</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -85,7 +85,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">3</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">3</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Dictaphone Whisper & Notes</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -95,7 +95,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
               </div>
 
               <div className="flex gap-3 items-start">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/30">4</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">4</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Brouillon d'email & Envoi</span>
                   <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal mt-0.5">
@@ -171,9 +171,10 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
           </div>
           <button
             onClick={onClose}
-            className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
+            className="flex items-center gap-1.5 text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
           >
-            Fermer ✕
+            <span>Fermer</span>
+            <Icons.X size={13} />
           </button>
         </div>
 

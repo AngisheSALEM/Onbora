@@ -112,12 +112,15 @@ class PostCallExecutionDetailView(APIView):
 
 class PostCallSyncCrmView(APIView):
     """
-    POST: Déclenche la synchronisation instantanée du compte-rendu vers Microsoft Dynamics 365 / Salesforce.
-    Injecte les contacts, la prochaine étape, l'estimation MRR et l'alerte J+2 dans le CRM de l'entreprise.
+    POST: Enclenche la synchronisation transactionnelle du compte-rendu vers Microsoft Dynamics 365.
+    Insère une opération dans l'Outbox PostgreSQL (Epic 4) et exécute la livraison sécurisée.
     """
     permission_classes = [IsKAMOrAdmin]
 
     def post(self, request, report_id):
+        from .models import SyncOperation
+        from .integrations.dynamics.worker import DynamicsOutboxWorker
+
         try:
             report = KamVisitReport.objects.select_related('enterprise', 'kam').get(id=report_id)
         except KamVisitReport.DoesNotExist:
@@ -127,16 +130,37 @@ class PostCallSyncCrmView(APIView):
         if user.role == User.KAM and report.kam_id != user.id:
             return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Exécution de la synchronisation vers Dynamics 365
-        report.crm_sync_status = 'SYNCED_DYNAMICS'
-        report.synced_at = timezone.now()
-        report.save(update_fields=['crm_sync_status', 'synced_at'])
+        # Insertion transactionnelle dans l'Outbox PostgreSQL
+        sync_op = SyncOperation.objects.create(
+            target_system='DYNAMICS_365',
+            entity_type='APPOINTMENT',
+            entity_id=str(report.id),
+            operation='CREATE',
+            payload={
+                'subject': f"Compte-Rendu : {report.enterprise.name} ({report.kam.username})",
+                'description': report.executive_summary,
+                'confirmed_needs': report.confirmed_needs,
+                'actions_todo': report.actions_todo,
+                'regarding_account_id': report.enterprise.crm_id or str(report.enterprise.id),
+            },
+            status='PENDING'
+        )
+
+        # Déclenchement du worker (mode immédiat pour confirmation en direct)
+        worker = DynamicsOutboxWorker()
+        worker.process_pending_operations(batch_size=5)
+
+        sync_op.refresh_from_db()
+        report.refresh_from_db()
 
         return Response({
-            "detail": f"Opportunité synchronisée avec succès dans Microsoft Dynamics 365 pour {report.enterprise.name}.",
-            "crm_system": "Microsoft Dynamics 365 Sales",
-            "sync_status": report.crm_sync_status,
-            "synced_at": report.synced_at.strftime("%d/%m/%Y %H:%M:%S"),
+            "detail": f"Compte-rendu envoyé à la file d'attente Dynamics 365 pour {report.enterprise.name}.",
+            "crm_system": "Microsoft Dynamics 365 Sales (Dataverse OData v9.2)",
+            "outbox_operation_id": str(sync_op.id),
+            "outbox_status": sync_op.status,
+            "report_sync_status": report.crm_sync_status,
+            "remote_activity_id": sync_op.remote_id or None,
+            "synced_at": (report.synced_at or timezone.now()).strftime("%d/%m/%Y %H:%M:%S"),
             "crm_account_id": report.enterprise.crm_id or f"CRM-ACC-{report.enterprise.id:04d}"
         }, status=status.HTTP_200_OK)
 

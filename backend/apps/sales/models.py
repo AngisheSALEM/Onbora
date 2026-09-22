@@ -1,3 +1,5 @@
+import uuid
+import hashlib
 from django.db import models
 from django.conf import settings
 
@@ -748,6 +750,289 @@ class AccountScoreResult(models.Model):
 
     def __str__(self):
         return f"{self.enterprise.name} - {self.profile.name}: {self.score}/100 ({self.status_label})"
+
+
+class AccountProjection(models.Model):
+    """
+    Projection locale d'un compte maître issu du CRM (Dynamics 365 / Kaabu).
+    Permet la lecture rapide et le mode hors-ligne sans devenir le système maître (SoR).
+    """
+    SOURCE_SYSTEM_CHOICES = [
+        ('DYNAMICS_365', 'Microsoft Dynamics 365 Sales'),
+        ('KAABU', 'CRM Kaabu Orange'),
+        ('LOCAL_ONLY', 'Compte créé localement / Non synchronisé'),
+    ]
+    SYNC_STATUS_CHOICES = [
+        ('IN_SYNC', 'Synchronisé et à jour'),
+        ('PENDING_PULL', 'Mise à jour distante disponible'),
+        ('PENDING_PUSH', 'Modifications locales en attente d\'écriture'),
+        ('CONFLICT', 'Conflit de version nécessitant arbitrage'),
+        ('ERROR', 'Erreur lors de la dernière tentative'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.OneToOneField(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name='crm_projection',
+        help_text="Fiche entreprise Onbora rattachée à cette projection"
+    )
+    crm_account_id = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text="Identifiant unique dans Microsoft Dynamics 365 / Dataverse"
+    )
+    source_system = models.CharField(
+        max_length=50,
+        choices=SOURCE_SYSTEM_CHOICES,
+        default='DYNAMICS_365'
+    )
+    source_version = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text="Numéro de version / ETag du système source pour contrôle de concurrence"
+    )
+    raw_crm_payload = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Dernier snapshot JSON reçu du CRM maître"
+    )
+    last_pulled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date de dernière lecture incrémentale depuis le CRM"
+    )
+    last_pushed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date de dernière écriture confirmée vers le CRM"
+    )
+    sync_status = models.CharField(
+        max_length=30,
+        choices=SYNC_STATUS_CHOICES,
+        default='IN_SYNC'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = "Projection CRM Compte"
+        verbose_name_plural = "Projections CRM Comptes"
+
+    def __str__(self):
+        return f"Projection {self.crm_account_id} ({self.enterprise.name})"
+
+
+class AccountPortfolioAssignment(models.Model):
+    """
+    Modèle d'affectation explicite de compte à un commercial ou KAM.
+    Formalise la séparation stricte : SOHO = Prospecteur/Prestataire, PME & GC = KAM.
+    """
+    ASSIGNMENT_TYPES = [
+        ('PRIMARY_KAM', 'KAM Titulaire (PME & Grands Comptes)'),
+        ('BACKUP_KAM', 'KAM Suppléant (Binôme / Backup)'),
+        ('SOHO_REPRESENTATIVE', 'Prospecteur / Prestataire Terrain (SOHO)'),
+        ('TECHNICAL_SALES', 'Ingénieur Avant-Vente / Spécialiste'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name='portfolio_assignments',
+        help_text="Entreprise assignée"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='account_assignments',
+        help_text="Utilisateur assigné (KAM ou Commercial SOHO)"
+    )
+    assignment_type = models.CharField(
+        max_length=30,
+        choices=ASSIGNMENT_TYPES,
+        default='PRIMARY_KAM',
+        db_index=True
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dispatched_assignments',
+        help_text="Manager ayant validé l'affectation"
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    notes = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['-assigned_at']
+        verbose_name = "Affectation Portefeuille"
+        verbose_name_plural = "Affectations Portefeuilles"
+        unique_together = ('enterprise', 'user', 'assignment_type')
+
+    def __str__(self):
+        return f"{self.get_assignment_type_display()} : {self.user.get_full_name() or self.user.username} -> {self.enterprise.name}"
+
+
+class SourceObservation(models.Model):
+    """
+    Observation brute et immuable collectée depuis une source externe autorisée
+    (registres, site web officiel, appel d'offres, visite terrain).
+    """
+    SOURCE_TYPES = [
+        ('PUBLIC_REGISTRY', 'Registre du Commerce / Fisc (RCCM, IdNat)'),
+        ('OFFICIAL_GAZETTE', 'Journal Officiel / Marchés Publics'),
+        ('COMPANY_WEBSITE', 'Site Web Officiel de l\'Entreprise'),
+        ('NEWS_MEDIA', 'Presse Économique / Média Spécialisé'),
+        ('FIELD_VISIT', 'Constat direct lors d\'une visite terrain'),
+        ('CRM_ACTIVITY', 'Historique d\'activité CRM validé'),
+    ]
+    STATUS_CHOICES = [
+        ('COLLECTED', 'Collectée (Brute)'),
+        ('VERIFIED', 'Vérifiée par opérateur'),
+        ('REJECTED', 'Rejetée (Non pertinente ou obsolète)'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name='source_observations',
+        help_text="Entreprise concernée"
+    )
+    source_type = models.CharField(max_length=30, choices=SOURCE_TYPES, db_index=True)
+    source_uri = models.CharField(max_length=500, help_text="URL de la source ou identifiant officiel")
+    source_title = models.CharField(max_length=255, blank=True, default='', help_text="Titre ou description courte de la source")
+    observed_at = models.DateTimeField(db_index=True, help_text="Date exacte de parution ou de constat de l'observation")
+    captured_at = models.DateTimeField(auto_now_add=True, help_text="Date d'enregistrement dans Onbora")
+    excerpt_text = models.TextField(help_text="Extrait textuel brut étayant l'observation")
+    excerpt_hash = models.CharField(max_length=64, blank=True, default='', db_index=True, help_text="Empreinte SHA256 de l'extrait pour déduplication")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='COLLECTED')
+    captured_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='captured_observations',
+        help_text="Utilisateur ayant capturé l'observation (si saisie manuelle)"
+    )
+
+    class Meta:
+        ordering = ['-observed_at']
+        verbose_name = "Observation Sourcée"
+        verbose_name_plural = "Observations Sourcées"
+
+    def save(self, *args, **kwargs):
+        if not self.excerpt_hash and self.excerpt_text:
+            self.excerpt_hash = hashlib.sha256(self.excerpt_text.encode('utf-8')).hexdigest()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"[{self.get_source_type_display()}] {self.enterprise.name} ({self.observed_at.strftime('%d/%m/%Y')})"
+
+
+class Evidence(models.Model):
+    """
+    Fait qualifié, hypothèse ou inconnue formellement rattaché à une preuve.
+    Invariant : Tout fait opérationnel ('FACT') confirmé référence obligatoirement une observation traçable.
+    """
+    KIND_CHOICES = [
+        ('FACT', 'Fait avéré et prouvé'),
+        ('HYPOTHESIS', 'Hypothèse commerciale à confirmer'),
+        ('UNKNOWN', 'Inconnue critique / Donnée manquante'),
+    ]
+    REVIEW_STATUS_CHOICES = [
+        ('TO_CONFIRM', 'À confirmer en entretien'),
+        ('CONFIRMED', 'Confirmé et validé'),
+        ('REJECTED', 'Infirmé / Rejeté'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name='evidences',
+        help_text="Entreprise concernée"
+    )
+    observation = models.ForeignKey(
+        SourceObservation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='derived_evidences',
+        help_text="Observation source justifiant cette preuve"
+    )
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='HYPOTHESIS', db_index=True)
+    category = models.CharField(
+        max_length=50,
+        default='BUSINESS',
+        help_text="Ex: CONNECTIVITY, GOVERNANCE, BUDGET, SITES, HARDWARE, RISK"
+    )
+    statement = models.TextField(help_text="Énoncé clair de l'affirmation commerciale ou de l'inconnue")
+    confidence_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=0.70,
+        help_text="Score de certitude (0.00 à 1.00)"
+    )
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='TO_CONFIRM', db_index=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_evidences',
+        help_text="Commercial ou KAM ayant confirmé le fait"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    valid_from = models.DateTimeField(auto_now_add=True)
+    valid_until = models.DateTimeField(null=True, blank=True, help_text="Date de caducité du fait")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Preuve & Fait Qualifié"
+        verbose_name_plural = "Preuves & Faits Qualifiés"
+
+    def __str__(self):
+        return f"[{self.get_kind_display()}] {self.enterprise.name}: {self.statement[:50]}..."
+
+
+class IdempotencyRecord(models.Model):
+    """
+    Registre d'idempotence des opérations mobiles (Outbox Flutter) et intégrations.
+    Garantit qu'une commande rejouée après coupure réseau retourne le résultat mis en cache
+    sans dupliquer les rapports, les observations ou les dossiers de transmission.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    idempotency_key = models.CharField(max_length=128, unique=True, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='idempotent_records'
+    )
+    operation_type = models.CharField(max_length=50, default='VISIT_COMPLETE', db_index=True)
+    request_hash = models.CharField(max_length=64, blank=True, default='', help_text="SHA256 du payload requête")
+    response_status = models.IntegerField(default=200)
+    response_payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Enregistrement d'Idempotence"
+        verbose_name_plural = "Enregistrements d'Idempotence"
+
+    def __str__(self):
+        return f"Idempotency {self.idempotency_key} ({self.operation_type}) -> HTTP {self.response_status}"
+
 
 
 

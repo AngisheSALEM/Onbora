@@ -58,9 +58,9 @@ export default function EscalationModal({
           </div>
           <button 
             onClick={onClose} 
-            className="text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 border-none bg-transparent cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 border-none bg-transparent cursor-pointer p-1"
           >
-            ✕
+            <Icons.X size={16} />
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export default function EscalationModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 py-3 px-4 rounded-xl text-xs font-semibold text-white bg-red-500 hover:bg-red-650 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md shadow-red-500/10 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
+              className="w-full mt-2 py-3 px-4 rounded-xl text-xs font-semibold text-white bg-red-500 hover:bg-red-650 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed border-none"
             >
               {isSubmitting ? (
                 <>
@@ -155,7 +155,7 @@ export default function EscalationModal({
           </form>
         ) : (
           <div className="p-8 flex flex-col items-center text-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 flex items-center justify-center shadow-lg shadow-green-500/10">
+            <div className="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 flex items-center justify-center shadow-lg">
               <Icons.Check size={26} />
             </div>
             

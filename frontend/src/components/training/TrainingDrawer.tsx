@@ -116,9 +116,10 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
             
             <button
               onClick={onClose}
-              className="text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
+              className="flex items-center gap-1.5 text-xs text-zinc-550 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-550 cursor-pointer border-none bg-transparent"
             >
-              Fermer ✕
+              <span>Fermer</span>
+              <Icons.X size={13} />
             </button>
           </div>
 
@@ -198,7 +199,7 @@ export default function TrainingDrawer({ isOpen, onClose, initialModuleId = null
                       onClick={() => setCategoryFilter(cat)}
                       className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border cursor-pointer capitalize transition-all ${
                         categoryFilter === cat
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-600/20'
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
                           : 'border-zinc-200 dark:border-zinc-800 text-zinc-650 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950/20'
                       }`}
                     >

@@ -433,7 +433,7 @@ export default function GoogleSlidesTwin({
       <header className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-850 px-4 py-2 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo Google Slides Clone */}
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-blue-600/20">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
               <line x1="9" y1="9" x2="15" y2="9"/>
@@ -607,7 +607,7 @@ export default function GoogleSlidesTwin({
                 : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
             }`}
           >
-            <span className="text-[10px] font-semibold text-zinc-400 mt-1">📥</span>
+            <Icons.Download size={12} className="text-zinc-400 mt-1 shrink-0" />
             <div className="flex-1 aspect-video bg-zinc-55 dark:bg-zinc-900 rounded border border-zinc-300 dark:border-zinc-850 flex flex-col items-center justify-center p-1 overflow-hidden relative text-center">
               <Icons.Download className="text-blue-600 dark:text-blue-400" size={12} />
               <span className="text-[5px] font-extrabold text-zinc-650 dark:text-zinc-400 uppercase mt-0.5">Importer Slides</span>
@@ -875,7 +875,7 @@ export default function GoogleSlidesTwin({
                       <div className="flex flex-col gap-2 max-h-[145px] overflow-y-auto">
                         {(activeSlide.content.roadmap || []).map((step, idx) => (
                           <div key={idx} className="flex gap-2.5 items-start p-2 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-900">
-                            <span className="w-4.5 h-4.5 rounded-full bg-blue-600 text-white text-[9px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/20">
+                            <span className="w-4.5 h-4.5 rounded-full bg-blue-600 text-white text-[9px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                               {idx + 1}
                             </span>
                             <EditableText
@@ -1068,7 +1068,7 @@ export default function GoogleSlidesTwin({
                 <div className="flex flex-col gap-3">
                   {(activeSlide.content.roadmap || []).map((step, idx) => (
                     <div key={idx} className="flex gap-3 items-start p-3 rounded-xl bg-zinc-950/60 border border-zinc-800">
-                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-blue-600/20">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                         {idx + 1}
                       </span>
                       <p className="text-xs text-zinc-300 leading-relaxed flex-1">{step}</p>

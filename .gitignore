@@ -70,4 +70,7 @@ onbora interface probleme/
 !frontend/public/memojis/
 !frontend/public/memojis/**
 
+# Local documents
+*.pdf
+
 

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from accounts.models import User
 from sales.models import Enterprise
 from accounts.permissions import IsKAMManager
+from shared.pagination import StandardResultsSetPagination
 
 
 class KamOfficeOverviewView(APIView):
@@ -311,11 +312,22 @@ class KamOfficeAccountsListView(APIView):
     permission_classes = [IsKAMManager]
 
     def get(self, request):
-        limit = int(request.query_params.get('limit', 1000))
-        offset = int(request.query_params.get('offset', 0))
-
         qs = _filter_kam_office_accounts_qs(request.query_params)
         total_matching = qs.count()
+
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            paged_qs = paginator.paginate_queryset(qs.order_by('-annual_revenue'), request)
+            accounts_data = [_serialize_kam_office_account(ent) for ent in paged_qs]
+            return paginator.get_paginated_response(accounts_data, extra_context={
+                "total": total_matching,
+                "accounts": accounts_data,
+                "offset": (paginator.page.number - 1) * paginator.get_page_size(request),
+                "limit": paginator.get_page_size(request)
+            })
+
+        limit = int(request.query_params.get('limit', 1000))
+        offset = int(request.query_params.get('offset', 0))
         paged_qs = qs.order_by('-annual_revenue')[offset:offset+limit]
 
         accounts_data = [_serialize_kam_office_account(ent) for ent in paged_qs]
@@ -325,7 +337,8 @@ class KamOfficeAccountsListView(APIView):
             "count": len(accounts_data),
             "offset": offset,
             "limit": limit,
-            "accounts": accounts_data
+            "accounts": accounts_data,
+            "results": accounts_data
         }, status=status.HTTP_200_OK)
 
 

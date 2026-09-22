@@ -180,6 +180,17 @@ class KAMListView(APIView):
         from sales.models import Enterprise
         from django.db.models import Sum
 
+        search = request.query_params.get('search', '').strip().lower()
+        if search:
+            kams = [
+                k for k in kams
+                if search in (k.first_name or '').lower()
+                or search in (k.last_name or '').lower()
+                or search in (k.username or '').lower()
+                or search in (k.email or '').lower()
+                or search in (k.company_name or '').lower()
+            ]
+
         results = []
         for k in kams:
             assigned_count = Enterprise.objects.filter(assigned_kam_id=k.id).count()
@@ -203,6 +214,14 @@ class KAMListView(APIView):
                 "converted_amount": float(converted_amount),
                 "is_active": getattr(k, 'is_active', True),
             })
+
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            paged_kams = paginator.paginate_queryset(results, request)
+            return paginator.get_paginated_response(paged_kams, extra_context={
+                "kams": paged_kams
+            })
+
         return Response(results, status=status.HTTP_200_OK)
 
 
@@ -241,6 +260,27 @@ class FCMTokenUpdateView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+def _serialize_manager_user(u) -> dict:
+    avatar_val = u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg"
+    return {
+        "id": u.id,
+        "username": u.username,
+        "email": u.email,
+        "first_name": u.first_name,
+        "last_name": u.last_name,
+        "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
+        "role": u.role,
+        "role_display": u.get_role_display(),
+        "phone": u.phone,
+        "company_name": u.company_name,
+        "location": u.location,
+        "is_active": u.is_active,
+        "avatar": avatar_val,
+        "profile_picture_url": avatar_val,
+        "date_joined": u.date_joined.isoformat() if u.date_joined else None
+    }
+
+
 class ManagersView(APIView):
     """
     Gestion des comptes d'encadrement créés par l'Admin :
@@ -251,56 +291,31 @@ class ManagersView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
+        from django.db.models import Q
         role_filter = request.query_params.get('role', None)
+        search = request.query_params.get('search', '').strip()
         qs = User.objects.filter(role__in=[User.SUPERVISOR, User.KAM_MANAGER]).order_by('-date_joined')
         if role_filter in [User.SUPERVISOR, User.KAM_MANAGER]:
             qs = qs.filter(role=role_filter)
+        if search:
+            qs = qs.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(location__icontains=search)
+            )
         
-        # Support de la pagination serveur automatique (Option B : CBV)
+        # Support de la pagination serveur automatique
         if request.query_params.get('page'):
             paginator = StandardResultsSetPagination()
             page = paginator.paginate_queryset(qs, request)
-            users_data = [
-                {
-                    "id": u.id,
-                    "username": u.username,
-                    "email": u.email,
-                    "first_name": u.first_name,
-                    "last_name": u.last_name,
-                    "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
-                    "role": u.role,
-                    "role_display": u.get_role_display(),
-                    "phone": u.phone,
-                    "company_name": u.company_name,
-                    "location": u.location,
-                    "is_active": u.is_active,
-                    "avatar": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
-                    "profile_picture_url": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
-                    "date_joined": u.date_joined.isoformat() if u.date_joined else None
-                }
-                for u in page
-            ]
-            return paginator.get_paginated_response(users_data)
-
-        users_data = []
-        for u in qs:
-            users_data.append({
-                "id": u.id,
-                "username": u.username,
-                "email": u.email,
-                "first_name": u.first_name,
-                "last_name": u.last_name,
-                "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
-                "role": u.role,
-                "role_display": u.get_role_display(),
-                "phone": u.phone,
-                "company_name": u.company_name,
-                "location": u.location,
-                "is_active": u.is_active,
-                "avatar": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
-                "profile_picture_url": u.profile_picture_url or u.avatar or "/avatars/default_avatar.svg",
-                "date_joined": u.date_joined.isoformat() if u.date_joined else None
+            users_data = [_serialize_manager_user(u) for u in page]
+            return paginator.get_paginated_response(users_data, extra_context={
+                "managers": users_data
             })
+
+        users_data = [_serialize_manager_user(u) for u in qs]
         return Response(users_data, status=status.HTTP_200_OK)
 
     def post(self, request):

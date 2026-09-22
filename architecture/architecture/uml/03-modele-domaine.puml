@@ -1,0 +1,199 @@
+@startuml
+title Onbora - Modèle de domaine cible (noyau utile)
+hide methods
+hide circle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class Tenant {
+  +id: UUID
+  +name: string
+}
+
+class User {
+  +id: UUID
+  +role: Role
+  +status: UserStatus
+}
+
+class AccountProjection <<projection CRM>> {
+  +id: UUID
+  +crmAccountId: string
+  +name: string
+  +segment: SOHO|PME|KAM
+  +sourceVersion: string
+  +lastPulledAt: datetime
+}
+
+class ContactProjection <<projection CRM>> {
+  +id: UUID
+  +crmContactId: string
+  +name: string
+  +role: string
+  +lastContactAt: datetime
+}
+
+class SourceObservation {
+  +id: UUID
+  +sourceType: SourceType
+  +sourceUri: string
+  +observedAt: datetime
+  +excerptHash: string
+  +status: COLLECTED|REJECTED
+}
+
+class Evidence {
+  +id: UUID
+  +kind: FACT|HYPOTHESIS|UNKNOWN
+  +statement: text
+  +confidence: decimal
+  +validFrom: datetime
+  +reviewStatus: TO_CONFIRM|CONFIRMED|REJECTED
+}
+
+class BriefingSnapshot {
+  +id: UUID
+  +segment: SOHO|PME|KAM
+  +generatedAt: datetime
+  +version: int
+  +status: DRAFT|PUBLISHED|STALE
+}
+
+class DiscoveryQuestion {
+  +id: UUID
+  +text: string
+  +required: boolean
+  +segment: SOHO|PME|KAM
+}
+
+class Visit {
+  +id: UUID
+  +clientGeneratedId: UUID
+  +scheduledAt: datetime
+  +status: VisitStatus
+  +syncStatus: SyncStatus
+}
+
+class AccountPortfolioAssignment {
+  +id: UUID
+  +assignmentType: PRIMARY_KAM|BACKUP_KAM|SOHO_REPRESENTATIVE
+  +assignedAt: datetime
+  +active: boolean
+}
+
+class Qualification {
+  +id: UUID
+  +initialSegment: SOHO|PME|KAM
+  +effectiveSegment: SOHO|PME|KAM
+  +pivotTriggered: boolean
+  +pivotReason: string?
+  +completeness: decimal
+  +validatedAt: datetime?
+}
+
+class HandoffDossier {
+  +id: UUID
+  +fromRole: SOHO_REPRESENTATIVE|OUTGOING_KAM
+  +status: PENDING|ACCEPTED|RETURNED
+  +transferredAt: datetime
+}
+
+class Answer {
+  +id: UUID
+  +value: json
+  +capturedOffline: boolean
+}
+
+class AccountMemoryEvent {
+  +id: UUID
+  +type: DECISION|PROMISE|RISK|INCIDENT|MILESTONE
+  +occurredAt: datetime
+  +summary: text
+}
+
+class RelationshipCoverage {
+  +id: UUID
+  +expectedRole: ECONOMIC_BUYER|TECH_DECIDER|CHAMPION|DETRACTOR|USER
+  +coverageStatus: UNKNOWN|MISSING|SINGLE_POINT_OF_FAILURE|COVERED
+  +influenceLevel: HIGH|MEDIUM|LOW
+  +isMonoChampionRisk: boolean
+  +lastEvidenceAt: datetime?
+}
+
+class SignalRule {
+  +id: UUID
+  +name: string
+  +condition: json
+  +weight: int
+  +validityDays: int?
+  +active: boolean
+}
+
+class Signal {
+  +id: UUID
+  +type: RISK|OPPORTUNITY
+  +score: int
+  +status: NEW|ACKNOWLEDGED|RESOLVED|DISMISSED
+  +calculatedAt: datetime
+}
+
+class ActionProposal {
+  +id: UUID
+  +type: CRM_UPDATE|TASK|FOLLOW_UP
+  +payload: json
+  +status: PROPOSED|APPROVED|SYNCED|REJECTED|FAILED
+}
+
+class SyncOperation {
+  +id: UUID
+  +idempotencyKey: string
+  +targetSystem: string
+  +attemptCount: int
+  +status: PENDING|RUNNING|SUCCEEDED|FAILED
+  +nextAttemptAt: datetime?
+}
+
+Tenant "1" *-- "many" User
+Tenant "1" *-- "many" AccountProjection
+AccountProjection "1" o-- "many" AccountPortfolioAssignment
+User "1" <-- "many" AccountPortfolioAssignment
+AccountProjection "1" o-- "many" ContactProjection
+AccountProjection "1" o-- "many" SourceObservation
+SourceObservation "1" *-- "many" Evidence
+AccountProjection "1" o-- "many" BriefingSnapshot
+BriefingSnapshot "1" o-- "many" Evidence : cite
+BriefingSnapshot "1" o-- "many" DiscoveryQuestion
+AccountProjection "1" o-- "many" Visit
+Visit "1" o-- "0..1" Qualification
+Qualification "1" *-- "many" Answer
+Qualification "1" o-- "0..1" HandoffDossier : génère si bascule PME
+HandoffDossier "many" --> "1" User : transmis au KAM
+DiscoveryQuestion "1" <-- "many" Answer
+Visit "1" --> "0..1" BriefingSnapshot : utilise
+AccountProjection "1" o-- "many" AccountMemoryEvent
+AccountMemoryEvent "many" --> "0..1" Evidence : justifié par
+AccountProjection "1" o-- "many" RelationshipCoverage
+RelationshipCoverage "many" --> "0..1" ContactProjection
+SignalRule "many" --> "many" Evidence : évalue
+AccountProjection "1" o-- "many" Signal
+Signal "many" --> "many" SignalRule : déclenché par
+Signal "many" --> "many" Evidence : expliqué par
+Visit "1" o-- "many" ActionProposal
+Signal "1" o-- "many" ActionProposal
+ActionProposal "1" --> "0..1" SyncOperation
+
+note bottom of AccountProjection
+  Projection locale nécessaire au mode terrain.
+  Le CRM demeure maître lorsque crmAccountId existe.
+end note
+
+note bottom of Evidence
+  Invariant : FACT ou HYPOTHESIS confirmé
+  => au moins une SourceObservation traçable.
+end note
+
+note bottom of SyncOperation
+  Contrainte unique sur idempotencyKey.
+  Aucun succès local avant accusé du système cible.
+end note
+@enduml

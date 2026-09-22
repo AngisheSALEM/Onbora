@@ -1,0 +1,71 @@
+@startuml
+title Onbora - Séquence critique préparer, visiter, valider et synchroniser
+autonumber
+skinparam shadowing false
+
+actor "Prospecteur SOHO / KAM PME" as User
+participant "Mobile Flutter" as Mobile
+participant "API Onbora" as API
+participant "Briefing / Qualification" as Domain
+database "PostgreSQL" as DB
+participant "Core AI" as AI
+participant "Sources autorisées" as Sources
+participant "Worker Outbox" as Worker
+participant "Dynamics 365" as CRM
+
+User -> Mobile: Ouvrir une visite
+Mobile -> API: GET /visits/{id}/briefing
+API -> Domain: construireOuLireSnapshot(account, segment)
+Domain -> DB: lire projection, mémoire, preuves, inconnues
+
+alt sources fraîches insuffisantes et réseau disponible
+  Domain -> Sources: collecter les changements pertinents
+  Sources --> Domain: observations + URL + date + extrait
+  Domain -> DB: persister observations immuables
+end
+
+Domain -> AI: synthétiser avec contexte minimisé
+AI --> Domain: faits candidats, inconnues, questions, actions
+Domain -> Domain: valider schéma et rattacher les preuves
+Domain -> DB: publier BriefingSnapshot versionné
+Domain --> API: briefing sourcé
+API --> Mobile: faits / changements / inconnues / questions
+Mobile -> Mobile: stocker le snapshot localement
+
+User -> Mobile: Démarrer puis clôturer la visite
+Mobile -> Mobile: enregistrer réponses et preuves locales
+
+alt réseau indisponible
+  Mobile -> Mobile: placer la commande dans l'outbox locale
+  Mobile --> User: résultat "en attente de synchronisation"
+else réseau disponible ou revenu
+  Mobile -> API: POST /visits/{id}/complete\nIdempotency-Key + version locale
+  API -> Domain: évaluer qualification & pivot de segment
+  opt bascule détectée (ex: SOHO -> PME multi-sites)
+    Domain -> DB: créer HandoffDossier & notifier le KAM assigné
+  end
+  API -> DB: transaction: visite + qualification + actions proposées
+  API --> Mobile: 202 Accepted + syncOperationId
+  Mobile --> User: visite enregistrée, validation requise
+end
+
+User -> Mobile: Valider faits et actions
+Mobile -> API: POST /action-proposals/{id}/approve
+API -> DB: approuver + créer entrée outbox atomiquement
+API --> Mobile: 202 Accepted
+
+Worker -> DB: verrouiller une opération PENDING
+Worker -> CRM: upsert contrôlé\nclé d'idempotence + version CRM
+
+alt succès CRM
+  CRM --> Worker: identifiant + version + accusé
+  Worker -> DB: marquer SUCCEEDED et mettre à jour la projection
+else indisponibilité ou limitation
+  CRM --> Worker: timeout / 429 / 5xx
+  Worker -> DB: planifier retry borné + journaliser l'erreur
+else conflit de version ou validation CRM
+  CRM --> Worker: 409 / 4xx métier
+  Worker -> DB: marquer FAILED_REVIEW
+  Worker -> API: notifier le propriétaire
+end
+@enduml

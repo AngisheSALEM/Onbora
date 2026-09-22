@@ -8,6 +8,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     Permet le couplage automatique et fluide avec les composants de pagination front-end.
     Retourne :
       - count : nombre total d'éléments
+      - total : alias rétro-compatible pour count
       - total_pages : nombre total de pages calculé côté serveur
       - current_page : numéro de la page active
       - page_size : taille de page courante (configurable via ?page_size=)
@@ -19,13 +20,17 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-    def get_paginated_response(self, data):
-        return Response({
+    def get_paginated_response(self, data, extra_context=None):
+        payload = {
             'count': self.page.paginator.count,
+            'total': self.page.paginator.count,
             'total_pages': self.page.paginator.num_pages,
             'current_page': self.page.number,
             'page_size': self.get_page_size(self.request),
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),
             'results': data
-        })
+        }
+        if extra_context and isinstance(extra_context, dict):
+            payload.update(extra_context)
+        return Response(payload)

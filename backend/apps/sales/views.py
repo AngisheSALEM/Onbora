@@ -2,7 +2,7 @@ import os
 import logging
 from django.db import models
 from django.http import HttpResponse
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,7 +10,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.models import User
 
 logger = logging.getLogger(__name__)
-from .models import Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession, ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig
+from shared.pagination import StandardResultsSetPagination
+from .models import (
+    Plaque, Enterprise, VisitPreparation, VisitReport, LiveVisitSession,
+    ScraperCredential, SalesNotification, VisitFormSubmission, SegmentationConfig,
+    AccountProjection, AccountPortfolioAssignment, SourceObservation, Evidence
+)
 from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
@@ -31,6 +36,10 @@ from .serializers import (
     SubmitVisitFormRequestSerializer,
     SegmentationConfigSerializer,
     ConvertedAccountSerializer,
+    AccountProjectionSerializer,
+    AccountPortfolioAssignmentSerializer,
+    SourceObservationSerializer,
+    EvidenceSerializer,
 )
 from .application.use_cases import (
     ListPlaquesUseCase,
@@ -146,8 +155,27 @@ class SalespersonListView(APIView):
 
     def get(self, request):
         from accounts.models import User
-        salespersons = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques')
-        serializer = SalespersonUserSerializer(salespersons, many=True)
+        from django.db.models import Q
+        salespersons_qs = User.objects.filter(role=User.SALESPERSON).prefetch_related('assigned_plaques').order_by('-date_joined')
+        search = request.query_params.get('search', '').strip()
+        if search:
+            salespersons_qs = salespersons_qs.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(location__icontains=search)
+            )
+
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            paged_sp = paginator.paginate_queryset(salespersons_qs, request)
+            serializer = SalespersonUserSerializer(paged_sp, many=True)
+            return paginator.get_paginated_response(serializer.data, extra_context={
+                "salespersons": serializer.data
+            })
+
+        serializer = SalespersonUserSerializer(salespersons_qs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -1964,18 +1992,32 @@ class ConvertedAccountsView(APIView):
         bo_amount = bo_converted.aggregate(total=Sum('converted_amount'))['total'] or 0
         kam_amount = kam_converted.aggregate(total=Sum('converted_amount'))['total'] or 0
 
+        summary_data = {
+            "total_count": all_converted.count(),
+            "back_office_count": bo_converted.count(),
+            "kam_office_count": kam_converted.count(),
+            "total_signed_amount_usd": float(total_amount),
+            "back_office_signed_amount_usd": float(bo_amount),
+            "kam_office_signed_amount_usd": float(kam_amount),
+        }
+
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            paged_qs = paginator.paginate_queryset(qs.order_by('-converted_at'), request)
+            serializer = ConvertedAccountSerializer(paged_qs, many=True)
+            return paginator.get_paginated_response(serializer.data, extra_context={
+                "summary": summary_data,
+                "accounts": serializer.data
+            })
+
         serializer = ConvertedAccountSerializer(qs.order_by('-converted_at'), many=True)
 
         return Response({
-            "summary": {
-                "total_count": all_converted.count(),
-                "back_office_count": bo_converted.count(),
-                "kam_office_count": kam_converted.count(),
-                "total_signed_amount_usd": float(total_amount),
-                "back_office_signed_amount_usd": float(bo_amount),
-                "kam_office_signed_amount_usd": float(kam_amount),
-            },
-            "accounts": serializer.data
+            "summary": summary_data,
+            "total": qs.count(),
+            "count": len(serializer.data),
+            "accounts": serializer.data,
+            "results": serializer.data
         }, status=status.HTTP_200_OK)
 
 
@@ -2061,11 +2103,22 @@ class EnterpriseListFullView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        limit = int(request.query_params.get('limit', 1000))
-        offset = int(request.query_params.get('offset', 0))
-
         qs = _filter_enterprises_for_list(request)
         total_matching = qs.count()
+
+        if request.query_params.get('page'):
+            paginator = StandardResultsSetPagination()
+            paged_qs = paginator.paginate_queryset(qs, request)
+            serializer = EnterpriseSerializer(paged_qs, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data, extra_context={
+                "total": total_matching,
+                "enterprises": serializer.data,
+                "offset": (paginator.page.number - 1) * paginator.get_page_size(request),
+                "limit": paginator.get_page_size(request)
+            })
+
+        limit = int(request.query_params.get('limit', 1000))
+        offset = int(request.query_params.get('offset', 0))
         paged_qs = qs[offset:offset+limit]
         serializer = EnterpriseSerializer(paged_qs, many=True, context={'request': request})
 
@@ -2074,7 +2127,8 @@ class EnterpriseListFullView(APIView):
             "count": len(serializer.data),
             "offset": offset,
             "limit": limit,
-            "enterprises": serializer.data
+            "enterprises": serializer.data,
+            "results": serializer.data
         }, status=status.HTTP_200_OK)
 
 
@@ -2175,6 +2229,126 @@ class EnterpriseAssignSalespersonView(APIView):
             "plaque_id": target_plaque.id if target_plaque else None,
             "plaque_code": target_plaque.code if target_plaque else None,
         }, status=status.HTTP_200_OK)
+
+
+class AccountProjectionListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AccountProjectionSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = AccountProjection.objects.select_related('enterprise').all()
+        enterprise_id = self.request.query_params.get('enterprise_id')
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        crm_id = self.request.query_params.get('crm_id')
+        if crm_id:
+            qs = qs.filter(crm_account_id=crm_id)
+        return qs
+
+
+class AccountProjectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AccountProjectionSerializer
+    queryset = AccountProjection.objects.select_related('enterprise').all()
+
+
+class AccountPortfolioAssignmentListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AccountPortfolioAssignmentSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = AccountPortfolioAssignment.objects.select_related('enterprise', 'user', 'assigned_by').all()
+        enterprise_id = self.request.query_params.get('enterprise_id')
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            qs = qs.filter(user_id=user_id)
+        assignment_type = self.request.query_params.get('assignment_type')
+        if assignment_type:
+            qs = qs.filter(assignment_type=assignment_type)
+        return qs
+
+
+class AccountPortfolioAssignmentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AccountPortfolioAssignmentSerializer
+    queryset = AccountPortfolioAssignment.objects.select_related('enterprise', 'user', 'assigned_by').all()
+
+
+class SourceObservationListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SourceObservationSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = SourceObservation.objects.select_related('enterprise', 'captured_by').all()
+        enterprise_id = self.request.query_params.get('enterprise_id')
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        source_type = self.request.query_params.get('source_type')
+        if source_type:
+            qs = qs.filter(source_type=source_type)
+        return qs
+
+
+class SourceObservationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SourceObservationSerializer
+    queryset = SourceObservation.objects.select_related('enterprise', 'captured_by').all()
+
+
+class EvidenceListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EvidenceSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = Evidence.objects.select_related('enterprise', 'observation', 'reviewed_by').all()
+        enterprise_id = self.request.query_params.get('enterprise_id')
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        kind = self.request.query_params.get('kind')
+        if kind:
+            qs = qs.filter(kind=kind)
+        review_status = self.request.query_params.get('review_status')
+        if review_status:
+            qs = qs.filter(review_status=review_status)
+        return qs
+
+
+class EvidenceDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EvidenceSerializer
+    queryset = Evidence.objects.select_related('enterprise', 'observation', 'reviewed_by').all()
+
+
+class IdempotentVisitCompleteView(APIView):
+    """
+    POST: Clôture de visite résiliente et idempotente pour l'Outbox mobile (Epic 3).
+    Reçoit le header `Idempotency-Key` (UUIDv4) et le payload de visite.
+    Rejoue le résultat mis en cache sans duplication en cas de reconnexion réseau.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        idempotency_key = request.headers.get('Idempotency-Key') or request.data.get('idempotency_key', '')
+        from .services.idempotent_visit_service import IdempotentVisitService
+
+        status_code, response_data, is_cached = IdempotentVisitService.complete_visit_idempotent(
+            idempotency_key=idempotency_key,
+            user=request.user,
+            payload=request.data
+        )
+
+        response = Response(response_data, status=status_code)
+        if is_cached:
+            response['X-Cache-Lookup'] = 'HIT-IDEMPOTENCY'
+        return response
+
+
 
 
 

@@ -45,6 +45,15 @@ from .views import (
     EnterpriseListFullView,
     AutoDispatchPlaqueView,
     EnterpriseAssignSalespersonView,
+    AccountProjectionListCreateView,
+    AccountProjectionDetailView,
+    AccountPortfolioAssignmentListCreateView,
+    AccountPortfolioAssignmentDetailView,
+    SourceObservationListCreateView,
+    SourceObservationDetailView,
+    EvidenceListCreateView,
+    EvidenceDetailView,
+    IdempotentVisitCompleteView,
 )
 from .b2b_offers_views import (
     B2BOffersListView,
@@ -129,6 +138,7 @@ urlpatterns = [
     path('visit-reports/<int:pk>/feedback/', VisitReportFeedbackView.as_view(), name='visit-report-feedback'),
     path('visit-reports/<int:pk>/transmit/', VisitReportTransmitView.as_view(), name='visit-report-transmit'),
     path('visit-reports/<int:pk>/export/', VisitReportExportView.as_view(), name='visit-report-export'),
+    path('visits/complete/', IdempotentVisitCompleteView.as_view(), name='visit-complete-idempotent'),
     path('voice-upload/', VoiceUploadView.as_view(), name='voice-upload'),
 
     # Field Intelligence & Lead Sourcing (Proximité, Parrainages, Trade Audit, Nurturing & Leaderboard)
@@ -142,5 +152,16 @@ urlpatterns = [
     path('credentials/<str:platform>/', ScraperCredentialDetailView.as_view(), name='scraper-credential-detail'),
     path('integrations/kaabu/deduplicate/', KaabuDeduplicateView.as_view(), name='kaabu-deduplicate'),
     path('integrations/arrowsphere/webhook/', ArrowSphereWebhookView.as_view(), name='arrowsphere-webhook'),
+
+    # DDD Intelligence & Portefeuille (Epic 1)
+    path('projections/', AccountProjectionListCreateView.as_view(), name='account-projection-list-create'),
+    path('projections/<uuid:pk>/', AccountProjectionDetailView.as_view(), name='account-projection-detail'),
+    path('portfolio-assignments/', AccountPortfolioAssignmentListCreateView.as_view(), name='portfolio-assignment-list-create'),
+    path('portfolio-assignments/<uuid:pk>/', AccountPortfolioAssignmentDetailView.as_view(), name='portfolio-assignment-detail'),
+    path('observations/', SourceObservationListCreateView.as_view(), name='source-observation-list-create'),
+    path('observations/<uuid:pk>/', SourceObservationDetailView.as_view(), name='source-observation-detail'),
+    path('evidences/', EvidenceListCreateView.as_view(), name='evidence-list-create'),
+    path('evidences/<uuid:pk>/', EvidenceDetailView.as_view(), name='evidence-detail'),
 ]
+
 

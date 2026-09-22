@@ -283,6 +283,65 @@ class ConversationDetailView(APIView):
         return Response(serializer.data)
 
 
+def _process_voice_message(conversation, audio_file, user):
+    """Extrait l'audio, appelle le service de transcription et met à jour le profil de la conversation."""
+    os.makedirs(os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), exist_ok=True)
+    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), base_url='/media/discovery_voice/')
+    filename = fs.save(audio_file.name, audio_file)
+    full_audio_path = fs.path(filename)
+
+    whisper_res = transcribe_audio_with_gemini(full_audio_path, language="fr")
+    transcribed_text = whisper_res.get("text", "").strip()
+    if not transcribed_text:
+        return {
+            "error_response": Response(
+                {
+                    "detail": "Transcription vocale indisponible.",
+                    "error": whisper_res.get("error", "Contenu audio non reconnu."),
+                    "provider": whisper_res.get("provider", "gemini-audio"),
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        }
+
+    ClientConversationMessage.objects.create(
+        conversation=conversation,
+        sender=ClientConversationMessage.USER,
+        content=f"[Vocal STT] {transcribed_text}"
+    )
+
+    current_profile = conversation.extracted_profile or {}
+    if is_core_ai_available():
+        ai_res = call_core_ai_turn(conversation.id, transcribed_text)
+        next_question = ai_res.get("assistant_message", "Merci pour votre message vocal. J'ai bien noté vos besoins.") if ai_res else "Merci pour votre message vocal."
+    else:
+        updated_profile = parse_message_for_profile(transcribed_text, current_profile)
+        conversation.extracted_profile = updated_profile
+        conversation.save()
+        step_result = generate_next_step(updated_profile, conversation.messages.count())
+        next_question = step_result['next_question']
+
+    ClientConversationMessage.objects.create(
+        conversation=conversation,
+        sender=ClientConversationMessage.AI,
+        content=next_question
+    )
+
+    log_demo_event(
+        'VOICE_MESSAGE_TRANSCRIBED',
+        f"Message vocal transcrit via Whisper pour la conversation #{conversation.id}",
+        user=user if user.is_authenticated else None,
+        metadata={"conversation_id": conversation.id, "transcript": transcribed_text}
+    )
+
+    return {
+        "transcription": transcribed_text,
+        "ai_message": next_question,
+        "extracted_profile": conversation.extracted_profile,
+        "provider": whisper_res.get("provider", "whisper")
+    }
+
+
 class ConversationVoiceMessageView(APIView):
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, FormParser]
@@ -297,60 +356,178 @@ class ConversationVoiceMessageView(APIView):
         if not audio_file:
             return Response({"detail": "Aucun fichier audio fourni."}, status=status.HTTP_400_BAD_REQUEST)
 
-        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), exist_ok=True)
-        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'discovery_voice'), base_url='/media/discovery_voice/')
-        filename = fs.save(audio_file.name, audio_file)
-        full_audio_path = fs.path(filename)
+        result = _process_voice_message(conversation, audio_file, request.user)
+        if "error_response" in result:
+            return result["error_response"]
 
-        whisper_res = transcribe_audio_with_gemini(full_audio_path, language="fr")
-        transcribed_text = whisper_res.get("text", "").strip()
-        if not transcribed_text:
-            # Retourner une erreur exploitable plutôt qu'un texte générique
-            return Response(
-                {
-                    "detail": "Transcription vocale indisponible.",
-                    "error": whisper_res.get("error", "Contenu audio non reconnu."),
-                    "provider": whisper_res.get("provider", "gemini-audio"),
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
+        return Response(result, status=status.HTTP_200_OK)
 
-        ClientConversationMessage.objects.create(
-            conversation=conversation,
-            sender=ClientConversationMessage.USER,
-            content=f"[Vocal STT] {transcribed_text}"
-        )
 
-        current_profile = conversation.extracted_profile or {}
-        if is_core_ai_available():
-            ai_res = call_core_ai_turn(conversation.id, transcribed_text)
-            if ai_res and "assistant_message" in ai_res:
-                next_question = ai_res["assistant_message"]
-            else:
-                next_question = "Merci pour votre message vocal. J'ai bien noté vos besoins."
-        else:
-            updated_profile = parse_message_for_profile(transcribed_text, current_profile)
-            conversation.extracted_profile = updated_profile
-            conversation.save()
-            step_result = generate_next_step(updated_profile, conversation.messages.count())
-            next_question = step_result['next_question']
+# ============================================================================
+# EPIC 2 VIEWS : QUALIFICATION STRATEGIES & HANDOFF DOSSIERS
+# ============================================================================
 
-        ClientConversationMessage.objects.create(
-            conversation=conversation,
-            sender=ClientConversationMessage.AI,
-            content=next_question
-        )
+from rest_framework import generics, permissions
+from .models import QualificationRecord, HandoffDossier
+from .serializers import (
+    QualificationRecordSerializer,
+    HandoffDossierSerializer,
+    QualificationSubmissionSerializer,
+    HandoffDecisionSerializer
+)
+from .strategies.registry import get_qualification_strategy
+from .services.pivot_service import SegmentPivotService
 
-        log_demo_event(
-            'VOICE_MESSAGE_TRANSCRIBED',
-            f"Message vocal transcrit via Whisper pour la conversation #{conversation.id}",
-            user=request.user if request.user.is_authenticated else None,
-            metadata={"conversation_id": conversation.id, "transcript": transcribed_text}
-        )
+
+class QualificationQuestionsView(APIView):
+    """
+    GET: Retourne l'arbre de questions et critères de qualification
+    associés à un segment donné (SOHO, PME, KAM).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        segment = request.query_params.get('segment', 'SOHO')
+        strategy = get_qualification_strategy(segment)
 
         return Response({
-            "transcription": transcribed_text,
-            "ai_message": next_question,
-            "extracted_profile": conversation.extracted_profile,
-            "provider": whisper_res.get("provider", "whisper")
+            "segment_code": strategy.segment_code,
+            "segment_label": strategy.segment_label,
+            "questions": strategy.get_questions(),
+            "count": len(strategy.get_questions())
         }, status=status.HTTP_200_OK)
+
+
+class QualificationSubmitView(APIView):
+    """
+    POST: Soumet un formulaire de qualification rempli par un commercial terrain ou un KAM.
+    Évalue la complétude, déclenche automatiquement le Segment Pivot si les seuils
+    sont dépassés et génère le HandoffDossier vers le KAM de secteur.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = QualificationSubmissionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        enterprise_id = serializer.validated_data['enterprise_id']
+        answers = serializer.validated_data['answers']
+        notes = serializer.validated_data.get('notes', '')
+
+        result = SegmentPivotService.submit_and_evaluate_qualification(
+            enterprise_id=enterprise_id,
+            user=request.user,
+            answers=answers,
+            notes=notes
+        )
+
+        if not result.get("success"):
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        status_code = status.HTTP_201_CREATED if result.get("pivot_triggered") else status.HTTP_200_OK
+        return Response(result, status=status_code)
+
+
+class QualificationRecordListView(generics.ListAPIView):
+    """
+    GET: Liste les sessions de qualification avec filtrage par entreprise.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = QualificationRecordSerializer
+
+    def get_queryset(self):
+        qs = QualificationRecord.objects.select_related('enterprise', 'conducted_by').all()
+        enterprise_id = self.request.query_params.get('enterprise_id')
+        if enterprise_id:
+            qs = qs.filter(enterprise_id=enterprise_id)
+        return qs
+
+
+class HandoffDossierListView(generics.ListAPIView):
+    """
+    GET: Liste les dossiers de passation (Handoffs) avec filtrage par statut et rôle.
+    Les KAMs accèdent à leurs dossiers assignés et aux dossiers PENDING non assignés de leur plaque.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = HandoffDossierSerializer
+
+    def get_queryset(self):
+        qs = HandoffDossier.objects.select_related(
+            'enterprise', 'qualification', 'from_user', 'to_kam', 'decided_by'
+        ).all()
+
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            qs = qs.filter(status=status_param)
+
+        target_segment = self.request.query_params.get('target_segment')
+        if target_segment:
+            qs = qs.filter(target_segment=target_segment)
+
+        user = self.request.user
+        if getattr(user, 'role', None) == 'KAM':
+            from django.db.models import Q
+            qs = qs.filter(Q(to_kam=user) | Q(to_kam__isnull=True, status='PENDING'))
+
+        return qs
+
+
+class HandoffDossierDetailView(generics.RetrieveAPIView):
+    """
+    GET: Détail exhaustif d'un dossier de Handoff avec contexte qualification et preuves.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = HandoffDossierSerializer
+    queryset = HandoffDossier.objects.select_related(
+        'enterprise', 'qualification', 'from_user', 'to_kam', 'decided_by'
+    ).all()
+
+
+class HandoffAcceptView(APIView):
+    """
+    POST: Acceptation et prise en charge du dossier par le KAM.
+    Assigne le KAM titulaire au compte et intègre le compte au portefeuille PME/GC.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        serializer = HandoffDecisionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        notes = serializer.validated_data.get('notes', '')
+
+        result = SegmentPivotService.accept_handoff(
+            handoff_id=str(pk),
+            kam_user=request.user,
+            notes=notes
+        )
+
+        if not result.get("success"):
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class HandoffReturnView(APIView):
+    """
+    POST: Renvoi motivé du dossier au prospecteur terrain avec justification.
+    Rétablit le statut SOHO sur l'entreprise.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        serializer = HandoffDecisionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return_reason = serializer.validated_data.get('return_reason', '')
+
+        result = SegmentPivotService.return_handoff(
+            handoff_id=str(pk),
+            kam_user=request.user,
+            return_reason=return_reason
+        )
+
+        if not result.get("success"):
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+

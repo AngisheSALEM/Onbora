@@ -113,9 +113,10 @@ export default function BusinessTwinSlides({
           </div>
         </div>
 
-        <button className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-semibold text-white flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.20)] transition-all cursor-pointer">
+        <button className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-semibold text-white flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer">
           <Icons.LineChart size={12} />
-          Ouvrir le Mode Présentation ➜
+          <span>Ouvrir le Mode Présentation</span>
+          <Icons.ArrowRight size={12} />
         </button>
       </div>
     );

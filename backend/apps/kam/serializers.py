@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProspectDossier
+from .models import ProspectDossier, RelationshipCoverage
 from accounts.serializers import UserSerializer
 from twin.models import BusinessTwin
 
@@ -82,3 +82,41 @@ class ProspectDossierSerializer(serializers.ModelSerializer):
                 client = instance.conversation.client
                 data['phone'] = profile.get('phone') or (client.phone if client else None)
         return data
+
+
+class RelationshipCoverageSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    role_classification_display = serializers.CharField(source='get_role_classification_display', read_only=True)
+    influence_level_display = serializers.CharField(source='get_influence_level_display', read_only=True)
+    coverage_status_display = serializers.CharField(source='get_coverage_status_display', read_only=True)
+
+    class Meta:
+        model = RelationshipCoverage
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'contact_name', 'contact_role',
+            'contact_email', 'contact_phone', 'role_classification',
+            'role_classification_display', 'influence_level', 'influence_level_display',
+            'coverage_status', 'coverage_status_display', 'is_mono_champion_risk',
+            'last_interaction_at', 'last_interaction_proof', 'notes',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+from .models import AccountMemoryEvent
+
+class AccountMemoryEventSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    created_by_name = serializers.ReadOnlyField(source='created_by.username')
+    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+
+    class Meta:
+        model = AccountMemoryEvent
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'event_type', 'event_type_display',
+            'summary', 'details', 'occurred_at', 'created_by', 'created_by_name',
+            'evidence', 'is_critical', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+

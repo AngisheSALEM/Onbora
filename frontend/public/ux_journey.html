@@ -103,20 +103,20 @@
       <!-- Mode View Toggle -->
       <div class="bg-zinc-900 p-1 rounded-xl border border-white/10 flex items-center gap-1 text-xs">
         <button id="btn-mode-presentation" onclick="switchViewMode('presentation')" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-brand-500 text-white shadow-sm">
-          📺 Présentation Slide
+          Présentation Slide
         </button>
         <button id="btn-mode-figma" onclick="switchViewMode('figma')" class="px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white">
-          🗺️ Carte & Diagramme Figma
+          Carte & Diagramme Figma
         </button>
       </div>
 
       <!-- Device Viewport Toggle -->
       <div class="bg-zinc-900 p-1 rounded-xl border border-white/10 flex items-center gap-1 text-xs">
         <button id="btn-viewport-desktop" onclick="setViewport('desktop')" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-zinc-800 text-white">
-          💻 Ordinateur (1440×900)
+          Ordinateur (1440×900)
         </button>
         <button id="btn-viewport-mobile" onclick="setViewport('mobile')" class="px-3 py-1.5 rounded-lg font-medium transition-all text-zinc-400 hover:text-white">
-          📱 Mobile (390×844)
+          Mobile (390×844)
         </button>
       </div>
     </div>
@@ -212,7 +212,7 @@
                   <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
                 </div>
                 <div id="browser-url" class="bg-zinc-950 px-6 py-1 rounded-md text-[11px] font-mono text-zinc-400 border border-zinc-800 flex items-center gap-2">
-                  <span class="text-emerald-500">🔒</span> https://onbora.orange-business.fr/client
+                  <span class="text-emerald-500 font-bold">[SECURE]</span> https://onbora.orange-business.fr/client
                 </div>
                 <div class="text-xs text-zinc-500">Onbora Studio</div>
               </div>
@@ -261,7 +261,7 @@
           <!-- UX Observation Box -->
           <div class="glass-panel p-5 rounded-2xl border border-white/10">
             <div class="text-amber-400 font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
-              💡 Remarque UX & Bénéfice
+              Remarque UX & Bénéfice
             </div>
             <p id="slide-ux-obs" class="text-sm text-zinc-300 leading-relaxed">
               L'accueil est dépouillé de tout formulaire superflu. Marie est prise en main de manière fluide et intuitive dès son entrée.
@@ -281,7 +281,7 @@
 
           <!-- Next Step Button -->
           <button onclick="nextStep()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-500/25">
-            Étape Suivante ➔
+            Étape Suivante &rarr;
           </button>
 
         </div>
@@ -346,7 +346,7 @@
               <div class="w-52 glass-card p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20 hover:scale-105 transition-all">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-bold text-emerald-400 uppercase">Si Besoins Standards</span>
-                  <span class="text-xs">⚡</span>
+                  <span class="text-xs font-bold text-emerald-400">STD</span>
                 </div>
                 <h4 class="text-sm font-bold text-white mt-1">Devis Instantané</h4>
                 <p class="text-[11px] text-zinc-400 mt-1">Génération auto du contrat & notification commerciale.</p>
@@ -356,7 +356,7 @@
               <div class="w-52 glass-card p-4 rounded-xl border border-purple-500/40 bg-purple-950/20 hover:scale-105 transition-all">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-bold text-purple-400 uppercase">Si Sur-Mesure / &gt; 50p</span>
-                  <span class="text-xs">👥</span>
+                  <span class="text-xs font-bold text-purple-400">KAM</span>
                 </div>
                 <h4 class="text-sm font-bold text-white mt-1">Transfert KAM Direct</h4>
                 <p class="text-[11px] text-zinc-400 mt-1">Transmission du Business Twin et RDV expert prioritaire.</p>
@@ -393,9 +393,9 @@
       <div class="glass-panel p-6 rounded-2xl border border-brand-500/20">
         <h3 class="text-sm font-bold text-brand-500 uppercase tracking-wider mb-4">Recommandations & Prochaines Étapes</h3>
         <ul class="space-y-2 text-xs text-zinc-300">
-          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Connexion native API Kaabu CRM & Provisioning Arrowsphere.</li>
-          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Extension du canal de découverte au widget web & WhatsApp.</li>
-          <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Validation du PowerPoint officiel généré pour passage en comité.</li>
+          <li class="flex items-center gap-2"><span class="text-brand-500 font-bold">[OK]</span> Connexion native API Kaabu CRM & Provisioning Arrowsphere.</li>
+          <li class="flex items-center gap-2"><span class="text-brand-500 font-bold">[OK]</span> Extension du canal de découverte au widget web & WhatsApp.</li>
+          <li class="flex items-center gap-2"><span class="text-brand-500 font-bold">[OK]</span> Validation du PowerPoint officiel généré pour passage en comité.</li>
         </ul>
       </div>
 
@@ -445,7 +445,7 @@
         stepTag: "ÉTAPE 04 — EMBRANCHEMENT CONDITIONNEL",
         title: "Selon la complexité, Onbora aiguille vers un Devis Auto ou un Expert KAM",
         hotspotLabel: "① Matrice de Décision",
-        hotspotDesc: "① Aiguillage automatique : si dossier complexe ou grands comptes ➔ Transmission prioritaire au KAM.",
+        hotspotDesc: "① Aiguillage automatique : si dossier complexe ou grands comptes -> Transmission prioritaire au KAM.",
         uxObs: "Le système offre l'autonomie pour les cas simples et l'expertise humaine pour les comptes à enjeux.",
         url: "https://onbora.orange-business.fr/kam",
         hotspotPosDesktop: "top: 40%; left: 50%;",
@@ -488,7 +488,7 @@
       document.getElementById('slide-title').innerText = data.title;
       document.getElementById('slide-hotspot-desc').innerText = data.hotspotDesc;
       document.getElementById('slide-ux-obs').innerText = data.uxObs;
-      document.getElementById('browser-url').innerHTML = `<span class="text-emerald-500">🔒</span> ${data.url}`;
+      document.getElementById('browser-url').innerHTML = `<span class="text-emerald-500 font-bold">[SECURE]</span> ${data.url}`;
       document.getElementById('hotspot-label').innerText = data.hotspotLabel;
 
       const hotspotElem = document.getElementById('hotspot-container');

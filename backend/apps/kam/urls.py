@@ -5,7 +5,9 @@ from .views import (
     KamStrategicAccountListView, KamBriefingDetailView, KamAccountDebriefView,
     KamAccountUpdateInfoView,
     KamAppointmentListCreateView, KamAppointmentDetailView, KamCompleteVocalMeetingView,
-    KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView
+    KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView,
+    RelationshipCoverageListCreateView, RelationshipCoverageDetailView, RelationshipCoverageDiagnosticView,
+    AccountMemoryEventListCreateView, AccountHandoverPackView, AccountRiskSignalsView
 )
 from .commercial_intelligence_views import (
     PreCallBriefingDetailView, PreCallBriefingListView,
@@ -50,6 +52,17 @@ urlpatterns = [
     path('dossiers/<int:pk>/export/', DossierExportView.as_view(), name='dossier-export'),
     path('dossiers/<int:pk>/provision/', DossierProvisionView.as_view(), name='dossier-provision'),
     path('dossiers/<int:pk>/handover-pack/', DossierHandoverPackView.as_view(), name='dossier-handover-pack'),
+
+    # 5. Cartographie Relationnelle & Détection Mono-Champion (Epic 1)
+    path('relationships/', RelationshipCoverageListCreateView.as_view(), name='kam-relationships-list-create'),
+    path('relationships/<uuid:pk>/', RelationshipCoverageDetailView.as_view(), name='kam-relationships-detail'),
+    path('relationships/diagnostic/<int:enterprise_id>/', RelationshipCoverageDiagnosticView.as_view(), name='kam-relationships-diagnostic'),
+
+    # 6. Mémoire de Compte & Radar de Risque Explicable (Epic 5)
+    path('accounts/<int:enterprise_id>/memory/', AccountMemoryEventListCreateView.as_view(), name='account-memory-list-create'),
+    path('accounts/<int:enterprise_id>/handover-pack/', AccountHandoverPackView.as_view(), name='account-handover-pack'),
+    path('accounts/<int:enterprise_id>/risk-signals/', AccountRiskSignalsView.as_view(), name='account-risk-signals'),
 ]
+
 
 

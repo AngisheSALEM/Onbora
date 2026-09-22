@@ -1,0 +1,36 @@
+@startuml
+title Onbora - Machine d'états d'une visite
+hide empty description
+skinparam shadowing false
+
+[*] --> PLANIFIEE
+PLANIFIEE --> BRIEF_PRET : briefing publié
+PLANIFIEE --> ANNULEE : annulation
+BRIEF_PRET --> EN_COURS : démarrer
+BRIEF_PRET --> A_REGENERER : données critiques modifiées
+A_REGENERER --> BRIEF_PRET : nouveau snapshot publié
+EN_COURS --> BROUILLON_LOCAL : sauvegarde hors ligne
+EN_COURS --> A_VALIDER : clôture en ligne
+BROUILLON_LOCAL --> A_VALIDER : synchronisation acceptée
+BROUILLON_LOCAL --> CONFLIT : version serveur incompatible
+CONFLIT --> BROUILLON_LOCAL : fusion manuelle ou nouvelle tentative
+A_VALIDER --> VALIDEE : validation humaine
+A_VALIDER --> EN_COURS : correction demandée
+VALIDEE --> SYNC_CRM_EN_ATTENTE : actions CRM approuvées
+VALIDEE --> TERMINEE : aucune action CRM
+SYNC_CRM_EN_ATTENTE --> TERMINEE : accusé CRM reçu
+SYNC_CRM_EN_ATTENTE --> ECHEC_SYNC : retries épuisés / rejet métier
+ECHEC_SYNC --> SYNC_CRM_EN_ATTENTE : correction + relance
+ANNULEE --> [*]
+TERMINEE --> [*]
+
+note right of BROUILLON_LOCAL
+  Le terminal conserve la commande,
+  son identifiant client et son hash.
+end note
+
+note right of VALIDEE
+  Une synthèse IA non relue ne peut
+  pas écrire dans le CRM.
+end note
+@enduml
