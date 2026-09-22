@@ -38,18 +38,19 @@ export interface KamVisitRecord {
 
 interface KamVisitsHistoryViewProps {
   onScheduleMeeting?: () => void;
+  onOpenReport?: (visit: KamVisitRecord) => void;
 }
 
-export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHistoryViewProps) {
+export default function KamVisitsHistoryView({
+  onScheduleMeeting,
+  onOpenReport,
+}: KamVisitsHistoryViewProps) {
   const [visits, setVisits] = useState<KamVisitRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'CONVERTED' | 'IN_NEGOTIATION' | 'PROSPECT' | 'LOST'>('ALL');
   const [purposeFilter, setPurposeFilter] = useState<'ALL' | KamVisitPurpose>('ALL');
-  const [selectedReport, setSelectedReport] = useState<KamVisitRecord | null>(null);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-  const [isVerbatimExpanded, setIsVerbatimExpanded] = useState(false);
 
   const loadVisits = useCallback(async () => {
     setLoading(true);
@@ -72,30 +73,6 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
   useEffect(() => {
     loadVisits();
   }, [loadVisits]);
-
-  const [syncingCrm, setSyncingCrm] = useState(false);
-  const [syncCrmMessage, setSyncCrmMessage] = useState<string | null>(null);
-
-  const handleSyncDynamics = async (reportId: number) => {
-    setSyncingCrm(true);
-    setSyncCrmMessage(null);
-    try {
-      const res = await fetchAPI(`/api/kam/visits/${reportId}/sync-crm/`, { method: 'POST' });
-      setSyncCrmMessage(res.detail || "Synchronisé avec Microsoft Dynamics 365");
-      setTimeout(() => setSyncCrmMessage(null), 4000);
-      loadVisits();
-    } catch {
-      setSyncCrmMessage("Erreur lors de la synchronisation CRM.");
-    } finally {
-      setSyncingCrm(false);
-    }
-  };
-
-  const copyEmailToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
-  };
 
   // Filter logic
   const filteredVisits = visits.filter((v) => {
@@ -390,27 +367,25 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                   <th className="py-3 px-4 min-w-[220px]">Compte Client</th>
                   <th className="py-3 px-4 whitespace-nowrap">Type de RDV</th>
                   <th className="py-3 px-4 whitespace-nowrap">Statut Commercial</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 dark:divide-white/5">
                 {filteredVisits.map((visit) => (
                   <tr
                     key={visit.id}
-                    onClick={() => setSelectedReport(visit)}
+                    onClick={() => onOpenReport?.(visit)}
                     className="hover:bg-white/60 dark:hover:bg-black/20 transition-colors cursor-pointer group"
                   >
                     {/* Date */}
-                    <td className="py-2.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <span className="font-sf text-zinc-900 dark:text-zinc-100 font-semibold text-xs block">
                         {formatDate(visit.created_at)}
-                      </span>
-                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400 block mt-0.5 font-mono">
-                      
                       </span>
                     </td>
 
                     {/* Enterprise / Compte Client */}
-                    <td className="py-2.5 px-4 min-w-[220px]">
+                    <td className="py-3 px-4 min-w-[220px]">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/12 dark:bg-[#4F6CE8]/25 text-[#4F6CE8] dark:text-[#7C97F8] flex items-center justify-center font-bold text-xs shrink-0 border border-[#4F6CE8]/20">
                           {visit.enterprise_name.charAt(0).toUpperCase()}
@@ -434,241 +409,33 @@ export default function KamVisitsHistoryView({ onScheduleMeeting }: KamVisitsHis
                     </td>
 
                     {/* Meeting Type */}
-                    <td className="py-2.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       {getMeetingTypeBadge(visit.meeting_type)}
                     </td>
 
-
-
                     {/* Conversion Status */}
-                    <td className="py-2.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       {getConversionBadge(visit.conversion_status)}
                     </td>
 
-                    {/* Core AI Summary Preview */}
+                    {/* Action Button: Voir le rapport */}
+                    <td className="py-3 px-4 whitespace-nowrap text-right">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenReport?.(visit);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <Icons.FileText size={13} />
+                        <span>Voir le rapport</span>
+                      </button>
+                    </td>
 
-
-                    {/* Actions */}
-                    
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
-
-      {/* 4. MODAL RAPPORT EXÉCUTIF COMPLET (CALQUÉ SUR LE BACKOFFICE) */}
-      {selectedReport && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 select-text">
-          <div className="bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white w-full max-w-4xl max-h-[90vh] rounded-[32px] border border-black/10 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden animate-scale-up">
-            
-            {/* Modal Top Header */}
-            <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0 bg-[#F6F5F2] dark:bg-[#2D2A2D]">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-[#4F6CE8] text-white flex items-center justify-center font-extrabold text-lg shadow-md">
-                  {selectedReport.enterprise_name.charAt(0)}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                      {selectedReport.enterprise_name}
-                    </h3>
-                    {getConversionBadge(selectedReport.conversion_status)}
-                    {getMeetingTypeBadge(selectedReport.meeting_type)}
-                  </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Rapport de visite #{selectedReport.id} • Réalisé le {formatDate(selectedReport.created_at)} • Interlocuteur : <strong className="text-zinc-800 dark:text-zinc-200">{selectedReport.contact_name} ({selectedReport.contact_role})</strong>
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-[#4F6CE8]">{selectedReport.visit_purpose_label || 'Type non renseigné'}</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-              >
-                <Icons.X size={20} />
-              </button>
-            </div>
-
-            {/* Modal Body (Scrollable) */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
-              
-              {/* BANT Score Card if available */}
-              {selectedReport.bant_scores && selectedReport.bant_scores.total !== undefined && (
-                <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider block">
-                      Qualification BANT Core AI
-                    </span>
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
-                      Score global de viabilité commerciale
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className="text-xl font-extrabold font-mono text-[#4F6CE8]">
-                        {selectedReport.bant_scores.total} / 100
-                      </span>
-                      <span className="text-[10px] text-zinc-400 block font-semibold">
-                        Statut : {selectedReport.bant_scores.status || 'QUALIFIED'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Section 1 : Synthèse Exécutive */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-extrabold uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                  <Icons.FileText size={14} className="text-[#4F6CE8]" />
-                  <span>Synthèse Exécutive de la Rencontre</span>
-                </h4>
-                <div className="p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5">
-                  <p className="text-xs md:text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed whitespace-pre-wrap">
-                    {selectedReport.executive_summary || "Aucune synthèse rédigée."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Section 2 : Besoins Détectés vs Objections */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Besoins Confirmés */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold uppercase text-emerald-500 tracking-wider flex items-center gap-1.5">
-                    <Icons.CheckCircle size={14} />
-                    <span>Besoins Clients Confirmés ({selectedReport.confirmed_needs?.length || 0})</span>
-                  </h4>
-                  <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5 space-y-2">
-                    {selectedReport.confirmed_needs && selectedReport.confirmed_needs.length > 0 ? (
-                      selectedReport.confirmed_needs.map((need, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-zinc-800 dark:text-zinc-200">
-                          <Icons.Check size={14} className="text-emerald-500 shrink-0 mt-0.5" />
-                          <span>{need}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-xs text-zinc-400 italic">Aucun besoin spécifique consigné.</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Objections Soulevées */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                    <Icons.Shield size={14} className="text-zinc-400" />
-                    <span>Objections & Freins ({selectedReport.objections_raised?.length || 0})</span>
-                  </h4>
-                  <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5 space-y-2">
-                    {selectedReport.objections_raised && selectedReport.objections_raised.length > 0 ? (
-                      selectedReport.objections_raised.map((obj, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-zinc-800 dark:text-zinc-200">
-                          <Icons.AlertCircle size={14} className="text-zinc-400 shrink-0 mt-0.5" />
-                          <span>{obj}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-xs text-zinc-400 italic">Aucun frein majeur identifié.</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 3 : Actions Décidées / Next Steps */}
-              {selectedReport.actions_todo && selectedReport.actions_todo.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                    <Icons.ArrowRight size={14} className="text-[#4F6CE8]" />
-                    <span>Engagements & Prochaines Étapes</span>
-                  </h4>
-                  <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5 space-y-2">
-                    {selectedReport.actions_todo.map((act, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-zinc-800 dark:text-zinc-200 font-medium">
-                        <span className="w-5 h-5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] text-[10px] font-extrabold flex items-center justify-center shrink-0">
-                          {idx + 1}
-                        </span>
-                        <span>{act}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Section 4 : Email de Relance J+1 Généré par Core AI */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-extrabold uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                    <Icons.Mail size={14} className="text-[#4F6CE8]" />
-                    <span>Email de Remerciement & Proposition J+1 (Core AI)</span>
-                  </h4>
-                  <button
-                    onClick={() => copyEmailToClipboard(selectedReport.follow_up_email_draft)}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                  >
-                    {copiedEmail ? <Icons.Check size={12} /> : <Icons.Copy size={12} />}
-                    <span>{copiedEmail ? "Copié !" : "Copier l'email"}</span>
-                  </button>
-                </div>
-                <div className="p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/5">
-                  <pre className="font-mono text-xs text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed">
-                    {selectedReport.follow_up_email_draft || "Aucun brouillon d'email disponible."}
-                  </pre>
-                </div>
-              </div>
-
-              {/* Section 5 : Verbatim & Transcription brute (Optionnel / Dépliable) */}
-              {selectedReport.raw_transcript && (
-                <div className="pt-2">
-                  <button
-                    onClick={() => setIsVerbatimExpanded(!isVerbatimExpanded)}
-                    className="flex items-center gap-2 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
-                  >
-                    <Icons.ChevronDown size={14} className={`transition-transform duration-200 ${isVerbatimExpanded ? 'rotate-180' : ''}`} />
-                    <span>{isVerbatimExpanded ? "Masquer la transcription audio complète" : "Afficher la transcription audio brute"}</span>
-                  </button>
-                  {isVerbatimExpanded && (
-                    <div className="mt-2 p-4 bg-black/[0.03] dark:bg-white/[0.03] rounded-2xl border border-black/5 dark:border-white/5 text-[11px] text-zinc-600 dark:text-zinc-400 font-mono whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
-                      {selectedReport.raw_transcript}
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </div>
-
-            {/* Modal Bottom Footer */}
-            <div className="p-4 px-6 border-t border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleSyncDynamics(selectedReport.id)}
-                  disabled={syncingCrm}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-none"
-                >
-                  <Icons.RefreshCw size={13} className={syncingCrm ? "animate-spin" : ""} />
-                  <span>{syncingCrm ? "Synchronisation en cours..." : "Pousser vers Microsoft Dynamics 365"}</span>
-                </button>
-                {syncCrmMessage && (
-                  <span className="text-xs font-semibold text-[#10B981] flex items-center gap-1">
-                    <Icons.Check size={14} />
-                    {syncCrmMessage}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] text-zinc-500 font-mono hidden md:inline">
-                  Statut : <strong className="text-zinc-800 dark:text-zinc-200">{selectedReport.conversion_status}</strong>
-                </span>
-                <button
-                  onClick={() => setSelectedReport(null)}
-                  className="px-5 py-2 bg-zinc-800 dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-                >
-                  Fermer
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
       )}

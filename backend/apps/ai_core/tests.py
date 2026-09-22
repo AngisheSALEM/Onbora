@@ -269,3 +269,51 @@ class AICoreAPITestCase(TestCase):
     def test_session_detail_endpoint_unauthenticated(self):
         response = self.client.get("/api/v1/ai/session/test_session/")
         self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+
+class CompanyAnalysisTestCase(TestCase):
+    """Tests du module d'analyse entreprise Onbora Analysis."""
+
+    def setUp(self):
+        from apps.ai_core.company_analysis.service import CompanyAnalysisClient
+        self.client = CompanyAnalysisClient()
+
+    def test_analysis_client_generates_valid_brief(self):
+        brief = self.client.get_analysis_for_enterprise(
+            company_name="Rawbank",
+            sector="Banque commerciale",
+            rccm="CD/KIN/RCCM/14-B-1088",
+            province="Kinshasa",
+            site_count=5
+        )
+        self.assertIsNotNone(brief)
+        self.assertEqual(brief.company.legal_name, "RAWBANK SA")
+        self.assertEqual(brief.identity_status, "confirmed")
+        self.assertGreaterEqual(len(brief.lead_qualification.journeys), 1)
+        self.assertTrue(bool(brief.ai_summary.overview.text))
+        self.assertGreaterEqual(len(brief.evidence), 1)
+
+    def test_unified_core_ai_generates_onbora_analysis_brief(self):
+        core_ai = get_unified_core_ai()
+        enterprise_mock = MagicMock()
+        enterprise_mock.name = "Transit Congo"
+        enterprise_mock.sector = "Transport & Logistique"
+        enterprise_mock.city = "Kinshasa"
+        enterprise_mock.crm_id = "ARSP-001"
+        enterprise_mock.site_count = 2
+        enterprise_mock.annual_revenue = 100000.0
+        enterprise_mock.current_operator = "Concurrent"
+        enterprise_mock.current_connectivity = "Radio"
+        enterprise_mock.contact_name = "Directeur Logistique"
+
+        kam_mock = MagicMock()
+        kam_mock.username = "kam_test"
+        kam_mock.get_full_name.return_value = "Test KAM"
+
+        brief = core_ai.generate_pre_call_briefing(enterprise_mock, kam_mock)
+        self.assertIsInstance(brief, dict)
+        self.assertIn("identity_status", brief)
+        self.assertIn("lead_qualification", brief)
+        self.assertIn("ai_summary", brief)
+        self.assertIn("evidence", brief)
+        self.assertIn("sources", brief)

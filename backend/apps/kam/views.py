@@ -973,9 +973,9 @@ class KamVisitReportDetailView(APIView):
     permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, pk):
-        try:
-            report = KamVisitReport.objects.select_related('appointment', 'enterprise').get(pk=pk)
-        except KamVisitReport.DoesNotExist:
+        from django.db.models import Q
+        report = KamVisitReport.objects.select_related('appointment', 'enterprise').filter(Q(pk=pk) | Q(appointment_id=pk)).first()
+        if not report:
             return Response({"detail": "Rapport introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user

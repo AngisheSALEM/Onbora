@@ -7,6 +7,7 @@ from django.conf import settings
 from .common.base_engine import BaseAIEngine
 from .pre_call.service import PreCallIntelligenceEngine
 from .pre_call.models import PreCallInput
+from .company_analysis.service import CompanyAnalysisClient
 from .post_call.service import PostCallExecutionEngine
 from .post_call.models import PostCallInput
 from .sales_enrichment.service import SalesEnrichmentEngine
@@ -43,6 +44,7 @@ class UnifiedCoreAIEngine:
         self.sales_enrichment_engine = SalesEnrichmentEngine(api_key=self.api_key, model_name=self.model_name)
         self.lead_scoring_engine = B2BLeadScoringEngine(api_key=self.api_key, model_name=self.model_name)
         self.churn_radar_engine = ChurnRadarEngine(api_key=self.api_key, model_name=self.model_name)
+        self.company_analysis_client = CompanyAnalysisClient()
 
     @property
     def _client(self):
@@ -54,27 +56,214 @@ class UnifiedCoreAIEngine:
         return self.base_engine.call_gemini_json(prompt, system_instruction=system_instruction)
 
     # -------------------------------------------------------------------------
-    # 1. PRE-CALL BRIEFING
+    # 1. PRE-CALL BRIEFING (ONBORA ANALYSIS PROVISIONING)
     # -------------------------------------------------------------------------
     def generate_pre_call_briefing(self, enterprise: Any, kam_user: Any) -> dict:
-        inp = PreCallInput(
+        """
+        Génère le brief de pré-visite selon le nouveau paradigme Onbora Analysis,
+        en interrogeant le service externe sur le port 8001 avec fallback résilient.
+        """
+        analysis_brief = self.company_analysis_client.get_analysis_for_enterprise(
             company_name=enterprise.name,
-            sector=enterprise.sector or "Services & Industrie",
-            locations_count=enterprise.site_count or 1,
-            website_url=enterprise.website or None,
-            annual_revenue=float(enterprise.annual_revenue or 50000.0),
-            current_operator=enterprise.current_operator,
-            current_connectivity=enterprise.current_connectivity,
-            known_context=f"Compte suivi par {kam_user.get_full_name() or kam_user.username}. Contact : {enterprise.contact_name or 'Direction'}."
+            sector=getattr(enterprise, 'sector', None),
+            rccm=getattr(enterprise, 'rccm', None),
+            province=getattr(enterprise, 'city', None) or "Kinshasa",
+            dossier_number=getattr(enterprise, 'crm_id', None),
+            site_count=getattr(enterprise, 'site_count', 1),
         )
-        out = self.pre_call_engine.generate(inp)
-        res = out.model_dump()
-        # Enrichissement du budget estime
-        rev = float(enterprise.annual_revenue or 50000.0)
-        res["company_overview"]["annual_revenue_usd"] = f"{rev:,.0f} USD"
-        res["company_overview"]["estimated_sites"] = enterprise.site_count or 1
-        res["company_overview"]["telecom_budget_monthly_usd"] = round(rev * 0.015 / 12, 2)
+        res = analysis_brief.model_dump()
+
+        # Rétro-compatibilité ascendante pour préserver l'intégrité DB et les vues historiques
+        ai_sum = res.get("ai_summary", {})
+        overview_text = ai_sum.get("overview", {}).get("text", "")
+        challenges = [contra.get("text", "") for contra in ai_sum.get("contradictions", [])] + ai_sum.get("gaps", [])
+
+        journeys = res.get("lead_qualification", {}).get("journeys", [])
+        pitch_angles = []
+        questions = []
+        for j in journeys:
+            for off in j.get("offers", []):
+                pitch_angles.append({
+                    "target_offer": off.get("name", "Offre Orange Business"),
+                    "why_relevant": j.get("reason", "Pertinence commerciale avérée sur preuves."),
+                    "hook_sentence": j.get("next_question", "") or "Comment vos sites communiquent-ils aujourd'hui ?"
+                })
+            if j.get("next_question"):
+                questions.append(j.get("next_question"))
+
+        rev = float(getattr(enterprise, 'annual_revenue', 50000.0) or 50000.0)
+        res["company_overview"] = {
+            "company_name": enterprise.name,
+            "summary": overview_text or f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'}).",
+            "estimated_employees": "50-200 collaborateurs",
+            "digital_maturity": "HIGH" if res.get("identity_status") == "confirmed" else "MEDIUM",
+            "annual_revenue_usd": f"{rev:,.0f} USD",
+            "estimated_sites": getattr(enterprise, 'site_count', 1) or 1,
+            "telecom_budget_monthly_usd": round(rev * 0.015 / 12, 2)
+        }
+        res["key_decision_makers"] = [
+            {
+                "role": "Direction Générale & Décideur Agréé",
+                "name": getattr(enterprise, 'contact_name', '') or "Direction",
+                "profile_type": "Stratégie & ROI",
+                "concerns": "Sécurisation des opérations et conformité ARSP.",
+                "influence": "HIGH"
+            }
+        ]
+        res["detected_business_challenges"] = challenges or [
+            "Fiabilisation des flux de données et continuité de service",
+            "Sécurisation des liaisons inter-sites et agences"
+        ]
+        res["custom_pitch_angles"] = pitch_angles or [
+            {
+                "target_offer": "Fibre Sécurisée Dédiée Pro (GTR 4h)",
+                "why_relevant": "Garantit zéro coupure avec SLA 99.99%.",
+                "hook_sentence": "Quel est l'impact financier d'une rupture de connexion pour vos opérations ?"
+            }
+        ]
+        res["critical_discovery_questions"] = questions or [
+            "Quelle est la criticité de votre connexion internet au quotidien pour la facturation ?",
+            "Disposez-vous d'une ligne de secours active qui bascule sans coupure ?"
+        ]
+        res["golden_rules"] = [
+            f"Ne jamais dénigrer directement {getattr(enterprise, 'current_operator', None) or 'le concurrent'} : valoriser nos engagements SLA 99.99% et notre GTR 4h signée.",
+            "Faire verbaliser la douleur financière avant d'aborder tout chiffre ou prix.",
+            "Valider la concordance des éléments ARSP et registres OHADA dès les premières minutes de l'entretien."
+        ]
         return res
+
+    def resynthesize_briefing(
+        self,
+        enterprise_name: str,
+        key_facts: list,
+        contradictions: list,
+        gaps: list,
+        current_overview: str = "",
+        current_solutions: list = None
+    ) -> dict:
+        """
+        Regénère dynamiquement la synthèse exécutive et recalcule les solutions Orange Business
+        recommandées suite aux modifications / ajouts manuels effectués par le KAM.
+        """
+        key_facts_str = "\n".join([f"- {f}" for f in key_facts]) if key_facts else "Non spécifié."
+        contradictions_str = "\n".join([f"- {c}" for c in contradictions]) if contradictions else "Aucune."
+        gaps_str = "\n".join([f"- {g}" for g in gaps]) if gaps else "Aucune."
+
+        system_instruction = (
+            "Tu es le moteur Core AI d'Orange Business RDC. Tu assistes les Key Account Managers (KAM). "
+            "À partir des faits vérifiés, contradictions et manques renseignés, produis une synthèse commerciale "
+            "exécutive percutante (1 à 2 paragraphes continus, sans puces ni tirets) et sélectionne 2 à 4 "
+            "solutions Orange Business RDC parfaitement ciblées. "
+            "Réponds UNIQUEMENT en JSON valide avec les clés 'overview' et 'recommended_solutions'."
+        )
+
+        prompt = (
+            f"Entreprise : {enterprise_name}\n\n"
+            f"Faits vérifiés :\n{key_facts_str}\n\n"
+            f"Contradictions & Points de vigilance :\n{contradictions_str}\n\n"
+            f"Informations manquantes / Enjeux :\n{gaps_str}\n\n"
+            "Format JSON attendu :\n"
+            "{\n"
+            '  "overview": "Texte complet de la synthèse réactualisée...",\n'
+            '  "recommended_solutions": [\n'
+            '    {\n'
+            '      "name": "Nom de la solution Orange",\n'
+            '      "category": "Connectivité / Réseaux / Cyber / Cloud / Monétique",\n'
+            '      "description": "Explication claire de la valeur pour le client",\n'
+            '      "sla": "SLA 99.9% · GTR 4h"\n'
+            '    }\n'
+            '  ]\n'
+            "}"
+        )
+
+        try:
+            ai_res = self._call_gemini_json(prompt, system_instruction=system_instruction)
+            if ai_res and isinstance(ai_res, dict) and ai_res.get("overview"):
+                solutions = ai_res.get("recommended_solutions", [])
+                if isinstance(solutions, list) and len(solutions) > 0:
+                    return {
+                        "overview": ai_res["overview"].strip(),
+                        "recommended_solutions": solutions
+                    }
+                return {
+                    "overview": ai_res["overview"].strip(),
+                    "recommended_solutions": current_solutions or []
+                }
+        except Exception:
+            pass
+
+        return self._fallback_resynthesize(enterprise_name, key_facts, contradictions, gaps, current_overview, current_solutions)
+
+    def _fallback_resynthesize(
+        self,
+        enterprise_name: str,
+        key_facts: list,
+        contradictions: list,
+        gaps: list,
+        current_overview: str = "",
+        current_solutions: list = None
+    ) -> dict:
+        """Génération locale intelligente de repli pour la synthèse et les solutions adaptées."""
+        facts_summary = " ".join([f.rstrip('.') + '.' for f in key_facts[:3]]) if key_facts else ""
+        vigilance_summary = f" Une attention spécifique doit être portée sur : {'; '.join(contradictions[:2])}." if contradictions else ""
+        gaps_summary = f" L'entretien ciblera en priorité la clarification de : {', '.join(gaps[:2])}." if gaps else ""
+
+        overview = f"{enterprise_name} présente une dynamique commerciale active. {facts_summary}{vigilance_summary}{gaps_summary}"
+        if not overview.strip():
+            overview = current_overview or f"{enterprise_name} : acteur stratégique nécessitant une infrastructure de connectivité et de sécurité résiliente."
+
+        # Détection contextuelle des solutions adaptées
+        full_context = f"{enterprise_name} {' '.join(key_facts)} {' '.join(contradictions)} {' '.join(gaps)}".lower()
+        solutions = []
+
+        # 1. Connectivité dédiée (socle obligatoire)
+        solutions.append({
+            "name": "Fibre Dédiée Pro 100 Mbps",
+            "category": "Connectivité",
+            "description": "Liaison symétrique sécurisée avec débit garanti et supervision proactive 24/7.",
+            "sla": "SLA 99.9% · GTR 4h"
+        })
+
+        # 2. Multi-sites / SD-WAN
+        if any(w in full_context for w in ["site", "agence", "filiale", "réseau", "katanga", "lubumbashi", "goma"]):
+            solutions.append({
+                "name": "SD-WAN Managé Multi-Sites",
+                "category": "Réseaux",
+                "description": "Interconnexion résiliente avec routage applicatif intelligent et chiffrement IPsec.",
+                "sla": "Supervision 24/7"
+            })
+
+        # 3. Cybersécurité & Vigilance
+        if any(w in full_context for w in ["sécurité", "fraude", "vigilance", "usurpation", "cyber", "fuite", "banque", "rccm"]):
+            solutions.append({
+                "name": "CyberSOC 24/7 & Firewall Managé",
+                "category": "Cybersécurité",
+                "description": "Protection périmétrique avancée, filtrage des menaces et détection d'intrusions.",
+                "sla": "Alerte < 15 min"
+            })
+
+        # 4. Monétique / Paiements
+        if any(w in full_context for w in ["banque", "finance", "paiement", "monnaie", "salaire", "collecte"]):
+            solutions.append({
+                "name": "Orange Money B2B & API Bulk Payments",
+                "category": "Monétique",
+                "description": "Paiement de salaires en masse et encaissement sécurisé par API.",
+                "sla": "Disponibilité 99.9%"
+            })
+
+        # S'il n'y a que 1 ou 2 solutions, ajouter le Cloud
+        if len(solutions) < 3:
+            solutions.append({
+                "name": "Cloud Backup Datacenter Kinshasa",
+                "category": "Cloud & Hébergement",
+                "description": "Sauvegarde automatique et hébergement souverain en Datacenter Tier III.",
+                "sla": "RPO 1h · RTO 2h"
+            })
+
+        return {
+            "overview": overview.strip(),
+            "recommended_solutions": solutions
+        }
 
     # -------------------------------------------------------------------------
     # 2. POST-CALL EXECUTION

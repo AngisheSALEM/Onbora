@@ -212,6 +212,7 @@ class PreCallBriefing(models.Model):
     custom_pitch_angles = models.JSONField(default=list, blank=True)
     critical_discovery_questions = models.JSONField(default=list, blank=True)
     golden_rules = models.JSONField(default=list, blank=True)
+    analysis_data = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

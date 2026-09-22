@@ -80,12 +80,14 @@ class CommercialIntelligenceService:
                 "custom_pitch_angles": ai_data.get("custom_pitch_angles", []),
                 "critical_discovery_questions": ai_data.get("critical_discovery_questions", []),
                 "golden_rules": golden_rules,
+                "analysis_data": ai_data,
             }
         )
         return {
             "id": briefing.id,
             "enterprise_id": enterprise.id,
             "enterprise_name": enterprise.name,
+            **ai_data,
             "company_overview": briefing.company_overview,
             "key_decision_makers": briefing.key_decision_makers,
             "detected_business_challenges": briefing.detected_business_challenges,
@@ -94,7 +96,96 @@ class CommercialIntelligenceService:
             "golden_rules": briefing.golden_rules,
             "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
             "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
-            "ai_engine": "Unified Core AI (In-Process)"
+            "ai_engine": "Onbora Analysis (Port 8001 / AI Core)"
+        }
+
+    @staticmethod
+    def update_and_resynthesize_briefing(enterprise: Enterprise, request_data: dict, kam_user=None) -> dict:
+        """
+        Met à jour le dossier de pré-visite et ré-exécute Core AI pour maintenir
+        la synthèse exécutive et les solutions recommandées synchronisées avec les faits édités.
+        """
+        briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
+        if not briefing:
+            # Création à la volée si inexistant
+            briefing = PreCallBriefing.objects.create(
+                enterprise=enterprise,
+                kam=kam_user,
+                analysis_data={}
+            )
+
+        analysis_data = briefing.analysis_data or {}
+        ai_summary_input = request_data.get("ai_summary", {})
+        resynthesize = request_data.get("resynthesize", True)
+
+        existing_ai = analysis_data.get("ai_summary", {})
+        key_facts_raw = ai_summary_input.get("key_facts") if "key_facts" in ai_summary_input else existing_ai.get("key_facts", [])
+        contradictions_raw = ai_summary_input.get("contradictions") if "contradictions" in ai_summary_input else existing_ai.get("contradictions", [])
+        gaps_raw = ai_summary_input.get("gaps") if "gaps" in ai_summary_input else existing_ai.get("gaps", [])
+
+        key_facts = [f.get("text", f) if isinstance(f, dict) else str(f) for f in key_facts_raw]
+        contradictions = [c.get("text", c) if isinstance(c, dict) else str(c) for c in contradictions_raw]
+        gaps = [str(g) for g in gaps_raw]
+
+        custom_overview = ""
+        if isinstance(ai_summary_input.get("overview"), dict):
+            custom_overview = ai_summary_input.get("overview", {}).get("text", "")
+        elif isinstance(ai_summary_input.get("overview"), str):
+            custom_overview = ai_summary_input.get("overview")
+
+        custom_solutions = request_data.get("recommended_solutions", analysis_data.get("recommended_solutions", []))
+
+        if resynthesize:
+            engine = get_unified_core_ai()
+            ai_result = engine.resynthesize_briefing(
+                enterprise_name=enterprise.name,
+                key_facts=key_facts,
+                contradictions=contradictions,
+                gaps=gaps,
+                current_overview=custom_overview,
+                current_solutions=custom_solutions
+            )
+            final_overview = ai_result.get("overview") or custom_overview
+            final_solutions = ai_result.get("recommended_solutions") or custom_solutions
+        else:
+            final_overview = custom_overview or existing_ai.get("overview", {}).get("text", "")
+            final_solutions = custom_solutions
+
+        updated_ai_summary = {
+            **existing_ai,
+            **ai_summary_input,
+            "status": "ai_resynthesized",
+            "overview": {
+                "text": final_overview,
+                "sources": existing_ai.get("overview", {}).get("sources", [])
+            },
+            "key_facts": [{"text": kf} if isinstance(kf, str) else kf for kf in key_facts],
+            "contradictions": [{"text": ct} if isinstance(ct, str) else ct for ct in contradictions],
+            "gaps": gaps,
+        }
+
+        analysis_data["ai_summary"] = updated_ai_summary
+        analysis_data["recommended_solutions"] = final_solutions
+        if "custom_pitch_angles" in request_data:
+            briefing.custom_pitch_angles = request_data["custom_pitch_angles"]
+
+        briefing.analysis_data = analysis_data
+        briefing.save(update_fields=['analysis_data', 'custom_pitch_angles', 'updated_at'])
+
+        return {
+            "id": briefing.id,
+            "enterprise_id": enterprise.id,
+            "enterprise_name": enterprise.name,
+            **briefing.analysis_data,
+            "company_overview": briefing.company_overview,
+            "key_decision_makers": briefing.key_decision_makers,
+            "detected_business_challenges": briefing.detected_business_challenges,
+            "custom_pitch_angles": briefing.custom_pitch_angles,
+            "critical_discovery_questions": briefing.critical_discovery_questions,
+            "golden_rules": briefing.golden_rules,
+            "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
+            "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
+            "ai_engine": "Unified Core AI (Resynthesized)"
         }
 
     @staticmethod

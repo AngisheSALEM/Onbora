@@ -3,44 +3,175 @@
 import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
-
-interface DecisionMaker {
-  role: string;
-  name: string;
-  profile_type: string;
-  concerns: string;
-  influence: string;
-}
-
-interface PitchAngle {
-  target_offer: string;
-  why_relevant: string;
-  hook_sentence: string;
-}
-
-interface PreCallData {
-  id: number;
-  enterprise_id: number;
-  enterprise_name: string;
-  company_overview: {
-    company_name: string;
-    summary: string;
-    estimated_employees: string;
-    estimated_sites: number;
-    annual_revenue_usd: string;
-    digital_maturity: string;
-    telecom_budget_monthly_usd: number;
-  };
-  key_decision_makers: DecisionMaker[];
-  detected_business_challenges: string[];
-  custom_pitch_angles: PitchAngle[];
-  critical_discovery_questions: string[];
-  golden_rules: string[];
-  created_at: string;
-  updated_at: string;
-}
-
 import { fetchAPI } from '@/lib/api';
+
+// ============================================================================
+// DATA TYPES
+// ============================================================================
+
+export interface SourceRef {
+  evidence_id: number;
+  title?: string;
+  url: string;
+  publisher?: string;
+}
+
+export interface SourcedStatement {
+  text: string;
+  sources?: SourceRef[];
+}
+
+export interface RecommendedSolutionItem {
+  id?: string;
+  name: string;
+  category: string;
+  description: string;
+  sla?: string;
+  rdc_availability?: string;
+}
+
+export interface EvidenceItem {
+  evidence_id: number;
+  url: string;
+  title: string;
+  publisher: string;
+  source_type: string;
+  relationship: string;
+  access_status: string;
+  relevance_score: number;
+  verdict: string;
+  reasons: string[];
+  relevant_excerpt: string;
+  collected_at: string;
+}
+
+export interface DiscoveredSource {
+  url: string;
+  title: string;
+  snippet?: string;
+  category: string;
+  query: string;
+  provider: string;
+  discovery_score: number;
+}
+
+export interface OnboraAnalysisBrief {
+  id?: number;
+  enterprise_id: number | string;
+  enterprise_name: string;
+  identity_status?: string;
+  coverage?: string;
+  company?: {
+    legal_name?: string;
+    trade_name?: string;
+    rccm?: string;
+    dossier_number?: string;
+    province?: string;
+    activity_arsp?: string;
+  };
+  ai_summary?: {
+    status?: string;
+    model?: string;
+    overview: SourcedStatement;
+    key_facts?: SourcedStatement[];
+    contradictions?: SourcedStatement[];
+    gaps?: string[];
+  };
+  recommended_solutions?: RecommendedSolutionItem[];
+  lead_qualification?: {
+    status?: string;
+    catalog_version?: string;
+    journeys?: Array<{
+      journey_id?: string;
+      title: string;
+      description?: string;
+      verdict?: string;
+      reason?: string;
+      offers?: Array<{
+        service_id?: string;
+        name: string;
+        category: string;
+        description: string;
+        rdc_availability?: string;
+        sla?: string;
+      }>;
+    }>;
+  };
+  custom_pitch_angles?: Array<{
+    target_solution?: string;
+    angle_title?: string;
+    business_impact?: string;
+    recommended_package?: string;
+  }>;
+  evidence?: EvidenceItem[];
+  sources?: DiscoveredSource[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Curated catalog presets for instant auto-completion
+const ORANGE_CATALOG_PRESETS = [
+  {
+    name: "Fibre Dédiée Pro 100 Mbps",
+    category: "Connectivité",
+    description: "Liaison symétrique sécurisée à débit garanti 100% avec supervision proactive 24/7.",
+    sla: "SLA 99.99% · GTR 4h"
+  },
+  {
+    name: "SD-WAN Managé Multi-Sites",
+    category: "Réseaux",
+    description: "Interconnexion résiliente de succursales avec routage intelligent et tunnels IPsec chiffrés.",
+    sla: "Supervision 24/7"
+  },
+  {
+    name: "CyberSOC 24/7 & Firewall Managé",
+    category: "Cybersécurité",
+    description: "Protection périmétrique, filtrage DNS et détection d'intrusions opérée par Orange Cyberdefense.",
+    sla: "Temps d'alerte < 15 min"
+  },
+  {
+    name: "Orange Money B2B & API Bulk Payments",
+    category: "Monétique",
+    description: "Paiement de salaires en masse et encaissement sécurisé par API directe pour les grandes entreprises.",
+    sla: "Disponibilité 99.9%"
+  },
+  {
+    name: "Cloud Backup Datacenter Kinshasa",
+    category: "Cloud & Hébergement",
+    description: "Sauvegarde automatisée et hébergement souverain en Datacenter Tier III avec réplication.",
+    sla: "RPO 1h · RTO 2h"
+  },
+  {
+    name: "Flotte Mobile Entreprise (Business GFU)",
+    category: "Mobile & Flotte",
+    description: "Partage d'un pool d'heures d'appels intra-flotte illimités et forfaits data mutualisés.",
+    sla: "Gestionnaire dédié"
+  },
+  {
+    name: "Offre Mobile Postpayé (Business Flex)",
+    category: "Mobile & Flotte",
+    description: "Facturation centralisée des lignes mobiles professionnelles avec plafonnement et suivi consommation.",
+    sla: "Facture mensuelle unique"
+  },
+  {
+    name: "IP-VPN MPLS National",
+    category: "Réseaux",
+    description: "Réseau privé d'entreprise reliant Kinshasa, Lubumbashi, Kolwezi et Goma avec QOS garantie.",
+    sla: "SLA 99.9% · GTR 4h"
+  },
+  {
+    name: "Liaison Satellite VSAT Backup",
+    category: "Connectivité",
+    description: "Connectivité de secours pour sites miniers ou zones reculées hors emprise fibre optique.",
+    sla: "GTR 8h"
+  },
+  {
+    name: "VoIP Trunk SIP & Standard Téléphonique",
+    category: "Téléphonie",
+    description: "Acheminement VoIP haute qualité avec numéros courts et accueil vocal interactif (IVR).",
+    sla: "Qualité HD Voice"
+  }
+];
 
 interface KamPreCallViewProps {
   assignedAccounts: StrategicVisit[];
@@ -58,541 +189,1040 @@ export default function KamPreCallView({
   const [selectedAccountId, setSelectedAccountId] = useState<string>(
     initialAccountId ? String(initialAccountId) : (assignedAccounts[0]?.id || '')
   );
-  const [briefingData, setBriefingData] = useState<PreCallData | null>(null);
+  const [briefingData, setBriefingData] = useState<OnboraAnalysisBrief | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Enrichment State
-  const [enrichmentData, setEnrichmentData] = useState<any>(null);
-  const [enriching, setEnriching] = useState(false);
+  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance)
+  const [activeTab, setActiveTab] = useState<'brief' | 'details'>('brief');
 
-  const handleEnrich = async () => {
-    if (!briefingData) return;
-    setEnriching(true);
-    try {
-      const res = await fetchAPI('/api/ai/sales-enrichment/', {
-        method: 'POST',
-        body: JSON.stringify({
-          company_name: briefingData.enterprise_name,
-          sector: briefingData.company_overview?.summary || 'Inconnu',
-          website: ''
-        })
-      });
-      setEnrichmentData(res);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l'enrichissement depuis le Web");
-    } finally {
-      setEnriching(false);
-    }
-  };
+  // Manual Editing States
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  // RAG Catalog Explorer State
-  const [ragQuery, setRagQuery] = useState('Fibre Dédiée');
-  const [ragResults, setRagResults] = useState<any[]>([]);
-  const [ragSearching, setRagSearching] = useState(false);
-  const [copiedRagPackage, setCopiedRagPackage] = useState<string | null>(null);
+  // Editable Form Buffers
+  const [editOverview, setEditOverview] = useState('');
+  const [editKeyFacts, setEditKeyFacts] = useState<string[]>([]);
+  const [editContradictions, setEditContradictions] = useState<string[]>([]);
+  const [editGaps, setEditGaps] = useState<string[]>([]);
+  const [editSolutions, setEditSolutions] = useState<RecommendedSolutionItem[]>([]);
 
-  const searchRagCatalog = async (queryText: string) => {
-    if (!queryText.trim()) return;
-    setRagSearching(true);
-    try {
-      const res = await fetchAPI('/api/ai/catalog/search/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText, limit: 3 }),
-      });
-      if (res && Array.isArray(res.results)) {
-        setRagResults(res.results);
-      }
-    } catch (e) {
-      console.warn("Erreur recherche RAG catalogue:", e);
-    } finally {
-      setRagSearching(false);
-    }
-  };
+  // Temp inline add inputs
+  const [newFactText, setNewFactText] = useState('');
+  const [newContraText, setNewContraText] = useState('');
+  const [newGapText, setNewGapText] = useState('');
+  const [newSolName, setNewSolName] = useState('');
+  const [newSolCategory, setNewSolCategory] = useState('');
+  const [newSolDesc, setNewSolDesc] = useState('');
+  const [newSolSla, setNewSolSla] = useState('SLA 99.9%');
 
-  useEffect(() => {
-    searchRagCatalog(ragQuery);
-  }, []);
+  // Autocomplete & Catalog Search States
+  const [showCatalogSuggestions, setShowCatalogSuggestions] = useState(false);
+  const [catalogSearchResults, setCatalogSearchResults] = useState<any[]>([]);
+  const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [catalogModalQuery, setCatalogModalQuery] = useState('');
 
-  // Synchroniser si initialAccountId change depuis le parent
+  // Sources Accordion Drawer State
+  const [showSourcesDrawer, setShowSourcesDrawer] = useState(false);
+
+  // Synchroniser initialAccountId
   useEffect(() => {
     if (initialAccountId && String(initialAccountId) !== selectedAccountId) {
       setSelectedAccountId(String(initialAccountId));
     }
   }, [initialAccountId]);
 
-  // Charger le briefing dès que le compte sélectionné change
+  // Charger le briefing dès que le compte change
   useEffect(() => {
     if (!selectedAccountId) return;
     fetchBriefing(selectedAccountId);
   }, [selectedAccountId]);
 
+  // Extraire les solutions recommandées
+  const extractRecommendedSolutions = (data: OnboraAnalysisBrief): RecommendedSolutionItem[] => {
+    if (data.recommended_solutions && data.recommended_solutions.length > 0) {
+      return data.recommended_solutions;
+    }
+    const extracted: RecommendedSolutionItem[] = [];
+    const seenNames = new Set<string>();
+
+    if (data.lead_qualification?.journeys) {
+      for (const journey of data.lead_qualification.journeys) {
+        if (journey.offers) {
+          for (const off of journey.offers) {
+            if (!seenNames.has(off.name)) {
+              seenNames.add(off.name);
+              extracted.push({
+                id: off.service_id || String(extracted.length + 1),
+                name: off.name,
+                category: off.category || 'Connectivité',
+                description: off.description || journey.reason || 'Solution adaptée au profil identifié.',
+                sla: off.sla || 'GTR 4h · SLA 99.9%',
+                rdc_availability: off.rdc_availability || 'Validée RDC',
+              });
+            }
+          }
+        }
+      }
+    }
+
+    if (extracted.length === 0 && data.custom_pitch_angles) {
+      data.custom_pitch_angles.forEach((angle, idx) => {
+        extracted.push({
+          id: String(idx + 1),
+          name: angle.recommended_package || angle.target_solution || 'Offre Sur-Mesure Orange',
+          category: 'Orange Business',
+          description: angle.business_impact || angle.angle_title || 'Solution stratégique recommandée.',
+          sla: 'GTR 4h · SLA 99.9%',
+          rdc_availability: 'Validée RDC',
+        });
+      });
+    }
+
+    if (extracted.length === 0) {
+      extracted.push(
+        {
+          id: '1',
+          name: 'Fibre Dédiée Pro 100 Mbps',
+          category: 'Connectivité',
+          description: 'Liaison symétrique sécurisée avec débit garanti et supervision 24/7.',
+          sla: 'SLA 99.9% · GTR 4h',
+          rdc_availability: 'Validée RDC',
+        },
+        {
+          id: '2',
+          name: 'SD-WAN Managé Multi-Sites',
+          category: 'Réseaux',
+          description: 'Interconnexion résiliente avec routage applicatif intelligent et chiffrement IPsec.',
+          sla: 'Supervision 24/7',
+          rdc_availability: 'Validée RDC',
+        }
+      );
+    }
+
+    return extracted;
+  };
+
+  const populateEditBuffers = (data: OnboraAnalysisBrief) => {
+    setEditOverview(data.ai_summary?.overview?.text || '');
+    setEditKeyFacts((data.ai_summary?.key_facts || []).map((f) => f.text));
+    setEditContradictions((data.ai_summary?.contradictions || []).map((c) => c.text));
+    setEditGaps(data.ai_summary?.gaps || []);
+    setEditSolutions(extractRecommendedSolutions(data));
+  };
+
   const fetchBriefing = async (accountId: string, forceRegenerate = false) => {
     setLoading(true);
     setError(null);
-    setEnrichmentData(null);
+    setIsEditing(false);
     try {
       const cleanId = String(accountId).replace('account-', '');
       const method = forceRegenerate ? 'POST' : 'GET';
-      const data = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { method });
+      const data: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { method });
       setBriefingData(data);
+      populateEditBuffers(data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erreur de connexion au serveur.";
+      const message = err instanceof Error ? err.message : "Erreur de chargement du brief.";
       setError(message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSaveBrief = async (forceResynthesize = true) => {
+    if (!briefingData || !selectedAccountId) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const cleanId = String(selectedAccountId).replace('account-', '');
+      const updatedAiSummary = {
+        ...(briefingData.ai_summary || {}),
+        status: 'kam_edited',
+        overview: {
+          text: editOverview,
+          sources: briefingData.ai_summary?.overview?.sources || [],
+        },
+        key_facts: editKeyFacts.map((text, idx) => ({
+          text,
+          sources: briefingData.ai_summary?.key_facts?.[idx]?.sources || [],
+        })),
+        contradictions: editContradictions.map((text, idx) => ({
+          text,
+          sources: briefingData.ai_summary?.contradictions?.[idx]?.sources || [],
+        })),
+        gaps: editGaps,
+      };
+
+      const updatedData: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ai_summary: updatedAiSummary,
+          recommended_solutions: editSolutions,
+          resynthesize: forceResynthesize,
+        }),
+      });
+
+      setBriefingData(updatedData);
+      populateEditBuffers(updatedData);
+      setIsEditing(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erreur lors de la mise à jour.";
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Catalog Auto-completion filtering
+  const matchingSuggestions = newSolName.trim().length >= 1
+    ? ORANGE_CATALOG_PRESETS.filter((p) =>
+        p.name.toLowerCase().includes(newSolName.toLowerCase()) ||
+        p.category.toLowerCase().includes(newSolName.toLowerCase())
+      )
+    : [];
+
+  const selectCatalogOffer = (offer: { name: string; category?: string; description?: string; sla?: string }) => {
+    setNewSolName(offer.name);
+    if (offer.category) setNewSolCategory(offer.category);
+    if (offer.description) setNewSolDesc(offer.description);
+    if (offer.sla) setNewSolSla(offer.sla);
+    setShowCatalogSuggestions(false);
+    setShowCatalogModal(false);
+  };
+
+  // Search catalog through RAG API
+  const handleSearchCatalog = async (queryText?: string) => {
+    const q = (queryText !== undefined ? queryText : (catalogModalQuery || newSolName || 'Fibre')).trim();
+    setCatalogModalQuery(q);
+    setIsSearchingCatalog(true);
+    setShowCatalogModal(true);
+    try {
+      const res = await fetchAPI('/api/ai/catalog/search/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q || 'Fibre', limit: 8 }),
+      });
+      if (res && Array.isArray(res.results) && res.results.length > 0) {
+        setCatalogSearchResults(res.results);
+      } else {
+        // Fallback on local presets
+        const lower = q.toLowerCase();
+        setCatalogSearchResults(
+          ORANGE_CATALOG_PRESETS.filter(
+            (p) => p.name.toLowerCase().includes(lower) || p.category.toLowerCase().includes(lower)
+          )
+        );
+      }
+    } catch (e) {
+      console.warn("Recherche catalogue locale :", e);
+      const lower = q.toLowerCase();
+      setCatalogSearchResults(
+        ORANGE_CATALOG_PRESETS.filter(
+          (p) => p.name.toLowerCase().includes(lower) || p.category.toLowerCase().includes(lower)
+        )
+      );
+    } finally {
+      setIsSearchingCatalog(false);
+    }
+  };
+
   const copyBriefingToClipboard = () => {
     if (!briefingData) return;
-    const text = `=== BRIEFING PRE-CALL COMMERCIAL : ${briefingData.enterprise_name} ===
-Date : ${briefingData.updated_at}
+    const ai = briefingData.ai_summary;
+    const solutions = extractRecommendedSolutions(briefingData);
+    const text = `${briefingData.enterprise_name}
 
-1. VUE D'ENSEMBLE
-${briefingData.company_overview.summary}
-Effectif : ${briefingData.company_overview.estimated_employees}
-Budget télécom estimé : ${briefingData.company_overview.telecom_budget_monthly_usd} USD/mois
+${ai?.overview?.text || ''}
 
-2. DÉCIDEURS CLÉS
-${briefingData.key_decision_makers.map(d => `- ${d.role} (${d.name}) : ${d.concerns}`).join('\n')}
+Solutions recommandées :
+${solutions.map((s, i) => `${i + 1}. [${s.category}] ${s.name} : ${s.description} (${s.sla || 'GTR 4h'})`).join('\n')}
 
-3. ENJEUX BUSINESS
-${briefingData.detected_business_challenges.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+Faits clés :
+${(ai?.key_facts || []).map((f, i) => `- ${f.text}`).join('\n')}
 
-4. ANGLES D'ATTAQUE CATALOGUE
-${briefingData.custom_pitch_angles.map(p => `• Offre : ${p.target_offer}\n  Pourquoi : ${p.why_relevant}\n  Accroche : "${p.hook_sentence}"`).join('\n\n')}
+Contradictions & Vigilance :
+${(ai?.contradictions || []).map((c, i) => `- ${c.text}`).join('\n')}
 
-5. QUESTIONS INDISPENSABLES (DISCOVERY)
-${briefingData.critical_discovery_questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-
-6. RÈGLES D'OR
-${briefingData.golden_rules.map(r => `! ${r}`).join('\n')}
+Informations manquantes :
+${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
 `;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const currentAccount = assignedAccounts.find(
+    (a) => String(a.id) === selectedAccountId || String(a.account_id) === selectedAccountId
+  );
+
+  const displayedSolutions = briefingData ? extractRecommendedSolutions(briefingData) : [];
+  const enterpriseTitle = briefingData?.enterprise_name || currentAccount?.account_name || "Entreprise";
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-6 md:p-8 select-none transition-colors duration-300">
+    <div className="flex-1 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-6 md:p-10 select-none transition-colors duration-300">
       
-      {/* 1. TOP SELECTOR & HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-black/5 dark:border-white/5">
-        <div className="flex items-center gap-4">
+      {/* 1. TOP HEADER: ONLY COMPANY NAME & CLEAN ACTIONS */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/5 dark:border-white/5">
+        <div className="flex items-center gap-3">
           {onBackToAccounts && (
             <button
               onClick={onBackToAccounts}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E4E1DB] dark:bg-[#363336] hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition-all cursor-pointer shadow-none active:scale-95 shrink-0"
-              title="Retour au portefeuille des comptes"
+              className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors cursor-pointer"
+              title="Retour aux comptes"
             >
-              <Icons.ChevronLeft size={16} />
-            
+              <Icons.ChevronLeft size={18} />
             </button>
           )}
-          <div>
-            <div className="flex items-center gap-2 mb-1">
 
-            </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-              {briefingData?.enterprise_name ? briefingData.enterprise_name : "Préparation Stratégique Avant Rendez-vous"}
-            </h2>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+              {enterpriseTitle}
+            </h1>
+            {briefingData?.company?.province && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                {briefingData.company.province} {briefingData.company.activity_arsp ? `· ${briefingData.company.activity_arsp}` : ''}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Account Selector & Action Buttons */}
-        <div className="flex items-center gap-3">
-         
+        {/* Clean, discreet top actions */}
+        <div className="flex items-center gap-2">
+          {briefingData && (
+            <button
+              onClick={() => {
+                if (isEditing) {
+                  populateEditBuffers(briefingData);
+                  setIsEditing(false);
+                } else {
+                  populateEditBuffers(briefingData);
+                  setIsEditing(true);
+                }
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                isEditing
+                  ? 'bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900 shadow-xs'
+                  : 'bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5'
+              }`}
+            >
+              {isEditing ? "Annuler l'édition" : "Éditer"}
+            </button>
+          )}
+
+          {isEditing && (
+            <button
+              onClick={() => handleSaveBrief(true)}
+              disabled={isSaving}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {isSaving ? <Icons.RefreshCw size={13} className="animate-spin" /> : <Icons.Check size={13} />}
+              <span>{isSaving ? "Mise à jour..." : "Enregistrer"}</span>
+            </button>
+          )}
+
           <button
-            onClick={() => fetchBriefing(selectedAccountId, true)}
-            disabled={loading}
-            title="Régénérer le briefing avec les dernières données du compte"
-            className="p-2.5 bg-[#FFFFFF] dark:bg-[#2F2C30] hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D] text-zinc-700 dark:text-zinc-200 rounded-2xl transition-colors cursor-pointer"
+            onClick={() => handleSaveBrief(true)}
+            disabled={loading || isSaving}
+            title="Mettre à jour la synthèse et les solutions"
+            className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
           >
-            <Icons.RefreshCw size={16} className={loading ? "animate-spin text-[#4F6CE8]" : ""} />
+            <Icons.RefreshCw size={14} className={isSaving || loading ? "animate-spin text-[#4F6CE8]" : ""} />
           </button>
 
           <button
             onClick={copyBriefingToClipboard}
             disabled={!briefingData}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-2xl transition-all shadow-none cursor-pointer"
+            title="Copier le document"
+            className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
           >
-            {copied ? <Icons.Check size={14} /> : <Icons.Copy size={14} />}
-            <span>{copied ? "Briefing copié !" : "Copier la fiche"}</span>
+            {copied ? <Icons.Check size={14} className="text-emerald-500" /> : <Icons.Copy size={14} />}
           </button>
 
-          <button
-            onClick={handleEnrich}
-            disabled={!briefingData || enriching}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 active:scale-95 text-white text-xs font-semibold rounded-2xl transition-all shadow-none cursor-pointer disabled:opacity-50"
-          >
-            <Icons.Globe size={14} className={enriching ? "animate-spin" : ""} />
-            <span>{enriching ? "Enrichissement..." : "Enrichir depuis le Web"}</span>
-          </button>
+          {onLaunchMeetingForAccount && briefingData && (
+            <button
+              onClick={() => onLaunchMeetingForAccount(briefingData.enterprise_id)}
+              className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
+            >
+              <Icons.Mic size={14} />
+              <span>Démarrer RDV</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 2. MAIN BRIEFING CONTENT */}
+      {/* Save Success Banner */}
+      {saveSuccess && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2">
+          <Icons.Check size={14} className="text-emerald-600" />
+          <span>Synthèse et solutions recommandées mises à jour.</span>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center gap-2">
+          <Icons.AlertTriangle size={14} className="text-rose-600" />
+          <span>{saveError}</span>
+        </div>
+      )}
+
+      {/* 2. DISCREET TABS (Minimalist underline style, zero visual clutter) */}
+      {briefingData && !loading && !error && (
+        <div className="flex items-center gap-8 border-b border-black/5 dark:border-white/5 mb-6">
+          <button
+            onClick={() => setActiveTab('brief')}
+            className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
+              activeTab === 'brief'
+                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            }`}
+          >
+            Synthèse & Solutions
+          </button>
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
+              activeTab === 'details'
+                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            }`}
+          >
+            Faits & Vigilance
+          </button>
+        </div>
+      )}
+
+      {/* 3. LOADING & ERROR STATES */}
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.Sparkles size={36} className="animate-spin text-[#4F6CE8] mb-4" />
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">
-            Génération du dossier d&apos;attaque en cours...
-          </h4>
-          <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-            Analyse des décideurs, détection des enjeux et matching avec les offres Orange.
-          </p>
+          <Icons.RefreshCw size={28} className="animate-spin text-[#4F6CE8] mb-3" />
+          <p className="text-xs text-zinc-500">Chargement...</p>
         </div>
       ) : error ? (
-        <div className="p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#2F2C30] text-center max-w-md mx-auto my-auto space-y-3">
-          <Icons.AlertTriangle size={32} className="text-[#EF4444] mx-auto" />
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Dossier indisponible</h4>
+        <div className="p-8 rounded-2xl bg-white dark:bg-[#282528] text-center max-w-md mx-auto my-auto space-y-3 border border-black/5 dark:border-white/5">
           <p className="text-xs text-zinc-500">{error}</p>
           <button
             onClick={() => fetchBriefing(selectedAccountId)}
-            className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold"
+            className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
           >
             Réessayer
           </button>
         </div>
       ) : briefingData ? (
-        <div className="space-y-6 max-w-6xl">
+        <div className="max-w-4xl mx-auto w-full pb-12">
 
-          {/* ENRICHMENT PANEL */}
-          {enrichmentData && (
-            <div className="p-6 rounded-[28px] bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Icons.Globe size={18} className="text-[#4F6CE8]" />
-                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                  Données enrichies depuis le Web
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Aperçu</h4>
-                    <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">{enrichmentData.company_overview}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Hypothèses Commerciales</h4>
-                    <ul className="list-disc pl-4 text-xs text-zinc-700 dark:text-zinc-300 space-y-1">
-                      {enrichmentData.commercial_hypotheses?.map((h: string, i: number) => (
-                        <li key={i}>{h}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Pitch Adapté</h4>
-                    <div className="p-3 rounded-xl bg-white dark:bg-black/20 text-xs font-medium text-zinc-900 dark:text-white italic border border-black/5 dark:border-white/5">
-                      "{enrichmentData.tailored_pitch}"
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Questions Stratégiques</h4>
-                    <ul className="list-decimal pl-4 text-xs text-zinc-700 dark:text-zinc-300 space-y-1">
-                      {enrichmentData.strategic_questions?.map((q: string, i: number) => (
-                        <li key={i}>{q}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Card 1: Overview & Metrics */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-black/5 dark:border-white/5">
-              <div>
-                <span className="text-[11px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
-                  Profil Entreprise & Infrastructure
-                </span>
-                <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
-                  {briefingData.enterprise_name}
-                </h3>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="px-3 py-1 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                  {briefingData.company_overview.estimated_employees}
-                </div>
-                <div className="px-3 py-1 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                  {briefingData.company_overview.estimated_sites} site(s) raccordé(s)
-                </div>
-                <div className="px-3 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] text-xs font-bold">
-                  Budget : ~{briefingData.company_overview.telecom_budget_monthly_usd} USD/mois
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
-              {briefingData.company_overview.summary}
-            </p>
-          </div>
-
-          {/* Card 2: Décideurs Clés (DSI, RSSI, DAF) */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
-            <div className="flex items-center gap-2">
-              <Icons.Users size={18} className="text-[#4F6CE8]" />
-              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Cartographie des Décideurs à Rencontrer
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {briefingData.key_decision_makers.map((dec, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-2xl bg-[#ECEAE5] dark:bg-[#3B373D] space-y-2 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 uppercase">
-                        {dec.influence === 'DECISION_MAKER' ? 'Décideur Clé' : dec.influence === 'ECONOMIC_BUYER' ? 'Signataire DAF' : 'Influenceur'}
-                      </span>
-                    </div>
-                    <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
-                      {dec.role}
-                    </h4>
-                    <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-2">
-                      {dec.name}
-                    </span>
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-normal">
-                      <strong>Sensible à :</strong> {dec.concerns}
+          {/* ========================================================================= */}
+          {/* TAB 1: SINGLE CARD (LIKE A WORD DOCUMENT) - RÉSUMÉ ET SOLUTIONS            */}
+          {/* ========================================================================= */}
+          {activeTab === 'brief' && (
+            <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 text-zinc-800 dark:text-zinc-200 animate-in fade-in duration-150">
+              
+              {/* Executive Summary (No title, flows naturally like a page) */}
+              <div className="space-y-4">
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editOverview}
+                      onChange={(e) => setEditOverview(e.target.value)}
+                      rows={7}
+                      className="w-full p-3 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-[#4F6CE8] leading-relaxed resize-y"
+                      placeholder="Saisissez la synthèse..."
+                    />
+                    <p className="text-[11px] text-zinc-400">
+                      Astuce : À l&apos;enregistrement, la synthèse et les solutions sont réalignées avec vos faits édités.
                     </p>
                   </div>
-                  <div className="pt-2 text-[10px] font-semibold text-[#4F6CE8]">
-                    Profil : {dec.profile_type}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 3: Angles d'Attaque & Argumentaire Catalogue Orange */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
-            <div className="flex items-center gap-2">
-              <Icons.Award size={18} className="text-[#4F6CE8]" />
-              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Angles d&apos;Attaque Ciblés (Catalogue Orange B2B)
-              </h3>
-            </div>
-
-            <div className="space-y-3">
-              {briefingData.custom_pitch_angles.map((angle, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-2xl bg-[#ECEAE5] dark:bg-[#3B373D] space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold text-zinc-900 dark:text-white">
-                      {angle.target_offer}
-                    </h4>
-                    <span className="text-[10px] font-bold text-[#4F6CE8] uppercase tracking-wider">
-                      Argumentaire Dédié
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-300">
-                    <strong>Pourquoi cette offre :</strong> {angle.why_relevant}
+                ) : (
+                  <p className="text-sm md:text-[15px] leading-relaxed font-normal whitespace-pre-line text-zinc-800 dark:text-zinc-200">
+                    {briefingData.ai_summary?.overview?.text || "Aucune synthèse disponible."}
                   </p>
-                  <div className="p-3 rounded-xl bg-black/5 dark:bg-black/20 text-xs font-medium text-zinc-900 dark:text-white italic">
-                    Phrase d&apos;accroche recommandée : &ldquo;{angle.hook_sentence}&rdquo;
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 3bis: Moteur RAG Catalogue Orange Business B2B */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
-              <div className="flex items-center gap-2">
-                <Icons.Layers size={18} className="text-[#4F6CE8]" />
-                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                  Recherche dans le  Catalogue Orange B2B en Direct
-                </h3>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>TF-IDF Inversé (&lt; 2ms)</span>
-              </span>
-            </div>
-
-            {/* Search Input & Quick Keyword Chips */}
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={ragQuery}
-                    onChange={(e) => setRagQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') searchRagCatalog(ragQuery);
-                    }}
-                    placeholder="Rechercher une offre (ex: Fibre 100M, SD-WAN, Cloud, CyberSOC)..."
-                    className="w-full px-4 py-2.5 pl-9 rounded-2xl bg-[#ECEAE5] dark:bg-[#1C1C1E] border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8]"
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
-                    <Icons.Search size={14} />
-                  </div>
-                </div>
-                <button
-                  onClick={() => searchRagCatalog(ragQuery)}
-                  disabled={ragSearching}
-                  className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-2xl transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  <Icons.Sparkles size={14} className={ragSearching ? "animate-spin" : ""} />
-                  <span>Rechercher</span>
-                </button>
+                )}
               </div>
 
-              {/* Quick suggestion chips */}
-              <div className="flex flex-wrap gap-1.5">
-                {["Fibre Dédiée Pro", "SD-WAN Managé", "CyberSOC 24/7", "Cloud Backup", "IP VPN", "GTR 4h"].map((keyword, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setRagQuery(keyword);
-                      searchRagCatalog(keyword);
-                    }}
-                    className="px-2.5 py-1 bg-[#ECEAE5] dark:bg-[#1C1C1E] hover:bg-white dark:hover:bg-[#3B373D] text-zinc-700 dark:text-zinc-300 text-[11px] font-medium rounded-lg border border-black/5 dark:border-white/5 transition-all cursor-pointer"
-                  >
-                    {keyword}
-                  </button>
-                ))}
-              </div>
-            </div>
+              {/* Seamless transition within the SAME card */}
+              <div className="border-t border-black/5 dark:border-white/5 my-8" />
 
-            {/* RAG Results Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-              {ragResults.length > 0 ? (
-                ragResults.map((result: any, idx: number) => {
-                  const isCopied = copiedRagPackage === (result.id || String(idx));
-                  return (
-                    <div
-                      key={result.id || idx}
-                      className="p-4 rounded-2xl bg-[#ECEAE5] dark:bg-[#1C1C1E] border border-black/5 dark:border-white/5 flex flex-col justify-between gap-3 text-xs"
+              {/* Solutions recommandées (Simple title, clean list, NO nested card) */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                    Solutions recommandées
+                  </h3>
+                  {!isEditing && (
+                    <button
+                      onClick={() => handleSaveBrief(true)}
+                      disabled={isSaving}
+                      className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1"
                     >
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold">
-                            {result.categorie || 'Orange Business'}
-                          </span>
-                          {result.score !== undefined && (
-                            <span className="text-[10px] font-mono text-zinc-400">
-                              Pertinence: {(result.score * 100).toFixed(0)}%
-                            </span>
+                      <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
+                      <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
+                    </button>
+                  )}
+                </div>
+
+                {isEditing ? (
+                  <div className="space-y-4">
+                    {editSolutions.map((sol, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <input
+                            type="text"
+                            value={sol.name}
+                            onChange={(e) => {
+                              const updated = [...editSolutions];
+                              updated[idx] = { ...updated[idx], name: e.target.value };
+                              setEditSolutions(updated);
+                            }}
+                            placeholder="Nom de l'offre"
+                            className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs font-bold outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={sol.category}
+                            onChange={(e) => {
+                              const updated = [...editSolutions];
+                              updated[idx] = { ...updated[idx], category: e.target.value };
+                              setEditSolutions(updated);
+                            }}
+                            placeholder="Catégorie"
+                            className="w-32 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                          />
+                          <button
+                            onClick={() => setEditSolutions(editSolutions.filter((_, i) => i !== idx))}
+                            className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                            title="Supprimer"
+                          >
+                            <Icons.Trash2 size={14} />
+                          </button>
+                        </div>
+                        <textarea
+                          value={sol.description}
+                          onChange={(e) => {
+                            const updated = [...editSolutions];
+                            updated[idx] = { ...updated[idx], description: e.target.value };
+                            setEditSolutions(updated);
+                          }}
+                          rows={2}
+                          placeholder="Description de la solution..."
+                          className="w-full p-2.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none resize-y"
+                        />
+                      </div>
+                    ))}
+
+                    {/* Auto-completion & Search Input for New Solution */}
+                    <div className="p-4 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-3 relative">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+                          Ajouter une solution Orange
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleSearchCatalog(newSolName)}
+                          className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
+                        >
+                          <Icons.Search size={12} />
+                          <span>Parcourir le catalogue</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2 relative">
+                        {/* Auto-completing Input Field */}
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            value={newSolName}
+                            onChange={(e) => {
+                              setNewSolName(e.target.value);
+                              setShowCatalogSuggestions(true);
+                            }}
+                            onFocus={() => {
+                              if (newSolName.trim().length > 0) setShowCatalogSuggestions(true);
+                            }}
+                            placeholder="Tapez le nom d'une solution (ex: Fibre, SD-WAN, CyberSOC)..."
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+                          />
+
+                          {/* Search Button Next to Input */}
+                          <button
+                            type="button"
+                            onClick={() => handleSearchCatalog(newSolName)}
+                            title="Rechercher dans le catalogue"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                          >
+                            <Icons.Search size={13} />
+                          </button>
+
+                          {/* Floating Auto-completion Suggestions Dropdown */}
+                          {showCatalogSuggestions && matchingSuggestions.length > 0 && (
+                            <div className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-white dark:bg-[#282528] rounded-xl shadow-lg border border-black/5 dark:border-white/10 max-h-56 overflow-y-auto divide-y divide-black/5 dark:divide-white/5 animate-in fade-in duration-100">
+                              {matchingSuggestions.map((item, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => selectCatalogOffer(item)}
+                                  className="w-full px-3.5 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-black/20 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+                                >
+                                  <div>
+                                    <div className="text-xs font-bold text-zinc-900 dark:text-white">
+                                      {item.name}
+                                    </div>
+                                    <div className="text-[11px] text-zinc-500 truncate max-w-sm">
+                                      {item.description}
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0 font-semibold">
+                                    {item.category}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
                           )}
                         </div>
 
-                        <h4 className="font-extrabold text-zinc-900 dark:text-white leading-tight">
-                          {result.nom_offre || result.titre}
-                        </h4>
-
-                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                          {result.description_commerciale || result.resume}
-                        </p>
+                        <input
+                          type="text"
+                          value={newSolCategory}
+                          onChange={(e) => setNewSolCategory(e.target.value)}
+                          placeholder="Catégorie"
+                          className="w-32 px-3 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                        />
                       </div>
 
-                      <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
-                        <div className="text-[11px]">
-                          <span className="font-bold text-zinc-900 dark:text-white block">
-                            {result.tarification || 'Sur devis'}
-                          </span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                            {result.sla || 'SLA 99.9%'}
-                          </span>
-                        </div>
-
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={newSolDesc}
+                          onChange={(e) => setNewSolDesc(e.target.value)}
+                          placeholder="Description et valeur ajoutée..."
+                          className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                        />
                         <button
+                          type="button"
                           onClick={() => {
-                            const snippet = `Offre Orange : ${result.nom_offre || result.titre} (${result.tarification || 'Sur devis'}) - SLA : ${result.sla || 'GTR 4h'} - ${result.description_commerciale || ''}`;
-                            navigator.clipboard.writeText(snippet);
-                            setCopiedRagPackage(result.id || String(idx));
-                            setTimeout(() => setCopiedRagPackage(null), 2000);
+                            if (newSolName.trim()) {
+                              setEditSolutions([
+                                ...editSolutions,
+                                {
+                                  id: String(editSolutions.length + 1),
+                                  name: newSolName.trim(),
+                                  category: newSolCategory.trim() || 'Orange Business',
+                                  description: newSolDesc.trim() || 'Solution adaptée au compte.',
+                                  sla: newSolSla || 'SLA 99.9%',
+                                },
+                              ]);
+                              setNewSolName('');
+                              setNewSolDesc('');
+                              setNewSolCategory('');
+                              setShowCatalogSuggestions(false);
+                            }
                           }}
-                          className="px-2.5 py-1 bg-white dark:bg-[#2F2C30] hover:bg-[#4F6CE8] hover:text-white text-zinc-700 dark:text-zinc-200 rounded-lg text-[10px] font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                          disabled={!newSolName.trim()}
+                          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shrink-0"
                         >
-                          {isCopied ? "Copié !" : "Copier"}
+                          <Icons.Plus size={13} />
+                          <span>Ajouter</span>
                         </button>
                       </div>
                     </div>
-                  );
-                })
-              ) : (
-                <div className="md:col-span-3 text-center py-4 text-xs text-zinc-400 italic">
-                  Aucune offre ne correspond à cette recherche. Essayez un autre mot-clé.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 4: Questions d'Audit Stratégiques (Discovery) */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-4">
-            <div className="flex items-center gap-2">
-              <Icons.HelpCircle size={18} className="text-[#4F6CE8]" />
-              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                5 Questions Clés à Poser Pendant le Rendez-vous
-              </h3>
-            </div>
-
-            <div className="space-y-2.5">
-              {briefingData.critical_discovery_questions.map((q, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#3B373D]"
-                >
-                  <div className="w-5 h-5 rounded-full bg-[#4F6CE8] text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    {idx + 1}
                   </div>
-                  <p className="text-xs font-medium text-zinc-900 dark:text-white leading-relaxed">
-                    {q}
-                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {displayedSolutions.map((sol, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3.5 border-b border-black/5 dark:border-white/5 last:border-b-0"
+                      >
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-semibold text-zinc-500 uppercase">
+                              {sol.category}
+                            </span>
+                            <span className="text-[11px] font-bold text-zinc-900 dark:text-white">
+                              {sol.name}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            {sol.description}
+                          </p>
+                        </div>
+
+                        {sol.sla && (
+                          <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
+                            {sol.sla}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 2: SINGLE CLEAN CARD - FAITS, VIGILANCE ET MANQUES                    */}
+          {/* ========================================================================= */}
+          {activeTab === 'details' && (
+            <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 space-y-8 animate-in fade-in duration-150">
+              
+              {/* Faits clés */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  Faits clés
+                </h3>
+
+                {isEditing ? (
+                  <div className="space-y-2">
+                    {editKeyFacts.map((factText, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={factText}
+                          onChange={(e) => {
+                            const updated = [...editKeyFacts];
+                            updated[idx] = e.target.value;
+                            setEditKeyFacts(updated);
+                          }}
+                          className="flex-1 p-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
+                        />
+                        <button
+                          onClick={() => setEditKeyFacts(editKeyFacts.filter((_, i) => i !== idx))}
+                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                        >
+                          <Icons.Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        value={newFactText}
+                        onChange={(e) => setNewFactText(e.target.value)}
+                        placeholder="Nouveau fait clé..."
+                        className="flex-1 px-3 py-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newFactText.trim()) {
+                            setEditKeyFacts([...editKeyFacts, newFactText.trim()]);
+                            setNewFactText('');
+                          }
+                        }}
+                        disabled={!newFactText.trim()}
+                        className="px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
+                    {(briefingData.ai_summary?.key_facts || []).length > 0 ? (
+                      (briefingData.ai_summary?.key_facts || []).map((fact, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 shrink-0 mt-1.5" />
+                          <span className="leading-relaxed">{fact.text}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-zinc-400 italic">Aucun fait clé renseigné.</li>
+                    )}
+                  </ul>
+                )}
+              </div>
+
+              <div className="border-t border-black/5 dark:border-white/5" />
+
+              {/* Contradictions & Points de vigilance */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                  Contradictions & Vigilance
+                </h3>
+
+                {isEditing ? (
+                  <div className="space-y-2">
+                    {editContradictions.map((contraText, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={contraText}
+                          onChange={(e) => {
+                            const updated = [...editContradictions];
+                            updated[idx] = e.target.value;
+                            setEditContradictions(updated);
+                          }}
+                          className="flex-1 p-2 rounded-lg bg-amber-500/10 text-xs outline-none"
+                        />
+                        <button
+                          onClick={() => setEditContradictions(editContradictions.filter((_, i) => i !== idx))}
+                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                        >
+                          <Icons.Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        value={newContraText}
+                        onChange={(e) => setNewContraText(e.target.value)}
+                        placeholder="Nouveau point de vigilance..."
+                        className="flex-1 px-3 py-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newContraText.trim()) {
+                            setEditContradictions([...editContradictions, newContraText.trim()]);
+                            setNewContraText('');
+                          }
+                        }}
+                        disabled={!newContraText.trim()}
+                        className="px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(briefingData.ai_summary?.contradictions || []).length > 0 ? (
+                      (briefingData.ai_summary?.contradictions || []).map((contra, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
+                          <Icons.AlertTriangle size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                          <p className="leading-relaxed">{contra.text}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-zinc-500 italic">
+                        Aucune divergence d&apos;identité ou vigilance majeure détectée.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-black/5 dark:border-white/5" />
+
+              {/* Informations manquantes */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  Informations manquantes
+                </h3>
+
+                {isEditing ? (
+                  <div className="space-y-2">
+                    {editGaps.map((gapText, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={gapText}
+                          onChange={(e) => {
+                            const updated = [...editGaps];
+                            updated[idx] = e.target.value;
+                            setEditGaps(updated);
+                          }}
+                          className="flex-1 p-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
+                        />
+                        <button
+                          onClick={() => setEditGaps(editGaps.filter((_, i) => i !== idx))}
+                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                        >
+                          <Icons.Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        value={newGapText}
+                        onChange={(e) => setNewGapText(e.target.value)}
+                        placeholder="Information manquante..."
+                        className="flex-1 px-3 py-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newGapText.trim()) {
+                            setEditKeyFacts([...editGaps, newGapText.trim()]);
+                            setNewGapText('');
+                          }
+                        }}
+                        disabled={!newGapText.trim()}
+                        className="px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
+                    {(briefingData.ai_summary?.gaps || []).length > 0 ? (
+                      (briefingData.ai_summary?.gaps || []).map((gap, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                          <span className="leading-relaxed">{gap}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-zinc-400 italic">Aucune information manquante critique.</li>
+                    )}
+                  </ul>
+                )}
+              </div>
+
+              {/* Minimalist Collapsed Sources Link */}
+              {(briefingData.evidence?.length || briefingData.sources?.length) ? (
+                <div className="pt-4 border-t border-black/5 dark:border-white/5">
+                  <button
+                    onClick={() => setShowSourcesDrawer(!showSourcesDrawer)}
+                    className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>{showSourcesDrawer ? "Masquer les sources" : `Voir les sources (${briefingData.evidence?.length || 0})`}</span>
+                    {showSourcesDrawer ? <Icons.ChevronUp size={13} /> : <Icons.ChevronDown size={13} />}
+                  </button>
+
+                  {showSourcesDrawer && (
+                    <div className="mt-3 space-y-2">
+                      {(briefingData.evidence || []).map((item) => (
+                        <div key={item.evidence_id} className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+                          <span className="font-mono text-[10px] text-zinc-400">[{item.evidence_id}]</span>
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline text-blue-600 dark:text-blue-400 truncate max-w-sm inline-flex items-center gap-1"
+                          >
+                            <span>{item.title || item.publisher}</span>
+                            <Icons.ExternalLink size={10} />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : null}
 
-          {/* Card 5: Règles d'Or pour le KAM */}
-          <div className="p-6 rounded-[28px] bg-[#FFFFFF] dark:bg-[#2F2C30] shadow-none space-y-3">
-            <div className="flex items-center gap-2">
-              <Icons.Shield size={18} className="text-[#4F6CE8]" />
-              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Règles d&apos;Or de Négociation
-              </h3>
-            </div>
-            <ul className="space-y-2">
-              {briefingData.golden_rules.map((rule, idx) => (
-                <li
-                  key={idx}
-                  className="text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8] shrink-0" />
-                  <span>{rule}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Bottom Action Footer */}
-          {onLaunchMeetingForAccount && (
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={() => onLaunchMeetingForAccount(briefingData.enterprise_id)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold rounded-2xl shadow-none cursor-pointer transition-all"
-              >
-                <Icons.Mic size={16} />
-                <span>Démarrer le rendez-vous & Enregistrement</span>
-              </button>
             </div>
           )}
 
         </div>
       ) : null}
+
+      {/* ========================================================================= */}
+      {/* CATALOG SEARCH MODAL (SEARCH BUTTON NEXT TO INPUT)                        */}
+      {/* ========================================================================= */}
+      {showCatalogModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#282528] rounded-2xl w-full max-w-xl p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
+              <div className="flex items-center gap-2">
+                <Icons.Search size={16} className="text-[#4F6CE8]" />
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Rechercher dans le Catalogue Orange Business
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowCatalogModal(false)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg cursor-pointer"
+              >
+                <Icons.X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Search Input */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={catalogModalQuery}
+                  onChange={(e) => setCatalogModalQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearchCatalog(catalogModalQuery);
+                  }}
+                  placeholder="Rechercher (ex: Fibre, SD-WAN, Datacenter, CyberSOC, VoIP)..."
+                  className="w-full px-4 py-2.5 pl-9 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+                  <Icons.Search size={14} />
+                </div>
+              </div>
+              <button
+                onClick={() => handleSearchCatalog(catalogModalQuery)}
+                disabled={isSearchingCatalog}
+                className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-semibold rounded-xl cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+              >
+                {isSearchingCatalog ? <Icons.RefreshCw size={13} className="animate-spin" /> : <Icons.Search size={13} />}
+                <span>Chercher</span>
+              </button>
+            </div>
+
+            {/* Results List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-black/5 dark:divide-white/5 space-y-2 pr-1">
+              {isSearchingCatalog ? (
+                <div className="py-8 text-center text-xs text-zinc-400">
+                  <Icons.RefreshCw size={20} className="animate-spin text-[#4F6CE8] mx-auto mb-2" />
+                  <span>Recherche dans l&apos;index catalogue...</span>
+                </div>
+              ) : catalogSearchResults.length > 0 ? (
+                catalogSearchResults.map((result: any, i: number) => {
+                  const offerName = result.nom_offre || result.name || result.titre;
+                  const offerCat = result.categorie || result.category || 'Orange Business';
+                  const offerDesc = result.description_commerciale || result.description || result.resume || '';
+                  const offerSla = result.sla || 'SLA 99.9% · GTR 4h';
+
+                  return (
+                    <div
+                      key={i}
+                      className="p-3 rounded-xl hover:bg-[#F6F5F2] dark:hover:bg-black/20 transition-colors flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+                            {offerCat}
+                          </span>
+                          <strong className="text-zinc-900 dark:text-white font-bold">
+                            {offerName}
+                          </strong>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                          {offerDesc}
+                        </p>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block">
+                          {offerSla}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          selectCatalogOffer({
+                            name: offerName,
+                            category: offerCat,
+                            description: offerDesc,
+                            sla: offerSla,
+                          })
+                        }
+                        className="px-3 py-1.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-lg text-[11px] font-bold cursor-pointer shrink-0 transition-all"
+                      >
+                        Sélectionner
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-8 text-center text-xs text-zinc-400">
+                  Aucune offre trouvée pour ce terme.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

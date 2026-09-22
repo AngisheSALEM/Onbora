@@ -12,12 +12,14 @@ import { KamVisitPurpose, PurposeSuggestion, VISIT_PURPOSE_LABELS, VISIT_PURPOSE
 interface KamAgendaViewProps {
   assignedAccounts: StrategicVisit[];
   onOpenVisitsHistory?: () => void;
+  onOpenReport?: (reportId: number) => void;
   onAccountUpdated?: (account: StrategicVisit) => void;
 }
 
 export default function KamAgendaView({
   assignedAccounts,
   onOpenVisitsHistory,
+  onOpenReport,
   onAccountUpdated,
 }: KamAgendaViewProps) {
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
@@ -430,136 +432,97 @@ export default function KamAgendaView({
             return (
               <div
                 key={app.id}
-                className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[28px] p-6 border border-black/5 dark:border-white/5 shadow-xs flex flex-col justify-between gap-4 hover:border-[#4F6CE8]/30 transition-all group"
+                className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-xs flex flex-col justify-between gap-5 hover:border-[#4F6CE8]/30 transition-all group"
               >
-                {/* Card Top Header */}
-                <div className="space-y-2.5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center font-extrabold text-sm shrink-0">
-                        {app.enterprise_name.charAt(0)}
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-extrabold text-zinc-900 dark:text-white leading-tight">
-                          {app.enterprise_name}
-                        </h4>
-                        <span className="text-[10px] text-zinc-400 font-mono block">
-                          {app.sector} • {app.crm_id}
-                        </span>
-                      </div>
+                {/* 1. Header: Enterprise Name & Visit State */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center font-extrabold text-sm shrink-0">
+                      {app.enterprise_name.charAt(0)}
                     </div>
-
-                    {/* Status Badge */}
-                    {isCompleted ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
-                        <Icons.CheckCircle size={11} />
-                        <span>Rapport Généré</span>
-                      </span>
-                    ) : isInProgress ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
-                        <Icons.Mic size={11} />
-                        <span>En cours</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
-                        <Icons.Clock size={11} />
-                        <span>Planifié</span>
-                      </span>
-                    )}
+                    <h4 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight truncate">
+                      {app.enterprise_name}
+                    </h4>
                   </div>
 
-                  {/* Title & Objective */}
-                  <div className="pt-1">
-                    <p className="text-[11px] font-semibold text-[#4F6CE8]">
-                      {app.visit_purpose_label || 'Type non renseigné'}
-                      <span className="text-zinc-500 dark:text-zinc-400 font-normal"> · {app.previous_kam_visits === 0 ? '1er rendez-vous KAM' : `${app.previous_kam_visits + 1}e rendez-vous KAM`}</span>
-                    </p>
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">
-                      {app.title}
+                  {/* État de la visite */}
+                  {isCompleted ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                      <Icons.CheckCircle size={12} />
+                      <span>Rapport généré</span>
                     </span>
-                    {app.objective && (
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
-                        {app.objective}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Date, Type & Interlocuteur Pills */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-black/5 dark:border-white/5 text-xs">
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase text-zinc-400 block">Date & Heure</span>
-                      <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        {formatDate(app.scheduled_at)}
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase text-zinc-400 block">Interlocuteur</span>
-                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate block">
-                        {app.contact_name ? `${app.contact_name}${app.contact_role ? ` (${app.contact_role})` : ''}` : (app.contact_role || 'Non renseigné')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Meeting Type & Location Link */}
-                  <div className="flex items-center justify-between text-[11px] pt-1 text-zinc-500">
-                    <span className="flex items-center gap-1">
-                      {app.meeting_type === 'GOOGLE_MEET' ? (
-                        <>
-                          <Icons.Video size={13} className="text-[#4F6CE8]" />
-                          <span>Visioconférence Google Meet</span>
-                        </>
-                      ) : app.meeting_type === 'CALL' ? (
-                        <>
-                          <Icons.Phone size={13} className="text-zinc-500" />
-                          <span>Appel Téléphonique</span>
-                        </>
-                      ) : (
-                        <>
-                          <Icons.MapPin size={13} className="text-emerald-500" />
-                          <span>Visite Terrain : {app.location || 'Siège'}</span>
-                        </>
-                      )}
+                  ) : isInProgress ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
+                      <Icons.Mic size={12} />
+                      <span>En cours</span>
                     </span>
-                    <span className="font-mono">{app.duration_minutes} min</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
+                      <Icons.Clock size={12} />
+                      <span>Planifié</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* 2. Body: Type de visite + Date & Heure */}
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
+                      Type de visite
+                    </span>
+                    <span className="text-xs font-semibold text-[#4F6CE8] block mt-0.5 truncate">
+                      {app.visit_purpose_label || app.meeting_type_label || 'Rendez-vous'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
+                      Date & Heure
+                    </span>
+                    <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5">
+                      {formatDate(app.scheduled_at)}
+                    </span>
                   </div>
                 </div>
 
-                {/* Card Bottom CTA : Lancer le Brief Vocal */}
-                <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between gap-3 flex-wrap">
+                {/* 3. Card Bottom CTA */}
+                <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-end gap-2.5">
                   {isCompleted ? (
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                      <Icons.Check size={13} />
-                      <span>Visite clôturée avec Core AI</span>
-                    </span>
+                    <button
+                      onClick={() => onOpenReport?.(app.report_id || app.id)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                      title="Consulter le rapport de visite"
+                    >
+                      <Icons.FileText size={15} />
+                      <span>Voir le rapport</span>
+                    </button>
                   ) : isInProgress ? (
-                    <span className="text-[11px] text-[#4F6CE8] font-semibold">Réunion démarrée</span>
+                    <button
+                      onClick={() => setActiveVocalAppointment(app)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+                    >
+                      <Icons.Mic size={15} />
+                      <span>Reprendre la réunion</span>
+                    </button>
                   ) : (
-                    <span className="text-[11px] text-zinc-400 italic">
-                      Activez le micro pendant l&apos;échange
-                    </span>
-                  )}
-
-                  {/* Microphone Action Button */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {!isCompleted && !isInProgress && (
-                      <button type="button" onClick={() => setActivePreparationAppointment(app)} className="px-3 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActivePreparationAppointment(app)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] transition-colors"
+                      >
                         Préparer
                       </button>
-                    )}
-                    <button
-                    onClick={() => setActiveVocalAppointment(app)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
-                      isCompleted
-                        ? 'bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-[#4F6CE8] hover:text-white'
-                        : 'bg-[#4F6CE8] hover:bg-[#3D57C5] text-white shadow-md'
-                    }`}
-                    title="Lancer le débrief vocal en direct"
-                  >
-                    <Icons.Mic size={15} />
-                    <span>{isCompleted ? "Recommencer Vocal" : isInProgress ? "Reprendre la réunion" : "Brief Vocal Live"}</span>
-                  </button>
-                  </div>
+                      <button
+                        onClick={() => setActiveVocalAppointment(app)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+                        title="Démarrer la réunion vocale"
+                      >
+                        <Icons.Mic size={15} />
+                        <span>Brief Vocal Live</span>
+                      </button>
+                    </>
+                  )}
                 </div>
 
               </div>

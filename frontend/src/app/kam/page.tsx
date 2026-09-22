@@ -15,6 +15,8 @@ import KamPreCallView from '@/components/kam/KamPreCallView';
 import KamLeadScoringView from '@/components/kam/KamLeadScoringView';
 import KamChurnRadarView from '@/components/kam/KamChurnRadarView';
 import KamVoiceDebriefModal from '@/components/kam/KamVoiceDebriefModal';
+import KamVisitReportView from '@/components/kam/KamVisitReportView';
+import { KamVisitRecord } from '@/components/kam/KamVisitsHistoryView';
 import { StrategicVisit } from '@/components/kam/kamTypes';
 import { Icons } from '@/components/shared/Icons';
 
@@ -23,6 +25,9 @@ export default function KamCommandCenterPage() {
   const [visits, setVisits] = useState<StrategicVisit[]>([]);
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
   const [activeView, setActiveView] = useState<KamView>('accounts');
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
+  const [selectedReportRecord, setSelectedReportRecord] = useState<KamVisitRecord | null>(null);
+  const [reportReturnView, setReportReturnView] = useState<KamView>('visits');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDebriefVisit, setActiveDebriefVisit] = useState<StrategicVisit | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,6 +73,13 @@ export default function KamCommandCenterPage() {
   const handleOpenDebriefForAccount = (visit: StrategicVisit) => {
     setSelectedVisitId(visit.id);
     setActiveDebriefVisit(visit);
+  };
+
+  const handleOpenReport = (reportId: number, record?: KamVisitRecord | null, returnView: KamView = 'visits') => {
+    setSelectedReportId(reportId);
+    setSelectedReportRecord(record || null);
+    setReportReturnView(returnView);
+    setActiveView('report');
   };
 
   const handleDebriefSaved = (updatedVisit: StrategicVisit) => {
@@ -185,6 +197,7 @@ export default function KamCommandCenterPage() {
                 <KamAgendaView
                   assignedAccounts={visits}
                   onOpenVisitsHistory={() => setActiveView('visits')}
+                  onOpenReport={(reportId) => handleOpenReport(reportId, null, 'agenda')}
                   onAccountUpdated={(updated) => setVisits((previous) => previous.map((account) => account.id === updated.id ? updated : account))}
                 />
               )}
@@ -192,6 +205,15 @@ export default function KamCommandCenterPage() {
               {activeView === 'visits' && (
                 <KamVisitsHistoryView
                   onScheduleMeeting={() => setActiveView('agenda')}
+                  onOpenReport={(record) => handleOpenReport(record.id, record, 'visits')}
+                />
+              )}
+
+              {activeView === 'report' && (
+                <KamVisitReportView
+                  reportId={selectedReportId}
+                  initialReport={selectedReportRecord}
+                  onBack={() => setActiveView(reportReturnView)}
                 />
               )}
 

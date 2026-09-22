@@ -104,7 +104,7 @@ export default function KamAgendaTimeline({
 
                   <div className="flex items-center gap-1.5 text-xs font-mono font-extrabold text-black bg-zinc-100 px-3 py-1.5 rounded-full">
                     <Icons.Clock size={14} />
-                    <span>{visit.meeting_time} ({visit.duration_minutes} min)</span>
+                    <span>{visit.meeting_time}</span>
                   </div>
                 </div>
 
@@ -115,37 +115,6 @@ export default function KamAgendaTimeline({
                 <p className="text-xs md:text-sm font-550 text-zinc-600 mt-1">
                   {visit.meeting_title}
                 </p>
-
-                {/* Golden Rule Highlight Box */}
-                <div className="mt-4 p-4 bg-amber-500/10 rounded-2xl flex items-start gap-3 text-xs text-amber-950">
-                  <Icons.Shield size={18} className="text-amber-700 shrink-0 mt-0.5" />
-                  <div className="leading-relaxed">
-                    <strong className="font-semibold text-amber-900">Règle d&apos;Or Avant d&apos;Entrer : </strong>
-                    <span>{visit.golden_rule}</span>
-                  </div>
-                </div>
-
-                {/* KPI Metrics Strip */}
-                <div className="grid grid-cols-3 gap-3 mt-4 text-center">
-                  <div className="p-3 bg-zinc-100 rounded-2xl">
-                    <span className="block text-[10px] font-semibold text-zinc-500 uppercase">MRR Actuel Orange</span>
-                    <span className="text-sm md:text-base font-mono font-extrabold text-zinc-900">
-                      {visit.briefing.orange_relationship.mrr_current.toLocaleString()} €
-                    </span>
-                  </div>
-                  <div className="p-3 bg-zinc-100 rounded-2xl">
-                    <span className="block text-[10px] font-semibold text-zinc-500 uppercase">Part Portefeuille</span>
-                    <span className="text-sm md:text-base font-mono font-extrabold text-blue-600">
-                      {visit.briefing.orange_relationship.wallet_share_percentage}%
-                    </span>
-                  </div>
-                  <div className="p-3 bg-zinc-100 rounded-2xl">
-                    <span className="block text-[10px] font-semibold text-zinc-500 uppercase">Agences Connectées</span>
-                    <span className="text-sm md:text-base font-mono font-extrabold text-zinc-900">
-                      {visit.briefing.firmographics.locations_count} sites
-                    </span>
-                  </div>
-                </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-zinc-100">

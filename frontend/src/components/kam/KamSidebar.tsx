@@ -6,7 +6,7 @@ import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report';
 
 interface KamSidebarProps {
   activeView: KamView;

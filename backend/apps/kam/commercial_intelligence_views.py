@@ -27,13 +27,14 @@ class PreCallBriefingDetailView(APIView):
 
         user = request.user
         # Permettre l'accès aux KAMs et Admins pour préparer tout compte / prospect
-        # Vérifier si un briefing existe déjà
+        # Vérifier si un briefing avec analysis_data existe déjà
         briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
-        if briefing:
+        if briefing and briefing.analysis_data:
             data = {
                 "id": briefing.id,
                 "enterprise_id": enterprise.id,
                 "enterprise_name": enterprise.name,
+                **briefing.analysis_data,
                 "company_overview": briefing.company_overview,
                 "key_decision_makers": briefing.key_decision_makers,
                 "detected_business_challenges": briefing.detected_business_challenges,
@@ -41,11 +42,12 @@ class PreCallBriefingDetailView(APIView):
                 "critical_discovery_questions": briefing.critical_discovery_questions,
                 "golden_rules": briefing.golden_rules,
                 "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
-                "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M")
+                "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
+                "ai_engine": "Onbora Analysis (Port 8001 / AI Core)"
             }
             return Response(data, status=status.HTTP_200_OK)
 
-        # Générer à la volée
+        # Générer à la volée via Unified Core AI & Onbora Analysis Service
         data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
         return Response(data, status=status.HTTP_200_OK)
 
@@ -59,6 +61,23 @@ class PreCallBriefingDetailView(APIView):
         user = request.user
         data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
         return Response(data, status=status.HTTP_200_OK)
+
+    def patch(self, request, account_id):
+        clean_id = str(account_id).replace('account-', '')
+        try:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
+            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        data = CommercialIntelligenceService.update_and_resynthesize_briefing(
+            enterprise=enterprise,
+            request_data=request.data,
+            kam_user=request.user
+        )
+        return Response(data, status=status.HTTP_200_OK)
+
+    def put(self, request, account_id):
+        return self.patch(request, account_id)
 
 
 class PreCallBriefingListView(APIView):

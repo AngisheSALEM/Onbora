@@ -160,7 +160,7 @@ export default function KamBriefingView({
               title="Retour au portefeuille des comptes"
             >
               <Icons.ChevronLeft size={16} />
-              <span>Portefeuille</span>
+              
             </button>
           )}
           <div>
