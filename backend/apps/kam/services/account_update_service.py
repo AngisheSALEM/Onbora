@@ -1,6 +1,6 @@
 from datetime import date
 from typing import Dict, Any, Tuple
-from enterprises.models import Enterprise
+from sales.models import Enterprise
 from reporting.utils import log_demo_event
 
 
