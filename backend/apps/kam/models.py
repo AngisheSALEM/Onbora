@@ -93,6 +93,16 @@ class ProspectDossier(models.Model):
 
 
 class KamAppointment(models.Model):
+    VISIT_PURPOSES = [
+        ('DISCOVERY', 'Prospection / Découverte'),
+        ('QUALIFICATION', 'Qualification / Proposition'),
+        ('FOLLOW_UP', 'Suivi / Revue client'),
+        ('GROWTH', 'Renouvellement / Développement'),
+    ]
+    PURPOSE_SOURCES = [
+        ('AUTO', 'Suggestion automatique'),
+        ('MANUAL', 'Choix du KAM'),
+    ]
     MEETING_TYPES = [
         ('PHYSICAL', 'Visite Terrain (Physique)'),
         ('GOOGLE_MEET', 'Google Meet / Visioconférence'),
@@ -124,6 +134,9 @@ class KamAppointment(models.Model):
     contact_name = models.CharField(max_length=150, blank=True, default='')
     contact_role = models.CharField(max_length=100, blank=True, default='')
     objective = models.TextField(blank=True, default='')
+    visit_purpose = models.CharField(max_length=20, choices=VISIT_PURPOSES, null=True, blank=True)
+    purpose_source = models.CharField(max_length=10, choices=PURPOSE_SOURCES, null=True, blank=True)
+    purpose_reason = models.CharField(max_length=255, blank=True, default='')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SCHEDULED')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

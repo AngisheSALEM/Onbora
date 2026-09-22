@@ -2,6 +2,9 @@ import os
 import sys
 import logging
 import tempfile
+from datetime import date
+from bisect import bisect_left
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import ProspectDossier, KamAppointment, KamVisitReport, RelationshipCoverage
+from .services.visit_purpose_service import build_appointment_preparation, suggest_visit_purpose
 from twin.models import BusinessTwin
 from .serializers import ProspectDossierSerializer, BusinessTwinSerializer, RelationshipCoverageSerializer
 from .application.use_cases import ManageProvisioningUseCase
@@ -520,10 +524,34 @@ class KamAccountUpdateInfoView(APIView):
                 pass
 
         # Concurrence et connectivité
-        if 'current_operator' in data:
-            enterprise.current_operator = str(data['current_operator']).strip()
         if 'current_connectivity' in data:
             enterprise.current_connectivity = str(data['current_connectivity']).strip()
+
+        if any(key in data for key in ('current_operator', 'orange_contract_end_date', 'growth_project')):
+            crm_data = dict(enterprise.existing_crm_data) if isinstance(enterprise.existing_crm_data, dict) else {}
+            if 'current_operator' in data:
+                current_operator = str(data['current_operator'] or '').strip()[:100]
+                if current_operator:
+                    crm_data['current_operator'] = current_operator
+                else:
+                    crm_data.pop('current_operator', None)
+            if 'orange_contract_end_date' in data:
+                raw_date = str(data['orange_contract_end_date'] or '').strip()
+                if raw_date:
+                    try:
+                        date.fromisoformat(raw_date)
+                    except ValueError:
+                        return Response({"detail": "Date de fin du contrat Orange invalide."}, status=status.HTTP_400_BAD_REQUEST)
+                    crm_data['orange_contract_end_date'] = raw_date
+                else:
+                    crm_data.pop('orange_contract_end_date', None)
+            if 'growth_project' in data:
+                project = str(data['growth_project'] or '').strip()[:255]
+                if project:
+                    crm_data['growth_project'] = project
+                else:
+                    crm_data.pop('growth_project', None)
+            enterprise.existing_crm_data = crm_data
 
         # Adresse
         if 'address' in data:
@@ -556,8 +584,12 @@ class KamAccountUpdateInfoView(APIView):
 # KAM APPOINTMENTS (AGENDA), VOCAL BRIEFING WITH CORE AI & VISITS HISTORY
 # ============================================================================
 
-def serialize_kam_appointment(app: KamAppointment) -> dict:
+def serialize_kam_appointment(app: KamAppointment, previous_kam_visits=None) -> dict:
     has_rep = hasattr(app, 'report') and app.report is not None
+    if previous_kam_visits is None:
+        previous_kam_visits = KamAppointment.objects.filter(
+            enterprise_id=app.enterprise_id, status='COMPLETED', scheduled_at__lt=app.scheduled_at
+        ).count()
     return {
         "id": app.id,
         "enterprise_id": app.enterprise_id,
@@ -571,9 +603,14 @@ def serialize_kam_appointment(app: KamAppointment) -> dict:
         "duration_minutes": app.duration_minutes,
         "location": app.location or (app.enterprise.location if app.enterprise else "Kinshasa"),
         "meet_url": app.meet_url or "",
-        "contact_name": app.contact_name or (app.enterprise.contact_name if app.enterprise else ""),
-        "contact_role": app.contact_role or (app.enterprise.contact_role if app.enterprise else ""),
+        "contact_name": app.contact_name or "",
+        "contact_role": app.contact_role or "",
         "objective": app.objective or "",
+        "visit_purpose": app.visit_purpose,
+        "visit_purpose_label": app.get_visit_purpose_display() if app.visit_purpose else "Type non renseigné",
+        "purpose_source": app.purpose_source,
+        "purpose_reason": app.purpose_reason,
+        "previous_kam_visits": previous_kam_visits,
         "status": app.status,
         "status_label": app.get_status_display(),
         "has_report": has_rep,
@@ -592,8 +629,10 @@ def serialize_kam_visit_report(rep: KamVisitReport) -> dict:
         "crm_id": rep.enterprise.crm_id if rep.enterprise else f"CRM-{rep.enterprise_id:04d}",
         "meeting_type": rep.appointment.meeting_type if rep.appointment else "PHYSICAL",
         "meeting_type_label": rep.appointment.get_meeting_type_display() if rep.appointment else "Visite Terrain (Physique)",
-        "contact_name": (rep.appointment.contact_name if rep.appointment and rep.appointment.contact_name else rep.enterprise.contact_name) if rep.enterprise else "",
-        "contact_role": (rep.appointment.contact_role if rep.appointment and rep.appointment.contact_role else rep.enterprise.contact_role) if rep.enterprise else "",
+        "visit_purpose": rep.appointment.visit_purpose if rep.appointment else None,
+        "visit_purpose_label": rep.appointment.get_visit_purpose_display() if rep.appointment and rep.appointment.visit_purpose else "Type non renseigné",
+        "contact_name": (rep.appointment.contact_name if rep.appointment else rep.enterprise.contact_name) if rep.enterprise else "",
+        "contact_role": (rep.appointment.contact_role if rep.appointment else rep.enterprise.contact_role) if rep.enterprise else "",
         "raw_transcript": rep.raw_transcript,
         "executive_summary": rep.executive_summary,
         "confirmed_needs": rep.confirmed_needs or [],
@@ -606,6 +645,35 @@ def serialize_kam_visit_report(rep: KamVisitReport) -> dict:
         "crm_payload": rep.crm_payload or {},
         "created_at": rep.created_at.isoformat() if hasattr(rep.created_at, 'isoformat') else str(rep.created_at),
     }
+
+
+class KamAppointmentPurposeSuggestionView(APIView):
+    permission_classes = [IsKAMOrAdmin]
+
+    def get(self, request):
+        enterprise_id = request.query_params.get('enterprise_id')
+        if not enterprise_id or not str(enterprise_id).isdigit():
+            return Response({"detail": "Sélectionnez une entreprise valide."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            enterprise = Enterprise.objects.get(pk=enterprise_id)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Entreprise introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user.role == User.KAM and enterprise.assigned_kam_id != request.user.id:
+            return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
+        return Response(suggest_visit_purpose(enterprise))
+
+
+class KamAppointmentPreparationView(APIView):
+    permission_classes = [IsKAMOrAdmin]
+
+    def get(self, request, pk):
+        try:
+            appointment = KamAppointment.objects.select_related('enterprise').get(pk=pk)
+        except KamAppointment.DoesNotExist:
+            return Response({"detail": "Rendez-vous introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user.role == User.KAM and appointment.kam_id != request.user.id:
+            return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
+        return Response(build_appointment_preparation(appointment))
 
 
 class KamAppointmentListCreateView(APIView):
@@ -622,13 +690,28 @@ class KamAppointmentListCreateView(APIView):
         else:
             appointments = KamAppointment.objects.all().select_related('enterprise', 'report').order_by('scheduled_at')
 
-        return Response([serialize_kam_appointment(app) for app in appointments], status=status.HTTP_200_OK)
+        appointment_list = list(appointments)
+        completed_dates = defaultdict(list)
+        enterprise_ids = {app.enterprise_id for app in appointment_list}
+        if enterprise_ids:
+            completed = KamAppointment.objects.filter(
+                enterprise_id__in=enterprise_ids, status='COMPLETED'
+            ).values_list('enterprise_id', 'scheduled_at')
+            for enterprise_id, scheduled_at in completed:
+                completed_dates[enterprise_id].append(scheduled_at)
+            for dates in completed_dates.values():
+                dates.sort()
+        return Response([
+            serialize_kam_appointment(app, bisect_left(completed_dates[app.enterprise_id], app.scheduled_at))
+            for app in appointment_list
+        ], status=status.HTTP_200_OK)
 
     def post(self, request):
         user = request.user
         data = request.data
 
         enterprise_id = data.get('enterprise_id')
+        start_immediately = data.get('start_immediately') in (True, 1, '1', 'true', 'True')
         title = data.get('title', '').strip()
         meeting_type = data.get('meeting_type', 'PHYSICAL')
         scheduled_at = data.get('scheduled_at')
@@ -641,10 +724,12 @@ class KamAppointmentListCreateView(APIView):
 
         if not enterprise_id:
             return Response({"detail": "Le compte client est requis."}, status=status.HTTP_400_BAD_REQUEST)
-        if not title:
+        if not title and not start_immediately:
             return Response({"detail": "Le titre ou l'objet du rendez-vous est requis."}, status=status.HTTP_400_BAD_REQUEST)
-        if not scheduled_at:
+        if not scheduled_at and not start_immediately:
             return Response({"detail": "La date et l'heure du rendez-vous sont requises."}, status=status.HTTP_400_BAD_REQUEST)
+        if meeting_type not in dict(KamAppointment.MEETING_TYPES):
+            return Response({"detail": "Format de rencontre invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             enterprise = Enterprise.objects.get(id=enterprise_id)
@@ -654,11 +739,18 @@ class KamAppointmentListCreateView(APIView):
         if user.role == User.KAM and enterprise.assigned_kam_id != user.id:
             return Response({"detail": "Accès refusé : ce compte n'est pas dans votre portefeuille."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Remplissage par défaut du contact si non fourni
-        if not contact_name:
-            contact_name = enterprise.contact_name or "Décideur Principal"
-        if not contact_role:
-            contact_role = enterprise.contact_role or "Directeur Général"
+        suggestion = suggest_visit_purpose(enterprise)
+        requested_purpose = data.get('visit_purpose')
+        if requested_purpose is not None and requested_purpose not in dict(KamAppointment.VISIT_PURPOSES):
+            return Response({"detail": "Type de visite invalide."}, status=status.HTTP_400_BAD_REQUEST)
+        if not requested_purpose and suggestion['needs_confirmation']:
+            return Response({"detail": "Confirmez le type de visite pour ce compte."}, status=status.HTTP_400_BAD_REQUEST)
+        visit_purpose = requested_purpose or suggestion['suggested_purpose']
+        purpose_source = 'MANUAL' if requested_purpose else 'AUTO'
+        purpose_reason = 'Choix du KAM.' if requested_purpose else suggestion['reason']
+        if start_immediately:
+            scheduled_at = timezone.now()
+            title = title or f"Réunion express — {enterprise.name}"
 
         app = KamAppointment.objects.create(
             kam=user,
@@ -667,17 +759,24 @@ class KamAppointmentListCreateView(APIView):
             meeting_type=meeting_type,
             scheduled_at=scheduled_at,
             duration_minutes=duration_minutes,
-            location=location or (enterprise.location or "Siège client"),
+            location=location or (enterprise.location or ""),
             meet_url=meet_url,
             contact_name=contact_name,
             contact_role=contact_role,
-            objective=objective or f"Échange stratégique et revue des besoins télécoms avec {enterprise.name}",
-            status='SCHEDULED'
+            objective=objective,
+            visit_purpose=visit_purpose,
+            purpose_source=purpose_source,
+            purpose_reason=purpose_reason,
+            status='IN_PROGRESS' if start_immediately else 'SCHEDULED'
         )
 
         log_demo_event(
-            'KAM_APPOINTMENT_SCHEDULED',
-            f"Nouveau rendez-vous planifié par {user.username} avec {enterprise.name} ({app.get_meeting_type_display()} le {app.scheduled_at})",
+            'KAM_MEETING_STARTED' if start_immediately else 'KAM_APPOINTMENT_SCHEDULED',
+            (
+                f"Réunion express démarrée par {user.username} avec {enterprise.name} ({app.get_meeting_type_display()})"
+                if start_immediately else
+                f"Nouveau rendez-vous planifié par {user.username} avec {enterprise.name} ({app.get_meeting_type_display()} le {app.scheduled_at})"
+            ),
             user=user if user.is_authenticated else None,
             metadata={
                 "appointment_id": app.id,
@@ -687,7 +786,7 @@ class KamAppointmentListCreateView(APIView):
             }
         )
 
-        return Response(serialize_kam_appointment(app), status=status.HTTP_201_CREATED)
+        return Response(serialize_kam_appointment(app, suggestion['completed_kam_visits']), status=status.HTTP_201_CREATED)
 
 
 class KamAppointmentDetailView(APIView):
@@ -725,6 +824,12 @@ class KamAppointmentDetailView(APIView):
             app.meet_url = data['meet_url'].strip()
         if 'objective' in data:
             app.objective = data['objective'].strip()
+        if 'visit_purpose' in data:
+            if data['visit_purpose'] not in dict(KamAppointment.VISIT_PURPOSES):
+                return Response({"detail": "Type de visite invalide."}, status=status.HTTP_400_BAD_REQUEST)
+            app.visit_purpose = data['visit_purpose']
+            app.purpose_source = 'MANUAL'
+            app.purpose_reason = 'Choix du KAM.'
         if 'scheduled_at' in data:
             app.scheduled_at = data['scheduled_at']
 
@@ -748,6 +853,9 @@ class KamAppointmentDetailView(APIView):
 def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
     """Runs qualification engine and returns (executive_summary, needs, objections, actions_todo, email, bant_scores)."""
     from shared.infrastructure.ai_providers import is_insufficient_verbatim
+    attendee_name = (appointment.contact_name or '').strip()
+    attendee_reference = attendee_name or 'le client'
+    email_salutation = attendee_name or 'Madame, Monsieur'
 
     # Zéro hallucination si verbatim insuffisant (ex: juste 'bonjour' ou inaudible)
     if is_insufficient_verbatim(transcript):
@@ -757,9 +865,9 @@ def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
         )
         confirmed_needs = []
         objections_raised = []
-        actions_todo = [f"Recontacter {appointment.contact_name or 'le client'} pour planifier un entretien approfondi"]
+        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
         follow_up_email = (
-            f"Bonjour {appointment.contact_name or 'Madame, Monsieur'},\n\n"
+            f"Bonjour {email_salutation},\n\n"
             f"Suite à notre brève prise de contact au sujet de {appointment.enterprise.name}, je me permets de revenir vers vous afin d'organiser un échange de 20 minutes pour faire le point sur vos enjeux d'infrastructure et de connectivité.\n\n"
             f"Quelles seraient vos disponibilités dans les prochains jours ?\n\n"
             f"Bien cordialement,\n{user.get_full_name() or user.username}\nKey Account Manager — Orange Business B2B"
@@ -782,17 +890,20 @@ def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
         'sector': appointment.enterprise.sector or 'Services',
         'approximate_size': str(appointment.enterprise.employee_count or 25),
         'location': appointment.enterprise.location or appointment.enterprise.plaque,
-        'contact_name': appointment.contact_name or appointment.enterprise.contact_name or "Direction",
+        'contact_name': attendee_name,
     }
 
     try:
         qual_res = qualification_service.process_visit_transcription(transcript, enterprise_dict)
-        executive_summary = qual_res.executive_summary or f"Échange avec {appointment.contact_name} chez {appointment.enterprise.name}."
+        executive_summary = qual_res.executive_summary or (
+            f"Échange avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
+            else f"Échange commercial chez {appointment.enterprise.name}."
+        )
         confirmed_needs = [n for n in qual_res.detected_needs if n and isinstance(n, str) and n.strip()]
         objections_raised = [o for o in qual_res.detected_objections if o and isinstance(o, str) and o.strip()]
         actions_todo = [a for a in getattr(qual_res, 'actions_todo', []) if a and isinstance(a, str) and a.strip()]
         follow_up_email = qual_res.email_follow_up_j1 or (
-            f"Bonjour {appointment.contact_name},\n\n"
+            f"Bonjour {email_salutation},\n\n"
             f"Je tiens à vous remercier pour notre échange ce jour au sujet de {appointment.enterprise.name}.\n\n"
             f"Restant à votre entière disposition pour tout complément.\n\n"
             f"Bien cordialement,\n"
@@ -809,12 +920,15 @@ def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
         }
     except Exception as exc:
         logger.warning(f"Erreur qualification vocale ({exc}), utilisation du statut insuffisant.")
-        executive_summary = f"Compte-rendu de rendez-vous avec {appointment.contact_name} chez {appointment.enterprise.name}."
+        executive_summary = (
+            f"Compte-rendu de rendez-vous avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
+            else f"Compte-rendu de rendez-vous chez {appointment.enterprise.name}."
+        )
         confirmed_needs = []
         objections_raised = []
-        actions_todo = [f"Recontacter {appointment.contact_name} pour planifier un entretien approfondi"]
+        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
         follow_up_email = (
-            f"Bonjour {appointment.contact_name},\n\n"
+            f"Bonjour {email_salutation},\n\n"
             f"Merci pour notre rendez-vous concernant {appointment.enterprise.name}.\n\n"
             f"Cordialement,\n{user.get_full_name() or user.username}"
         )

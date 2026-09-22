@@ -19,6 +19,7 @@ from .models import (
 from .serializers import (
     PlaqueSerializer,
     PlaqueDetailSerializer,
+    AdminEnterpriseCreateSerializer,
     EnterpriseSerializer,
     EnterpriseCockpitSerializer,
     EnterpriseMapSerializer,
@@ -2100,7 +2101,10 @@ class EnterpriseListFullView(APIView):
     - conversion_status (PROSPECT, IN_NEGOTIATION, CONVERTED, LOST)
     - city & recherche textuelle
     """
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         qs = _filter_enterprises_for_list(request)
@@ -2130,6 +2134,16 @@ class EnterpriseListFullView(APIView):
             "enterprises": serializer.data,
             "results": serializer.data
         }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = AdminEnterpriseCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        enterprise = serializer.save()
+
+        return Response(
+            {"enterprise": EnterpriseSerializer(enterprise, context={'request': request}).data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class AutoDispatchPlaqueView(APIView):

@@ -1,0 +1,100 @@
+@startuml
+title Onbora - Diagramme de composants cible
+left to right direction
+!pragma layout smetana
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "Commercial / KAM" as User
+actor "Manager / Admin" as Manager
+
+component "App mobile Flutter\noffline-first" as Mobile
+component "Web Next.js" as Web
+
+package "Onbora - monolithe modulaire Django" {
+  component "API REST + Auth/RBAC" as API
+  component "Portefeuille & projection\nde compte" as Portfolio
+  component "Orchestration des visites" as Visit
+  component "Briefing & mémoire\nde compte" as Brief
+  component "Qualification segmentée" as Qualification
+  component "Preuves & observations\nsourcées" as Evidence
+  component "Relations, règles & signaux\nexplicables" as Radar
+  component "Core AI in-process\nRAG + extraction + synthèse" as AI
+  component "Couche anti-corruption CRM\nDynamics / Kaabu" as CRMAdapter
+  component "Adaptateurs externes\nweb, cartographie, calendrier" as Adapters
+  component "Outbox + worker\nidempotent" as Worker
+  component "Audit & métriques métier" as Audit
+}
+
+database "PostgreSQL / Neon\nDonnées Onbora + projections" as DB
+database "Stockage objet\nAudio, pièces, exports" as ObjectStore
+database "Redis optionnel\ncache + verrous courts" as Redis
+
+cloud "Dynamics 365 Sales\nSystem of record CRM" as Dynamics
+cloud "Dynamics 365 Field Service\nContexte technique seulement" as FieldService
+cloud "Outlook / Teams" as Collaboration
+cloud "ERP / CPQ / CLM" as ERP
+cloud "Sources publiques\nautorisées" as PublicSources
+cloud "Cartographie / navigation" as Maps
+cloud "Power BI / Fabric" as BI
+cloud "Fournisseur LLM\nGemini aujourd'hui" as LLM
+
+User --> Mobile
+User --> Web
+Manager --> Web
+Mobile --> API : HTTPS + jeton\ncommandes idempotentes
+Web --> API : HTTPS + jeton
+
+API --> Portfolio
+API --> Visit
+API --> Brief
+API --> Qualification
+API --> Radar
+Portfolio --> CRMAdapter
+Visit --> Qualification
+Visit --> Evidence
+Brief --> Portfolio
+Brief --> Evidence
+Brief --> AI
+Qualification --> AI : assistance, jamais autorité
+Radar --> Evidence
+Radar --> Portfolio
+Evidence --> Adapters
+CRMAdapter --> Worker : écritures approuvées
+Adapters --> Worker : collectes planifiées
+Worker --> Audit
+
+Portfolio --> DB
+Visit --> DB
+Brief --> DB
+Qualification --> DB
+Evidence --> DB
+Radar --> DB
+Worker --> DB : outbox, tentatives, curseurs
+Audit --> DB
+Visit --> ObjectStore
+AI --> Redis : cache borné
+AI --> LLM : données minimisées
+
+CRMAdapter --> Dynamics : comptes, contacts, opportunités, activités
+CRMAdapter --> FieldService : statut / lien du bon de travail
+Adapters --> Collaboration : réunions et actions validées
+Adapters --> ERP : statut contrat, devis, facture
+Adapters --> PublicSources : URL, date, extrait, entité
+Adapters --> Maps : priorité vers navigation
+Audit --> BI : indicateurs Onbora
+
+note right of CRMAdapter
+  Aucun double système maître.
+  Lecture vers une projection locale.
+  Écriture contrôlée après validation humaine.
+end note
+
+note bottom of Evidence
+  Une sortie IA n'est pas un fait.
+  Tout fait opérationnel conserve sa source,
+  sa date, son niveau de preuve et son statut.
+end note
+@enduml

@@ -1,26 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
 import KamVocalVisitModal, { AppointmentData } from './KamVocalVisitModal';
+import KamAppointmentPreparationModal from './KamAppointmentPreparationModal';
+import KamExpressMeetingModal from './KamExpressMeetingModal';
+import { KamVisitPurpose, PurposeSuggestion, VISIT_PURPOSE_LABELS, VISIT_PURPOSE_TITLES } from './kamVisitPurpose';
 
 interface KamAgendaViewProps {
   assignedAccounts: StrategicVisit[];
   onOpenVisitsHistory?: () => void;
+  onAccountUpdated?: (account: StrategicVisit) => void;
 }
 
 export default function KamAgendaView({
   assignedAccounts,
   onOpenVisitsHistory,
+  onAccountUpdated,
 }: KamAgendaViewProps) {
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'ALL' | 'TODAY' | 'UPCOMING' | 'COMPLETED'>('ALL');
   const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
+  const [isExpressMeetingOpen, setIsExpressMeetingOpen] = useState(false);
   const [activeVocalAppointment, setActiveVocalAppointment] = useState<AppointmentData | null>(null);
+  const [activePreparationAppointment, setActivePreparationAppointment] = useState<AppointmentData | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // New Appointment Form State
@@ -33,7 +40,22 @@ export default function KamAgendaView({
   const [meetUrl, setMeetUrl] = useState('');
   const [contactName, setContactName] = useState('');
   const [contactRole, setContactRole] = useState('');
+  const [contactEditorOpen, setContactEditorOpen] = useState(false);
+  const [contactFromAccount, setContactFromAccount] = useState(false);
   const [objective, setObjective] = useState('');
+  const [purposeSuggestion, setPurposeSuggestion] = useState<PurposeSuggestion | null>(null);
+  const [selectedPurpose, setSelectedPurpose] = useState<KamVisitPurpose | null>(null);
+  const [purposeManuallySelected, setPurposeManuallySelected] = useState(false);
+  const [purposeLoading, setPurposeLoading] = useState(false);
+  const [purposeError, setPurposeError] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [titleEdited, setTitleEdited] = useState(false);
+  const [accountSignalOpen, setAccountSignalOpen] = useState(false);
+  const [orangeContractEndDate, setOrangeContractEndDate] = useState('');
+  const [growthProject, setGrowthProject] = useState('');
+  const [savingSignals, setSavingSignals] = useState(false);
+  const [signalMessage, setSignalMessage] = useState('');
+  const purposeRequestId = useRef(0);
   const [savingAppointment, setSavingAppointment] = useState(false);
 
   // Set default scheduledAt to today + 1 hour formatted for datetime-local
@@ -45,21 +67,96 @@ export default function KamAgendaView({
     setScheduledAt(localISOTime);
   }, []);
 
-  // When selected account changes, prefill contact and location
-  useEffect(() => {
-    if (selectedAccountId) {
-      const acc = assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
-      if (acc) {
-        const stk = acc.briefing?.stakeholders_mapping?.[0];
-        setContactName(stk?.full_name || '');
-        setContactRole(stk?.job_title || 'Directeur Général');
-        setLocation(acc.location || '');
-        if (!title) {
-          setTitle(`Revue Stratégique & Audit Connectivité — ${acc.account_name}`);
-        }
-      }
+  const handleAccountChange = async (accountId: string) => {
+    const requestId = ++purposeRequestId.current;
+    setSelectedAccountId(accountId);
+    setTitle('');
+    setTitleEdited(false);
+    setPurposeManuallySelected(false);
+    setFormError('');
+    setPurposeSuggestion(null);
+    setSelectedPurpose(null);
+    setPurposeError(false);
+    setAccountSignalOpen(false);
+    setSignalMessage('');
+    const acc = assignedAccounts.find(a => a.id === accountId || a.account_id === accountId);
+    setOrangeContractEndDate(acc?.orange_contract_end_date || '');
+    setGrowthProject(acc?.growth_project || '');
+    const knownContactName = acc?.contact_name || '';
+    const knownContactRole = acc?.contact_role || '';
+    const hasKnownContact = Boolean(knownContactName || knownContactRole);
+    setContactName(knownContactName);
+    setContactRole(knownContactRole);
+    setContactFromAccount(hasKnownContact);
+    setContactEditorOpen(hasKnownContact);
+    setLocation(acc?.location || '');
+    const enterpriseId = acc?.account_id || acc?.id?.replace('account-', '');
+    if (!enterpriseId) {
+      setPurposeLoading(false);
+      return;
     }
-  }, [selectedAccountId, assignedAccounts, title]);
+    setPurposeLoading(true);
+    try {
+      const response: PurposeSuggestion = await fetchAPI(`/api/kam/appointments/purpose-suggestion/?enterprise_id=${encodeURIComponent(enterpriseId)}`);
+      if (requestId !== purposeRequestId.current) return;
+      setPurposeSuggestion(response);
+      setSelectedPurpose(response.needs_confirmation ? null : response.suggested_purpose);
+      if (!response.needs_confirmation) {
+        setTitle((current) => current || `${VISIT_PURPOSE_TITLES[response.suggested_purpose]} — ${acc?.account_name || 'Entreprise'}`);
+      }
+    } catch {
+      if (requestId !== purposeRequestId.current) return;
+      setPurposeError(true);
+    } finally {
+      if (requestId === purposeRequestId.current) setPurposeLoading(false);
+    }
+  };
+
+  const saveAccountSignals = async () => {
+    const requestId = purposeRequestId.current;
+    const acc = assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
+    const enterpriseId = acc?.account_id || acc?.id?.replace('account-', '');
+    if (!enterpriseId) return;
+    setSavingSignals(true);
+    setSignalMessage('');
+    try {
+      const updated = await fetchAPI(`/api/kam/accounts/${enterpriseId}/update-info/`, {
+        method: 'PATCH',
+        body: JSON.stringify({ orange_contract_end_date: orangeContractEndDate, growth_project: growthProject }),
+      });
+      if (updated?.visit) onAccountUpdated?.(updated.visit);
+      const next: PurposeSuggestion = await fetchAPI(`/api/kam/appointments/purpose-suggestion/?enterprise_id=${encodeURIComponent(enterpriseId)}`);
+      if (requestId !== purposeRequestId.current) return;
+      setPurposeSuggestion(next);
+      if (!purposeManuallySelected) {
+        setSelectedPurpose(next.needs_confirmation ? null : next.suggested_purpose);
+        if (!titleEdited && !next.needs_confirmation) setTitle(`${VISIT_PURPOSE_TITLES[next.suggested_purpose]} — ${acc?.account_name || 'Entreprise'}`);
+      }
+      setSignalMessage('Contexte enregistré. La suggestion a été mise à jour.');
+      setAccountSignalOpen(false);
+    } catch (error) {
+      if (requestId === purposeRequestId.current) setSignalMessage(error instanceof Error ? error.message : 'Impossible d’enregistrer le contexte.');
+    } finally {
+      setSavingSignals(false);
+    }
+  };
+
+  const selectPurpose = (purpose: KamVisitPurpose) => {
+    setSelectedPurpose(purpose);
+    setPurposeManuallySelected(true);
+    setFormError('');
+    const acc = assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
+    if (!titleEdited) setTitle(`${VISIT_PURPOSE_TITLES[purpose]} — ${acc?.account_name || 'Entreprise'}`);
+  };
+
+  const useSuggestedPurpose = () => {
+    if (!purposeSuggestion || purposeSuggestion.needs_confirmation) return;
+    setSelectedPurpose(purposeSuggestion.suggested_purpose);
+    setPurposeManuallySelected(false);
+    setFormError('');
+    const acc = assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
+    if (!titleEdited) setTitle(`${VISIT_PURPOSE_TITLES[purposeSuggestion.suggested_purpose]} — ${acc?.account_name || 'Entreprise'}`);
+  };
 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
@@ -85,7 +182,10 @@ export default function KamAgendaView({
 
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedAccountId || !title || !scheduledAt) return;
+    if (!selectedAccountId || !title.trim() || !scheduledAt || !selectedPurpose || purposeLoading) {
+      setFormError('Sélectionnez une entreprise, un type de visite, un objet et une date.');
+      return;
+    }
 
     setSavingAppointment(true);
     try {
@@ -96,13 +196,14 @@ export default function KamAgendaView({
         enterprise_id: enterpriseNumericId,
         title: title.trim(),
         meeting_type: meetingType,
-        scheduled_at: scheduledAt,
+        scheduled_at: new Date(scheduledAt).toISOString(),
         duration_minutes: durationMinutes,
         location: location.trim(),
         meet_url: meetUrl.trim(),
         contact_name: contactName.trim(),
         contact_role: contactRole.trim(),
         objective: objective.trim(),
+        ...(purposeManuallySelected ? { visit_purpose: selectedPurpose } : {}),
       };
 
       const res = await fetchAPI('/api/kam/appointments/', {
@@ -116,13 +217,23 @@ export default function KamAgendaView({
         setIsNewAppointmentModalOpen(false);
         // Reset form
         setTitle('');
+        setTitleEdited(false);
         setObjective('');
+        setSelectedAccountId('');
+        setSelectedPurpose(null);
+        setPurposeSuggestion(null);
+        setPurposeManuallySelected(false);
+        setContactName('');
+        setContactRole('');
+        setContactEditorOpen(false);
+        setContactFromAccount(false);
+        setFormError('');
         setSuccessToast(`Rendez-vous planifié avec succès pour ${acc?.account_name || 'le client'}.`);
         setTimeout(() => setSuccessToast(null), 4000);
       }
     } catch (err: any) {
       console.error("Erreur création rendez-vous:", err);
-      alert("Erreur lors de la planification du rendez-vous.");
+      setFormError(err?.message || "Impossible de planifier ce rendez-vous. Vérifiez les informations saisies.");
     } finally {
       setSavingAppointment(false);
     }
@@ -133,6 +244,12 @@ export default function KamAgendaView({
     loadAppointments();
     setSuccessToast("Rapport exécutif et email de relance générés par Core AI !");
     setTimeout(() => setSuccessToast(null), 5000);
+  };
+
+  const handleExpressMeetingStarted = (appointment: AppointmentData) => {
+    setAppointments((previous) => [appointment, ...previous]);
+    setIsExpressMeetingOpen(false);
+    setActiveVocalAppointment(appointment);
   };
 
   // Filter appointments
@@ -178,7 +295,7 @@ export default function KamAgendaView({
           </div>
 
           {/* Top Actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap justify-end">
             {onOpenVisitsHistory && (
               <button
                 onClick={onOpenVisitsHistory}
@@ -191,10 +308,18 @@ export default function KamAgendaView({
 
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
             >
               <Icons.Plus size={15} />
               <span>Nouveau Rendez-vous</span>
+            </button>
+
+            <button
+              onClick={() => setIsExpressMeetingOpen(true)}
+              className="flex items-center gap-2 px-5 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              <Icons.Mic size={15} />
+              <span>Réunion express</span>
             </button>
           </div>
         </div>
@@ -273,7 +398,7 @@ export default function KamAgendaView({
               Aucun rendez-vous planifié
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Votre agenda est actuellement vide. Planifiez un rendez-vous physique ou une visioconférence avec l&apos;un de vos comptes assignés. Le jour du rendez-vous, vous pourrez activer l&apos;enregistrement vocal pour générer votre compte-rendu avec Core AI.
+              Planifiez un rendez-vous ou démarrez immédiatement une réunion express avec l&apos;un de vos comptes. Le micro et les notes alimenteront ensuite le compte-rendu Core AI.
             </p>
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
@@ -281,6 +406,13 @@ export default function KamAgendaView({
             >
               <Icons.Plus size={15} />
               <span>Planifier mon premier rendez-vous</span>
+            </button>
+            <button
+              onClick={() => setIsExpressMeetingOpen(true)}
+              className="ml-2 px-5 py-2.5 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-white dark:hover:bg-[#403C40] text-zinc-800 dark:text-white rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-2"
+            >
+              <Icons.Mic size={15} />
+              <span>Démarrer une réunion</span>
             </button>
           </div>
         </div>
@@ -293,6 +425,7 @@ export default function KamAgendaView({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredAppointments.map((app) => {
             const isCompleted = app.status === 'COMPLETED';
+            const isInProgress = app.status === 'IN_PROGRESS';
 
             return (
               <div
@@ -322,6 +455,11 @@ export default function KamAgendaView({
                         <Icons.CheckCircle size={11} />
                         <span>Rapport Généré</span>
                       </span>
+                    ) : isInProgress ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
+                        <Icons.Mic size={11} />
+                        <span>En cours</span>
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
                         <Icons.Clock size={11} />
@@ -332,6 +470,10 @@ export default function KamAgendaView({
 
                   {/* Title & Objective */}
                   <div className="pt-1">
+                    <p className="text-[11px] font-semibold text-[#4F6CE8]">
+                      {app.visit_purpose_label || 'Type non renseigné'}
+                      <span className="text-zinc-500 dark:text-zinc-400 font-normal"> · {app.previous_kam_visits === 0 ? '1er rendez-vous KAM' : `${app.previous_kam_visits + 1}e rendez-vous KAM`}</span>
+                    </p>
                     <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">
                       {app.title}
                     </span>
@@ -352,9 +494,9 @@ export default function KamAgendaView({
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-extrabold uppercase text-zinc-400 block">Décideur</span>
+                      <span className="text-[10px] font-extrabold uppercase text-zinc-400 block">Interlocuteur</span>
                       <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate block">
-                        {app.contact_name || 'Direction'} ({app.contact_role || 'C-Level'})
+                        {app.contact_name ? `${app.contact_name}${app.contact_role ? ` (${app.contact_role})` : ''}` : (app.contact_role || 'Non renseigné')}
                       </span>
                     </div>
                   </div>
@@ -384,12 +526,14 @@ export default function KamAgendaView({
                 </div>
 
                 {/* Card Bottom CTA : Lancer le Brief Vocal */}
-                <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between gap-3 flex-wrap">
                   {isCompleted ? (
                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
                       <Icons.Check size={13} />
                       <span>Visite clôturée avec Core AI</span>
                     </span>
+                  ) : isInProgress ? (
+                    <span className="text-[11px] text-[#4F6CE8] font-semibold">Réunion démarrée</span>
                   ) : (
                     <span className="text-[11px] text-zinc-400 italic">
                       Activez le micro pendant l&apos;échange
@@ -397,7 +541,13 @@ export default function KamAgendaView({
                   )}
 
                   {/* Microphone Action Button */}
-                  <button
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {!isCompleted && !isInProgress && (
+                      <button type="button" onClick={() => setActivePreparationAppointment(app)} className="px-3 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">
+                        Préparer
+                      </button>
+                    )}
+                    <button
                     onClick={() => setActiveVocalAppointment(app)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
                       isCompleted
@@ -407,8 +557,9 @@ export default function KamAgendaView({
                     title="Lancer le débrief vocal en direct"
                   >
                     <Icons.Mic size={15} />
-                    <span>{isCompleted ? "Recommencer Vocal" : "Brief Vocal Live"}</span>
+                    <span>{isCompleted ? "Recommencer Vocal" : isInProgress ? "Reprendre la réunion" : "Brief Vocal Live"}</span>
                   </button>
+                  </div>
                 </div>
 
               </div>
@@ -420,7 +571,7 @@ export default function KamAgendaView({
       {/* 3. MODAL NOUVEAU RENDEZ-VOUS */}
       {isNewAppointmentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 select-none">
-          <div className="bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white w-full max-w-lg rounded-[32px] border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden animate-scale-up">
+          <div role="dialog" aria-modal="true" aria-labelledby="kam-create-appointment-title" className="bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white w-full max-w-lg rounded-[32px] border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden animate-scale-up">
             
             {/* Modal Header */}
             <div className="p-6 border-b border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-center justify-between">
@@ -429,8 +580,8 @@ export default function KamAgendaView({
                   <Icons.Calendar size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                    Planifier un Rendez-vous Client
+                  <h3 id="kam-create-appointment-title" className="text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                    Planifier un rendez-vous
                   </h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
                     Visite terrain, visio ou appel avec un compte assigné
@@ -439,6 +590,8 @@ export default function KamAgendaView({
               </div>
 
               <button
+                type="button"
+                aria-label="Fermer la planification"
                 onClick={() => setIsNewAppointmentModalOpen(false)}
                 className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
               >
@@ -451,12 +604,13 @@ export default function KamAgendaView({
               
               {/* Account Selection */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
-                  Compte Client Assigné *
+                <label htmlFor="kam-appointment-enterprise" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
+                  Entreprise assignée *
                 </label>
                 <select
+                  id="kam-appointment-enterprise"
                   value={selectedAccountId}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  onChange={(e) => { void handleAccountChange(e.target.value); }}
                   required
                   className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all cursor-pointer"
                 >
@@ -469,6 +623,65 @@ export default function KamAgendaView({
                 </select>
               </div>
 
+              {selectedAccountId && (
+                <div className="space-y-2.5" aria-live="polite">
+                  <label htmlFor="kam-appointment-purpose" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">Type de rendez-vous *</label>
+                  {purposeLoading ? (
+                    <p className="text-xs text-zinc-500">Analyse du compte et des rendez-vous précédents…</p>
+                  ) : (
+                    <>
+                      {purposeSuggestion && (
+                        <div className="rounded-2xl bg-[#F6F5F2] dark:bg-[#2D2A2D] px-3.5 py-3 text-xs">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-semibold text-zinc-900 dark:text-white">Suggestion automatique : {purposeSuggestion.suggested_purpose_label}</p>
+                            <span className="shrink-0 rounded-full bg-[#4F6CE8]/10 px-2 py-1 text-[10px] font-semibold text-[#4F6CE8]">Automatique</span>
+                          </div>
+                          <p className="mt-1 text-zinc-500 dark:text-zinc-400">{purposeSuggestion.reason}</p>
+                          <p className="mt-2 text-zinc-500 dark:text-zinc-400">
+                            {purposeSuggestion.relationship_label} · {purposeSuggestion.completed_kam_visits} rendez-vous KAM terminé{purposeSuggestion.completed_kam_visits > 1 ? 's' : ''}
+                            {purposeSuggestion.prior_contact_recorded ? ' · Contact antérieur signalé' : ''}
+                          </p>
+                        </div>
+                      )}
+                      {purposeError && <p className="text-xs text-amber-700 dark:text-amber-300">Suggestion indisponible. Choisissez le type de visite.</p>}
+                      <div className="flex items-center gap-2">
+                        <select id="kam-appointment-purpose" value={selectedPurpose || ''} onChange={(event) => selectPurpose(event.target.value as KamVisitPurpose)} required className="min-w-0 flex-1 p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all cursor-pointer">
+                          <option value="" disabled>Choisir le type de rendez-vous…</option>
+                          {(Object.keys(VISIT_PURPOSE_LABELS) as KamVisitPurpose[]).map((purpose) => <option key={purpose} value={purpose}>{VISIT_PURPOSE_LABELS[purpose]}</option>)}
+                        </select>
+                        {purposeManuallySelected && purposeSuggestion && !purposeSuggestion.needs_confirmation && (
+                          <button type="button" onClick={useSuggestedPurpose} className="shrink-0 px-3 py-2 text-xs font-semibold text-[#4F6CE8] hover:underline focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">Revenir à la suggestion</button>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{purposeManuallySelected ? 'Type choisi manuellement par le KAM.' : 'Vous pouvez conserver la suggestion ou choisir un autre type.'}</p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {purposeSuggestion?.relationship_label === 'Contrat signé' && (
+                <div className="space-y-2">
+                  <button type="button" onClick={() => setAccountSignalOpen((open) => !open)} className="text-xs font-semibold text-[#4F6CE8] hover:underline focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">
+                    {accountSignalOpen ? 'Masquer le contexte du compte' : 'Renseigner une échéance ou un projet connu'}
+                  </button>
+                  {accountSignalOpen && (
+                    <div className="space-y-3 rounded-2xl bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5">
+                      <div className="space-y-1">
+                        <label htmlFor="kam-orange-contract-end" className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Échéance du contrat Orange confirmée</label>
+                        <input id="kam-orange-contract-end" type="date" value={orangeContractEndDate} onChange={(e) => setOrangeContractEndDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-white dark:bg-[#363336] text-xs text-zinc-900 dark:text-white focus-visible:outline-2 focus-visible:outline-[#4F6CE8]" />
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Laissez vide si la date concerne un autre opérateur.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label htmlFor="kam-growth-project" className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Projet de développement connu</label>
+                        <input id="kam-growth-project" type="text" maxLength={255} value={growthProject} onChange={(e) => setGrowthProject(e.target.value)} placeholder="Ex : ouverture de deux sites" className="w-full p-2.5 rounded-xl bg-white dark:bg-[#363336] text-xs text-zinc-900 dark:text-white focus-visible:outline-2 focus-visible:outline-[#4F6CE8]" />
+                      </div>
+                      <button type="button" disabled={savingSignals} onClick={saveAccountSignals} className="px-3 py-2 rounded-xl bg-[#4F6CE8] text-white text-xs font-semibold disabled:opacity-50">{savingSignals ? 'Enregistrement…' : 'Enregistrer le contexte'}</button>
+                    </div>
+                  )}
+                  {signalMessage && <p role="status" className="text-xs text-zinc-600 dark:text-zinc-300">{signalMessage}</p>}
+                </div>
+              )}
+
               {/* Title / Objective */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
@@ -477,11 +690,16 @@ export default function KamAgendaView({
                 <input
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => { setTitle(e.target.value); setTitleEdited(true); }}
                   placeholder="Ex: Revue d'infrastructure et proposition Fibre Dédiée"
                   required
                   className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="kam-meeting-objective" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">Résultat attendu</label>
+                <textarea id="kam-meeting-objective" value={objective} onChange={(e) => setObjective(e.target.value)} rows={2} placeholder="Ex : confirmer le périmètre et la prochaine étape" className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] resize-y" />
               </div>
 
               {/* Meeting Type */}
@@ -546,34 +764,41 @@ export default function KamAgendaView({
                 </div>
               </div>
 
-              {/* Contact Name & Role */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
-                    Nom du Décideur
-                  </label>
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Nom complet"
-                    className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all"
-                  />
-                </div>
+              {/* Optional attendee: only expanded when a real account contact exists or the KAM adds one. */}
+              {selectedAccountId && (
+                <section className="space-y-2" aria-labelledby="kam-attendee-heading">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p id="kam-attendee-heading" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">Interlocuteur</p>
+                      <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">Facultatif pour ce rendez-vous.</p>
+                    </div>
+                    {!contactEditorOpen && (
+                      <button type="button" onClick={() => { setContactEditorOpen(true); setContactFromAccount(false); }} className="flex items-center gap-1.5 rounded-xl bg-[#F6F5F2] dark:bg-[#2D2A2D] px-3 py-2 text-xs font-semibold text-[#4F6CE8] hover:bg-white dark:hover:bg-[#363336] focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">
+                        <Icons.UserPlus size={14} /> Ajouter un interlocuteur
+                      </button>
+                    )}
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
-                    Fonction / Rôle
-                  </label>
-                  <input
-                    type="text"
-                    value={contactRole}
-                    onChange={(e) => setContactRole(e.target.value)}
-                    placeholder="Ex: Directeur Général"
-                    className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all"
-                  />
-                </div>
-              </div>
+                  {contactEditorOpen && (
+                    <div className="rounded-2xl bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">{contactFromAccount ? 'Contact enregistré sur le compte' : 'Contact pour ce rendez-vous'}</span>
+                        <button type="button" onClick={() => { setContactName(''); setContactRole(''); setContactEditorOpen(false); setContactFromAccount(false); }} className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">Ne pas associer</button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label htmlFor="kam-attendee-name" className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 block">Nom</label>
+                          <input id="kam-attendee-name" type="text" value={contactName} onChange={(e) => { setContactName(e.target.value); setContactFromAccount(false); }} placeholder="Nom complet si connu" className="w-full p-3 bg-white dark:bg-[#363336] rounded-xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8]" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label htmlFor="kam-attendee-role" className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 block">Fonction ou rôle</label>
+                          <input id="kam-attendee-role" type="text" value={contactRole} onChange={(e) => { setContactRole(e.target.value); setContactFromAccount(false); }} placeholder="Ex : Responsable réseau" className="w-full p-3 bg-white dark:bg-[#363336] rounded-xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8]" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
 
               {/* Location or Meet Link */}
               {meetingType === 'PHYSICAL' ? (
@@ -605,6 +830,7 @@ export default function KamAgendaView({
               ) : null}
 
               {/* Modal Footer */}
+              {formError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{formError}</p>}
               <div className="pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-end gap-3">
                 <button
                   type="button"
@@ -617,7 +843,7 @@ export default function KamAgendaView({
 
                 <button
                   type="submit"
-                  disabled={savingAppointment}
+                  disabled={savingAppointment || purposeLoading || !selectedPurpose}
                   className="flex items-center gap-2 px-6 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {savingAppointment ? (
@@ -647,6 +873,8 @@ export default function KamAgendaView({
         onClose={() => setActiveVocalAppointment(null)}
         onVisitCompleted={handleVisitCompleted}
       />
+      {activePreparationAppointment && <KamAppointmentPreparationModal appointment={activePreparationAppointment} onClose={() => setActivePreparationAppointment(null)} />}
+      {isExpressMeetingOpen && <KamExpressMeetingModal assignedAccounts={assignedAccounts} onClose={() => setIsExpressMeetingOpen(false)} onStarted={handleExpressMeetingStarted} />}
 
     </div>
   );

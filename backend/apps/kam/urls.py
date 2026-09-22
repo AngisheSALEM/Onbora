@@ -4,7 +4,8 @@ from .views import (
     DossierExportView, DossierProvisionView, DossierHandoverPackView,
     KamStrategicAccountListView, KamBriefingDetailView, KamAccountDebriefView,
     KamAccountUpdateInfoView,
-    KamAppointmentListCreateView, KamAppointmentDetailView, KamCompleteVocalMeetingView,
+    KamAppointmentListCreateView, KamAppointmentDetailView, KamAppointmentPurposeSuggestionView,
+    KamAppointmentPreparationView, KamCompleteVocalMeetingView,
     KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView,
     RelationshipCoverageListCreateView, RelationshipCoverageDetailView, RelationshipCoverageDiagnosticView,
     AccountMemoryEventListCreateView, AccountHandoverPackView, AccountRiskSignalsView
@@ -39,6 +40,8 @@ urlpatterns = [
     # Agenda, Rendez-vous & Clôture vocale connectée à Core AI
     path('transcribe/', KamAudioTranscribeView.as_view(), name='kam-transcribe'),
     path('appointments/', KamAppointmentListCreateView.as_view(), name='kam-appointments-list-create'),
+    path('appointments/purpose-suggestion/', KamAppointmentPurposeSuggestionView.as_view(), name='kam-appointment-purpose-suggestion'),
+    path('appointments/<int:pk>/preparation/', KamAppointmentPreparationView.as_view(), name='kam-appointment-preparation'),
     path('appointments/<int:pk>/', KamAppointmentDetailView.as_view(), name='kam-appointment-detail'),
     path('appointments/<int:pk>/complete-vocal/', KamCompleteVocalMeetingView.as_view(), name='kam-appointment-complete-vocal'),
 

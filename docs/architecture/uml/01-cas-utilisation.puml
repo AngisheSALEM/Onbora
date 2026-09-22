@@ -1,0 +1,57 @@
+@startuml
+title Onbora - Cas d'utilisation cibles
+left to right direction
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Commercial terrain\nSOHO / PME" as Sales
+actor "KAM" as KAM
+actor "Manager commercial" as Manager
+actor "Administrateur MSP" as Admin
+
+rectangle "Onbora - intelligence et exécution commerciale" {
+  usecase "Consulter la liste de visites\npriorisée et explicable" as UC1
+  usecase "Préparer une visite avec un\nbrief sourcé et segmenté" as UC2
+  usecase "Exécuter une qualification\nguidée" as UC3
+  usecase "Capturer le résultat\nhors ligne" as UC4
+  usecase "Valider les faits, actions et\nmises à jour CRM" as UC5
+  usecase "Consulter la mémoire du\ncompte et le handover" as UC6
+  usecase "Cartographier la couverture\nrelationnelle" as UC7
+  usecase "Traiter un signal de risque\nou d'opportunité" as UC8
+  usecase "Piloter la qualité d'exécution" as UC9
+  usecase "Configurer segments, règles,\nsources et permissions" as UC10
+  usecase "Synchroniser les changements\napprouvés avec le CRM" as UC11
+}
+
+Sales --> UC1
+Sales --> UC2
+Sales --> UC3
+Sales --> UC4
+Sales --> UC5
+
+KAM --> UC2
+KAM --> UC3
+KAM --> UC5
+KAM --> UC6
+KAM --> UC7
+KAM --> UC8
+
+Manager --> UC7
+Manager --> UC8
+Manager --> UC9
+Admin --> UC10
+
+UC2 .> UC6 : <<include>>
+UC3 .> UC5 : <<include>>
+UC4 .> UC5 : <<include>>
+UC5 .> UC11 : <<include>>
+UC8 .> UC5 : <<extend>>
+
+note bottom of UC11
+  Onbora propose et synchronise.
+  Dynamics 365 reste maître des comptes,
+  contacts, opportunités et activités.
+end note
+@enduml

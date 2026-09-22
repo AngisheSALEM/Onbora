@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from django.db import models
 from accounts.models import User
@@ -207,6 +209,69 @@ class EnterpriseSerializer(serializers.ModelSerializer):
         if obj.plaque_rel:
             return obj.plaque_rel.code
         return obj.plaque or ""
+
+
+class AdminEnterpriseCreateSerializer(serializers.ModelSerializer):
+    """Creation payload deliberately limited to administrator-managed CRM fields."""
+
+    annual_revenue = serializers.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        min_value=Decimal('0.00'),
+    )
+    employee_count = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        model = Enterprise
+        fields = [
+            'name', 'crm_id', 'sector', 'website',
+            'city', 'commune', 'address',
+            'annual_revenue', 'employee_count',
+            'contact_name', 'contact_role', 'contact_phone', 'contact_email',
+            'current_connectivity',
+        ]
+        extra_kwargs = {
+            'name': {'trim_whitespace': True},
+            'crm_id': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'sector': {'required': True, 'allow_blank': False},
+            'website': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'city': {'required': False, 'allow_blank': False},
+            'commune': {'required': False, 'allow_blank': True},
+            'address': {'required': False, 'allow_blank': True},
+            'contact_name': {'required': False, 'allow_blank': True},
+            'contact_role': {'required': False, 'allow_blank': True},
+            'contact_phone': {'required': False, 'allow_blank': True},
+            'contact_email': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'current_connectivity': {'required': False, 'allow_blank': True},
+        }
+
+    def validate_crm_id(self, value):
+        crm_id = (value or '').strip()
+        if not crm_id:
+            return None
+        if Enterprise.objects.filter(crm_id__iexact=crm_id).exists():
+            raise serializers.ValidationError("Cet identifiant CRM est déjà utilisé.")
+        return crm_id
+
+    def create(self, validated_data):
+        config = SegmentationConfig.get_active()
+        annual_revenue = validated_data['annual_revenue']
+
+        if annual_revenue < config.tpe_max_revenue:
+            segment = 'TPE_INFORMEL'
+            assigned_entity = 'BACK_OFFICE'
+        elif annual_revenue < config.pme_max_revenue:
+            segment = 'PME'
+            assigned_entity = 'KAM_OFFICE'
+        else:
+            segment = 'GRAND_COMPTE'
+            assigned_entity = 'KAM_OFFICE'
+
+        return Enterprise.objects.create(
+            **validated_data,
+            segment=segment,
+            assigned_entity=assigned_entity,
+        )
 
 
 class EnterpriseCockpitSerializer(serializers.ModelSerializer):
