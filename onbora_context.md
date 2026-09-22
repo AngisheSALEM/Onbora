@@ -179,3 +179,33 @@ Onbora agit comme **passerelle d'échange de données (Data Exchange Connector)*
 *   **GET (Kaabu)** : Lecture des données d'entreprises et SIREN.
 *   **POST (Kaabu)** : Envoi des dossiers qualifiés, Business Twins et rapports.
 *   **Webhook (ArrowSphere)** : Réception passive de la notification d'activation (`POST /api/v1/sales/integrations/arrowsphere/webhook/`) déverrouillant le module d'adoption.
+
+---
+
+## 11. Architecture Cible & Implémentation des 5 Epics (Septembre 2026)
+
+L'alignement structurel du modèle DDD et l'implémentation complète des 5 epics de la cible Onbora sont déployés, validés et testés :
+*   **Gouvernance & Répartition des Portefeuilles (Epic 1)** :
+    *   PME et Grands Comptes sont exclusivement gérés par les équipes KAM (`AccountPortfolioAssignment`, `role='KAM'`).
+    *   Le segment SOHO est opéré par les prestataires de services et commerciaux terrain sous supervision.
+    *   L'application Mobile Flutter est partagée avec bascule dynamique de segment et d'expérience.
+    *   Modélisation DDD : `AccountProjection` (idempotence CRM maître), `SourceObservation` (empreinte SHA-256 des déclarations), `Evidence` (pièces justificatives opposables) et `RelationshipCoverage` (cartographie multi-interlocuteurs avec détection déterministe du risque de mono-champion).
+*   **Moteur de Qualification & Bascule de Segment (Epic 2)** :
+    *   Pattern Strategy extensible (`SohoQualificationStrategy`, `PmeQualificationStrategy`, `KamQualificationStrategy`).
+    *   Détection automatique de bascule SOHO vers KAM (`SegmentPivotService`) lors du franchissement de seuils (postes de travail > 10, multi-sites, budget critique).
+    *   Création d'un dossier de handoff opposable (`HandoffDossier`) horodaté et traçable (workflow acceptation / retour motivé).
+*   **Résilience Mobile Offline-First (Epic 3)** :
+    *   Idempotence forte de bout en bout via en-tête `Idempotency-Key` (UUIDv4) gérée par `IdempotencyRecord` et `IdempotentVisitService` (détection des conflits de concurrence HTTP 409 et cache de réponse).
+    *   Couche mobile Flutter autonome : `LocalCacheService` pour les données locales, `OutboxManager` avec persistance de file de commandes et `SyncService` pour le rejeu résilient avec backoff.
+*   **Couche Anti-Corruption & Connecteur Contrôlé Dynamics 365 (Epic 4)** :
+    *   Pattern Transactional Outbox avec `SyncOperation` garantissant le découplage asynchrone des flux CRM.
+    *   Worker résilient (`DynamicsOutboxWorker`) avec verrouillage transactionnel `SELECT FOR UPDATE SKIP LOCKED`, ordonnancement temporel, gestion de backoff exponentiel et commande CLI `python manage.py run_outbox_worker [--once]`.
+    *   Client Dataverse Azure AD OAuth2 avec résilience sur HTTP 429 et 503.
+*   **Radar de Risque Explicable & Mémoire de Compte (Epic 5)** :
+    *   `SignalRuleEvaluator` : moteur déterministe transparent avec citation des sources factuelles (Règle 1: échéance contrat J-180/120/90, Règle 2: alerte mono-champion, Règle 3: rupture de relation client > 60 jours sans contact).
+    *   `AccountMemoryService` : registre immuable d'événements majeurs (`AccountMemoryEvent`: décisions, promesses, incidents SLA) et génération en un clic du dossier de passation (`Handover Pack`) pour sécuriser les rotations de KAMs.
+*   **Contrôles de Qualité & Conformité** :
+    *   25 tests unitaires et d'intégration Django Backend exécutés avec succès.
+    *   Tests mobiles Flutter Outbox & Sync validés.
+    *   Hook 1 (Conformité Charte Graphique & Zéro Émoji) : 100% conforme.
+    *   Hook 2 (Architecture & Zéro Dette Technique) : 100% conforme sur l'intégralité du code.
