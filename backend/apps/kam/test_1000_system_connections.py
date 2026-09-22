@@ -793,755 +793,555 @@ class TestQualificationAndStrategyConnections(SimpleTestCase):
         completeness = strat.calculate_completeness(answers)
         self.assertTrue(completeness >= 0.70)
 
-    def test_0051_soho_pivot_detection_ws_1_multi_False_spend_20(self):
+    def test_0051_soho_autonomous_zero_pivot_ws_1_multi_False_spend_20(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 1,
             "multisite": False,
             "estimated_monthly_telecom_spend": 20.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0052_soho_pivot_detection_ws_2_multi_True_spend_40(self):
+    def test_0052_soho_autonomous_zero_pivot_ws_2_multi_True_spend_40(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 2,
             "multisite": True,
             "estimated_monthly_telecom_spend": 40.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0053_soho_pivot_detection_ws_3_multi_False_spend_60(self):
+    def test_0053_soho_autonomous_zero_pivot_ws_3_multi_False_spend_60(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 3,
             "multisite": False,
             "estimated_monthly_telecom_spend": 60.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0054_soho_pivot_detection_ws_4_multi_False_spend_80(self):
+    def test_0054_soho_autonomous_zero_pivot_ws_4_multi_False_spend_80(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 4,
             "multisite": False,
             "estimated_monthly_telecom_spend": 80.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0055_soho_pivot_detection_ws_5_multi_False_spend_100(self):
+    def test_0055_soho_autonomous_zero_pivot_ws_5_multi_False_spend_100(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 5,
             "multisite": False,
             "estimated_monthly_telecom_spend": 100.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0056_soho_pivot_detection_ws_6_multi_True_spend_120(self):
+    def test_0056_soho_autonomous_zero_pivot_ws_6_multi_True_spend_120(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 6,
             "multisite": True,
             "estimated_monthly_telecom_spend": 120.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0057_soho_pivot_detection_ws_7_multi_False_spend_140(self):
+    def test_0057_soho_autonomous_zero_pivot_ws_7_multi_False_spend_140(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 7,
             "multisite": False,
             "estimated_monthly_telecom_spend": 140.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0058_soho_pivot_detection_ws_8_multi_False_spend_160(self):
+    def test_0058_soho_autonomous_zero_pivot_ws_8_multi_False_spend_160(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 8,
             "multisite": False,
             "estimated_monthly_telecom_spend": 160.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0059_soho_pivot_detection_ws_9_multi_False_spend_180(self):
+    def test_0059_soho_autonomous_zero_pivot_ws_9_multi_False_spend_180(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 9,
             "multisite": False,
             "estimated_monthly_telecom_spend": 180.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if False:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0060_soho_pivot_detection_ws_10_multi_True_spend_200(self):
+    def test_0060_soho_autonomous_zero_pivot_ws_10_multi_True_spend_200(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 10,
             "multisite": True,
             "estimated_monthly_telecom_spend": 200.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0061_soho_pivot_detection_ws_11_multi_False_spend_220(self):
+    def test_0061_soho_autonomous_zero_pivot_ws_11_multi_False_spend_220(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 11,
             "multisite": False,
             "estimated_monthly_telecom_spend": 220.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0062_soho_pivot_detection_ws_12_multi_False_spend_240(self):
+    def test_0062_soho_autonomous_zero_pivot_ws_12_multi_False_spend_240(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 12,
             "multisite": False,
             "estimated_monthly_telecom_spend": 240.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0063_soho_pivot_detection_ws_13_multi_False_spend_260(self):
+    def test_0063_soho_autonomous_zero_pivot_ws_13_multi_False_spend_260(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 13,
             "multisite": False,
             "estimated_monthly_telecom_spend": 260.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0064_soho_pivot_detection_ws_14_multi_True_spend_280(self):
+    def test_0064_soho_autonomous_zero_pivot_ws_14_multi_True_spend_280(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 14,
             "multisite": True,
             "estimated_monthly_telecom_spend": 280.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0065_soho_pivot_detection_ws_15_multi_False_spend_300(self):
+    def test_0065_soho_autonomous_zero_pivot_ws_15_multi_False_spend_300(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 15,
             "multisite": False,
             "estimated_monthly_telecom_spend": 300.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0066_soho_pivot_detection_ws_16_multi_False_spend_320(self):
+    def test_0066_soho_autonomous_zero_pivot_ws_16_multi_False_spend_320(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 16,
             "multisite": False,
             "estimated_monthly_telecom_spend": 320.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0067_soho_pivot_detection_ws_17_multi_False_spend_340(self):
+    def test_0067_soho_autonomous_zero_pivot_ws_17_multi_False_spend_340(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 17,
             "multisite": False,
             "estimated_monthly_telecom_spend": 340.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0068_soho_pivot_detection_ws_18_multi_True_spend_360(self):
+    def test_0068_soho_autonomous_zero_pivot_ws_18_multi_True_spend_360(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 18,
             "multisite": True,
             "estimated_monthly_telecom_spend": 360.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0069_soho_pivot_detection_ws_19_multi_False_spend_380(self):
+    def test_0069_soho_autonomous_zero_pivot_ws_19_multi_False_spend_380(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 19,
             "multisite": False,
             "estimated_monthly_telecom_spend": 380.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0070_soho_pivot_detection_ws_20_multi_False_spend_400(self):
+    def test_0070_soho_autonomous_zero_pivot_ws_20_multi_False_spend_400(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 20,
             "multisite": False,
             "estimated_monthly_telecom_spend": 400.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0071_soho_pivot_detection_ws_21_multi_False_spend_420(self):
+    def test_0071_soho_autonomous_zero_pivot_ws_21_multi_False_spend_420(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 21,
             "multisite": False,
             "estimated_monthly_telecom_spend": 420.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0072_soho_pivot_detection_ws_22_multi_True_spend_440(self):
+    def test_0072_soho_autonomous_zero_pivot_ws_22_multi_True_spend_440(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 22,
             "multisite": True,
             "estimated_monthly_telecom_spend": 440.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0073_soho_pivot_detection_ws_23_multi_False_spend_460(self):
+    def test_0073_soho_autonomous_zero_pivot_ws_23_multi_False_spend_460(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 23,
             "multisite": False,
             "estimated_monthly_telecom_spend": 460.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0074_soho_pivot_detection_ws_24_multi_False_spend_480(self):
+    def test_0074_soho_autonomous_zero_pivot_ws_24_multi_False_spend_480(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 24,
             "multisite": False,
             "estimated_monthly_telecom_spend": 480.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0075_soho_pivot_detection_ws_25_multi_False_spend_500(self):
+    def test_0075_soho_autonomous_zero_pivot_ws_25_multi_False_spend_500(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 25,
             "multisite": False,
             "estimated_monthly_telecom_spend": 500.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0076_soho_pivot_detection_ws_26_multi_True_spend_520(self):
+    def test_0076_soho_autonomous_zero_pivot_ws_26_multi_True_spend_520(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 26,
             "multisite": True,
             "estimated_monthly_telecom_spend": 520.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0077_soho_pivot_detection_ws_27_multi_False_spend_540(self):
+    def test_0077_soho_autonomous_zero_pivot_ws_27_multi_False_spend_540(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 27,
             "multisite": False,
             "estimated_monthly_telecom_spend": 540.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0078_soho_pivot_detection_ws_28_multi_False_spend_560(self):
+    def test_0078_soho_autonomous_zero_pivot_ws_28_multi_False_spend_560(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 28,
             "multisite": False,
             "estimated_monthly_telecom_spend": 560.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0079_soho_pivot_detection_ws_29_multi_False_spend_580(self):
+    def test_0079_soho_autonomous_zero_pivot_ws_29_multi_False_spend_580(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 29,
             "multisite": False,
             "estimated_monthly_telecom_spend": 580.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0080_soho_pivot_detection_ws_30_multi_True_spend_600(self):
+    def test_0080_soho_autonomous_zero_pivot_ws_30_multi_True_spend_600(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 30,
             "multisite": True,
             "estimated_monthly_telecom_spend": 600.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0081_soho_pivot_detection_ws_31_multi_False_spend_620(self):
+    def test_0081_soho_autonomous_zero_pivot_ws_31_multi_False_spend_620(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 31,
             "multisite": False,
             "estimated_monthly_telecom_spend": 620.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0082_soho_pivot_detection_ws_32_multi_False_spend_640(self):
+    def test_0082_soho_autonomous_zero_pivot_ws_32_multi_False_spend_640(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 32,
             "multisite": False,
             "estimated_monthly_telecom_spend": 640.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0083_soho_pivot_detection_ws_33_multi_False_spend_660(self):
+    def test_0083_soho_autonomous_zero_pivot_ws_33_multi_False_spend_660(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 33,
             "multisite": False,
             "estimated_monthly_telecom_spend": 660.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0084_soho_pivot_detection_ws_34_multi_True_spend_680(self):
+    def test_0084_soho_autonomous_zero_pivot_ws_34_multi_True_spend_680(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 34,
             "multisite": True,
             "estimated_monthly_telecom_spend": 680.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0085_soho_pivot_detection_ws_35_multi_False_spend_700(self):
+    def test_0085_soho_autonomous_zero_pivot_ws_35_multi_False_spend_700(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 35,
             "multisite": False,
             "estimated_monthly_telecom_spend": 700.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0086_soho_pivot_detection_ws_36_multi_False_spend_720(self):
+    def test_0086_soho_autonomous_zero_pivot_ws_36_multi_False_spend_720(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 36,
             "multisite": False,
             "estimated_monthly_telecom_spend": 720.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0087_soho_pivot_detection_ws_37_multi_False_spend_740(self):
+    def test_0087_soho_autonomous_zero_pivot_ws_37_multi_False_spend_740(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 37,
             "multisite": False,
             "estimated_monthly_telecom_spend": 740.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0088_soho_pivot_detection_ws_38_multi_True_spend_760(self):
+    def test_0088_soho_autonomous_zero_pivot_ws_38_multi_True_spend_760(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 38,
             "multisite": True,
             "estimated_monthly_telecom_spend": 760.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0089_soho_pivot_detection_ws_39_multi_False_spend_780(self):
+    def test_0089_soho_autonomous_zero_pivot_ws_39_multi_False_spend_780(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 39,
             "multisite": False,
             "estimated_monthly_telecom_spend": 780.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0090_soho_pivot_detection_ws_40_multi_False_spend_800(self):
+    def test_0090_soho_autonomous_zero_pivot_ws_40_multi_False_spend_800(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 40,
             "multisite": False,
             "estimated_monthly_telecom_spend": 800.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0091_soho_pivot_detection_ws_41_multi_False_spend_820(self):
+    def test_0091_soho_autonomous_zero_pivot_ws_41_multi_False_spend_820(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 41,
             "multisite": False,
             "estimated_monthly_telecom_spend": 820.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0092_soho_pivot_detection_ws_42_multi_True_spend_840(self):
+    def test_0092_soho_autonomous_zero_pivot_ws_42_multi_True_spend_840(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 42,
             "multisite": True,
             "estimated_monthly_telecom_spend": 840.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0093_soho_pivot_detection_ws_43_multi_False_spend_860(self):
+    def test_0093_soho_autonomous_zero_pivot_ws_43_multi_False_spend_860(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 43,
             "multisite": False,
             "estimated_monthly_telecom_spend": 860.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0094_soho_pivot_detection_ws_44_multi_False_spend_880(self):
+    def test_0094_soho_autonomous_zero_pivot_ws_44_multi_False_spend_880(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 44,
             "multisite": False,
             "estimated_monthly_telecom_spend": 880.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0095_soho_pivot_detection_ws_45_multi_False_spend_900(self):
+    def test_0095_soho_autonomous_zero_pivot_ws_45_multi_False_spend_900(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 45,
             "multisite": False,
             "estimated_monthly_telecom_spend": 900.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0096_soho_pivot_detection_ws_46_multi_True_spend_920(self):
+    def test_0096_soho_autonomous_zero_pivot_ws_46_multi_True_spend_920(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 46,
             "multisite": True,
             "estimated_monthly_telecom_spend": 920.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0097_soho_pivot_detection_ws_47_multi_False_spend_940(self):
+    def test_0097_soho_autonomous_zero_pivot_ws_47_multi_False_spend_940(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 47,
             "multisite": False,
             "estimated_monthly_telecom_spend": 940.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0098_soho_pivot_detection_ws_48_multi_False_spend_960(self):
+    def test_0098_soho_autonomous_zero_pivot_ws_48_multi_False_spend_960(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 48,
             "multisite": False,
             "estimated_monthly_telecom_spend": 960.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0099_soho_pivot_detection_ws_49_multi_False_spend_980(self):
+    def test_0099_soho_autonomous_zero_pivot_ws_49_multi_False_spend_980(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 49,
             "multisite": False,
             "estimated_monthly_telecom_spend": 980.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
-    def test_0100_soho_pivot_detection_ws_50_multi_True_spend_1000(self):
+    def test_0100_soho_autonomous_zero_pivot_ws_50_multi_True_spend_1000(self):
         strat = SohoQualificationStrategy()
         answers = {
             "workstations_count": 50,
             "multisite": True,
             "estimated_monthly_telecom_spend": 1000.0
         }
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if True:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 
     def test_0101_pme_pivot_detection_ws_10_sites_1_budget_150(self):
         strat = PmeQualificationStrategy()

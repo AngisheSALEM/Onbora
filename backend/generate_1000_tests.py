@@ -80,27 +80,22 @@ class TestQualificationAndStrategyConnections(SimpleTestCase):
         self.assertTrue(completeness >= 0.70)
 ''')
 
-    # Tests 51 to 100 : Soho-to-PME Pivot Detection Boundary Rules (threshold: workstations > 10, multisite, spend >= 500)
+    # Tests 51 to 100 : SOHO Autonomous Boundary Validation (Option A: 100% SOHO, zero artificial pivot to KAM)
     for i in range(51, 101):
         ws = (i - 50)  # 1 to 50
         is_multi = (i % 4 == 0)
         sp = float((i - 50) * 20)  # 20.0 to 1000.0
-        should_pivot = (ws > 10) or is_multi or (sp >= 500.0)
         f.write(f'''
-    def test_{i:04d}_soho_pivot_detection_ws_{ws}_multi_{is_multi}_spend_{int(sp)}(self):
+    def test_{i:04d}_soho_autonomous_zero_pivot_ws_{ws}_multi_{is_multi}_spend_{int(sp)}(self):
         strat = SohoQualificationStrategy()
         answers = {{
             "workstations_count": {ws},
             "multisite": {is_multi},
             "estimated_monthly_telecom_spend": {sp}
         }}
+        # Option A: SOHO never pivots to KAM, field sales closes autonomously
         pivot = strat.detect_segment_pivot(answers)
-        if {should_pivot}:
-            self.assertIsNotNone(pivot)
-            self.assertEqual(pivot["target_segment"], "PME")
-            self.assertTrue(len(pivot["reason"]) > 0)
-        else:
-            self.assertIsNone(pivot)
+        self.assertIsNone(pivot)
 ''')
 
     # Tests 101 to 150 : PME-to-KAM Pivot Detection Boundary Rules (threshold: workstations > 250, sites > 5, budget >= 5000)

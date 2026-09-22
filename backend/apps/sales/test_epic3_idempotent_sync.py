@@ -117,29 +117,30 @@ class Epic3IdempotentSyncTestCase(APITestCase):
         self.assertIn("Conflit de version détecté", response.data["detail"])
         self.assertEqual(response.data["server_version"], "v2.0")
 
-    def test_complete_visit_with_qualification_pivot(self):
+    def test_complete_visit_with_qualification_soho(self):
+        """Option A: SOHO visit completes qualification autonomously with zero pivot to KAM."""
         idempotency_key = str(uuid.uuid4())
-        payload_pivot = {
+        payload_soho = {
             "enterprise_id": self.enterprise.id,
             "preparation_id": self.preparation.id,
-            "executive_summary": "Requalification : commerce avec 15 postes informatiques.",
+            "executive_summary": "Boutique TPE : besoin Fibre Pro et TPE sécurisé.",
             "qualification_answers": {
                 "soho_activity": "Commerce de détail & Boutique",
                 "soho_eligibility": "Fibre optique existante / Raccordée",
                 "soho_decider_present": True,
-                "workstations_count": 15,
+                "workstations_count": 3,
                 "multisite": False
             }
         }
 
         response = self.client.post(
             self.url,
-            payload_pivot,
+            payload_soho,
             format='json',
             HTTP_IDEMPOTENCY_KEY=idempotency_key
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(response.data["pivot_triggered"])
-        self.assertEqual(response.data["effective_segment"], "PME")
-        self.assertIsNotNone(response.data["handoff_id"])
+        self.assertFalse(response.data["pivot_triggered"])
+        self.assertEqual(response.data["effective_segment"], "SOHO")
+        self.assertIsNone(response.data["handoff_id"])

@@ -190,10 +190,10 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
     *   Le segment SOHO est opéré par les prestataires de services et commerciaux terrain sous supervision.
     *   L'application Mobile Flutter est partagée avec bascule dynamique de segment et d'expérience.
     *   Modélisation DDD : `AccountProjection` (idempotence CRM maître), `SourceObservation` (empreinte SHA-256 des déclarations), `Evidence` (pièces justificatives opposables) et `RelationshipCoverage` (cartographie multi-interlocuteurs avec détection déterministe du risque de mono-champion).
-*   **Moteur de Qualification & Bascule de Segment (Epic 2)** :
-    *   Pattern Strategy extensible (`SohoQualificationStrategy`, `PmeQualificationStrategy`, `KamQualificationStrategy`).
-    *   Détection automatique de bascule SOHO vers KAM (`SegmentPivotService`) lors du franchissement de seuils (postes de travail > 10, multi-sites, budget critique).
-    *   Création d'un dossier de handoff opposable (`HandoffDossier`) horodaté et traçable (workflow acceptation / retour motivé).
+*   **Moteur de Qualification & Autonomie SOHO (Epic 2 - Option A)** :
+    *   Pattern Strategy découplé (`SohoQualificationStrategy`, `PmeQualificationStrategy`, `KamQualificationStrategy`).
+    *   **Autonomie SOHO Totale (Option A)** : Élimination de la bascule artificielle de complexité TPE vers KAM. Une TPE reste 100% SOHO, auditée et signée directement sur le terrain par le commercial/prestataire (Fibre Pro, TPE sécurisé, Box).
+    *   Le dossier de transmission (`HandoffDossier`) reste réservé aux réassignations d'échelle PME vers Grands Comptes et aux arbitrages de secteur.
 *   **Résilience Mobile Offline-First (Epic 3)** :
     *   Idempotence forte de bout en bout via en-tête `Idempotency-Key` (UUIDv4) gérée par `IdempotencyRecord` et `IdempotentVisitService` (détection des conflits de concurrence HTTP 409 et cache de réponse).
     *   Couche mobile Flutter autonome : `LocalCacheService` pour les données locales, `OutboxManager` avec persistance de file de commandes et `SyncService` pour le rejeu résilient avec backoff.

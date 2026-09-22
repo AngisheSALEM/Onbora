@@ -114,45 +114,9 @@ class SohoQualificationStrategy(BaseQualificationStrategy):
 
     def detect_segment_pivot(self, answers: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Règle d'aiguillage SOHO -> PME :
-        - Si workstations_count > 10
-        - Ou si multisite est True
-        - Ou si budget télécom mensuel > 500 €
+        Option A (Gouvernance Réaliste & Sans Friction) :
+        Le segment SOHO / TPE est géré de bout en bout de manière autonome par le commercial
+        terrain ou le prestataire de service.
+        Zéro bascule artificielle de complexité : une TPE reste 100% SOHO sans handoff KAM.
         """
-        try:
-            workstations = int(answers.get("workstations_count") or 0)
-        except (ValueError, TypeError):
-            workstations = 0
-
-        is_multisite = bool(answers.get("multisite", False))
-
-        try:
-            spend = float(answers.get("estimated_monthly_telecom_spend") or 0.0)
-        except (ValueError, TypeError):
-            spend = 0.0
-
-        if workstations > 10:
-            return {
-                "target_segment": "PME",
-                "reason": f"Dépassement du seuil TPE : {workstations} postes déclarés (seuil SOHO <= 10).",
-                "trigger_field": "workstations_count",
-                "trigger_value": workstations
-            }
-
-        if is_multisite:
-            return {
-                "target_segment": "PME",
-                "reason": "Architecture multi-sites identifiée : nécessite une étude d'interconnexion PME / SD-WAN.",
-                "trigger_field": "multisite",
-                "trigger_value": True
-            }
-
-        if spend >= 500.0:
-            return {
-                "target_segment": "PME",
-                "reason": f"Budget télécom mensuel élevé ({spend:.2f} €) supérieur au plafond standard SOHO.",
-                "trigger_field": "estimated_monthly_telecom_spend",
-                "trigger_value": spend
-            }
-
         return None

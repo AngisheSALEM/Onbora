@@ -83,31 +83,24 @@ class Epic2QualificationAndPivotTestCase(APITestCase):
         pivot = strategy.detect_segment_pivot(valid_soho)
         self.assertIsNone(pivot)
 
-        # SOHO answers triggering PME pivot (> 10 workstations)
-        pivot_answers_workstations = {
+        # Option A: SOHO remains 100% SOHO even with variations (zero artificial pivot to KAM)
+        answers_large_ws = {
             "soho_activity": "Commerce de détail & Boutique",
             "soho_eligibility": "Fibre optique existante / Raccordée",
             "soho_decider_present": True,
             "workstations_count": 18,
             "multisite": False
         }
-        pivot = strategy.detect_segment_pivot(pivot_answers_workstations)
-        self.assertIsNotNone(pivot)
-        self.assertEqual(pivot["target_segment"], "PME")
-        self.assertEqual(pivot["trigger_field"], "workstations_count")
+        self.assertIsNone(strategy.detect_segment_pivot(answers_large_ws))
 
-        # SOHO answers triggering PME pivot (multisite = True)
-        pivot_answers_multisite = {
+        answers_multisite = {
             "soho_activity": "Artisanat & Bâtiment",
             "soho_eligibility": "Connexion 4G / 5G Box uniquement",
             "soho_decider_present": True,
             "workstations_count": 4,
             "multisite": True
         }
-        pivot = strategy.detect_segment_pivot(pivot_answers_multisite)
-        self.assertIsNotNone(pivot)
-        self.assertEqual(pivot["target_segment"], "PME")
-        self.assertEqual(pivot["trigger_field"], "multisite")
+        self.assertIsNone(strategy.detect_segment_pivot(answers_multisite))
 
     def test_pme_pivot_to_kam_detection(self):
         strategy = PmeQualificationStrategy()
@@ -122,49 +115,60 @@ class Epic2QualificationAndPivotTestCase(APITestCase):
         self.assertIsNotNone(pivot)
         self.assertEqual(pivot["target_segment"], "KAM")
 
-    def test_pivot_service_submits_and_triggers_handoff(self):
-        answers_with_pivot = {
+    def test_pivot_service_submits_autonomous_soho(self):
+        """Option A: SOHO is qualified directly by field sales with zero pivot to KAM."""
+        soho_answers = {
             "soho_activity": "Commerce de détail & Boutique",
             "soho_eligibility": "Fibre optique existante / Raccordée",
             "soho_decider_present": True,
-            "workstations_count": 25,
-            "multisite": True,
-            "estimated_monthly_telecom_spend": 750.0
+            "workstations_count": 5,
+            "multisite": False,
+            "estimated_monthly_telecom_spend": 120.0
         }
 
         result = SegmentPivotService.submit_and_evaluate_qualification(
             enterprise_id=self.enterprise_soho.id,
             user=self.soho_sales,
-            answers=answers_with_pivot,
-            notes="Client disposant de 3 boutiques à interconnecter en VPN."
+            answers=soho_answers,
+            notes="Boutique qualifiée en direct par le commercial terrain."
+        )
+
+        self.assertTrue(result["success"])
+        self.assertFalse(result["pivot_triggered"])
+        self.assertEqual(result["effective_segment"], "SOHO")
+        self.assertIsNone(result["handoff_id"])
+
+        # Verify Enterprise remains SOHO
+        self.enterprise_soho.refresh_from_db()
+        self.assertEqual(self.enterprise_soho.segment, "SOHO")
+
+        # Verify QualificationRecord created as COMPLETED
+        qual = QualificationRecord.objects.get(id=result["qualification_id"])
+        self.assertEqual(qual.status, "COMPLETED")
+        self.assertFalse(qual.pivot_triggered)
+
+    def test_pme_pivot_triggers_grand_compte_handoff(self):
+        """PME exceeding thresholds triggers KAM Grand Compte handoff."""
+        answers_pme_large = {
+            "pme_workstations_count": 350,
+            "pme_sites_count": 8,
+            "pme_business_apps": ["ERP central (SAP, Sage, Odoo, Cegid)"],
+            "pme_cloud_hosting": "Cloud Public (Microsoft Azure, AWS, GCP)",
+            "pme_telecom_budget": 8500.0
+        }
+
+        result = SegmentPivotService.submit_and_evaluate_qualification(
+            enterprise_id=self.enterprise_pme.id,
+            user=self.kam_user,
+            answers=answers_pme_large,
+            notes="Bascule PME vers Grand Compte (350 postes, 8 sites)."
         )
 
         self.assertTrue(result["success"])
         self.assertTrue(result["pivot_triggered"])
-        self.assertEqual(result["effective_segment"], "PME")
+        self.assertEqual(result["effective_segment"], "KAM")
         self.assertIsNotNone(result["handoff_id"])
         self.assertEqual(result["handoff_status"], "PENDING")
-
-        # Verify Enterprise updated to PME
-        self.enterprise_soho.refresh_from_db()
-        self.assertEqual(self.enterprise_soho.segment, "PME")
-
-        # Verify HandoffDossier in database
-        handoff = HandoffDossier.objects.get(id=result["handoff_id"])
-        self.assertEqual(handoff.status, "PENDING")
-        self.assertEqual(handoff.target_segment, "PME")
-        self.assertEqual(handoff.from_user, self.soho_sales)
-
-        # Verify SourceObservation & Evidence created
-        obs = SourceObservation.objects.filter(enterprise=self.enterprise_soho).first()
-        self.assertIsNotNone(obs)
-        self.assertEqual(obs.source_type, "FIELD_VISIT")
-        self.assertTrue(obs.excerpt_hash)
-
-        evidence = Evidence.objects.filter(enterprise=self.enterprise_soho, observation=obs).first()
-        self.assertIsNotNone(evidence)
-        self.assertEqual(evidence.kind, "FACT")
-        self.assertEqual(evidence.review_status, "CONFIRMED")
 
     def test_handoff_accept_and_return_workflow(self):
         # Create a pending handoff
@@ -222,34 +226,54 @@ class Epic2QualificationAndPivotTestCase(APITestCase):
         self.assertEqual(res_q.data["segment_code"], "SOHO")
         self.assertGreater(len(res_q.data["questions"]), 0)
 
-        # 2. POST qualification submit endpoint
+        # 2. POST qualification submit endpoint for SOHO (Autonomous, zero pivot)
         url_submit = reverse('qualification-submit')
-        payload = {
+        payload_soho = {
             "enterprise_id": self.enterprise_soho.id,
             "answers": {
                 "soho_activity": "Commerce de détail & Boutique",
                 "soho_eligibility": "Fibre optique existante / Raccordée",
                 "soho_decider_present": True,
-                "workstations_count": 22,
-                "multisite": True
+                "workstations_count": 5,
+                "multisite": False
             },
-            "notes": "Établissement requalifié avec 22 postes."
+            "notes": "Établissement qualifié directement en SOHO."
         }
-        res_sub = self.client.post(url_submit, payload, format='json')
-        self.assertEqual(res_sub.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(res_sub.data["pivot_triggered"])
-        self.assertEqual(res_sub.data["effective_segment"], "PME")
-        handoff_id = res_sub.data["handoff_id"]
+        res_sub = self.client.post(url_submit, payload_soho, format='json')
+        self.assertEqual(res_sub.status_code, status.HTTP_200_OK)
+        self.assertFalse(res_sub.data["pivot_triggered"])
+        self.assertEqual(res_sub.data["effective_segment"], "SOHO")
+        self.assertIsNone(res_sub.data["handoff_id"])
 
-        # 3. GET handoffs list endpoint as KAM
+        # 3. Create a Handoff directly for PME to test KAM handoff API endpoints
+        qualification = QualificationRecord.objects.create(
+            enterprise=self.enterprise_pme,
+            conducted_by=self.kam_user,
+            initial_segment="PME",
+            effective_segment="KAM",
+            pivot_triggered=True,
+            pivot_reason="Effectif > 250 postes",
+            status="PIVOTED"
+        )
+        handoff = HandoffDossier.objects.create(
+            enterprise=self.enterprise_pme,
+            qualification=qualification,
+            from_user=self.soho_sales,
+            from_role="SOHO_REPRESENTATIVE",
+            target_segment="KAM",
+            status="PENDING",
+            transfer_notes="Étude Grand Compte requise"
+        )
+
+        # 4. GET handoffs list endpoint as KAM
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.kam_token.key}')
         url_handoffs = reverse('handoff-dossier-list')
         res_list = self.client.get(url_handoffs)
         self.assertEqual(res_list.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(res_list.data), 1)
 
-        # 4. POST accept handoff endpoint as KAM
-        url_accept = reverse('handoff-accept', kwargs={'pk': handoff_id})
+        # 5. POST accept handoff endpoint as KAM
+        url_accept = reverse('handoff-accept', kwargs={'pk': str(handoff.id)})
         res_acc = self.client.post(url_accept, {"notes": "Validé par le KAM"}, format='json')
         self.assertEqual(res_acc.status_code, status.HTTP_200_OK)
         self.assertEqual(res_acc.data["status"], "ACCEPTED")
