@@ -75,6 +75,11 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                       // Enterprise Info Card
                       _buildEnterpriseBanner(context, isDark, enterprise),
 
+                      const SizedBox(height: 12),
+
+                      // Tool Vocal / Dictaphone Enregistrement
+                      _buildRecordingToolCard(context, isDark),
+
                       const SizedBox(height: 16),
 
                       // Offer Selector
@@ -161,6 +166,32 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          ScaleTap(
+            onTap: () => Get.toNamed(Routes.DICTAPHONE_RECORDING),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF3B373D) : const Color(0xFFECEAE5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.mic, size: 16, color: Color(0xFF4F6CE8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Dictaphone',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF242124),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -208,6 +239,72 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecordingToolCard(BuildContext context, bool isDark) {
+    return GlassCard(
+      borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4F6CE8).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              LucideIcons.mic,
+              color: Color(0xFF4F6CE8),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Enregistrement & Dictaphone IA",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF242124),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "Dictez l'échange ou vos notes pour synthétiser le rapport par IA.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ScaleTap(
+            onTap: () => Get.toNamed(Routes.DICTAPHONE_RECORDING),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4F6CE8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                "Ouvrir",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -973,6 +1070,43 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                   ),
                 ],
                 const SizedBox(height: 20),
+                if (submission != null && submission.reportId > 0) ...[
+                  ScaleTap(
+                    onTap: () {
+                      Get.back();
+                      salesController.openVisitReportById(
+                        submission.reportId,
+                        enterpriseName: submission.enterpriseName,
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4F6CE8),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(LucideIcons.fileText, color: Colors.white, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              "Consulter le Compte-Rendu",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 ScaleTap(
                   onTap: () {
                     Get.back();
@@ -980,18 +1114,18 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                   },
                   child: Container(
                     width: double.infinity,
-                    height: 48,
+                    height: 46,
                     decoration: BoxDecoration(
-                      color: AppConstants.primaryBlue,
+                      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         "Retour à l'accueil",
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : AppConstants.textDark,
                         ),
                       ),
                     ),

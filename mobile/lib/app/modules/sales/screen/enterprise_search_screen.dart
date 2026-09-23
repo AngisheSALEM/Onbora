@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -178,6 +178,8 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
               final results = salesController.searchResults;
 
               if (results.isEmpty) {
+                final hasAnyData = salesController.enterprises.isNotEmpty;
+                final isQueryEmpty = _searchController.text.trim().isEmpty;
                 return SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 48),
@@ -185,15 +187,24 @@ class _EnterpriseSearchScreenState extends State<EnterpriseSearchScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(CupertinoIcons.search, size: 36, color: Color(0xFF8E8E93)),
+                          Icon(
+                            !hasAnyData ? CupertinoIcons.person_crop_circle_badge_exclam : CupertinoIcons.search,
+                            size: 38,
+                            color: const Color(0xFF8E8E93),
+                          ),
                           const SizedBox(height: 12),
                           Text(
-                            'Aucun prospect trouvé',
+                            !hasAnyData
+                                ? 'Aucune entreprise disponible'
+                                : (isQueryEmpty ? 'Recherchez un prospect' : 'Aucun prospect trouvé'),
                             style: AppConstants.headlineStyle(isDark),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Essayez un autre nom d\'entreprise ou un secteur.',
+                            !hasAnyData
+                                ? 'Connectez-vous pour synchroniser votre portefeuille client.'
+                                : 'Essayez un autre nom d\'entreprise ou un secteur.',
+                            textAlign: TextAlign.center,
                             style: AppConstants.subheadStyle(isDark),
                           ),
                         ],

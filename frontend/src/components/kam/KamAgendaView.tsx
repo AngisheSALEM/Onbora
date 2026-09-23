@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
-import KamVocalVisitModal, { AppointmentData } from './KamVocalVisitModal';
-import KamAppointmentPreparationModal from './KamAppointmentPreparationModal';
+import { AppointmentData } from './KamVocalVisitModal';
 import KamExpressMeetingModal from './KamExpressMeetingModal';
 import { KamVisitPurpose, PurposeSuggestion, VISIT_PURPOSE_LABELS, VISIT_PURPOSE_TITLES } from './kamVisitPurpose';
 
@@ -22,14 +22,13 @@ export default function KamAgendaView({
   onOpenReport,
   onAccountUpdated,
 }: KamAgendaViewProps) {
+  const router = useRouter();
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'ALL' | 'TODAY' | 'UPCOMING' | 'COMPLETED'>('ALL');
   const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
   const [isExpressMeetingOpen, setIsExpressMeetingOpen] = useState(false);
-  const [activeVocalAppointment, setActiveVocalAppointment] = useState<AppointmentData | null>(null);
-  const [activePreparationAppointment, setActivePreparationAppointment] = useState<AppointmentData | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // New Appointment Form State
@@ -241,17 +240,10 @@ export default function KamAgendaView({
     }
   };
 
-  const handleVisitCompleted = (report: any) => {
-    setActiveVocalAppointment(null);
-    loadAppointments();
-    setSuccessToast("Rapport exécutif et email de relance générés par Core AI !");
-    setTimeout(() => setSuccessToast(null), 5000);
-  };
-
   const handleExpressMeetingStarted = (appointment: AppointmentData) => {
     setAppointments((previous) => [appointment, ...previous]);
     setIsExpressMeetingOpen(false);
-    setActiveVocalAppointment(appointment);
+    router.push(`/kam/vocal-visit?appointmentId=${appointment.id}`);
   };
 
   // Filter appointments
@@ -489,7 +481,13 @@ export default function KamAgendaView({
                 <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-end gap-2.5">
                   {isCompleted ? (
                     <button
-                      onClick={() => onOpenReport?.(app.report_id || app.id)}
+                      onClick={() => {
+                        if (onOpenReport) {
+                          onOpenReport(app.report_id || app.id);
+                        } else {
+                          router.push(`/kam/report?reportId=${app.report_id || app.id}&from=agenda`);
+                        }
+                      }}
                       className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
                       title="Consulter le rapport de visite"
                     >
@@ -498,7 +496,7 @@ export default function KamAgendaView({
                     </button>
                   ) : isInProgress ? (
                     <button
-                      onClick={() => setActiveVocalAppointment(app)}
+                      onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
                       className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
                     >
                       <Icons.Mic size={15} />
@@ -508,13 +506,13 @@ export default function KamAgendaView({
                     <>
                       <button
                         type="button"
-                        onClick={() => setActivePreparationAppointment(app)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] transition-colors"
+                        onClick={() => router.push(`/kam/prepare-visit?appointmentId=${app.id}`)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] transition-colors cursor-pointer"
                       >
                         Préparer
                       </button>
                       <button
-                        onClick={() => setActiveVocalAppointment(app)}
+                        onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
                         className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
                         title="Démarrer la réunion vocale"
                       >
@@ -829,14 +827,6 @@ export default function KamAgendaView({
         </div>
       )}
 
-      {/* 4. IN-VISIT LIVE VOCAL BRIEFING MODAL */}
-      <KamVocalVisitModal
-        isOpen={!!activeVocalAppointment}
-        appointment={activeVocalAppointment}
-        onClose={() => setActiveVocalAppointment(null)}
-        onVisitCompleted={handleVisitCompleted}
-      />
-      {activePreparationAppointment && <KamAppointmentPreparationModal appointment={activePreparationAppointment} onClose={() => setActivePreparationAppointment(null)} />}
       {isExpressMeetingOpen && <KamExpressMeetingModal assignedAccounts={assignedAccounts} onClose={() => setIsExpressMeetingOpen(false)} onStarted={handleExpressMeetingStarted} />}
 
     </div>

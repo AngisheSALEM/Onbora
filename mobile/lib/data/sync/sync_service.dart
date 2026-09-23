@@ -3,22 +3,20 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../core/api/api_config.dart';
 import '../../core/storage/session_storage.dart';
-import 'outbox_command.dart';
 import 'outbox_manager.dart';
 
 /// Service de réconciliation réseau (Sync Service).
 /// Rejoue les commandes de l'Outbox locale vers le backend Django avec idempotence,
 /// et détecte les conflits de version concurrents (HTTP 409).
 class SyncService {
-  final OutboxManager _outboxManager;
+  final OutboxManager outboxManager;
   final http.Client _httpClient;
   bool _isSyncing = false;
 
   SyncService({
-    required OutboxManager outboxManager,
+    required this.outboxManager,
     http.Client? httpClient,
-  })  : _outboxManager = outboxManager,
-        _httpClient = httpClient ?? http.Client();
+  })  : _httpClient = httpClient ?? http.Client();
 
   bool get isSyncing => _isSyncing;
 
@@ -33,7 +31,7 @@ class SyncService {
     int failed = 0;
     int conflicts = 0;
 
-    final pending = _outboxManager.getPendingCommands();
+    final pending = outboxManager.getPendingCommands();
 
     try {
       final token = await SessionStorage.getToken();
@@ -44,7 +42,7 @@ class SyncService {
       };
 
       for (final command in pending) {
-        await _outboxManager.updateCommandStatus(command.id, 'syncing');
+        await outboxManager.updateCommandStatus(command.id, 'syncing');
 
         try {
           final uri = Uri.parse('${ApiConfig.baseUrl}${command.endpoint}');
@@ -60,19 +58,19 @@ class SyncService {
               .timeout(const Duration(seconds: 30));
 
           if (response.statusCode >= 200 && response.statusCode < 300) {
-            await _outboxManager.updateCommandStatus(command.id, 'completed');
+            await outboxManager.updateCommandStatus(command.id, 'completed');
             synced++;
           } else if (response.statusCode == 409) {
             // Conflit de version serveur : le brouillon local est conservé pour révision
             final errorBody = response.body;
-            await _outboxManager.updateCommandStatus(
+            await outboxManager.updateCommandStatus(
               command.id,
               'conflict',
               error: 'Conflit de version distant : $errorBody',
             );
             conflicts++;
           } else {
-            await _outboxManager.updateCommandStatus(
+            await outboxManager.updateCommandStatus(
               command.id,
               'failed',
               error: 'HTTP ${response.statusCode} : ${response.body}',
@@ -80,7 +78,7 @@ class SyncService {
             failed++;
           }
         } catch (e) {
-          await _outboxManager.updateCommandStatus(
+          await outboxManager.updateCommandStatus(
             command.id,
             'failed',
             error: e.toString(),

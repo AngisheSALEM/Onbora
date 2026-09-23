@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit';
 
 interface KamSidebarProps {
-  activeView: KamView;
-  onViewChange: (view: KamView) => void;
+  activeView?: KamView;
+  onViewChange?: (view: KamView) => void;
   unreadSignalsCount?: number;
   unreadDirectivesCount?: number;
 }
@@ -21,6 +23,7 @@ export default function KamSidebar({
   unreadSignalsCount = 0,
   unreadDirectivesCount = 0,
 }: KamSidebarProps) {
+  const pathname = usePathname() || '';
   const { user, logout } = useAuth();
   const displayName = user ? `${user.first_name || user.username}` : 'Salem';
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -51,41 +54,52 @@ export default function KamSidebar({
   const navItems = [
     {
       id: 'accounts' as KamView,
-      label: 'Comptes ',
+      href: '/kam/accounts',
+      label: 'Comptes',
       icon: Icons.Building,
-      badge: null
+      badge: null,
     },
-    // {
-    //   id: 'leadscoring' as KamView,
-    //   label: 'Scoring',
-    //   icon: Icons.Award,
-    //   badge: null
-    // },
-    // {
-    //   id: 'churnradar' as KamView,
-    //   label: "Radar Taux d'abanbando",
-    //   icon: Icons.AlertTriangle,
-    //   badge: null
-    // },
     {
       id: 'agenda' as KamView,
+      href: '/kam/agenda',
       label: 'Agenda & Rendez-vous',
       icon: Icons.Calendar,
-      badge: null
+      badge: null,
     },
     {
       id: 'visits' as KamView,
+      href: '/kam/visits',
       label: 'Historique des visites',
       icon: Icons.FileText,
-      badge: null
+      badge: null,
     },
     {
       id: 'settings' as KamView,
+      href: '/kam/settings',
       label: 'Paramètres',
       icon: Icons.Settings,
-      badge: null
-    }
+      badge: null,
+    },
   ];
+
+  const checkIsActive = (item: typeof navItems[0]) => {
+    if (activeView) {
+      return activeView === item.id;
+    }
+    if (item.id === 'accounts') {
+      return pathname === '/kam' || pathname === '/kam/' || pathname.startsWith('/kam/accounts') || pathname.startsWith('/kam/briefing');
+    }
+    if (item.id === 'agenda') {
+      return pathname.startsWith('/kam/agenda') || pathname.startsWith('/kam/prepare-visit') || pathname.startsWith('/kam/vocal-visit');
+    }
+    if (item.id === 'visits') {
+      return pathname.startsWith('/kam/visits') || pathname.startsWith('/kam/report');
+    }
+    if (item.id === 'settings') {
+      return pathname.startsWith('/kam/settings');
+    }
+    return pathname === item.href;
+  };
 
   return (
     <aside
@@ -97,26 +111,26 @@ export default function KamSidebar({
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-1 py-1">
           {!isCollapsed && (
-            <div className="flex items-center gap-3">
+            <Link href="/kam/accounts" className="flex items-center gap-3 group">
               <Logo size={36} />
               <div>
-                <h1 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                <h1 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight group-hover:text-[#4F6CE8] transition-colors">
                   ONBORA KAM
                 </h1>
-                <span className="text-[11px] font-550 text-zinc-500 dark:text-zinc-400">
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                   Cockpit Grands Comptes
                 </span>
               </div>
-            </div>
+            </Link>
           )}
 
           {isCollapsed && (
-            <div className="mx-auto">
+            <Link href="/kam/accounts" className="mx-auto">
               <Logo size={32} />
-            </div>
+            </Link>
           )}
 
-          {/* Liquid Glass Sidebar Collapse Button */}
+          {/* Sidebar Collapse Button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
@@ -129,20 +143,17 @@ export default function KamSidebar({
         {/* Navigation List */}
         <nav className="flex flex-col gap-2">
           {navItems.map((item) => {
-            const isActive = activeView === item.id;
+            const isActive = checkIsActive(item);
             const Icon = item.icon;
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => onViewChange(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`group flex items-center ${isCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
-                  isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-none font-semibold'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#4F6CE8] dark:hover:text-[#7B92F2]'
-                }`}
-              >
+            const buttonClass = `group flex items-center ${isCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
+              isActive
+                ? 'bg-[#4F6CE8] text-white shadow-none font-semibold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#4F6CE8] dark:hover:text-[#7B92F2]'
+            }`;
+
+            const content = (
+              <>
                 <div className="flex items-center gap-3">
                   <Icon
                     size={20}
@@ -170,18 +181,42 @@ export default function KamSidebar({
                     {item.badge}
                   </span>
                 )}
-              </button>
+              </>
+            );
+
+            if (onViewChange) {
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onViewChange(item.id)}
+                  title={isCollapsed ? item.label : undefined}
+                  className={buttonClass}
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                title={isCollapsed ? item.label : undefined}
+                className={buttonClass}
+              >
+                {content}
+              </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom : Profile Capsule with 3D Bitmoji & Dedicated Logout Button */}
+      {/* Bottom : Profile Capsule with Avatar & Dedicated Logout Button */}
       <div className="flex flex-col gap-2 pt-2 border-t border-black/5 dark:border-white/5">
         <div className={`p-2.5 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed ? (
-            <button
-              onClick={() => onViewChange('settings')}
+            <Link
+              href="/kam/settings"
               className="flex items-center gap-2.5 truncate text-left cursor-pointer hover:opacity-85 transition-opacity w-full"
               title="Voir mon profil & paramètres"
             >
@@ -200,13 +235,9 @@ export default function KamSidebar({
                   Key Account Manager
                 </span>
               </div>
-            </button>
+            </Link>
           ) : (
-            <button
-              onClick={() => onViewChange('settings')}
-              title="Profil & Paramètres"
-              className="cursor-pointer"
-            >
+            <Link href="/kam/settings" title="Paramètres">
               <UserAvatar
                 src={user?.profile_picture_url || user?.avatar}
                 name={displayName}
@@ -214,33 +245,48 @@ export default function KamSidebar({
                 showStatusDot
                 status={activityStatus}
               />
-            </button>
+            </Link>
           )}
         </div>
 
-        
+        {/* Dedicated Logout Action Button */}
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className={`flex items-center gap-2.5 p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors text-xs font-semibold cursor-pointer ${isCollapsed ? 'justify-center' : 'w-full'}`}
+          title="Se déconnecter"
+        >
+          <Icons.LogOut size={16} />
+          {!isCollapsed && <span>Déconnexion</span>}
+        </button>
       </div>
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] w-full max-w-sm rounded-[28px] border border-black/10 dark:border-white/10 p-6 shadow-2xl space-y-4 animate-scale-up">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center mx-auto">
-              <Icons.LogOut size={22} />
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 max-w-sm w-full border border-black/10 dark:border-white/10 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
+              <Icons.AlertTriangle size={24} />
             </div>
-            
-            <div className="flex gap-3 pt-2">
+            <div className="text-center space-y-1">
+              <h3 className="font-extrabold text-sm text-zinc-900 dark:text-white">
+                Confirmer la déconnexion
+              </h3>
+              <p className="text-xs text-zinc-500">
+                Êtes-vous sûr de vouloir quitter votre session de travail ?
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-black/10 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold text-xs cursor-pointer hover:bg-zinc-300 transition-colors"
               >
                 Annuler
               </button>
               <button
-                onClick={() => logout()}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-xs font-semibold text-white transition-all cursor-pointer shadow-md shadow-rose-600/20"
+                onClick={logout}
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs cursor-pointer transition-colors"
               >
-                Déconnexion
+                Se déconnecter
               </button>
             </div>
           </div>
@@ -249,4 +295,3 @@ export default function KamSidebar({
     </aside>
   );
 }
-

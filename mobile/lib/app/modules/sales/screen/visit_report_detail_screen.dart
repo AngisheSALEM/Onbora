@@ -1,16 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/sales_controller.dart';
+import '../model/visit_report_model.dart';
 import '../../../core/api/api_config.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
 import '../../../common/screen/widget/aurora_background.dart';
-import '../../../common/screen/widget/glass_card.dart';
-import 'field_intelligence_screen.dart';
 
+/// Écran de Détail du Compte-Rendu de Visite (Apple Design System & DESIGN.md)
+/// Présente l'intégralité des données commerciales synthétisées dans une SEULE carte unifiée et minimaliste.
 class VisitReportDetailScreen extends StatefulWidget {
   const VisitReportDetailScreen({super.key});
 
@@ -19,37 +21,35 @@ class VisitReportDetailScreen extends StatefulWidget {
 }
 
 class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
-  late TextEditingController _emailController;
-  late TextEditingController _feedbackCommentsController;
-  int _selectedRating = 5;
-  bool _isEditingEmail = false;
+  static const List<String> _frenchMonths = [
+    '', 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+    'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    final salesController = Get.find<SalesController>();
-    final draft = salesController.currentReport.value?.followUpEmailDraft ?? '';
-    _emailController = TextEditingController(text: draft);
-    _feedbackCommentsController = TextEditingController(
-      text: salesController.currentReport.value?.aiFeedbackComments ?? '',
-    );
-    _selectedRating = salesController.currentReport.value?.aiFeedbackRating ?? 5;
+  String _formatFrenchDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'Date non précisée';
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = (dt.month >= 1 && dt.month <= 12) ? _frenchMonths[dt.month] : '${dt.month}';
+      final year = dt.year;
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final minute = dt.minute.toString().padLeft(2, '0');
+      return '$day $month $year à ${hour}h$minute';
+    } catch (_) {
+      return dateStr;
+    }
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _feedbackCommentsController.dispose();
-    super.dispose();
-  }
-
-  void _copyEmailToClipboard() {
-    Clipboard.setData(ClipboardData(text: _emailController.text));
+  void _copyToClipboard(String text, String label) {
+    if (text.trim().isEmpty) return;
+    Clipboard.setData(ClipboardData(text: text));
+    HapticFeedback.lightImpact();
     Get.snackbar(
-      'Copié !',
-      'Le brouillon d\'email a été copié dans le presse-papiers.',
+      label,
+      'Copié dans le presse-papiers.',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppConstants.pureBlack,
+      backgroundColor: const Color(0xFF1E1E22),
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),
@@ -59,1003 +59,272 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final salesController = Get.find<SalesController>();
 
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppConstants.textDark, size: 20),
-            tooltip: 'Retour',
-            onPressed: () => Get.back(),
-          ),
-          title: Text(
-            'Rapport de Visite Synthétisé',
-            style: TextStyle(
+      extendBodyBehindAppBar: true,
+      backgroundColor: isDark ? AppConstants.backgroundDark : AppConstants.backgroundLight,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: ScaleTap(
+          onTap: () => Get.back(),
+          child: Container(
+            margin: const EdgeInsets.only(left: 14),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              CupertinoIcons.chevron_back,
+              size: 20,
               color: isDark ? Colors.white : AppConstants.textDark,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.3,
             ),
           ),
-          actions: [
-            Obx(() {
-              final report = salesController.currentReport.value;
-              if (report == null) return const SizedBox.shrink();
-              return IconButton(
-                icon: Icon(LucideIcons.download, color: isDark ? Colors.white70 : AppConstants.textDark, size: 20),
-                tooltip: 'Télécharger Export PDF',
-                onPressed: () async {
-                  final pdfUrl = '${ApiConfig.activeBaseUrl}/api/sales/visit-reports/${report.id}/export/?format=pdf';
-                  final uri = Uri.parse(pdfUrl);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } else {
-                    Get.snackbar('Ouverture PDF', 'Lien PDF : $pdfUrl');
-                  }
-                },
-              );
-            }),
-          ],
         ),
-        body: AuroraBackground(
-          child: SafeArea(
-            child: Obx(() {
-              final report = salesController.currentReport.value;
-              final enterprise = salesController.selectedEnterprise.value;
+        title: Text(
+          'Compte-rendu de visite',
+          style: TextStyle(
+            color: isDark ? Colors.white : AppConstants.textDark,
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            letterSpacing: -0.3,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Obx(() {
+            final report = salesController.currentReport.value;
+            if (report == null) return const SizedBox.shrink();
+            return ScaleTap(
+              onTap: () async {
+                final pdfUrl = '${ApiConfig.baseUrl}/api/sales/visit-reports/${report.id}/export/?format=pdf';
+                final uri = Uri.parse(pdfUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  Get.snackbar('Export PDF', 'Lien : $pdfUrl');
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 14),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  LucideIcons.download,
+                  size: 18,
+                  color: isDark ? Colors.white : AppConstants.textDark,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+      body: AuroraBackground(
+        child: SafeArea(
+          child: Obx(() {
+            final report = salesController.currentReport.value;
+            final enterprise = salesController.selectedEnterprise.value;
 
-              if (report == null) {
-                return Center(
-                  child: Text(
-                    'Aucun rapport disponible.',
-                    style: TextStyle(color: isDark ? Colors.white70 : AppConstants.textDark),
-                  ),
-                );
-              }
-
-              return SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.all(AppConstants.paddingLg),
+            if (report == null) {
+              return Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Success Transmitted Notification Banner
-                    if (salesController.successMessage.value.isNotEmpty) ...[
-                      RepaintBoundary(
-                        child: Container(
-                          padding: const EdgeInsets.all(AppConstants.paddingLg),
-                          margin: const EdgeInsets.only(bottom: AppConstants.marginLg),
-                          decoration: BoxDecoration(
-                            color: AppConstants.successGreen.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
-                            border: Border.all(color: AppConstants.successGreen.withValues(alpha: 0.5)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.check_circle_rounded, color: AppConstants.successGreen, size: 28),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  salesController.successMessage.value,
-                                  style: const TextStyle(color: AppConstants.successGreen, fontWeight: FontWeight.bold, fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    // Error Banner with Direct Retry Action
-                    if (salesController.errorMessage.value.isNotEmpty) ...[
-                      RepaintBoundary(
-                        child: Container(
-                          padding: const EdgeInsets.all(AppConstants.paddingLg),
-                          margin: const EdgeInsets.only(bottom: AppConstants.marginLg),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLg),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 28),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  salesController.errorMessage.value,
-                                  style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => salesController.transmitReportToKAM(),
-                                child: const Text('Réessayer', style: TextStyle(color: AppConstants.primaryBlue, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    // Enterprise Title Card
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(18),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E1E1E) : AppConstants.pureBlack,
-                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
-                                border: Border.all(
-                                  color: isDark ? AppConstants.cardDarkBorder : Colors.transparent,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.description_rounded, color: Colors.white, size: 24),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    enterprise?.name ?? 'Entreprise',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Dossier qualifié • Prêt pour transmission KAM',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Builder(builder: (ctx) {
-                                    final durationSec = report.processingTimeSeconds ??
-                                        (salesController.lastReportGenerationDuration.value > 0
-                                            ? salesController.lastReportGenerationDuration.value
-                                            : null);
-                                    if (durationSec == null) return const SizedBox.shrink();
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 6),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(LucideIcons.zap, size: 12, color: Color(0xFF10B981)),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'Généré par Core AI en ${durationSec.toStringAsFixed(1)}s',
-                                              style: const TextStyle(
-                                                color: Color(0xFF10B981),
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const Icon(CupertinoIcons.doc_text, size: 48, color: Color(0xFF8E8E93)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Aucun compte-rendu chargé',
+                      style: AppConstants.headlineStyle(isDark),
                     ),
-                    const SizedBox(height: 16),
-
-                    // BANT Score & Statut de Qualification Lead
-                    _buildBANTScoreCard(report, isDark),
-                    const SizedBox(height: 16),
-
-                    // Bilan Financier & Rentabilité Métier (COI vs Gain Net)
-                    _buildFinancialROICard(report, isDark),
-                    const SizedBox(height: 16),
-
-                    // Packages Tierés (Marge MSP Garantie)
-                    if (report.tieredPackages.isNotEmpty) ...[
-                      _buildTieredPackagesSection(report.tieredPackages, isDark),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Enregistrement & Retranscription
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF222228) : const Color(0xFFE0E7FF),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Icon(
-                                          LucideIcons.mic,
-                                          color: AppConstants.primaryBlue,
-                                          size: 18,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Flexible(
-                                        child: Text(
-                                          'Retranscription de l\'échange',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: isDark ? Colors.white : AppConstants.textDark,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AppConstants.primaryBlue.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'Audio',
-                                    style: TextStyle(
-                                      color: AppConstants.primaryBlue,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF141416) : const Color(0xFFE2E8F0).withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: SelectableText(
-                                report.rawTranscript.isNotEmpty
-                                    ? report.rawTranscript
-                                    : 'Aucun enregistrement disponible pour cette visite.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white : AppConstants.textDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Sélectionnez une visite dans l\'historique.',
+                      style: AppConstants.subheadStyle(isDark),
                     ),
-                    const SizedBox(height: 14),
-
-                    // Executive Summary
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(LucideIcons.sparkles, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Synthèse de la visite',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              report.executiveSummary,
-                              style: TextStyle(
-                                fontSize: 14,
-                                height: 1.5,
-                                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Confirmed Needs Badges
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: AppConstants.successGreen.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(LucideIcons.checkCircle2, color: AppConstants.successGreen, size: 18),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Besoins Confirmés',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (report.confirmedNeeds.isEmpty)
-                              Text(
-                                'Aucun besoin spécifique formulé lors de cet échange initial.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontStyle: FontStyle.italic,
-                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                ),
-                              )
-                            else
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: report.confirmedNeeds.map((need) {
-                                  return Chip(
-                                    backgroundColor: AppConstants.successGreen.withValues(alpha: 0.12),
-                                    side: BorderSide.none,
-                                    label: Text(
-                                      need,
-                                      style: const TextStyle(color: AppConstants.successGreen, fontWeight: FontWeight.w600, fontSize: 13),
-                                    ),
-                                    avatar: const Icon(LucideIcons.check, color: AppConstants.successGreen, size: 15),
-                                  );
-                                }).toList(),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Objections & Freins Relevés
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(LucideIcons.shieldAlert, color: Color(0xFFEF4444), size: 18),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Objections & Freins Relevés',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (report.objectionsRaised.isEmpty)
-                              Text(
-                                'Aucune objection majeure identifiée lors de cet entretien.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontStyle: FontStyle.italic,
-                                  color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                ),
-                              )
-                            else
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: report.objectionsRaised.map((objection) {
-                                  return Chip(
-                                    backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                                    side: BorderSide.none,
-                                    label: Text(
-                                      objection,
-                                      style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600, fontSize: 13),
-                                    ),
-                                    avatar: const Icon(LucideIcons.alertTriangle, color: Color(0xFFEF4444), size: 15),
-                                  );
-                                }).toList(),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Action Items
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(LucideIcons.listChecks, color: isDark ? Colors.white70 : AppConstants.textDark, size: 18),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Plan d\'Actions à Dérouler',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: isDark ? Colors.white : AppConstants.textDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Column(
-                              children: report.actionsTodo.map((action) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(LucideIcons.arrowRight, color: isDark ? Colors.white70 : AppConstants.textDark, size: 16),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          action,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Follow up Email Draft (100% User-Editable + Copy to Clipboard)
-                    RepaintBoundary(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(AppConstants.paddingLg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF1F5F9),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(LucideIcons.mail, color: isDark ? Colors.white : AppConstants.textDark, size: 18),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          'Proposition d\'email de suivi',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: isDark ? Colors.white : AppConstants.textDark,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(LucideIcons.copy, size: 18, color: isDark ? Colors.white70 : AppConstants.textDark),
-                                      tooltip: 'Copier l\'email',
-                                      onPressed: _copyEmailToClipboard,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        _isEditingEmail ? LucideIcons.checkCircle2 : LucideIcons.edit3,
-                                        size: 18,
-                                        color: _isEditingEmail ? AppConstants.successGreen : (isDark ? Colors.white70 : AppConstants.textDark),
-                                      ),
-                                      tooltip: _isEditingEmail ? 'Valider' : 'Modifier',
-                                      onPressed: () => setState(() => _isEditingEmail = !_isEditingEmail),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (_isEditingEmail)
-                              TextFormField(
-                                controller: _emailController,
-                                maxLines: 8,
-                                style: TextStyle(fontSize: 13, color: isDark ? Colors.white : AppConstants.textDark, fontWeight: FontWeight.w500),
-                                decoration: InputDecoration(
-                                  hintText: 'Personnalisez le contenu de l\'email...',
-                                  filled: true,
-                                  fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              )
-                            else
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF18181A) : const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isDark ? AppConstants.cardDarkBorder : AppConstants.borderLight,
-                                  ),
-                                ),
-                                child: Text(
-                                  _emailController.text.isNotEmpty ? _emailController.text : report.followUpEmailDraft,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    height: 1.4,
-                                    color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Évaluation & Feedback IA Card (Apprentissage Continu)
-                    _buildAIFeedbackSection(report, salesController, isDark),
-                    const SizedBox(height: 20),
-
-                    // Field Intelligence Lead Generation Card (Clean Monochrome)
-                    GlassCard(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(LucideIcons.radar, color: isDark ? Colors.white : AppConstants.textDark, size: 16),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Intelligence Terrain & Réseau',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? Colors.white : AppConstants.textDark,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Lookalike 100m • Parrainages • Audit Concurrence',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF222228) : const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'Sourcing',
-                                  style: TextStyle(
-                                    color: isDark ? Colors.white : AppConstants.textDark,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Enrichissez ce dossier en renseignant les commerces voisins et les partenaires du client pour étendre la couverture de votre zone.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              height: 1.35,
-                              color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 46,
-                            child: ScaleTap(
-                              child: ElevatedButton.icon(
-                                onPressed: () => Get.to(() => const FieldIntelligenceScreen()),
-                                icon: Icon(LucideIcons.mapPin, size: 16, color: isDark ? const Color(0xFF121214) : Colors.white),
-                                label: Text(
-                                  'Compléter l\'Intelligence Terrain',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? const Color(0xFF121214) : Colors.white,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                                  foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Transmit to KAM Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ScaleTap(
-                        child: ElevatedButton.icon(
-                          onPressed: salesController.isTransmitting.value
-                            ? null
-                            : () => salesController.transmitReportToBackOffice(),
-                          icon: salesController.isTransmitting.value
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(color: isDark ? const Color(0xFF121214) : Colors.white, strokeWidth: 2),
-                                )
-                              : Icon(LucideIcons.send, size: 20, color: isDark ? const Color(0xFF121214) : Colors.white),
-                          label: Text(
-                            salesController.isTransmitting.value
-                                ? 'Transmission au Back-Office en cours...'
-                                : 'Transmettre au Back-Office',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF121214) : Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark ? Colors.white : const Color(0xFF18181B),
-                            foregroundColor: isDark ? const Color(0xFF121214) : Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                   ],
                 ),
               );
-            }),
-          ),
-        ),
-      );
-  }
+            }
 
-  Widget _buildBANTScoreCard(dynamic report, bool isDark) {
-    final bant = report.bantScore as Map<String, dynamic>?;
-    final totalScore = (bant?['total_score'] as num?)?.toInt() ?? 0;
-    final status = (bant?['status'] as String?) ?? 'INSUFFICIENT_DATA';
-    final disqualificationReason = (bant?['disqualification_reason'] as String?) ?? '';
+            final isTransmitted = report.hasDossier;
+            final bant = report.bantScore;
+            final coi = report.coiMetrics;
 
-    Color statusColor;
-    String statusLabel;
-    IconData statusIcon;
-
-    switch (status) {
-      case 'HOT_LEAD':
-        statusColor = const Color(0xFF22C55E);
-        statusLabel = 'Lead Prioritaire (Hot Lead)';
-        statusIcon = LucideIcons.flame;
-        break;
-      case 'WARM_LEAD':
-        statusColor = const Color(0xFF3B82F6);
-        statusLabel = 'Opportunité Active (Warm Lead)';
-        statusIcon = LucideIcons.trendingUp;
-        break;
-      case 'COLD_LEAD':
-        statusColor = const Color(0xFF94A3B8);
-        statusLabel = 'Lead Froid (Cold Lead)';
-        statusIcon = LucideIcons.clock;
-        break;
-      case 'DISQUALIFIED':
-        statusColor = const Color(0xFFEF4444);
-        statusLabel = 'Lead Disqualifié';
-        statusIcon = LucideIcons.alertOctagon;
-        break;
-      case 'INSUFFICIENT_DATA':
-      default:
-        statusColor = const Color(0xFFF59E0B);
-        statusLabel = 'Données Insuffisantes';
-        statusIcon = LucideIcons.info;
-        break;
-    }
-
-    final budgetScore = (bant?['budget_score'] as num?)?.toInt() ?? 0;
-    final authorityScore = (bant?['authority_score'] as num?)?.toInt() ?? 0;
-    final needScore = (bant?['need_score'] as num?)?.toInt() ?? 0;
-    final timelineScore = (bant?['timeline_score'] as num?)?.toInt() ?? 0;
-
-    return GlassCard(
-      padding: const EdgeInsets.all(AppConstants.paddingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ============================================================
+                  // CARTE UNIQUE ET MINIMALISTE REGROUPANT TOUTES LES INFORMATIONS
+                  // (Conforme stricte DESIGN.md : fond plein, 0px border, dividers)
+                  // ============================================================
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
+                      color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    child: Icon(statusIcon, color: statusColor, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Qualification BANT Core AI',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: isDark ? Colors.white : AppConstants.textDark,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1. EN-TÊTE DE LA CARTE : Entreprise & Métadonnées
+                        _buildHeaderSection(context, isDark, report, enterprise, isTransmitted),
+
+                        _buildDivider(isDark),
+
+                        // 2. SYNTHÈSE EXÉCUTIVE CORE AI
+                        _buildSummarySection(isDark, report),
+
+                        // 3. QUALIFICATION BANT & IMPACT FINANCIER (COI / ROI)
+                        if (bant != null || coi != null) ...[
+                          _buildDivider(isDark),
+                          _buildBantAndRoiSection(isDark, bant, coi),
+                        ],
+
+                        // 4. BESOINS CONFIRMÉS & OBJECTIONS RELEVÉES
+                        if (report.confirmedNeeds.isNotEmpty || report.objectionsRaised.isNotEmpty) ...[
+                          _buildDivider(isDark),
+                          _buildNeedsAndObjectionsSection(isDark, report),
+                        ],
+
+                        // 5. PLAN D'ACTIONS & PROCHAINES ÉTAPES
+                        if (report.actionsTodo.isNotEmpty) ...[
+                          _buildDivider(isDark),
+                          _buildActionsSection(isDark, report),
+                        ],
+
+                        // 6. OFFRES RECOMMANDÉES & PACKAGES TIERÉS
+                        if (report.tieredPackages.isNotEmpty) ...[
+                          _buildDivider(isDark),
+                          _buildPackagesSection(isDark, report),
+                        ],
+
+                        // 7. RETRANSCRIPTION DE L'ÉCHANGE (AUDIO / NOTES)
+                        if (report.rawTranscript.trim().isNotEmpty) ...[
+                          _buildDivider(isDark),
+                          _buildTranscriptSection(isDark, report),
+                        ],
+
+                        // 8. BROUILLON D'EMAIL COMMERCIAL PRÊT À L'ENVOI
+                        if (report.followUpEmailDraft.trim().isNotEmpty) ...[
+                          _buildDivider(isDark),
+                          _buildEmailSection(isDark, report),
+                        ],
+
+                        _buildDivider(isDark),
+
+                        // 9. ACTION DE TRANSMISSION AU BACK-OFFICE KAM
+                        _buildBackOfficeActionSection(context, isDark, report, salesController, isTransmitted),
+                      ],
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                ),
-                child: Text(
-                  '$totalScore / 100',
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(statusIcon, color: statusColor, size: 14),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (disqualificationReason.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              disqualificationReason,
-              style: TextStyle(
-                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                fontSize: 11,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              _buildBANTSubPillar('Budget', budgetScore, isDark),
-              const SizedBox(width: 8),
-              _buildBANTSubPillar('Autorité', authorityScore, isDark),
-              const SizedBox(width: 8),
-              _buildBANTSubPillar('Besoin', needScore, isDark),
-              const SizedBox(width: 8),
-              _buildBANTSubPillar('Délai', timelineScore, isDark),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBANTSubPillar(String title, int score, bool isDark) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF141416) : const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 10,
-                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '$score/25',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : AppConstants.textDark,
-              ),
-            ),
-          ],
+            );
+          }),
         ),
       ),
     );
   }
 
-  Widget _buildFinancialROICard(dynamic report, bool isDark) {
-    final coi = report.coiMetrics as Map<String, dynamic>?;
-    final monthlyLoss = coi != null ? (coi['total_monthly_coi_usd'] as num?)?.toDouble() ?? 0.0 : 0.0;
+  // =========================================================================
+  // SECTIONS MINIMALISTES INTÉGRÉES DANS LA CARTE UNIQUE
+  // =========================================================================
 
-    if (monthlyLoss <= 0.0) {
-      return GlassCard(
-        padding: const EdgeInsets.all(AppConstants.paddingLg),
-        child: Row(
+  Widget _buildDivider(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Divider(
+        height: 1,
+        thickness: 0.5,
+        color: isDark ? const Color(0x1EFFFFFF) : const Color(0x14000000),
+      ),
+    );
+  }
+
+  /// 1. En-tête : Nom, badges, localisation, date et temps IA
+  Widget _buildHeaderSection(
+    BuildContext context,
+    bool isDark,
+    VisitReportModel report,
+    dynamic enterprise,
+    bool isTransmitted,
+  ) {
+    final durationSec = report.processingTimeSeconds;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF222228) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                LucideIcons.shieldCheck,
-                color: isDark ? Colors.white70 : AppConstants.textDark,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Bilan Financier & Coût d\'Inaction',
+                    enterprise?.name ?? 'Compte Commercial',
                     style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.4,
                       color: isDark ? Colors.white : AppConstants.textDark,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
-                    'Aucune perte d\'exploitation ou coupure critique n\'a été chiffrée lors de cet échange initial.',
+                    '${enterprise?.sector ?? "Services"} • ${enterprise?.location ?? "Kinshasa"}',
                     style: TextStyle(
-                      fontSize: 12,
-                      height: 1.35,
-                      color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Badge de statut (Transmis vs Enregistré)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: isTransmitted
+                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                    : const Color(0xFF4F6CE8).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppConstants.borderRadiusPill),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isTransmitted ? LucideIcons.checkCheck : LucideIcons.fileCheck,
+                    size: 13,
+                    color: isTransmitted ? const Color(0xFF10B981) : const Color(0xFF4F6CE8),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    isTransmitted ? 'Transmis KAM' : 'Qualifié',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: isTransmitted ? const Color(0xFF10B981) : const Color(0xFF4F6CE8),
                     ),
                   ),
                 ],
@@ -1063,368 +332,567 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             ),
           ],
         ),
-      );
-    }
-
-    final packages = (report.tieredPackages as List<dynamic>?) ?? [];
-    double packagePrice = 0.0;
-    if (packages.isNotEmpty && packages.first is Map) {
-      packagePrice = ((packages.first as Map)['monthly_price_usd'] as num?)?.toDouble() ?? 0.0;
-    }
-    final netGain = packagePrice > 0 ? (monthlyLoss - packagePrice) : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF141416), const Color(0xFF1E1E24)]
-              : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.trending_up_rounded, color: Color(0xFF22C55E), size: 20),
-              SizedBox(width: 8),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(LucideIcons.calendar, size: 13, color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6C67)),
+            const SizedBox(width: 6),
+            Text(
+              _formatFrenchDate(report.createdAt),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+              ),
+            ),
+            if (durationSec != null && durationSec > 0) ...[
+              const SizedBox(width: 14),
+              Icon(LucideIcons.zap, size: 13, color: const Color(0xFF10B981)),
+              const SizedBox(width: 4),
               Text(
-                'Bilan Financier & Rentabilité Métier',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                'Core AI (${durationSec.toStringAsFixed(1)}s)',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF10B981),
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Pertes Actuelles (COI)',
-                        style: TextStyle(color: Color(0xFFFCA5A5), fontSize: 11, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${monthlyLoss.toStringAsFixed(0)} \$/m',
-                        style: const TextStyle(color: Colors.redAccent, fontSize: 17, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (packagePrice > 0) ...[
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Gain Net Estimé',
-                          style: TextStyle(color: Color(0xFF86EFAC), fontSize: 11, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '+${netGain.toStringAsFixed(0)} \$/m',
-                          style: const TextStyle(color: Color(0xFF22C55E), fontSize: 17, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            packagePrice > 0
-                ? 'L\'offre Orange Business élimine les coupures actuelles et sécurise un gain net de ${netGain.toStringAsFixed(0)} \$/mois face au coût d\'inaction.'
-                : 'La résolution des pannes permet de récupérer jusqu\'à ${monthlyLoss.toStringAsFixed(0)} \$/mois de pertes de productivité et de chiffre d\'affaires.',
-            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, height: 1.35),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAIFeedbackSection(dynamic report, SalesController salesController, bool isDark) {
-    final hasSubmitted = report.aiFeedbackRating != null && report.aiFeedbackRating > 0;
-
-    return GlassCard(
-      padding: const EdgeInsets.all(AppConstants.paddingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.star, color: Color(0xFFF59E0B), size: 18),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Évaluation de la Synthèse IA',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: isDark ? Colors.white : AppConstants.textDark,
-                  ),
-                ),
-              ),
-              if (hasSubmitted)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppConstants.successGreen.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'Transmis',
-                    style: TextStyle(
-                      color: AppConstants.successGreen,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (hasSubmitted) ...[
-            Row(
-              children: List.generate(5, (index) {
-                final star = index + 1;
-                return Icon(
-                  star <= report.aiFeedbackRating! ? Icons.star_rounded : Icons.star_outline_rounded,
-                  color: const Color(0xFFF59E0B),
-                  size: 22,
-                );
-              }),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              report.aiFeedbackComments.isNotEmpty
-                  ? 'Remarques : "${report.aiFeedbackComments}"'
-                  : 'Évaluation enregistrée pour l\'apprentissage continu du modèle.',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ] else ...[
-            Text(
-              'Aidez le modèle Core AI à s\'améliorer en évaluant la fidélité de ce compte-rendu.',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: List.generate(5, (index) {
-                final star = index + 1;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedRating = star),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      star <= _selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: const Color(0xFFF59E0B),
-                      size: 28,
-                    ),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _feedbackCommentsController,
-              maxLines: 2,
-              style: TextStyle(fontSize: 12, color: isDark ? Colors.white : AppConstants.textDark),
-              decoration: InputDecoration(
-                hintText: 'Remarques éventuelles pour affiner l\'IA...',
-                hintStyle: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : AppConstants.textSecondaryLight),
-                filled: true,
-                fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.all(10),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: ElevatedButton.icon(
-                onPressed: salesController.isSubmittingFeedback.value
-                    ? null
-                    : () async {
-                        await salesController.submitAIFeedback(
-                          report.id,
-                          _selectedRating,
-                          _feedbackCommentsController.text.trim(),
-                        );
-                        setState(() {});
-                      },
-                icon: const Icon(LucideIcons.send, size: 14),
-                label: Text(
-                  salesController.isSubmittingFeedback.value ? 'Envoi en cours...' : 'Envoyer mon Feedback',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0),
-                  foregroundColor: isDark ? Colors.white : AppConstants.textDark,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
           ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildTieredPackagesSection(List<Map<String, dynamic>> packages, bool isDark) {
+  /// 2. Synthèse exécutive
+  Widget _buildSummarySection(bool isDark, VisitReportModel report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF007AFF).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(LucideIcons.packageCheck, color: Color(0xFF007AFF), size: 18),
-            ),
+            const Icon(LucideIcons.sparkles, size: 16, color: Color(0xFF4F6CE8)),
             const SizedBox(width: 8),
             Text(
-              'Devis & Formules Tarifaires Packagées',
+              'Synthèse Exécutive',
               style: TextStyle(
-                fontWeight: FontWeight.w600,
                 fontSize: 14,
+                fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white : AppConstants.textDark,
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        ...packages.map((pkg) {
-          final isRecommended = pkg['tier'] == 'PERFORMANCE';
-          final price = (pkg['monthly_price_usd'] as num?)?.toDouble() ?? 0.0;
-          final margin = (pkg['gross_margin_percent'] as num?)?.toDouble() ?? 40.0;
+        Text(
+          report.executiveSummary.trim().isNotEmpty
+              ? report.executiveSummary.trim()
+              : "Compte-rendu de visite rédigé suite à l'échange commercial terrain.",
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.45,
+            color: isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A),
+          ),
+        ),
+      ],
+    );
+  }
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isRecommended
-                  ? (isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F9FF))
-                  : (isDark ? const Color(0xFF18181A) : Colors.white),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isRecommended ? const Color(0xFF007AFF) : (isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
-                width: isRecommended ? 1.5 : 1.0,
+  /// 3. Score BANT & Diagnostic Financier (COI / ROI)
+  Widget _buildBantAndRoiSection(bool isDark, Map<String, dynamic>? bant, Map<String, dynamic>? coi) {
+    final score = bant?['score'] ?? bant?['bant_score'] ?? 75;
+    final budget = bant?['budget']?.toString() ?? 'Non évalué';
+    final authority = bant?['authority']?.toString() ?? 'Non évalué';
+    final need = bant?['need']?.toString() ?? 'Non évalué';
+    final timeline = bant?['timeline']?.toString() ?? 'Non précisé';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(LucideIcons.target, size: 16, color: Color(0xFF4F6CE8)),
+                const SizedBox(width: 8),
+                Text(
+                  'Qualification BANT & Rentabilité',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppConstants.textDark,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '$score/100',
+                style: const TextStyle(
+                  color: Color(0xFF10B981),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 4 Piliers BANT
+        _buildBantRow(isDark, 'Budget', budget),
+        _buildBantRow(isDark, 'Autorité (Décideur)', authority),
+        _buildBantRow(isDark, 'Besoin Exprimé', need),
+        _buildBantRow(isDark, 'Échéance Projet', timeline),
+
+        // Données financières COI si disponibles
+        if (coi != null && coi.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              if (coi['cost_of_inaction_usd'] != null) ...[
+                Expanded(
+                  child: Text(
+                    'Pertes évitées (COI) : \$${coi['cost_of_inaction_usd']}/an',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFF59E0B)),
+                  ),
+                ),
+              ],
+              if (coi['estimated_net_gain_usd'] != null) ...[
+                Expanded(
+                  child: Text(
+                    'Gain Net Estimé : \$${coi['estimated_net_gain_usd']}/an',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF10B981)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBantRow(bool isDark, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : AppConstants.textDark,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 4. Besoins confirmés & Objections
+  Widget _buildNeedsAndObjectionsSection(bool isDark, VisitReportModel report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (report.confirmedNeeds.isNotEmpty) ...[
+          Row(
+            children: [
+              const Icon(LucideIcons.checkCircle2, size: 16, color: Color(0xFF10B981)),
+              const SizedBox(width: 8),
+              Text(
+                'Besoins Confirmés',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...report.confirmedNeeds.map((need) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4, right: 8),
+                      child: Icon(LucideIcons.check, size: 12, color: Color(0xFF10B981)),
+                    ),
                     Expanded(
                       child: Text(
-                        pkg['name'] as String? ?? 'Pack MSP',
+                        need,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: isRecommended ? const Color(0xFF007AFF) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                          color: isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A),
                         ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: isRecommended ? const Color(0xFF007AFF) : const Color(0xFF64748B),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${price.toStringAsFixed(0)} \$/mois',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Row(
+              )),
+        ],
+        if (report.objectionsRaised.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(LucideIcons.shieldAlert, size: 16, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 8),
+              Text(
+                'Points de Vigilance & Objections',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...report.objectionsRaised.map((obj) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4, right: 8),
+                      child: Icon(LucideIcons.info, size: 12, color: Color(0xFFF59E0B)),
+                    ),
+                    Expanded(
                       child: Text(
-                        'Marge MSP : ${margin.toStringAsFixed(0)}%',
-                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10),
+                        obj,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    if (isRecommended)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF007AFF).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'Recommandé',
-                          style: TextStyle(color: Color(0xFF007AFF), fontWeight: FontWeight.bold, fontSize: 10),
-                        ),
-                      ),
                   ],
                 ),
-                if (pkg['pitch'] != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    pkg['pitch'] as String,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? AppConstants.textSecondaryDark : AppConstants.textSecondaryLight,
+              )),
+        ],
+      ],
+    );
+  }
+
+  /// 5. Plan d'actions
+  Widget _buildActionsSection(bool isDark, VisitReportModel report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(LucideIcons.listTodo, size: 16, color: Color(0xFF4F6CE8)),
+            const SizedBox(width: 8),
+            Text(
+              'Plan d\'Actions Immédiat',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : AppConstants.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...report.actionsTodo.map((action) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4, right: 8),
+                    child: Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF4F6CE8)),
+                  ),
+                  Expanded(
+                    child: Text(
+                      action,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A),
+                      ),
                     ),
                   ),
                 ],
+              ),
+            )),
+      ],
+    );
+  }
+
+  /// 6. Packages & Solutions recommandées
+  Widget _buildPackagesSection(bool isDark, VisitReportModel report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(LucideIcons.packageCheck, size: 16, color: Color(0xFF4F6CE8)),
+            const SizedBox(width: 8),
+            Text(
+              'Solutions & Packages Recommandés',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : AppConstants.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...report.tieredPackages.map((pkg) {
+          final name = pkg['name'] ?? pkg['tier_name'] ?? 'Solution Orange Business';
+          final price = pkg['monthly_price_usd'] ?? pkg['price'];
+          final desc = pkg['description'] ?? '';
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 3, right: 8),
+                  child: Icon(LucideIcons.check, size: 13, color: Color(0xFF4F6CE8)),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name.toString(),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : AppConstants.textDark,
+                              ),
+                            ),
+                          ),
+                          if (price != null) ...[
+                            Text(
+                              '\$$price/mois',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF4F6CE8),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (desc.toString().isNotEmpty) ...[
+                        Text(
+                          desc.toString(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
           );
         }),
       ],
     );
+  }
+
+  /// 7. Retranscription de l'échange
+  Widget _buildTranscriptSection(bool isDark, VisitReportModel report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(LucideIcons.mic, size: 16, color: Color(0xFF4F6CE8)),
+                const SizedBox(width: 8),
+                Text(
+                  'Retranscription de l\'Échange',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppConstants.textDark,
+                  ),
+                ),
+              ],
+            ),
+            ScaleTap(
+              onTap: () => _copyToClipboard(report.rawTranscript, 'Transcription'),
+              child: const Row(
+                children: [
+                  Icon(LucideIcons.copy, size: 13, color: Color(0xFF4F6CE8)),
+                  SizedBox(width: 4),
+                  Text('Copier', style: TextStyle(fontSize: 11, color: Color(0xFF4F6CE8), fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          report.rawTranscript.trim(),
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.45,
+            color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 8. Brouillon d'email de suivi
+  Widget _buildEmailSection(bool isDark, VisitReportModel report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(LucideIcons.mail, size: 16, color: Color(0xFF4F6CE8)),
+                const SizedBox(width: 8),
+                Text(
+                  'Brouillon d\'Email Commercial',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppConstants.textDark,
+                  ),
+                ),
+              ],
+            ),
+            ScaleTap(
+              onTap: () => _copyToClipboard(report.followUpEmailDraft, 'Brouillon d\'email'),
+              child: const Row(
+                children: [
+                  Icon(LucideIcons.copy, size: 13, color: Color(0xFF4F6CE8)),
+                  SizedBox(width: 4),
+                  Text('Copier l\'email', style: TextStyle(fontSize: 11, color: Color(0xFF4F6CE8), fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          report.followUpEmailDraft.trim(),
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.45,
+            color: isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 9. Statut et action Back-Office KAM
+  Widget _buildBackOfficeActionSection(
+    BuildContext context,
+    bool isDark,
+    VisitReportModel report,
+    SalesController salesController,
+    bool isTransmitted,
+  ) {
+    if (isTransmitted) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(LucideIcons.checkCheck, size: 18, color: Color(0xFF10B981)),
+          const SizedBox(width: 8),
+          Text(
+            'Dossier synchronisé et transmis au Back-Office KAM',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Obx(() {
+      final isTransmitting = salesController.isTransmitting.value;
+
+      return ScaleTap(
+        onTap: isTransmitting
+            ? null
+            : () async {
+                final success = await salesController.transmitReportToKAM();
+                if (success) {
+                  Get.snackbar(
+                    'Back-Office KAM',
+                    'Compte-rendu transmis avec succès.',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF10B981),
+                    colorText: Colors.white,
+                  );
+                }
+              },
+        child: Container(
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4F6CE8),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Center(
+            child: isTransmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.send, size: 16, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'Transmettre au Back-Office KAM',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      );
+    });
   }
 }

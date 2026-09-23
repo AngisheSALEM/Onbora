@@ -77,39 +77,15 @@ class SalesController extends GetxController {
   final RxString successMessage = ''.obs;
 
   /// Enterprise repository loaded dynamically from Backend CRM API
-  final List<EnterpriseModel> _allEnterprises = [
-    EnterpriseModel(
-      id: 1,
-      name: 'RAWBANK RDC',
-      sector: 'Banque & Finance',
-      approximateSize: '500+ employés',
-      location: 'Boulevard du 30 Juin, Gombe',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 92,
-      isConverted: true,
-      contactName: 'Directeur Général',
-    ),
-    EnterpriseModel(
-      id: 2,
-      name: 'Vodacom RDC',
-      sector: 'Télécoms & Tech',
-      approximateSize: '1000+ employés',
-      location: 'Boulevard du 30 Juin, Gombe',
-      plaqueCode: 'KIN-GOMBE',
-      conversionScore: 88,
-      contactName: 'Directeur Achats',
-    ),
-  ];
+  final List<EnterpriseModel> _allEnterprises = [];
   List<EnterpriseModel> get allEnterprises => _allEnterprises;
   List<EnterpriseModel> get enterprises => _allEnterprises;
 
   @override
   void onInit() {
     super.onInit();
-    searchResults.value = List.from(_allEnterprises);
-    if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
-      selectedMapEnterprise.value = _allEnterprises.first;
-    }
+    searchResults.value = [];
+    selectedMapEnterprise.value = null;
     // Demande d'autorisation pour les notifications push
     _initPushPermissions();
     fetchPlaques();
@@ -140,38 +116,15 @@ class SalesController extends GetxController {
         if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
           selectedMapEnterprise.value = _allEnterprises.first;
         }
+      } else {
+        _allEnterprises.clear();
+        searchResults.value = [];
       }
     } catch (e) {
       debugPrint("[Enterprises] Erreur lors du chargement des entreprises réelles: $e");
-      if (_allEnterprises.isEmpty) {
-        _allEnterprises.addAll([
-          EnterpriseModel(
-            id: 1,
-            name: 'RAWBANK RDC',
-            sector: 'Banque & Finance',
-            approximateSize: '500+ employés',
-            location: 'Boulevard du 30 Juin, Gombe',
-            plaqueCode: 'KIN-GOMBE',
-            conversionScore: 92,
-            isConverted: true,
-            contactName: 'Directeur Général',
-          ),
-          EnterpriseModel(
-            id: 2,
-            name: 'Vodacom RDC',
-            sector: 'Télécoms & Tech',
-            approximateSize: '1000+ employés',
-            location: 'Boulevard du 30 Juin, Gombe',
-            plaqueCode: 'KIN-GOMBE',
-            conversionScore: 88,
-            contactName: 'Directeur Achats',
-          ),
-        ]);
-        searchResults.value = List.from(_allEnterprises);
-        if (selectedMapEnterprise.value == null && _allEnterprises.isNotEmpty) {
-          selectedMapEnterprise.value = _allEnterprises.first;
-        }
-      }
+      // Pas d'injection de fausses données mockées : si non connecté, la liste reste vide
+      _allEnterprises.clear();
+      searchResults.value = [];
     }
   }
 
@@ -819,6 +772,44 @@ class SalesController extends GetxController {
     }
   }
 
+  /// Ouvre directement un rapport de visite par son ID
+  Future<void> openVisitReportById(int reportId, {String? enterpriseName, String? sector, String? location}) async {
+    isLoadingVisits.value = true;
+    errorMessage.value = '';
+
+    try {
+      final res = await _apiClient.get('/api/sales/visit-reports/$reportId/');
+      if (res is Map<String, dynamic>) {
+        final parsedReport = VisitReportModel.fromJson(res);
+        currentReport.value = parsedReport;
+
+        if (enterpriseName != null) {
+          selectedEnterprise.value = EnterpriseModel(
+            id: parsedReport.preparationId,
+            name: enterpriseName,
+            sector: sector ?? 'Entreprise',
+            location: location ?? 'Kinshasa',
+            plaqueCode: '',
+            approximateSize: '10-50',
+          );
+        }
+
+        Get.toNamed(Routes.VISIT_REPORT_DETAIL);
+      }
+    } catch (e) {
+      debugPrint("[SalesController] Erreur chargement rapport #$reportId : $e");
+      Get.snackbar(
+        'Erreur',
+        'Impossible d\'afficher le compte-rendu.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingVisits.value = false;
+    }
+  }
+
   /// Récupère les entreprises affectées d'une plaque spécifique
   Future<List<EnterpriseModel>> fetchEnterprisesForPlaque(int plaqueId) async {
     try {
@@ -989,6 +980,18 @@ class SalesController extends GetxController {
 
       currentReport.value = parsedReport;
       kpiReportsCount.value += 1;
+
+      // Transmission automatique au Back-Office KAM comme rapport CRM
+      try {
+        await _apiClient.post('/api/sales/visit-reports/${parsedReport.id}/transmit/');
+        debugPrint("[SalesController] Rapport #${parsedReport.id} synchronisé et transmis au Back-Office KAM.");
+      } catch (err) {
+        debugPrint("[SalesController] Transmission Back-Office différée: $err");
+      }
+
+      // Rafraîchissement immédiat de l'historique et des KPIs
+      await fetchVisitsHistory();
+      await fetchDashboardStats();
       return true;
     } catch (e) {
       _aiProcessingStopwatch?.stop();

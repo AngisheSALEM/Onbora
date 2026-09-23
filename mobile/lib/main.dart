@@ -7,6 +7,7 @@ import 'app/common/constants/app_constants.dart';
 import 'app/common/controller/theme_controller.dart';
 import 'app/common/controller/common_controller.dart';
 import 'app/core/api/api_client.dart';
+import 'app/core/api/api_config.dart';
 import 'app/core/services/notification_service.dart';
 import 'app/core/storage/session_storage.dart';
 import 'app/core/theme/app_theme.dart';
@@ -21,8 +22,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: ".env");
+    debugPrint("Info: [Onbora Mobile] Connecté à: ${ApiConfig.baseUrl}");
   } catch (e) {
-    debugPrint("Info: .env file loading: $e");
+    debugPrint("Info: .env file loading: $e (Fallback: ${ApiConfig.baseUrl})");
   }
   await initializeDateFormatting('fr_FR', null);
 

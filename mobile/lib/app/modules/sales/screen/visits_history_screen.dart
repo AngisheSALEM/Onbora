@@ -124,7 +124,30 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
               Expanded(
                 child: Obx(() {
                   if (salesController.isLoadingVisits.value) {
-                    return Center(child: CircularProgressIndicator(color: isDark ? Colors.white : AppConstants.textDark));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: isDark ? Colors.white : AppConstants.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Chargement en cours...',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   final allVisits = salesController.visitsHistory;
@@ -158,12 +181,21 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> with SingleTi
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(CupertinoIcons.calendar_badge_minus, size: 48, color: Color(0xFF8E8E93)),
-              const SizedBox(height: 14),
+              const Icon(CupertinoIcons.doc_text, size: 44, color: Color(0xFF8E8E93)),
+              const SizedBox(height: 12),
               Text(
                 emptyMessage,
                 textAlign: TextAlign.center,
                 style: AppConstants.headlineStyle(isDark),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Les visites terminées avec compte-rendu s\'affichent ici.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                ),
               ),
             ],
           ),

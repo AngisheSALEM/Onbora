@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart' if (dart.library.html) 'dart:convert';
 
 /// Représente une commande stockée dans l'Outbox locale en attente d'envoi réseau.
 class OutboxCommand {

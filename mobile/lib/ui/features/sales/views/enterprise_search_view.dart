@@ -37,7 +37,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
   @override
   Widget build(BuildContext context) {
     final salesVm = context.watch<SalesViewModel>();
-    final quickSectors = ['Toutes', 'Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'];
+    final quickSectors = ['Toutes', 'Banque', 'Télécoms', 'Mines', 'Santé', 'Distribution'];
 
     return Scaffold(
       appBar: AppBar(
@@ -232,7 +232,7 @@ class _EnterpriseSearchViewState extends State<EnterpriseSearchView> {
                               spacing: 8,
                               runSpacing: 8,
                               alignment: WrapAlignment.center,
-                              children: ['Rawbank', 'Vodacom', 'TFM', 'Clinique', 'Bracongo'].map((suggestion) {
+                              children: ['Banque', 'Télécoms', 'Mines', 'Santé', 'Distribution'].map((suggestion) {
                                 return ActionChip(
                                   label: Text(suggestion),
                                   avatar: const Icon(Icons.business_rounded, size: 16, color: Color(0xFF4F6CE8)),
