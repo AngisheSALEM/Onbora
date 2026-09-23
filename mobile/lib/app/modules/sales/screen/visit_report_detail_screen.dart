@@ -169,7 +169,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                   // ============================================================
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(22),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     decoration: BoxDecoration(
                       color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
                       borderRadius: BorderRadius.circular(22),
@@ -333,30 +333,41 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Icon(LucideIcons.calendar, size: 13, color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6C67)),
-            const SizedBox(width: 6),
-            Text(
-              _formatFrenchDate(report.createdAt),
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
-              ),
-            ),
-            if (durationSec != null && durationSec > 0) ...[
-              const SizedBox(width: 14),
-              Icon(LucideIcons.zap, size: 13, color: const Color(0xFF10B981)),
-              const SizedBox(width: 4),
-              Text(
-                'Core AI (${durationSec.toStringAsFixed(1)}s)',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF10B981),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(LucideIcons.calendar, size: 13, color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6C67)),
+                const SizedBox(width: 6),
+                Text(
+                  _formatFrenchDate(report.createdAt),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6C67),
+                  ),
                 ),
+              ],
+            ),
+            if (durationSec != null && durationSec > 0)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.zap, size: 13, color: Color(0xFF10B981)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Core AI (${durationSec.toStringAsFixed(1)}s)',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
               ),
-            ],
           ],
         ),
       ],
@@ -409,22 +420,22 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(LucideIcons.target, size: 16, color: Color(0xFF4F6CE8)),
-                const SizedBox(width: 8),
-                Text(
-                  'Qualification BANT & Rentabilité',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : AppConstants.textDark,
-                  ),
+            const Icon(LucideIcons.target, size: 16, color: Color(0xFF4F6CE8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Qualification BANT & Rentabilité',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
                 ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -452,24 +463,34 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
         // Données financières COI si disponibles
         if (coi != null && coi.isNotEmpty) ...[
           const SizedBox(height: 10),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              if (coi['cost_of_inaction_usd'] != null) ...[
-                Expanded(
+              if (coi['cost_of_inaction_usd'] != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                   child: Text(
                     'Pertes évitées (COI) : \$${coi['cost_of_inaction_usd']}/an',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFF59E0B)),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFF59E0B)),
                   ),
                 ),
-              ],
-              if (coi['estimated_net_gain_usd'] != null) ...[
-                Expanded(
+              if (coi['estimated_net_gain_usd'] != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                   child: Text(
                     'Gain Net Estimé : \$${coi['estimated_net_gain_usd']}/an',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF10B981)),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF10B981)),
                   ),
                 ),
-              ],
             ],
           ),
         ],
@@ -479,12 +500,12 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
 
   Widget _buildBantRow(bool isDark, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 140,
+          Expanded(
+            flex: 4,
             child: Text(
               label,
               style: TextStyle(
@@ -494,9 +515,12 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
+            flex: 5,
             child: Text(
               value,
+              textAlign: TextAlign.right,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -558,12 +582,16 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             children: [
               const Icon(LucideIcons.shieldAlert, size: 16, color: Color(0xFFF59E0B)),
               const SizedBox(width: 8),
-              Text(
-                'Points de Vigilance & Objections',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : AppConstants.textDark,
+              Expanded(
+                child: Text(
+                  'Points de Vigilance & Objections',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppConstants.textDark,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -604,12 +632,16 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
           children: [
             const Icon(LucideIcons.listTodo, size: 16, color: Color(0xFF4F6CE8)),
             const SizedBox(width: 8),
-            Text(
-              'Plan d\'Actions Immédiat',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : AppConstants.textDark,
+            Expanded(
+              child: Text(
+                'Plan d\'Actions Immédiat',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -649,12 +681,16 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
           children: [
             const Icon(LucideIcons.packageCheck, size: 16, color: Color(0xFF4F6CE8)),
             const SizedBox(width: 8),
-            Text(
-              'Solutions & Packages Recommandés',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : AppConstants.textDark,
+            Expanded(
+              child: Text(
+                'Solutions & Packages Recommandés',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -729,25 +765,26 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(LucideIcons.mic, size: 16, color: Color(0xFF4F6CE8)),
-                const SizedBox(width: 8),
-                Text(
-                  'Retranscription de l\'Échange',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : AppConstants.textDark,
-                  ),
+            const Icon(LucideIcons.mic, size: 16, color: Color(0xFF4F6CE8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Retranscription de l\'Échange',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
                 ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             ScaleTap(
               onTap: () => _copyToClipboard(report.rawTranscript, 'Transcription'),
               child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(LucideIcons.copy, size: 13, color: Color(0xFF4F6CE8)),
                   SizedBox(width: 4),
@@ -776,29 +813,30 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(LucideIcons.mail, size: 16, color: Color(0xFF4F6CE8)),
-                const SizedBox(width: 8),
-                Text(
-                  'Brouillon d\'Email Commercial',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : AppConstants.textDark,
-                  ),
+            const Icon(LucideIcons.mail, size: 16, color: Color(0xFF4F6CE8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Brouillon d\'Email Commercial',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textDark,
                 ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             ScaleTap(
               onTap: () => _copyToClipboard(report.followUpEmailDraft, 'Brouillon d\'email'),
               child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(LucideIcons.copy, size: 13, color: Color(0xFF4F6CE8)),
                   SizedBox(width: 4),
-                  Text('Copier l\'email', style: TextStyle(fontSize: 11, color: Color(0xFF4F6CE8), fontWeight: FontWeight.w600)),
+                  Text('Copier', style: TextStyle(fontSize: 11, color: Color(0xFF4F6CE8), fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -827,16 +865,18 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
   ) {
     if (isTransmitted) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Icon(LucideIcons.checkCheck, size: 18, color: Color(0xFF10B981)),
           const SizedBox(width: 8),
-          Text(
-            'Dossier synchronisé et transmis au Back-Office KAM',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+          Expanded(
+            child: Text(
+              'Dossier synchronisé et transmis au Back-Office KAM',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+              ),
             ),
           ),
         ],

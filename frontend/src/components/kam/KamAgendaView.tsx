@@ -471,7 +471,7 @@ export default function KamAgendaView({
                     <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
                       Date & Heure
                     </span>
-                    <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5">
+                    <span className="font-sf text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5">
                       {formatDate(app.scheduled_at)}
                     </span>
                   </div>

@@ -55,10 +55,10 @@ class AuthController extends GetxController {
         // Synchroniser le token FCM de l'appareil dès la restauration de session
         _syncFCM();
 
-        // Redirection étanche selon le rôle (KAM vs Commercial Terrain)
-        if (!Get.testMode && (Get.currentRoute == Routes.LOGIN || Get.currentRoute.isEmpty)) {
+        // Redirection étanche selon le rôle si la vue est déjà montée sur LOGIN
+        if (!Get.testMode && Get.key.currentState != null && Get.currentRoute == Routes.LOGIN) {
           final isKam = _currentUser.value?.role == 'KAM';
-          Future.microtask(() => Get.offAllNamed(isKam ? Routes.KAM_NAVIGATION : Routes.MAIN_NAVIGATION));
+          Get.offAllNamed(isKam ? Routes.KAM_NAVIGATION : Routes.MAIN_NAVIGATION);
         }
       } else {
         isAuthenticated.value = false;

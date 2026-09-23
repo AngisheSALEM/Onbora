@@ -164,7 +164,7 @@ class SalesController extends GetxController {
             }
           }
 
-          if (unreadItems.isNotEmpty) {
+          if (unreadItems.isNotEmpty && Get.context != null && Get.key.currentState?.overlay != null) {
             final latest = unreadItems.first;
             Get.snackbar(
               latest.title,
