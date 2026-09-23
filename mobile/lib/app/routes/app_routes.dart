@@ -7,6 +7,7 @@ abstract class Routes {
   static const ENTERPRISE_SEARCH = '/enterprise-search';
   static const VISIT_PREPARATION = '/visit-preparation';
   static const DICTAPHONE = '/dictaphone';
+  static const DICTAPHONE_RECORDING = '/dictaphone';
   static const VISIT_REPORT_DETAIL = '/visit-report-detail';
   static const VISITS_HISTORY = '/visits-history';
   static const CATALOG = '/catalog';

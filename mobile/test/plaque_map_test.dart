@@ -14,6 +14,7 @@ import 'package:onbora_sales/app/modules/navigation/screen/main_navigation_scree
 import 'package:onbora_sales/app/modules/profile/controller/profile_controller.dart';
 import 'package:onbora_sales/app/modules/profile/screen/profile_screen.dart';
 import 'package:onbora_sales/app/modules/sales/controller/sales_controller.dart';
+import 'package:onbora_sales/app/modules/sales/model/enterprise_model.dart';
 import 'package:onbora_sales/app/modules/sales/screen/plaque_map_home_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/sales_home_screen.dart';
 import 'package:onbora_sales/app/modules/sales/screen/enterprise_search_screen.dart';
@@ -99,7 +100,7 @@ void main() {
     expect(find.text('Mode Sombre (OLED)'), findsOneWidget);
   });
 
-  testWidgets('EnterpriseSearchScreen renders with search title without B2B and OK badge', (WidgetTester tester) async {
+  testWidgets('EnterpriseSearchScreen renders with search title and clean empty state when not connected', (WidgetTester tester) async {
     await tester.pumpWidget(
       const GetMaterialApp(
         home: EnterpriseSearchScreen(),
@@ -109,9 +110,34 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Recherche'), findsWidgets);
-    expect(find.text('RAWBANK RDC'), findsOneWidget);
-    expect(find.text('OK'), findsWidgets);
-    expect(find.text('À convertir'), findsWidgets);
+    expect(find.text('Aucune entreprise disponible'), findsOneWidget);
+  });
+
+  testWidgets('EnterpriseSearchScreen renders enterprise card when results exist', (WidgetTester tester) async {
+    final ctrl = Get.find<SalesController>();
+    ctrl.searchResults.value = [
+      EnterpriseModel(
+        id: 1,
+        name: 'Congo Telecom',
+        sector: 'Télécoms',
+        approximateSize: '50-100 employés',
+        location: 'Kinshasa',
+        plaqueCode: 'KIN-GOMBE',
+        isConverted: true,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      const GetMaterialApp(
+        home: EnterpriseSearchScreen(),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Recherche'), findsWidgets);
+    expect(find.text('Congo Telecom'), findsOneWidget);
+    expect(find.text('OK'), findsOneWidget);
   });
 
   testWidgets('CreditRiskBadge renders AAA rating label', (WidgetTester tester) async {

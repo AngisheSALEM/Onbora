@@ -358,11 +358,11 @@ export default function KamVisitsHistoryView({
         </div>
       ) : (
         /* Backoffice-Style High-Fidelity Table */
-        <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
+        <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-xs flex flex-col">
+          <div className="overflow-x-auto overflow-y-auto max-h-[60vh] min-h-[350px]">
             <table className="w-full text-left text-xs border-collapse min-w-[980px]">
-              <thead>
-                <tr className="border-b border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 font-bold uppercase text-[11px] tracking-wider">
+              <thead className="sticky top-0 z-10 bg-[#EAE8E3] dark:bg-[#262326] backdrop-blur-md shadow-xs">
+                <tr className="border-b border-black/10 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold uppercase text-[11px] tracking-wider">
                   <th className="py-3 px-4 whitespace-nowrap">Date & Heure</th>
                   <th className="py-3 px-4 min-w-[220px]">Compte Client</th>
                   <th className="py-3 px-4 whitespace-nowrap">Type de RDV</th>
@@ -436,6 +436,14 @@ export default function KamVisitsHistoryView({
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="px-5 py-3 border-t border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-between text-[11px] text-zinc-500 shrink-0">
+            <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+              {filteredVisits.length} visite{filteredVisits.length > 1 ? 's' : ''} affichée{filteredVisits.length > 1 ? 's' : ''} sur {visits.length} au total
+            </span>
+            <span className="text-[10px] text-zinc-400">
+              Défilement actif dans la table
+            </span>
           </div>
         </div>
       )}
