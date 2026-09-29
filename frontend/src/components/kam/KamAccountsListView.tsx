@@ -14,23 +14,12 @@ interface KamAccountsListViewProps {
   onOpenDebrief: (visit: StrategicVisit) => void;
 }
 
-interface AccountRowData {
-  id: string;
-  name: string;
-  priority: 'Critique' | 'Élevée' | 'Modérée';
-  healthScore: number;
-  trend: string;
-  primarySignal: string;
-  renewalTimeline: string;
-  visitRef?: StrategicVisit;
-}
-
 export default function KamAccountsListView({
   visits,
   onSelectAccount,
 }: KamAccountsListViewProps) {
   const router = useRouter();
-  const { searchQuery } = useKamContext();
+  const { searchQuery, loading: accountsLoading, error: accountsError } = useKamContext();
 
   const [summaryData, setSummaryData] = useState<{
     highRiskCount: number;
@@ -55,7 +44,6 @@ export default function KamAccountsListView({
     noActionCount: 0,
     noActionSubtitle: 'Depuis plus de 14 jours',
   });
-  const [priorityAccounts, setPriorityAccounts] = useState<Omit<AccountRowData, 'visitRef'>[]>([]);
   const [summaryError, setSummaryError] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(true);
 
@@ -79,9 +67,6 @@ export default function KamAccountsListView({
             noActionSubtitle: sc.no_action?.subtitle ?? 'Depuis plus de 14 jours',
           });
         }
-        if (Array.isArray(data.priority_accounts)) {
-          setPriorityAccounts(data.priority_accounts);
-        }
       })
       .catch(() => {
         if (isMounted) setSummaryError('Impossible de charger le portefeuille. Réessayez plus tard.');
@@ -93,21 +78,14 @@ export default function KamAccountsListView({
     };
   }, []);
 
-  const accountsData = useMemo(() => priorityAccounts.map((account) => ({
-    ...account,
-    visitRef: visits.find((visit) => String(visit.account_id) === account.id),
-  })), [priorityAccounts, visits]);
-
   const filteredAccounts = useMemo(() => {
-    if (!searchQuery.trim()) return accountsData;
-    const q = searchQuery.toLowerCase();
-    return accountsData.filter(
-      (acc) =>
-        acc.name.toLowerCase().includes(q) ||
-        acc.primarySignal.toLowerCase().includes(q) ||
-        acc.priority.toLowerCase().includes(q)
+    if (!searchQuery.trim()) return visits;
+    const q = searchQuery.trim().toLowerCase();
+    return visits.filter((account) =>
+      [account.account_name, account.briefing?.industry, account.contact_name, account.current_operator]
+        .some((value) => value?.toLowerCase().includes(q))
     );
-  }, [accountsData, searchQuery]);
+  }, [visits, searchQuery]);
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
@@ -240,49 +218,37 @@ export default function KamAccountsListView({
         </div>
       </div>
       {summaryError && <p role="alert" className="text-sm text-red-700">{summaryError}</p>}
-      {/* 4. Tableau Compact des Comptes Nécessitant une Attention */}
+      {/* Liste générale des comptes attribués au KAM */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5">
-       
+        <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Tous mes comptes ({visits.length})</h2>
+        {accountsError && <p role="alert" className="text-sm text-red-700 mb-4">{accountsError}</p>}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-black/5 dark:border-white/5 text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">
                 <th className="pb-3 font-semibold">Compte</th>
-                <th className="pb-3 font-semibold">Priorité</th>
-                <th className="pb-3 font-semibold">Santé</th>
-                <th className="pb-3 font-semibold">Tendance</th>
-                <th className="pb-3 font-semibold">Signal principal</th>
-                <th className="pb-3 font-semibold">Renouvellement</th>
+                <th className="pb-3 font-semibold">Secteur</th>
+                <th className="pb-3 font-semibold">Contact principal</th>
+                <th className="pb-3 font-semibold">Opérateur actuel</th>
+                <th className="pb-3 font-semibold">Fin du contrat</th>
               </tr>
             </thead>
             <tbody>
-              {!summaryLoading && !summaryError && filteredAccounts.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-zinc-500">Aucun compte à risque élevé dans votre portefeuille.</td></tr>}
+              {!accountsLoading && !accountsError && filteredAccounts.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-sm text-zinc-500">{visits.length === 0 ? 'Aucun compte attribué à votre portefeuille.' : 'Aucun compte ne correspond à la recherche.'}</td></tr>}
               {filteredAccounts.map((acc) => (
                 <tr
                   key={acc.id}
-                  onClick={() => acc.visitRef && onSelectAccount(acc.visitRef)}
-                  className="border-b border-black/5 dark:border-white/5 last:border-0 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  className="border-b border-black/5 dark:border-white/5 last:border-0 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
                 >
                   <td className="py-3.5 text-xs font-semibold text-zinc-900 dark:text-white pr-4">
-                    {acc.name}
+                    <button type="button" onClick={() => onSelectAccount(acc)} className="text-left hover:underline focus-visible:underline cursor-pointer">
+                      {acc.account_name}
+                    </button>
                   </td>
-                  <td className="py-3.5 pr-4">
-                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium border-0 bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
-                      {acc.priority}
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium pr-4">
-                    {acc.healthScore}/100
-                  </td>
-                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 font-mono pr-4">
-                    {acc.trend}
-                  </td>
-                  <td className="py-3.5 text-xs text-zinc-600 dark:text-zinc-400 pr-4">
-                    {acc.primarySignal}
-                  </td>
-                  <td className="py-3.5 text-xs text-zinc-500 dark:text-zinc-400">
-                    {acc.renewalTimeline}
-                  </td>
+                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 pr-4">{acc.briefing?.industry || 'Non renseigné'}</td>
+                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 pr-4">{acc.contact_name || 'Non renseigné'}</td>
+                  <td className="py-3.5 text-xs text-zinc-600 dark:text-zinc-400 pr-4">{acc.current_operator || 'Non renseigné'}</td>
+                  <td className="py-3.5 text-xs text-zinc-500 dark:text-zinc-400">{acc.orange_contract_end_date || 'Non renseignée'}</td>
                 </tr>
               ))}
             </tbody>
