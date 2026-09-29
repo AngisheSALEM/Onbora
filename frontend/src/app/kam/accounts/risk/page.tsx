@@ -19,101 +19,11 @@ interface RiskAccountRow {
   accountId: string;
 }
 
-const DEFAULT_RISK_ACCOUNTS: RiskAccountRow[] = [
-  {
-    id: 'vodacom-1',
-    name: 'Vodacom RDC',
-    industry: 'Télécommunications & Data',
-    riskLevel: 'Critique',
-    healthScore: 32,
-    criticalSignals: 'Baisse d’usage + 4 tickets incidents en 30j',
-    lastInteraction: 'Il y a 11 jours',
-    renewalTimeline: 'Dans 45 jours',
-    accountId: '1204',
-  },
-  {
-    id: 'rawbank-2',
-    name: 'Rawbank RDC Siège',
-    industry: 'Banque & Finance',
-    riskLevel: 'Critique',
-    healthScore: 38,
-    criticalSignals: 'Insatisfaction exprimée en réunion + retards support',
-    lastInteraction: 'Il y a 14 jours',
-    renewalTimeline: 'Dans 60 jours',
-    accountId: '1199',
-  },
-  {
-    id: 'tenke-3',
-    name: 'Tenke Fungurume Mining (TFM)',
-    industry: 'Mines & Métallurgie',
-    riskLevel: 'Élevé',
-    healthScore: 44,
-    criticalSignals: 'Changement de management de site + silence décideur',
-    lastInteraction: 'Il y a 28 jours',
-    renewalTimeline: 'Dans 80 jours',
-    accountId: '1204',
-  },
-  {
-    id: 'bgfibank-4',
-    name: 'BGFIBank RDC Direction',
-    industry: 'Services Financiers',
-    riskLevel: 'Élevé',
-    healthScore: 48,
-    criticalSignals: 'Instabilité récurrente sur le faisceau hertzien secondaire',
-    lastInteraction: 'Il y a 8 jours',
-    renewalTimeline: 'Dans 55 jours',
-    accountId: '1201',
-  },
-  {
-    id: 'memling-5',
-    name: 'Hôtel Memling Kinshasa',
-    industry: 'Hôtellerie & Événements',
-    riskLevel: 'Critique',
-    healthScore: 29,
-    criticalSignals: 'Baisse drastique de la bande passante souscrite',
-    lastInteraction: 'Il y a 19 jours',
-    renewalTimeline: 'Dans 35 jours',
-    accountId: '1198',
-  },
-  {
-    id: 'pullman-6',
-    name: 'Pullman Grand Hôtel Kinshasa',
-    industry: 'Hôtellerie de Luxe',
-    riskLevel: 'Élevé',
-    healthScore: 42,
-    criticalSignals: 'Sollicitation concurrente identifiée sur le Wifi événementiel',
-    lastInteraction: 'Il y a 16 jours',
-    renewalTimeline: 'Dans 70 jours',
-    accountId: '1195',
-  },
-  {
-    id: 'fleuve-7',
-    name: 'Fleuve Congo Hotel by Blazon',
-    industry: 'Hôtellerie & Tourisme',
-    riskLevel: 'Élevé',
-    healthScore: 45,
-    criticalSignals: 'Facturation contestée sur le lien secours satellite',
-    lastInteraction: 'Il y a 21 jours',
-    renewalTimeline: 'Dans 65 jours',
-    accountId: '1196',
-  },
-  {
-    id: 'equity-8',
-    name: 'EquityBCDC Agence Centrale',
-    industry: 'Banque de Détail',
-    riskLevel: 'Critique',
-    healthScore: 35,
-    criticalSignals: 'Coupure non planifiée lors du traitement de paie',
-    lastInteraction: 'Il y a 9 jours',
-    renewalTimeline: 'Dans 40 jours',
-    accountId: '1200',
-  },
-];
-
 export default function RiskAccountsDetailPage() {
   const router = useRouter();
-  const { visits, searchQuery } = useKamContext();
+  const { searchQuery } = useKamContext();
   const [filterLevel, setFilterLevel] = useState<'ALL' | 'CRITIQUE' | 'ELEVE'>('ALL');
+  const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<RiskAccountRow[] | null>(null);
 
   useEffect(() => {
@@ -121,44 +31,17 @@ export default function RiskAccountsDetailPage() {
     fetchAPI('/api/kam/churn-radar/risk/')
       .then((data) => {
         if (!isMounted || !Array.isArray(data)) return;
-        if (data.length > 0) {
-          setApiAccounts(data);
-        }
+        setApiAccounts(data);
       })
       .catch((err) => {
-        console.warn('Fallback to local risk accounts:', err?.message);
+        setLoadError('Impossible de charger les comptes. Réessayez plus tard.');
       });
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const accounts: RiskAccountRow[] = useMemo(() => {
-    if (apiAccounts && apiAccounts.length > 0) {
-      return apiAccounts;
-    }
-    if (visits && visits.length > 0) {
-      const mapped = visits.map((v, idx) => {
-        const incidents = v.briefing?.orange_relationship?.recent_incidents_count_30d ?? 0;
-        const isCritical = incidents >= 2 || v.briefing?.orange_relationship?.client_status === 'CHURN_RISK';
-        return {
-          id: v.id || `risk-${idx}`,
-          name: v.account_name,
-          industry: v.briefing?.industry || 'Services & Entreprises',
-          riskLevel: (isCritical ? 'Critique' : 'Élevé') as 'Critique' | 'Élevé',
-          healthScore: Math.max(22, 45 - incidents * 5),
-          criticalSignals:
-            v.briefing?.trigger_signals?.[0]?.title ||
-            (incidents > 0 ? `${incidents} incident(s) récents sur le lien actif` : 'Vigilance sur le contrat'),
-          lastInteraction: 'Récemment',
-          renewalTimeline: 'Dans 60 jours',
-          accountId: v.id || '1204',
-        };
-      });
-      return mapped.length >= 4 ? mapped : DEFAULT_RISK_ACCOUNTS;
-    }
-    return DEFAULT_RISK_ACCOUNTS;
-  }, [apiAccounts, visits]);
+  const accounts = apiAccounts ?? [];
 
   const filtered = useMemo(() => {
     let list = accounts;
@@ -179,7 +62,8 @@ export default function RiskAccountsDetailPage() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* En-tête avec navigation de retour */}
+{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+            {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
           <Link
@@ -247,6 +131,7 @@ export default function RiskAccountsDetailPage() {
               </tr>
             </thead>
             <tbody>
+              {apiAccounts !== null && !loadError && filtered.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-zinc-500">Aucun compte à risque élevé dans votre portefeuille.</td></tr>}
               {filtered.map((acc) => (
                 <tr
                   key={acc.id}

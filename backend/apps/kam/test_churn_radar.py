@@ -133,6 +133,29 @@ class ChurnRadarTestCase(APITestCase):
         other_names = [a["name"] for a in summary["priority_accounts"] if a["name"] == "Autre Compte"]
         self.assertEqual(len(other_names), 0)
 
+        self.assertEqual(cards["high_risk"]["total_count"], 3)
+        self.assertEqual(
+            cards["high_risk"]["count"] + cards["high_risk"]["surveillance_count"] + cards["high_risk"]["healthy_count"],
+            3,
+        )
+        self.assertEqual(cards["high_risk"]["count"], len(ChurnRadarService.get_risk_accounts(self.kam_user)))
+        self.assertEqual(cards["upsell"]["count"], 0)
+        self.assertEqual(ChurnRadarService.get_upsell_accounts(self.kam_user), [])
+        self.assertEqual(len(summary["milestones"]["90d"]), 1)
+
+    def test_unassigned_kam_sees_empty_portfolio_and_cannot_read_other_account(self):
+        empty_kam = User.objects.create_user(
+            username="empty_kam", email="empty_kam@orange.com", password="password123", role="KAM"
+        )
+        summary = ChurnRadarService.get_portfolio_summary(empty_kam)
+        self.assertEqual(summary["summary_cards"]["high_risk"]["total_count"], 0)
+        self.assertEqual(summary["summary_cards"]["high_risk"]["count"], 0)
+        self.assertEqual(summary["priority_accounts"], [])
+        self.assertIsNone(summary["milestones"]["7d"][0]["retentionRate"])
+        self.client.force_authenticate(user=empty_kam)
+        self.assertEqual(self.client.get(f"/api/kam/accounts/{self.ent_risk.id}/radar/").status_code, 404)
+        self.assertEqual(self.client.get("/api/kam/churn-radar/risk/").data, [])
+
     def test_drf_endpoints(self):
         """Vérifie que tous les endpoints DRF répondent avec un statut 200 OK."""
         self.client.force_authenticate(user=self.kam_user)

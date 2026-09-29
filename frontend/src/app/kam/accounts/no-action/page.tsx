@@ -19,90 +19,11 @@ interface NoActionAccountRow {
   accountId: string;
 }
 
-const DEFAULT_NO_ACTION_ACCOUNTS: NoActionAccountRow[] = [
-  {
-    id: 'na-1',
-    name: 'Tenke Fungurume Mining (TFM)',
-    industry: 'Industrie Minière',
-    daysWithoutAction: 28,
-    lastContactDate: '01/09/2026',
-    lastContactChannel: 'Email de suivi',
-    keyStakeholder: 'Nouveau DSI de site',
-    recommendedAction: 'Planifier un appel d’introduction et audit télécoms',
-    accountId: '1204',
-  },
-  {
-    id: 'na-2',
-    name: 'Fleuve Congo Hotel by Blazon',
-    industry: 'Hôtellerie',
-    daysWithoutAction: 21,
-    lastContactDate: '08/09/2026',
-    lastContactChannel: 'Appel téléphonique',
-    keyStakeholder: 'Directeur d’Exploitation',
-    recommendedAction: 'Relancer sur le devis de bascule VoIP',
-    accountId: '1196',
-  },
-  {
-    id: 'na-3',
-    name: 'Hôtel Memling Kinshasa',
-    industry: 'Hôtellerie',
-    daysWithoutAction: 19,
-    lastContactDate: '10/09/2026',
-    lastContactChannel: 'Compte-rendu de visite',
-    keyStakeholder: 'Directeur Financier',
-    recommendedAction: 'Fixer la date de signature de l’avenant annuel',
-    accountId: '1198',
-  },
-  {
-    id: 'na-4',
-    name: 'Pullman Grand Hôtel Kinshasa',
-    industry: 'Hôtellerie',
-    daysWithoutAction: 16,
-    lastContactDate: '13/09/2026',
-    lastContactChannel: 'Visite physique',
-    keyStakeholder: 'Responsable Technique',
-    recommendedAction: 'Transmettre l’offre Wifi événementiel 1Gbps',
-    accountId: '1195',
-  },
-  {
-    id: 'na-5',
-    name: 'Trust Merchant Bank (TMB)',
-    industry: 'Banque',
-    daysWithoutAction: 15,
-    lastContactDate: '14/09/2026',
-    lastContactChannel: 'Échange Teams',
-    keyStakeholder: 'Responsable Télécoms',
-    recommendedAction: 'Confirmer la date du comité trimestriel',
-    accountId: '1201',
-  },
-  {
-    id: 'na-6',
-    name: 'Grand Karavia Hotel Lubumbashi',
-    industry: 'Hôtellerie',
-    daysWithoutAction: 24,
-    lastContactDate: '05/09/2026',
-    lastContactChannel: 'Courrier officiel',
-    keyStakeholder: 'Directrice Générale',
-    recommendedAction: 'Organiser une visioconférence de mise au point',
-    accountId: '1197',
-  },
-  {
-    id: 'na-7',
-    name: 'FBNBank RDC Siège',
-    industry: 'Banque',
-    daysWithoutAction: 17,
-    lastContactDate: '12/09/2026',
-    lastContactChannel: 'Appel téléphonique',
-    keyStakeholder: 'DSI Adjoint',
-    recommendedAction: 'Programmer la démonstration de la passerelle Anti-DDoS',
-    accountId: '1203',
-  },
-];
-
 export default function NoActionAccountsDetailPage() {
   const router = useRouter();
   const { searchQuery } = useKamContext();
   const [filterDelay, setFilterDelay] = useState<'ALL' | 'HIGH' | 'MEDIUM'>('ALL');
+  const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<NoActionAccountRow[] | null>(null);
 
   useEffect(() => {
@@ -110,12 +31,10 @@ export default function NoActionAccountsDetailPage() {
     fetchAPI('/api/kam/churn-radar/no-action/')
       .then((data) => {
         if (!isMounted || !Array.isArray(data)) return;
-        if (data.length > 0) {
-          setApiAccounts(data);
-        }
+        setApiAccounts(data);
       })
       .catch((err) => {
-        console.warn('Fallback to local no-action accounts:', err?.message);
+        setLoadError('Impossible de charger les comptes. Réessayez plus tard.');
       });
     return () => {
       isMounted = false;
@@ -123,7 +42,7 @@ export default function NoActionAccountsDetailPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = apiAccounts && apiAccounts.length > 0 ? apiAccounts : DEFAULT_NO_ACTION_ACCOUNTS;
+    let list = apiAccounts ?? [];
     if (filterDelay === 'HIGH') list = list.filter((a) => a.daysWithoutAction > 20);
     if (filterDelay === 'MEDIUM') list = list.filter((a) => a.daysWithoutAction <= 20);
 
@@ -142,7 +61,8 @@ export default function NoActionAccountsDetailPage() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* En-tête avec navigation de retour */}
+{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+            {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
           <Link
@@ -170,7 +90,7 @@ export default function NoActionAccountsDetailPage() {
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            Tous ({DEFAULT_NO_ACTION_ACCOUNTS.length})
+            Tous ({apiAccounts?.length ?? 0})
           </button>
           <button
             onClick={() => setFilterDelay('HIGH')}
@@ -209,6 +129,7 @@ export default function NoActionAccountsDetailPage() {
               </tr>
             </thead>
             <tbody>
+              {apiAccounts !== null && !loadError && filtered.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-sm text-zinc-500">Aucun compte sans prochaine action.</td></tr>}
               {filtered.map((acc) => (
                 <tr
                   key={acc.id}

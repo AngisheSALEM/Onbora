@@ -418,7 +418,7 @@ export default function KamBriefingView({
                           <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                             radarData.retention_plan.urgency.includes('IMMEDIATE') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200'
                           }`}>
-                            {radarData.retention_plan.urgency.includes('IMMEDIATE') ? 'Imm{'\u00e9'}diat (48h)' : 'Planifi{'\u00e9'} (7j)'}
+                            {radarData.retention_plan.urgency.includes('IMMEDIATE') ? 'Immédiat (48h)' : 'Planifié (7j)'}
                           </span>
                         </div>
                       )}

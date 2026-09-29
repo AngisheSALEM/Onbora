@@ -19,68 +19,11 @@ interface RenewalAccountRow {
   accountId: string;
 }
 
-const DEFAULT_RENEWAL_ACCOUNTS: RenewalAccountRow[] = [
-  {
-    id: 'ren-1',
-    name: 'Vodacom RDC',
-    industry: 'Télécoms & Réseaux',
-    renewalDate: '15/11/2026',
-    daysRemaining: 45,
-    activeService: 'Interconnexion Fibre Dédiée 1 Gbps',
-    monthlyRevenue: '18 500 $',
-    status: 'Audit de renouvellement en cours',
-    accountId: '1204',
-  },
-  {
-    id: 'ren-2',
-    name: 'Rawbank RDC Siège',
-    industry: 'Banque Commerciale',
-    renewalDate: '30/11/2026',
-    daysRemaining: 60,
-    activeService: 'Réseau SD-WAN Managé & VPN Siège',
-    monthlyRevenue: '26 000 $',
-    status: 'Proposition tarifaire transmise',
-    accountId: '1199',
-  },
-  {
-    id: 'ren-3',
-    name: 'Tenke Fungurume Mining (TFM)',
-    industry: 'Industrie Minière',
-    renewalDate: '20/12/2026',
-    daysRemaining: 80,
-    activeService: 'Liaison Satellite VSAT & Faisceau Kolwezi',
-    monthlyRevenue: '19 500 $',
-    status: 'Rencontre avec le nouveau DSI requise',
-    accountId: '1204',
-  },
-  {
-    id: 'ren-4',
-    name: 'EquityBCDC Direction Générale',
-    industry: 'Banque & Finance',
-    renewalDate: '31/12/2026',
-    daysRemaining: 90,
-    activeService: 'Fibre Dédiée Kinshasa & Agences Pilotes',
-    monthlyRevenue: '28 000 $',
-    status: 'Extension 15 agences en cours d’étude',
-    accountId: '1200',
-  },
-  {
-    id: 'ren-5',
-    name: 'Hôtel Memling Kinshasa',
-    industry: 'Hôtellerie',
-    renewalDate: '04/11/2026',
-    daysRemaining: 35,
-    activeService: 'Liaison Internet Très Haut Débit',
-    monthlyRevenue: '4 200 $',
-    status: 'Avenant de reconduction en attente signature',
-    accountId: '1198',
-  },
-];
-
 export default function RenewalsDetailPage() {
   const router = useRouter();
   const { searchQuery } = useKamContext();
   const [filterDelay, setFilterDelay] = useState<'ALL' | 'URGENT' | 'STANDARD'>('ALL');
+  const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<RenewalAccountRow[] | null>(null);
 
   useEffect(() => {
@@ -88,12 +31,10 @@ export default function RenewalsDetailPage() {
     fetchAPI('/api/kam/churn-radar/renewals/')
       .then((data) => {
         if (!isMounted || !Array.isArray(data)) return;
-        if (data.length > 0) {
-          setApiAccounts(data);
-        }
+        setApiAccounts(data);
       })
       .catch((err) => {
-        console.warn('Fallback to local renewals accounts:', err?.message);
+        setLoadError('Impossible de charger les comptes. Réessayez plus tard.');
       });
     return () => {
       isMounted = false;
@@ -101,7 +42,7 @@ export default function RenewalsDetailPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = apiAccounts && apiAccounts.length > 0 ? apiAccounts : DEFAULT_RENEWAL_ACCOUNTS;
+    let list = apiAccounts ?? [];
     if (filterDelay === 'URGENT') list = list.filter((a) => a.daysRemaining <= 45);
     if (filterDelay === 'STANDARD') list = list.filter((a) => a.daysRemaining > 45);
 
@@ -119,7 +60,8 @@ export default function RenewalsDetailPage() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* En-tête avec navigation de retour */}
+{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+            {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
           <Link
@@ -147,7 +89,7 @@ export default function RenewalsDetailPage() {
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            Tous ({DEFAULT_RENEWAL_ACCOUNTS.length})
+            Tous ({apiAccounts?.length ?? 0})
           </button>
           <button
             onClick={() => setFilterDelay('URGENT')}
@@ -187,6 +129,7 @@ export default function RenewalsDetailPage() {
               </tr>
             </thead>
             <tbody>
+              {apiAccounts !== null && !loadError && filtered.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-zinc-500">Aucun renouvellement à surveiller.</td></tr>}
               {filtered.map((acc) => (
                 <tr
                   key={acc.id}

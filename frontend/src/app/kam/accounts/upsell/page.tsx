@@ -18,133 +18,11 @@ interface UpsellAccountRow {
   accountId: string;
 }
 
-const DEFAULT_UPSELL_ACCOUNTS: UpsellAccountRow[] = [
-  {
-    id: 'up-1',
-    name: 'Rawbank RDC Siège',
-    industry: 'Banque & Finance',
-    recommendedSolution: 'SD-WAN Managé & Extension 25 agences régionales',
-    estimatedPotential: '18 000 $ / mois',
-    strategicAngle: 'Gouvernance de supervision temps réel et sécurisation BCC',
-    category: 'MULTI_SITES',
-    accountId: '1199',
-  },
-  {
-    id: 'up-2',
-    name: 'Tenke Fungurume Mining (TFM)',
-    industry: 'Mines & Métallurgie',
-    recommendedSolution: 'Liaison Fibre Dédiée 1Gbps + Réseau LTE Privé',
-    estimatedPotential: '22 000 $ / mois',
-    strategicAngle: 'Télé-opération industrielle et géolocalisation des engins',
-    category: 'CONNECTIVITE',
-    accountId: '1204',
-  },
-  {
-    id: 'up-3',
-    name: 'EquityBCDC Direction Générale',
-    industry: 'Banque & Finance',
-    recommendedSolution: 'Pack Agence Connectée Multi-Sites (15 agences)',
-    estimatedPotential: '15 000 $ / mois',
-    strategicAngle: 'Raccordement rapide sous 45 jours avec secours 4G automatique',
-    category: 'MULTI_SITES',
-    accountId: '1200',
-  },
-  {
-    id: 'up-4',
-    name: 'Sofibanque Siège',
-    industry: 'Banque d’Affaires',
-    recommendedSolution: 'Fibre Noire Inter-Datacenters & Cloud PRA',
-    estimatedPotential: '9 500 $ / mois',
-    strategicAngle: 'Conformité régulatrice pour site de repli bancaire distant',
-    category: 'CLOUD_SECURITY',
-    accountId: '1202',
-  },
-  {
-    id: 'up-5',
-    name: 'FBNBank RDC Siège',
-    industry: 'Banque Commerciale',
-    recommendedSolution: 'Protection Anti-DDoS Managée & Débit Symétrique',
-    estimatedPotential: '6 800 $ / mois',
-    strategicAngle: 'Sécurisation des passerelles monétiques et transactions SWIFT',
-    category: 'CLOUD_SECURITY',
-    accountId: '1203',
-  },
-  {
-    id: 'up-6',
-    name: 'Trust Merchant Bank (TMB)',
-    industry: 'Banque & Services',
-    recommendedSolution: 'Liaison Sécurisée Agences Katanga & Kasaï',
-    estimatedPotential: '12 500 $ / mois',
-    strategicAngle: 'Consolidation du parc d’agences sous un opérateur unique',
-    category: 'MULTI_SITES',
-    accountId: '1201',
-  },
-  {
-    id: 'up-7',
-    name: 'Pullman Grand Hôtel Kinshasa',
-    industry: 'Hôtellerie',
-    recommendedSolution: 'Wifi Haute Densité Événementiel & Fibre Dédiée Pro',
-    estimatedPotential: '5 400 $ / mois',
-    strategicAngle: 'Prestations de connectivité pour conférences internationales',
-    category: 'CONNECTIVITE',
-    accountId: '1195',
-  },
-  {
-    id: 'up-8',
-    name: 'Fleuve Congo Hotel by Blazon',
-    industry: 'Hôtellerie',
-    recommendedSolution: 'VoIP Cloud Unifiée & Téléphonie IP SIP Trunk',
-    estimatedPotential: '3 800 $ / mois',
-    strategicAngle: 'Remplacement de l’ancien autocommutateur téléphonique obsolète',
-    category: 'CLOUD_SECURITY',
-    accountId: '1196',
-  },
-  {
-    id: 'up-9',
-    name: 'Grand Karavia Hotel Lubumbashi',
-    industry: 'Hôtellerie',
-    recommendedSolution: 'Liaison Optique Symétrique Redondée',
-    estimatedPotential: '4 500 $ / mois',
-    strategicAngle: 'Stabilité requise pour la clientèle d’affaires minière',
-    category: 'CONNECTIVITE',
-    accountId: '1197',
-  },
-  {
-    id: 'up-10',
-    name: 'Société Congolaise de Transports (SCPT)',
-    industry: 'Logistique & Transport',
-    recommendedSolution: 'Interconnexion Ports & Gares Marchandises',
-    estimatedPotential: '8 200 $ / mois',
-    strategicAngle: 'Traçabilité en temps réel du fret fluvial et ferroviaire',
-    category: 'MULTI_SITES',
-    accountId: '1204',
-  },
-  {
-    id: 'up-11',
-    name: 'Bracongo Kinshasa',
-    industry: 'Agroalimentaire',
-    recommendedSolution: 'Audit Cybersécurité & Débit Fibre Doublé',
-    estimatedPotential: '7 000 $ / mois',
-    strategicAngle: 'Interconnexion des entrepôts de distribution périurbains',
-    category: 'CLOUD_SECURITY',
-    accountId: '1199',
-  },
-  {
-    id: 'up-12',
-    name: 'Bralima Siège',
-    industry: 'Industrie des Boissons',
-    recommendedSolution: 'Réseau IoT & Téléphonie Flotte d’Entreprise',
-    estimatedPotential: '11 000 $ / mois',
-    strategicAngle: 'Plan de modernisation de la chaîne logistique 2027',
-    category: 'CONNECTIVITE',
-    accountId: '1200',
-  },
-];
-
 export default function UpsellAccountsDetailPage() {
   const router = useRouter();
   const { searchQuery } = useKamContext();
   const [filterCat, setFilterCat] = useState<'ALL' | 'CONNECTIVITE' | 'CLOUD_SECURITY' | 'MULTI_SITES'>('ALL');
+  const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<UpsellAccountRow[] | null>(null);
 
   useEffect(() => {
@@ -152,12 +30,10 @@ export default function UpsellAccountsDetailPage() {
     fetchAPI('/api/kam/churn-radar/upsell/')
       .then((data) => {
         if (!isMounted || !Array.isArray(data)) return;
-        if (data.length > 0) {
-          setApiAccounts(data);
-        }
+        setApiAccounts(data);
       })
       .catch((err) => {
-        console.warn('Fallback to local upsell accounts:', err?.message);
+        setLoadError('Impossible de charger les comptes. Réessayez plus tard.');
       });
     return () => {
       isMounted = false;
@@ -165,7 +41,7 @@ export default function UpsellAccountsDetailPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = apiAccounts && apiAccounts.length > 0 ? apiAccounts : DEFAULT_UPSELL_ACCOUNTS;
+    let list = apiAccounts ?? [];
     if (filterCat !== 'ALL') list = list.filter((a) => a.category === filterCat);
 
     if (searchQuery.trim()) {
@@ -183,7 +59,8 @@ export default function UpsellAccountsDetailPage() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* En-tête avec navigation de retour */}
+{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+            {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
           <Link
@@ -211,7 +88,7 @@ export default function UpsellAccountsDetailPage() {
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            Tous ({DEFAULT_UPSELL_ACCOUNTS.length})
+            Tous ({apiAccounts?.length ?? 0})
           </button>
           <button
             onClick={() => setFilterCat('MULTI_SITES')}
@@ -260,6 +137,7 @@ export default function UpsellAccountsDetailPage() {
               </tr>
             </thead>
             <tbody>
+              {apiAccounts !== null && !loadError && filtered.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-sm text-zinc-500">Aucune opportunité d’upsell identifiée.</td></tr>}
               {filtered.map((acc) => (
                 <tr
                   key={acc.id}

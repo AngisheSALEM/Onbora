@@ -9,7 +9,7 @@ Rôle : Moteur de scoring déterministe auditable (health_score 0-100) enrichi p
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -199,8 +199,8 @@ class ChurnRadarService:
         retention_plan = assessment.retention_plan or {}
         upsell_opportunities = assessment.upsell_opportunities or []
 
-        # Enrichissement Core AI si sollicité ou si manquant
-        if use_ai or not retention_plan or not upsell_opportunities:
+        # L'analyse externe est uniquement déclenchée sur demande explicite.
+        if use_ai:
             try:
                 from apps.ai_core.churn_radar.service import ChurnRadarEngine
                 from apps.ai_core.churn_radar.models import ChurnRadarInput
@@ -252,15 +252,6 @@ class ChurnRadarService:
                             f"Bien cordialement,\nVotre Responsable de Compte Orange Business B2B"
                         )
                     }
-                if not upsell_opportunities:
-                    upsell_opportunities = [
-                        {
-                            "solution": "SD-WAN Managé & Double Adduction Fibre",
-                            "trigger": "Sécurisation de la bande passante et élimination du point unique de défaillance",
-                            "estimated_value": "+18 000 $ / mois",
-                            "talking_point": "Garantir la continuité de service des agences avec bascule automatique."
-                        }
-                    ]
 
         assessment.health_score = det["health_score"]
         assessment.churn_risk_score = det["churn_risk_score"]
@@ -331,8 +322,8 @@ class ChurnRadarService:
 
         total_accounts = len(assessments)
         high_risk_list = [a for a in assessments if a.risk_level in ['HIGH', 'CRITICAL'] or a.health_score < 40]
-        surveillance_list = [a for a in assessments if 40 <= a.health_score < 70]
-        healthy_list = [a for a in assessments if a.health_score >= 70]
+        surveillance_list = [a for a in assessments if a not in high_risk_list and a.health_score < 70]
+        healthy_list = [a for a in assessments if a not in high_risk_list and a.health_score >= 70]
 
         high_risk_count = len(high_risk_list)
         surveillance_count = len(surveillance_list)
@@ -350,13 +341,13 @@ class ChurnRadarService:
 
         # Comptes prioritaires pour le tableau d'accueil
         priority_accounts = []
-        sorted_assessments = sorted(assessments, key=lambda a: (a.health_score, -a.days_without_action))
+        sorted_assessments = sorted(high_risk_list, key=lambda a: (a.health_score, -a.days_without_action))
         for a in sorted_assessments[:10]:
             ent = a.enterprise
-            priority_label = 'Critique' if a.health_score < 40 else ('Élevée' if a.health_score < 70 else 'Modérée')
-            trend_val = '-12' if a.trend == 'DOWN' else ('+4' if a.trend == 'UP' else '0')
-            primary_sig = a.risk_reasons[0] if a.risk_reasons else "Revue d'infrastructure trimestrielle"
-            timeline_str = f"Dans {a.renewal_days} jours" if a.renewal_days is not None else "Dans 90 jours"
+            priority_label = 'Critique' if a.risk_level == 'CRITICAL' else 'Élevée'
+            trend_val = {'DOWN': 'En baisse', 'UP': 'En hausse'}.get(a.trend, 'Stable')
+            primary_sig = a.risk_reasons[0] if a.risk_reasons else "Aucun signal renseigné"
+            timeline_str = f"Dans {a.renewal_days} jours" if a.renewal_days is not None else "Échéance inconnue"
 
             priority_accounts.append({
                 "id": str(ent.id),
@@ -412,32 +403,16 @@ class ChurnRadarService:
         current_at_risk: int
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Construit les données historiques des jalons pour les filtres 7j, 30j et 90j.
-        Si la base de données est récente, génère des repères cohérents pour garantir l'affichage.
+        Retourne uniquement le point courant tant que l'historique n'est pas agrégé.
         """
-        total = max(1, current_healthy + current_surveillance + current_at_risk)
-        current_retention = round((current_healthy / total) * 100)
-
-        return {
-            "7d": [
-                {"label": "Il y a 7 jours", "healthy": max(0, current_healthy + 1), "surveillance": max(0, current_surveillance - 1), "atRisk": max(0, current_at_risk - 2), "retentionRate": min(100, current_retention + 4)},
-                {"label": "Il y a 5 jours", "healthy": max(0, current_healthy), "surveillance": current_surveillance, "atRisk": max(0, current_at_risk - 1), "retentionRate": min(100, current_retention + 2)},
-                {"label": "Il y a 3 jours", "healthy": max(0, current_healthy), "surveillance": current_surveillance, "atRisk": max(0, current_at_risk - 1), "retentionRate": min(100, current_retention + 2)},
-                {"label": "Aujourd’hui", "healthy": current_healthy, "surveillance": current_surveillance, "atRisk": current_at_risk, "retentionRate": current_retention},
-            ],
-            "30d": [
-                {"label": "Il y a 30 jours", "healthy": max(0, current_healthy + 3), "surveillance": max(0, current_surveillance - 3), "atRisk": max(0, current_at_risk - 3), "retentionRate": min(100, current_retention + 7)},
-                {"label": "Il y a 20 jours", "healthy": max(0, current_healthy + 2), "surveillance": max(0, current_surveillance - 2), "atRisk": max(0, current_at_risk - 2), "retentionRate": min(100, current_retention + 5)},
-                {"label": "Il y a 10 jours", "healthy": max(0, current_healthy + 1), "surveillance": max(0, current_surveillance - 1), "atRisk": max(0, current_at_risk - 1), "retentionRate": min(100, current_retention + 3)},
-                {"label": "Aujourd’hui", "healthy": current_healthy, "surveillance": current_surveillance, "atRisk": current_at_risk, "retentionRate": current_retention},
-            ],
-            "90d": [
-                {"label": "Il y a 90 jours", "healthy": max(0, current_healthy + 6), "surveillance": max(0, current_surveillance - 5), "atRisk": max(0, current_at_risk - 4), "retentionRate": min(100, current_retention + 9)},
-                {"label": "Il y a 60 jours", "healthy": max(0, current_healthy + 4), "surveillance": max(0, current_surveillance - 3), "atRisk": max(0, current_at_risk - 3), "retentionRate": min(100, current_retention + 6)},
-                {"label": "Il y a 30 jours", "healthy": max(0, current_healthy + 2), "surveillance": max(0, current_surveillance - 1), "atRisk": max(0, current_at_risk - 2), "retentionRate": min(100, current_retention + 3)},
-                {"label": "Aujourd’hui", "healthy": current_healthy, "surveillance": current_surveillance, "atRisk": current_at_risk, "retentionRate": current_retention},
-            ]
+        current = {
+            "label": "Aujourd’hui",
+            "healthy": current_healthy,
+            "surveillance": current_surveillance,
+            "atRisk": current_at_risk,
+            "retentionRate": None,
         }
+        return {period: [current] for period in ("7d", "30d", "90d")}
 
     @classmethod
     def get_risk_accounts(cls, user) -> List[Dict[str, Any]]:
@@ -453,12 +428,11 @@ class ChurnRadarService:
             if not a:
                 continue
 
-            # Seuil : score de santé < 50 ou niveau HIGH/CRITICAL
-            if a.health_score < 50 or a.risk_level in ['HIGH', 'CRITICAL']:
+            if a.health_score < 40 or a.risk_level in ['HIGH', 'CRITICAL']:
                 days_since = a.days_without_action
                 last_interaction_str = f"Il y a {days_since} jours" if days_since > 0 else "Aujourd'hui"
-                timeline_str = f"Dans {a.renewal_days} jours" if a.renewal_days is not None else "Dans 90 jours"
-                critical_signals = " • ".join(a.risk_reasons[:2]) if a.risk_reasons else "Baisse d’usage et signaux d’alerte"
+                timeline_str = f"Dans {a.renewal_days} jours" if a.renewal_days is not None else "Échéance inconnue"
+                critical_signals = " • ".join(a.risk_reasons[:2]) if a.risk_reasons else "Aucun signal renseigné"
 
                 results.append({
                     "id": f"risk-{ent.id}",
@@ -484,7 +458,6 @@ class ChurnRadarService:
         cls.ensure_assessments(enterprises)
 
         results = []
-        today = timezone.now().date()
         for ent in enterprises:
             a = getattr(ent, 'churn_assessment', None)
             if not a:
@@ -492,9 +465,9 @@ class ChurnRadarService:
 
             # Échéance dans les 90 jours
             if a.is_renewal_imminent or (a.renewal_days is not None and a.renewal_days <= 90):
-                end_str = ent.contract_end_date.strftime("%d/%m/%Y") if ent.contract_end_date else (today + timedelta(days=60)).strftime("%d/%m/%Y")
-                remaining = a.renewal_days if a.renewal_days is not None else 60
-                mrr = float(ent.telecom_budget_monthly or 15000.0)
+                end_str = ent.contract_end_date.strftime("%d/%m/%Y") if ent.contract_end_date else "Non renseignée"
+                remaining = a.renewal_days if a.renewal_days is not None else 0
+                mrr = float(ent.telecom_budget_monthly or 0)
 
                 status_label = "Audit de renouvellement en cours" if remaining < 45 else "Fenêtre de renégociation ouverte"
 
@@ -504,8 +477,8 @@ class ChurnRadarService:
                     "industry": ent.sector or "Services & Industrie",
                     "renewalDate": end_str,
                     "daysRemaining": max(1, remaining),
-                    "activeService": ent.current_connectivity or "Fibre Sécurisée Dédiée",
-                    "monthlyRevenue": f"{mrr:,.0f} $".replace(",", " "),
+                    "activeService": ent.current_connectivity or "Non renseigné",
+                    "monthlyRevenue": f"{mrr:,.0f} $".replace(",", " ") if mrr else "Non renseigné",
                     "status": status_label,
                     "accountId": str(ent.id),
                 })
@@ -528,18 +501,8 @@ class ChurnRadarService:
                 continue
 
             opportunities = a.upsell_opportunities or []
-            if not opportunities:
-                # Génération d'une opportunité standard si le compte a une bonne santé
-                if a.health_score >= 50:
-                    opportunities = [{
-                        "solution": "SD-WAN Managé & Secours 4G/Satellite",
-                        "trigger": "Optimisation des flux inter-sites",
-                        "estimated_value": "15 000 $ / mois",
-                        "talking_point": "Garantir zéro interruption sur les agences régionales"
-                    }]
-
             for idx, op in enumerate(opportunities):
-                sol_name = op.get("solution", "Liaison Fibre Dédiée Sécurisée 1Gbps")
+                sol_name = op.get("solution", "Non renseignée")
                 cat: str = "MULTI_SITES"
                 if "fibre" in sol_name.lower() or "1gbps" in sol_name.lower():
                     cat = "CONNECTIVITE"
@@ -551,8 +514,8 @@ class ChurnRadarService:
                     "name": ent.name,
                     "industry": ent.sector or "Banque & Finance",
                     "recommendedSolution": sol_name,
-                    "estimatedPotential": op.get("estimated_value", "18 000 $ / mois"),
-                    "strategicAngle": op.get("talking_point", "Sécurisation des transactions et résilience"),
+                    "estimatedPotential": op.get("estimated_value") or "Non renseigné",
+                    "strategicAngle": op.get("talking_point") or "Non renseigné",
                     "category": cat,
                     "accountId": str(ent.id),
                 })
