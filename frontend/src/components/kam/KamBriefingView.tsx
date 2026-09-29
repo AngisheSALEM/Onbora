@@ -44,7 +44,7 @@ export default function KamBriefingView({
     employee_count: briefing.firmographics.headcount || 25,
     site_count: briefing.firmographics.locations_count || 1,
     annual_revenue: briefing.firmographics.estimated_annual_revenue || '',
-    current_operator: briefing.technical_environment.current_competitors[0] || 'Vodacom',
+    current_operator: briefing.technical_environment.current_competitors[0] || 'Autre FAI',
     current_connectivity: 'Fibre Dédiée',
   });
 
@@ -60,7 +60,7 @@ export default function KamBriefingView({
       employee_count: selectedVisit.briefing.firmographics.headcount || 25,
       site_count: selectedVisit.briefing.firmographics.locations_count || 1,
       annual_revenue: selectedVisit.briefing.firmographics.estimated_annual_revenue || '',
-      current_operator: selectedVisit.briefing.technical_environment.current_competitors[0] || 'Vodacom',
+      current_operator: selectedVisit.briefing.technical_environment.current_competitors[0] || 'Autre FAI',
       current_connectivity: 'Fibre Dédiée',
     });
   }, [selectedVisitId, selectedVisit]);

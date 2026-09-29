@@ -358,7 +358,7 @@ class KamToolbarModals {
                       icon: CupertinoIcons.arrow_up_right_circle_fill,
                       iconColor: AppConstants.accentGreen,
                       title: 'Potentiel d\'Upsell SD-WAN (+45k\$ MRR)',
-                      body: 'Rawbank et Vodacom ont exprimé un besoin de simplification réseau sur leurs agences provinciales.',
+                      body: 'Rawbank et EquityBCDC ont exprimé un besoin de simplification réseau sur leurs agences provinciales.',
                       isDark: isDark,
                     ),
                     const SizedBox(height: 12),

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
@@ -246,17 +246,28 @@ export default function KamAgendaView({
     router.push(`/kam/vocal-visit?appointmentId=${appointment.id}`);
   };
 
-  // Filter appointments
-  const filteredAppointments = appointments.filter((app) => {
-    const appDate = new Date(app.scheduled_at);
-    const today = new Date();
-    const isToday = appDate.toDateString() === today.toDateString();
+  // Filter and sort appointments (du plus récent au moins récent)
+  const sortedAppointments = useMemo(() => {
+    return [...appointments].sort((a, b) => {
+      const timeA = new Date(a.scheduled_at).getTime();
+      const timeB = new Date(b.scheduled_at).getTime();
+      return timeB - timeA;
+    });
+  }, [appointments]);
 
-    if (filterTab === 'TODAY') return isToday;
-    if (filterTab === 'UPCOMING') return app.status === 'SCHEDULED' && appDate >= today;
-    if (filterTab === 'COMPLETED') return app.status === 'COMPLETED';
-    return true;
-  });
+  const filteredAppointments = useMemo(() => {
+    return sortedAppointments.filter((app) => {
+      const appDate = new Date(app.scheduled_at);
+      const today = new Date();
+      const isToday = appDate.toDateString() === today.toDateString();
+
+      if (filterTab === 'TODAY' && !isToday) return false;
+      if (filterTab === 'UPCOMING' && !(app.status === 'SCHEDULED' && appDate >= today)) return false;
+      if (filterTab === 'COMPLETED' && app.status !== 'COMPLETED') return false;
+
+      return true;
+    });
+  }, [sortedAppointments, filterTab]);
 
   const formatDate = (isoStr: string) => {
     try {
@@ -274,21 +285,19 @@ export default function KamAgendaView({
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none">
+    <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
       
       {/* 1. TOP HEADER TOOLBAR */}
-      <div className="flex flex-col gap-4 pb-2 border-b border-zinc-200/80 dark:border-white/5">
+      <div className="flex flex-col gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-              Agenda & Planification des Rendez-vous
-            </h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Planifiez vos visites terrain, déclenchez vos briefs vocaux en direct et générez vos rapports Core AI.
-            </p>
+            <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+              Agenda & Rendez-vous
+            </h1>
+          
           </div>
 
-          {/* Top Actions */}
+          {/* Top Actions : 1 seul CTA en couleur primaire */}
           <div className="flex items-center gap-2.5 flex-wrap justify-end">
             {onOpenVisitsHistory && (
               <button
@@ -296,43 +305,43 @@ export default function KamAgendaView({
                 className="flex items-center gap-2 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5 shadow-xs"
               >
                 <Icons.FileText size={14} />
-                <span>Voir l&apos;Historique des Visites</span>
+                <span>Voir l&apos;Historique</span>
               </button>
             )}
 
             <button
-              onClick={() => setIsNewAppointmentModalOpen(true)}
+              onClick={() => setIsExpressMeetingOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
+            >
+              <Icons.Mic size={14} />
+              <span>Réunion express</span>
+            </button>
+
+            <button
+              onClick={() => setIsNewAppointmentModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-semibold transition-all cursor-pointer shadow-xs border-none"
             >
               <Icons.Plus size={15} />
               <span>Nouveau Rendez-vous</span>
             </button>
-
-            <button
-              onClick={() => setIsExpressMeetingOpen(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-sm"
-            >
-              <Icons.Mic size={15} />
-              <span>Réunion express</span>
-            </button>
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        {/* Filter Tabs discrets sans bordure */}
+        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none w-fit">
           {[
-            { id: 'ALL', label: `Tous les RDV (${appointments.length})` },
+            { id: 'ALL', label: `Tous (${appointments.length})` },
             { id: 'TODAY', label: `Aujourd'hui (${appointments.filter(a => new Date(a.scheduled_at).toDateString() === new Date().toDateString()).length})` },
             { id: 'UPCOMING', label: `À venir (${appointments.filter(a => a.status === 'SCHEDULED').length})` },
-            { id: 'COMPLETED', label: `Effectués / Rapports (${appointments.filter(a => a.status === 'COMPLETED').length})` },
+            { id: 'COMPLETED', label: `Effectués (${appointments.filter(a => a.status === 'COMPLETED').length})` },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setFilterTab(tab.id as any)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer shrink-0 ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer shrink-0 border-none ${
                 filterTab === tab.id
-                  ? 'bg-[#4F6CE8] text-white shadow-sm font-extrabold'
-                  : 'bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-[#363336] border border-black/5 dark:border-white/5'
+                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -429,27 +438,27 @@ export default function KamAgendaView({
                 {/* 1. Header: Enterprise Name & Visit State */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center font-extrabold text-sm shrink-0">
+                    {/* <div className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-extrabold text-sm shrink-0">
                       {app.enterprise_name.charAt(0)}
-                    </div>
+                    </div> */}
                     <h4 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight truncate">
                       {app.enterprise_name}
                     </h4>
                   </div>
 
-                  {/* État de la visite */}
+                  {/* État de la visite sans bordure ni couleur interdite */}
                   {isCompleted ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
                       <Icons.CheckCircle size={12} />
                       <span>Rapport généré</span>
                     </span>
                   ) : isInProgress ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
                       <Icons.Mic size={12} />
                       <span>En cours</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/20 shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
                       <Icons.Clock size={12} />
                       <span>Planifié</span>
                     </span>
@@ -462,7 +471,7 @@ export default function KamAgendaView({
                     <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
                       Type de visite
                     </span>
-                    <span className="text-xs font-semibold text-[#4F6CE8] block mt-0.5 truncate">
+                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5 truncate">
                       {app.visit_purpose_label || app.meeting_type_label || 'Rendez-vous'}
                     </span>
                   </div>

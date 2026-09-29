@@ -415,5 +415,145 @@ class AccountMemoryEvent(models.Model):
         return f"[{self.get_event_type_display()}] {self.enterprise.name} : {self.summary}"
 
 
+class ChurnRadarAssessment(models.Model):
+    """
+    Diagnostic du Radar de Churn & Upsell par Compte Entreprise.
+    Fondé sur un moteur de règles déterministe (health_score 0-100) enrichi par Core AI
+    pour l'explicabilité, les plans de rétention et le catalogue Orange Business.
+    """
+    RISK_LEVELS = [
+        ('LOW', 'Sain'),
+        ('MEDIUM', 'Sous surveillance'),
+        ('HIGH', 'À risque élevé'),
+        ('CRITICAL', 'Critique'),
+    ]
+
+    PRIORITY_LEVELS = [
+        ('P1', 'Priorité 1 - Immédiate'),
+        ('P2', 'Priorité 2 - Sous 48h'),
+        ('P3', 'Priorité 3 - Suivi normal'),
+    ]
+
+    TREND_CHOICES = [
+        ('UP', 'En amélioration'),
+        ('DOWN', 'En dégradation'),
+        ('STABLE', 'Stable'),
+    ]
+
+    enterprise = models.OneToOneField(
+        'sales.Enterprise',
+        on_delete=models.CASCADE,
+        related_name='churn_assessment',
+        help_text="Entreprise auditée par le Radar de Churn"
+    )
+    health_score = models.IntegerField(
+        default=100,
+        help_text="Score de santé déterministe de 0 à 100 (>=70: Sain, 40-69: Surveillance, <40: Risque élevé)"
+    )
+    churn_risk_score = models.IntegerField(
+        default=0,
+        help_text="Risque de churn (100 - health_score)"
+    )
+    risk_level = models.CharField(
+        max_length=20,
+        choices=RISK_LEVELS,
+        default='LOW',
+        db_index=True
+    )
+    priority_level = models.CharField(
+        max_length=10,
+        choices=PRIORITY_LEVELS,
+        default='P3'
+    )
+    trend = models.CharField(
+        max_length=10,
+        choices=TREND_CHOICES,
+        default='STABLE'
+    )
+    risk_reasons = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Liste des signaux factuels motivant le score"
+    )
+    retention_plan = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Plan d'action de rétention (urgence, action concrète, email de conciliation)"
+    )
+    upsell_opportunities = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Opportunités d'expansion identifiées sur le catalogue Orange Business B2B"
+    )
+    days_without_action = models.IntegerField(
+        default=0,
+        help_text="Jours écoulés sans interaction KAM ni RDV"
+    )
+    is_renewal_imminent = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="True si le contrat arrive à échéance dans <= 90 jours"
+    )
+    renewal_days = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Jours restants avant l'échéance contractuelle"
+    )
+    last_action_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date de la dernière interaction prouvée"
+    )
+    next_action_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date du prochain rendez-vous planifié"
+    )
+    ai_scored_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Horodatage de la dernière analyse par Core AI"
+    )
+    rules_version = models.CharField(
+        max_length=20,
+        default='v1.0',
+        help_text="Version des règles métier appliquées"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['health_score', '-updated_at']
+        verbose_name = "Évaluation Radar Churn"
+        verbose_name_plural = "Évaluations Radar Churn"
+
+    def __str__(self):
+        return f"{self.enterprise.name} - Santé: {self.health_score}/100 ({self.get_risk_level_display()})"
+
+
+class ChurnRadarSnapshot(models.Model):
+    """
+    Photographie historique temporelle de la santé de compte pour alimenter les graphiques (7j, 30j, 90j).
+    """
+    enterprise = models.ForeignKey(
+        'sales.Enterprise',
+        on_delete=models.CASCADE,
+        related_name='churn_snapshots'
+    )
+    health_score = models.IntegerField()
+    churn_risk_score = models.IntegerField()
+    risk_level = models.CharField(max_length=20)
+    calculated_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-calculated_at']
+        verbose_name = "Instantané Radar Churn"
+        verbose_name_plural = "Instantanés Radar Churn"
+
+    def __str__(self):
+        return f"Snapshot {self.enterprise.name} @ {self.calculated_at.strftime('%Y-%m-%d')} ({self.health_score}/100)"
+
+
 
 

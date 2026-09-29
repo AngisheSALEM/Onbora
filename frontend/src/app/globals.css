@@ -439,3 +439,18 @@ input:focus, textarea:focus, select:focus {
   animation: flyEnvelope 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+/* Masquage universel des scrollbars moches tout en conservant le défilement */
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html,
+body,
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+

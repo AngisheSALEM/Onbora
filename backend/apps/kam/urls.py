@@ -15,8 +15,26 @@ from .commercial_intelligence_views import (
     PostCallExecutionDetailView, PostCallSyncCrmView,
     LeadScoringListView, ChurnRadarView
 )
+from .churn_views import (
+    PortfolioSummaryView,
+    ChurnRadarRiskAccountsView,
+    ChurnRadarRenewalsAccountsView,
+    ChurnRadarUpsellAccountsView,
+    ChurnRadarNoActionAccountsView,
+    AccountRadarDetailView,
+    ChurnRadarRecalculateView
+)
 
 urlpatterns = [
+    # Radar Churn & Pilotage Portefeuille (Architecture Décisionnelle Déterministe + Core AI)
+    path('portfolio-summary/', PortfolioSummaryView.as_view(), name='kam-portfolio-summary'),
+    path('churn-radar/risk/', ChurnRadarRiskAccountsView.as_view(), name='kam-churn-radar-risk'),
+    path('churn-radar/renewals/', ChurnRadarRenewalsAccountsView.as_view(), name='kam-churn-radar-renewals'),
+    path('churn-radar/upsell/', ChurnRadarUpsellAccountsView.as_view(), name='kam-churn-radar-upsell'),
+    path('churn-radar/no-action/', ChurnRadarNoActionAccountsView.as_view(), name='kam-churn-radar-no-action'),
+    path('churn-radar/recalculate/', ChurnRadarRecalculateView.as_view(), name='kam-churn-radar-recalculate'),
+    path('accounts/<int:enterprise_id>/radar/', AccountRadarDetailView.as_view(), name='kam-account-radar-detail'),
+
     # 1. Pre-Call Intelligence (Briefing pré-RDV en 2 minutes)
     path('pre-call/<int:account_id>/', PreCallBriefingDetailView.as_view(), name='kam-pre-call-detail'),
     path('pre-call/list/', PreCallBriefingListView.as_view(), name='kam-pre-call-list'),

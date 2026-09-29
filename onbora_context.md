@@ -120,7 +120,7 @@ Les fichiers clés disponibles dans le dépôt :
     *   **Refonte UX & Suppression des Émojis** : Éradication complète de tous les émojis sur l'ensemble des vues mobile pour garantir un rendu sobre et ultra-professionnel.
     *   **Nettoyage du Dashboard** : Suppression du bloc météo (*Kinshasa • 29°C*) et du KPI arbitraire (*Pipeline RDC*). Simplification des termes (*"Rechercher un prospect"*).
     *   **Gestionnaire de Thème Clair / Sombre** : Ajout d'un sélecteur de thème dynamique dans l'onglet **Profil & Paramètres** ([`main_navigation_view.dart`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/ui/main_navigation_view.dart)) avec persistance `SharedPreferences` et résolution du bug de transition de police (`themeAnimationDuration: Duration.zero`).
-    *   **Recherche de Prospects Parité Next.js** : La recherche vide renvoie désormais l'ensemble des comptes B2B cibles (*Rawbank, Vodacom, TFM, Clinique Ngaliema, Bracongo*) avec mode fallback résilient hors-ligne.
+    *   **Recherche de Prospects Parité Next.js** : La recherche vide renvoie désormais l'ensemble des comptes B2B cibles (*Rawbank, EquityBCDC, TFM, Clinique Ngaliema, Bracongo*) avec mode fallback résilient hors-ligne.
     *   **Squelettes Shimmer High-End** : Remplacement des spinners basiques par des squelettes de chargement animés Vercel/Stripe style ([`skeleton_loader.dart`](file:///C:/Users/Salem/Documents/projet/Onbora/mobile/lib/ui/shared/skeleton_loader.dart)).
 
 *   **Pipeline CI/CD (GitHub Actions)** :

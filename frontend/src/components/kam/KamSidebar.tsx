@@ -115,11 +115,9 @@ export default function KamSidebar({
               <Logo size={36} />
               <div>
                 <h1 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight group-hover:text-[#4F6CE8] transition-colors">
-                  ONBORA KAM
+                  ONBORA 
                 </h1>
-                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                  Cockpit Grands Comptes
-                </span>
+             
               </div>
             </Link>
           )}
@@ -250,14 +248,7 @@ export default function KamSidebar({
         </div>
 
         {/* Dedicated Logout Action Button */}
-        <button
-          onClick={() => setShowLogoutModal(true)}
-          className={`flex items-center gap-2.5 p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors text-xs font-semibold cursor-pointer ${isCollapsed ? 'justify-center' : 'w-full'}`}
-          title="Se déconnecter"
-        >
-          <Icons.LogOut size={16} />
-          {!isCollapsed && <span>Déconnexion</span>}
-        </button>
+       
       </div>
 
       {/* Logout Confirmation Modal */}

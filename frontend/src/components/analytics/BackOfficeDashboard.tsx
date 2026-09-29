@@ -415,7 +415,7 @@ export default function BackOfficeDashboard({
           </div>
         </div>
       </div>
-
+              <div style={{display:"none"}}>
       {/* 2. INTERACTIVE ACTIVITY TIMELINE CHART */}
       {(activeSubTab === 'overview' || activeSubTab === 'territories') && (
         <div className="studio-card p-6 shadow-sm flex flex-col gap-5">
@@ -661,7 +661,7 @@ export default function BackOfficeDashboard({
           </div>
         </div>
       )}
-
+          </div>
       {/* 3. VISUAL CONVERSION FUNNEL & STEP DROP-OFFS */}
       {(activeSubTab === 'overview' || activeSubTab === 'funnel') && data.funnel_stages && (
         <div className="studio-card p-6 shadow-sm flex flex-col gap-6">

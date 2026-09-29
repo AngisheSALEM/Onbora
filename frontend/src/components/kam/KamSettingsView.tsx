@@ -104,13 +104,11 @@ export default function KamSettingsView() {
     <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none font-sans max-w-5xl">
       
       {/* Top Header */}
-      <div className="pb-3 border-b border-black/5 dark:border-white/5">
+      <div className="pb-3  ">
         <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
           Paramètres & Base de Connaissances
         </h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-          Gestion de votre profil personnel, statut d&apos;activité opérationnel et guides KAM.
-        </p>
+    
       </div>
 
       {/* 1. Profil Utilisateur & Avatar Actuel */}
@@ -128,12 +126,11 @@ export default function KamSettingsView() {
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
                 {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
               </h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#4F6CE8]/15 text-[#4F6CE8]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none">
                 Key Account Manager
               </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 ${currentStatusConfig.badgeBg} ${currentStatusConfig.badgeText} border ${currentStatusConfig.borderColor}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${currentStatusConfig.dotColor}`} />
-                <span>{currentStatusConfig.label}</span>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none">
+                {currentStatusConfig.label}
               </span>
             </div>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -147,22 +144,21 @@ export default function KamSettingsView() {
 
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer shrink-0 border-none self-start sm:self-auto shadow-none"
           title="Se déconnecter de votre session KAM"
         >
-          <Icons.LogOut size={16} />
+          <Icons.LogOut size={15} />
           <span>Se déconnecter</span>
         </button>
       </div>
 
-      {/* 2. Statut d'Activité CAM */}
-           {/* 3. Photo de Profil & Avatar */}
+      {/* 2. Photo de Profil & Avatar */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
         <ProfilePhotoUploader
           currentPhotoUrl={user?.profile_picture_url || user?.avatar}
           name={user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username}
           title="Photo de Profil Professionnelle"
-          description="Téléversez votre photo officielle pour le KAM Command Center (JPG, PNG ou WebP, max 5 Mo) ou glissez-déposez un fichier."
+          description="Téléversez votre photo officielle pour le compte KAM (JPG, PNG ou WebP, max 5 Mo)."
           allowSelfUpdate={true}
           onPhotoUploaded={(newUrl) => {
             setPhotoUrlInput(newUrl);
@@ -177,19 +173,19 @@ export default function KamSettingsView() {
         />
       </div>
 
-      {/* 4. Préférences d'Affichage & Thème Visuel */}
+      {/* 3. Préférences d'Affichage & Thème Visuel */}
       <ThemeSettingCard />
 
-      {/* 5. Base de Connaissances & FAQ Opérationnelle */}
+      {/* 4. Base de Connaissances & FAQ Opérationnelle */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
         <div className="flex items-center gap-2 pb-2 border-b border-black/5 dark:border-white/5">
-          <Icons.HelpCircle size={18} className="text-[#4F6CE8]" />
+          <Icons.HelpCircle size={18} className="text-zinc-600 dark:text-zinc-400" />
           <div>
             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
               FAQ Opérationnelle & Bonnes Pratiques KAM
             </h3>
-            <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
-              Consignes d&apos;engagement client, gouvernance et processus de remontée.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Consignes d’engagement client, gouvernance et processus de remontée.
             </p>
           </div>
         </div>
@@ -227,7 +223,7 @@ export default function KamSettingsView() {
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="w-full max-w-sm bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col gap-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 mx-auto flex items-center justify-center">
               <Icons.LogOut size={22} />
             </div>
             <div>
@@ -235,7 +231,7 @@ export default function KamSettingsView() {
                 Confirmer la déconnexion
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                Êtes-vous sûr de vouloir fermer votre session KAM ? Vos données en cours de saisie non enregistrées seront perdues.
+                Êtes-vous sûr de vouloir fermer votre session KAM ?
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -250,10 +246,10 @@ export default function KamSettingsView() {
                   setShowLogoutConfirm(false);
                   logout();
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-none"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold transition-colors cursor-pointer border-none shadow-none"
               >
                 <Icons.LogOut size={14} />
-                <span>Oui, me déconnecter</span>
+                <span>Confirmer</span>
               </button>
             </div>
           </div>

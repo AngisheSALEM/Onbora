@@ -58,9 +58,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
               Apparence & Thème de l'Interface
             </h3>
           </div>
-          <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] mt-1">
-            Personnalisez votre confort visuel en basculant entre le thème clair et le thème sombre selon votre environnement de travail.
-          </p>
+         
         </div>
 
         <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] shrink-0 self-start sm:self-auto">
@@ -106,33 +104,8 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
               </div>
             </div>
 
-            {/* Aperçu miniature Thème Clair */}
-            <div className="w-full h-20 rounded-xl bg-[#F6F5F2] border border-black/10 p-2 flex gap-1.5 overflow-hidden">
-              {/* Mini sidebar */}
-              <div className="w-6 h-full rounded-md bg-white border border-black/10 flex flex-col gap-1 p-1">
-                <div className="w-full h-1.5 rounded-xs bg-[#4F6CE8]" />
-                <div className="w-full h-1 rounded-xs bg-zinc-200" />
-                <div className="w-full h-1 rounded-xs bg-zinc-200" />
-              </div>
-              {/* Mini content */}
-              <div className="flex-1 flex flex-col gap-1">
-                <div className="w-3/4 h-2 rounded-xs bg-zinc-300" />
-                <div className="grid grid-cols-2 gap-1 flex-1">
-                  <div className="rounded-md bg-white border border-black/10 p-1">
-                    <div className="w-full h-1 rounded-xs bg-[#4F6CE8]/60 mb-0.5" />
-                    <div className="w-2/3 h-1 rounded-xs bg-zinc-200" />
-                  </div>
-                  <div className="rounded-md bg-white border border-black/10 p-1">
-                    <div className="w-full h-1 rounded-xs bg-zinc-300 mb-0.5" />
-                    <div className="w-1/2 h-1 rounded-xs bg-zinc-200" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] leading-relaxed">
-              Fond clair naturel (#F6F5F2 et blanc) optimisé pour une lisibilité maximale en journée et en environnement lumineux.
-            </p>
+          
+         
           </div>
 
           <button
@@ -193,34 +166,6 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
                 {currentTheme === 'dark' && <Icons.Check size={11} className="text-white" />}
               </div>
             </div>
-
-            {/* Aperçu miniature Thème Sombre */}
-            <div className="w-full h-20 rounded-xl bg-[#242124] border border-white/10 p-2 flex gap-1.5 overflow-hidden">
-              {/* Mini sidebar */}
-              <div className="w-6 h-full rounded-md bg-[#2D2A2D] border border-white/10 flex flex-col gap-1 p-1">
-                <div className="w-full h-1.5 rounded-xs bg-[#4F6CE8]" />
-                <div className="w-full h-1 rounded-xs bg-zinc-700" />
-                <div className="w-full h-1 rounded-xs bg-zinc-700" />
-              </div>
-              {/* Mini content */}
-              <div className="flex-1 flex flex-col gap-1">
-                <div className="w-3/4 h-2 rounded-xs bg-zinc-600" />
-                <div className="grid grid-cols-2 gap-1 flex-1">
-                  <div className="rounded-md bg-[#2D2A2D] border border-white/10 p-1">
-                    <div className="w-full h-1 rounded-xs bg-[#4F6CE8]/60 mb-0.5" />
-                    <div className="w-2/3 h-1 rounded-xs bg-zinc-700" />
-                  </div>
-                  <div className="rounded-md bg-[#2D2A2D] border border-white/10 p-1">
-                    <div className="w-full h-1 rounded-xs bg-zinc-600 mb-0.5" />
-                    <div className="w-1/2 h-1 rounded-xs bg-zinc-700" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] leading-relaxed">
-              Fond sombre contrasté (#242124 et #2D2A2D) réduisant la fatigue oculaire et idéal pour les sessions prolongées.
-            </p>
           </div>
 
           <button

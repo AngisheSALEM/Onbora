@@ -230,7 +230,7 @@ def process_copilot_turn(
             response_content += "\nSouhaitez-vous que je génère un brief stratégique sur l'un de ces comptes ?"
 
         # B. RECHERCHE & SYNTHÈSE D'UN BRIEF CLIENT
-        elif any(w in lowered for w in ['brief', 'info sur', 'recherche', 'analyse compte', 'dossier', 'rawbank', 'vodacom', 'orange', 'airtel', 'bcdc', 'equity']):
+        elif any(w in lowered for w in ['brief', 'info sur', 'recherche', 'analyse compte', 'dossier', 'rawbank', 'ecobank', 'orange', 'tmb', 'bcdc', 'equity']):
             action_type = 'RESEARCH_BRIEF'
             action_status = 'EXECUTED'
 
