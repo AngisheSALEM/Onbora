@@ -900,7 +900,7 @@ export default function KamAccountsListView({
           </div>
         </div>
       </div>
-
+    <div style={{display:"none"}}>
       {/* 3. Graphique Principal : Évolution de la santé du portefeuille (ZÉRO DÉGRADÉ & Consultation Réelle) */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
@@ -1031,6 +1031,7 @@ export default function KamAccountsListView({
             Ce graphique retrace la trajectoire de santé de vos comptes pour anticiper le churn avant l’échéance contractuelle.
           </p>
         </div>
+      </div>
       </div>
       {/* 4. Tableau Compact des Comptes Nécessitant une Attention */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5">
