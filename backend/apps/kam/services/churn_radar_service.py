@@ -298,17 +298,10 @@ class ChurnRadarService:
     @classmethod
     def get_user_enterprises(cls, user) -> Any:
         """
-        Retourne le QuerySet des entreprises appartenant au KAM connecté
-        ou l'ensemble des comptes clés pour un manager/administrateur.
+        Retourne le QuerySet des entreprises assignées à l'utilisateur connecté.
+        Chaque utilisateur ne voit que les comptes qui lui sont attribués via assigned_kam.
         """
-        if getattr(user, 'role', '') == 'KAM':
-            qs = Enterprise.objects.filter(assigned_kam=user)
-        else:
-            qs = Enterprise.objects.filter(
-                Q(assigned_entity='KAM_OFFICE') |
-                Q(segment__in=['GRAND_COMPTE', 'PME']) |
-                Q(assigned_kam__isnull=False)
-            )
+        qs = Enterprise.objects.filter(assigned_kam=user)
 
         return qs.select_related('churn_assessment').prefetch_related(
             Prefetch('kam_appointments', queryset=KamAppointment.objects.order_by('scheduled_at')),
@@ -377,11 +370,18 @@ class ChurnRadarService:
                 "daysWithoutAction": a.days_without_action,
             })
 
+        # Calcul du delta (variation sur la semaine — futur : snapshots réels)
+        delta_text = ""
+        if high_risk_count > 0:
+            delta_text = f"{high_risk_count} compte(s) identifié(s)"
+
+        upsell_subtitle = f"{upsell_count} compte(s) identifié(s)" if upsell_count > 0 else "Aucune opportunité détectée"
+
         return {
             "summary_cards": {
                 "high_risk": {
                     "count": high_risk_count,
-                    "delta_text": "+2 cette semaine",
+                    "delta_text": delta_text,
                     "healthy_count": healthy_count,
                     "surveillance_count": surveillance_count,
                     "total_count": total_accounts
@@ -392,7 +392,7 @@ class ChurnRadarService:
                 },
                 "upsell": {
                     "count": upsell_count,
-                    "subtitle": "Potentiel estimé : 48 M FCFA"
+                    "subtitle": upsell_subtitle
                 },
                 "no_action": {
                     "count": no_action_count,

@@ -861,9 +861,7 @@ export default function KamAccountsListView({
               <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 Opportunités d’upsell
               </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {summaryData.upsellSubtitle}
-              </span>
+          
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-2xl font-bold text-zinc-900 dark:text-white">

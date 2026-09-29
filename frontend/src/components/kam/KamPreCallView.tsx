@@ -941,73 +941,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               <div className="border-t border-black/5 dark:border-white/5" />
 
               {/* Contradictions & Points de vigilance */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                  Contradictions & Vigilance
-                </h3>
-
-                {isEditing ? (
-                  <div className="space-y-2">
-                    {editContradictions.map((contraText, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={contraText}
-                          onChange={(e) => {
-                            const updated = [...editContradictions];
-                            updated[idx] = e.target.value;
-                            setEditContradictions(updated);
-                          }}
-                          className="flex-1 p-2 rounded-lg bg-amber-500/10 text-xs outline-none"
-                        />
-                        <button
-                          onClick={() => setEditContradictions(editContradictions.filter((_, i) => i !== idx))}
-                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
-                        >
-                          <Icons.Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        type="text"
-                        value={newContraText}
-                        onChange={(e) => setNewContraText(e.target.value)}
-                        placeholder="Nouveau point de vigilance..."
-                        className="flex-1 px-3 py-2 rounded-lg bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none"
-                      />
-                      <button
-                        onClick={() => {
-                          if (newContraText.trim()) {
-                            setEditContradictions([...editContradictions, newContraText.trim()]);
-                            setNewContraText('');
-                          }
-                        }}
-                        disabled={!newContraText.trim()}
-                        className="px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40"
-                      >
-                        Ajouter
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {(briefingData.ai_summary?.contradictions || []).length > 0 ? (
-                      (briefingData.ai_summary?.contradictions || []).map((contra, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
-                          <Icons.AlertTriangle size={14} className="text-amber-600 shrink-0 mt-0.5" />
-                          <p className="leading-relaxed">{contra.text}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-zinc-500 italic">
-                        Aucune divergence d&apos;identité ou vigilance majeure détectée.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
+             
               <div className="border-t border-black/5 dark:border-white/5" />
 
               {/* Informations manquantes */}

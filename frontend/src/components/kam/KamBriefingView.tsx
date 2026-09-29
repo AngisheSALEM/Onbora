@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StrategicVisit } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI } from '@/lib/api';
@@ -30,6 +30,33 @@ export default function KamBriefingView({
   const [savingEdit, setSavingEdit] = useState(false);
   const [editSuccessMsg, setEditSuccessMsg] = useState('');
   const [editErrorMsg, setEditErrorMsg] = useState('');
+
+  // Tab state: Fiche Client vs Radar de Churn
+  type InfoTab = 'FICHE' | 'RADAR';
+  const [activeInfoTab, setActiveInfoTab] = useState<InfoTab>('FICHE');
+
+  // Radar data state
+  interface RadarDetail {
+    enterprise_id: number;
+    enterprise_name: string;
+    sector: string;
+    health_score: number;
+    churn_risk_score: number;
+    risk_level: string;
+    priority_level: string;
+    trend: string;
+    risk_reasons: string[];
+    retention_plan: { urgency?: string; action?: string; email_draft?: string } | null;
+    upsell_opportunities: { solution?: string; trigger?: string; estimated_value?: string; talking_point?: string }[];
+    days_without_action: number;
+    is_renewal_imminent: boolean;
+    renewal_days: number | null;
+    last_action_at: string | null;
+    next_action_at: string | null;
+  }
+  const [radarData, setRadarData] = useState<RadarDetail | null>(null);
+  const [radarLoading, setRadarLoading] = useState(false);
+  const [radarError, setRadarError] = useState('');
 
   // Primary decision-maker form
   const [primaryContact, setPrimaryContact] = useState({
@@ -64,6 +91,27 @@ export default function KamBriefingView({
       current_connectivity: 'Fibre Dédiée',
     });
   }, [selectedVisitId, selectedVisit]);
+
+  const fetchRadarData = useCallback(async () => {
+    const accountId = selectedVisit.account_id || selectedVisit.id.replace('account-', '');
+    setRadarLoading(true);
+    setRadarError('');
+    try {
+      const data = await fetchAPI(`/api/kam/accounts/${accountId}/radar/`);
+      setRadarData(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Impossible de charger les données Radar.';
+      setRadarError(msg);
+    } finally {
+      setRadarLoading(false);
+    }
+  }, [selectedVisit]);
+
+  useEffect(() => {
+    if (activeInfoTab === 'RADAR') {
+      fetchRadarData();
+    }
+  }, [activeInfoTab, fetchRadarData]);
 
   const handleSaveClientInfo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,6 +282,192 @@ export default function KamBriefingView({
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1 bg-[#E4E1DB] dark:bg-[#2D2A2D] rounded-2xl p-1 w-fit">
+        <button
+          onClick={() => setActiveInfoTab('FICHE')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            activeInfoTab === 'FICHE'
+              ? 'bg-white dark:bg-[#363336] text-zinc-900 dark:text-white shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          <Icons.FileText size={14} />
+          <span>Fiche Client</span>
+        </button>
+        <button
+          onClick={() => setActiveInfoTab('RADAR')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            activeInfoTab === 'RADAR'
+              ? 'bg-white dark:bg-[#363336] text-zinc-900 dark:text-white shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          <Icons.Activity size={14} />
+          <span>Radar de Churn</span>
+        </button>
+      </div>
+
+      {activeInfoTab === 'RADAR' ? (
+        /* ============ RADAR DE CHURN TAB ============ */
+        <div className="flex flex-col gap-6">
+          {radarLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-5 h-5 border-2 border-zinc-300 dark:border-zinc-600 border-t-[#4F6CE8] rounded-full animate-spin" />
+              <span className="ml-3 text-xs text-zinc-500">Analyse en cours...</span>
+            </div>
+          ) : radarError ? (
+            <div className="p-5 bg-zinc-100 dark:bg-zinc-800/50 rounded-3xl text-xs text-zinc-600 dark:text-zinc-400 text-center">
+              {radarError}
+            </div>
+          ) : radarData ? (
+            <>
+              {/* Health Score Hero */}
+              <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[32px] p-6 md:p-8 shadow-sm border border-black/5 dark:border-white/5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-2xl font-extrabold text-white ${
+                      radarData.health_score >= 70 ? 'bg-emerald-600' :
+                      radarData.health_score >= 40 ? 'bg-zinc-500' :
+                      'bg-zinc-900 dark:bg-white dark:text-zinc-900'
+                    }`}>
+                      {radarData.health_score}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">Score de Sant{'\u00e9'}</h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {radarData.health_score >= 70 ? 'Compte en bonne sant\u00e9' :
+                         radarData.health_score >= 40 ? 'Sous surveillance' :
+                         '\u00c0 risque \u00e9lev\u00e9 \u2014 action recommand\u00e9e'}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                          radarData.risk_level === 'LOW' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300' :
+                          radarData.risk_level === 'MEDIUM' ? 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200' :
+                          'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+                        }`}>
+                          {radarData.risk_level === 'LOW' ? 'Sain' : radarData.risk_level === 'MEDIUM' ? 'Sous surveillance' : 'Risque \u00e9lev\u00e9'}
+                        </span>
+                        {radarData.trend && (
+                          <span className={`text-xs font-semibold flex items-center gap-1 ${
+                            radarData.trend === 'UP' ? 'text-emerald-600 dark:text-emerald-400' :
+                            radarData.trend === 'DOWN' ? 'text-zinc-600 dark:text-zinc-400' :
+                            'text-zinc-400'
+                          }`}>
+                            {radarData.trend === 'UP' ? <Icons.TrendingUp size={13} /> :
+                             radarData.trend === 'DOWN' ? <Icons.TrendingDown size={13} /> :
+                             <Icons.MinusCircle size={13} />}
+                            <span>{radarData.trend === 'UP' ? 'Am\u00e9lioration' : radarData.trend === 'DOWN' ? 'D\u00e9gradation' : 'Stable'}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-center">
+                      <span className="text-zinc-400 text-[10px] block">Inactivit{'\u00e9'}</span>
+                      <span className="font-bold text-zinc-900 dark:text-white text-sm">{radarData.days_without_action}j</span>
+                    </div>
+                    <div className="p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-center">
+                      <span className="text-zinc-400 text-[10px] block">Renouvellement</span>
+                      <span className="font-bold text-zinc-900 dark:text-white text-sm">
+                        {radarData.renewal_days !== null ? `${radarData.renewal_days}j` : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Two Column Layout: Risk Reasons + Retention Plan */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Risk Reasons */}
+                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 flex flex-col gap-4 shadow-sm border border-black/5 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Icons.AlertCircle size={16} className="text-zinc-600 dark:text-zinc-400" />
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Signaux d{'\u00e9'}tect{'\u00e9'}s
+                    </h4>
+                  </div>
+                  {radarData.risk_reasons.length > 0 ? (
+                    <div className="space-y-2">
+                      {radarData.risk_reasons.map((reason, i) => (
+                        <div key={i} className="p-3 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-xs text-zinc-800 dark:text-zinc-200 flex items-start gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 shrink-0 mt-1.5" />
+                          <span>{reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-400 italic">Aucun signal critique d{'\u00e9'}tect{'\u00e9'}.</p>
+                  )}
+                </div>
+
+                {/* Retention Plan */}
+                <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 flex flex-col gap-4 shadow-sm border border-black/5 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Icons.Shield size={16} className="text-emerald-600 dark:text-emerald-400" />
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Plan de R{'\u00e9'}tention
+                    </h4>
+                  </div>
+                  {radarData.retention_plan ? (
+                    <div className="space-y-3">
+                      {radarData.retention_plan.urgency && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase">Urgence :</span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            radarData.retention_plan.urgency.includes('IMMEDIATE') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200'
+                          }`}>
+                            {radarData.retention_plan.urgency.includes('IMMEDIATE') ? 'Imm{'\u00e9'}diat (48h)' : 'Planifi{'\u00e9'} (7j)'}
+                          </span>
+                        </div>
+                      )}
+                      {radarData.retention_plan.action && (
+                        <div className="p-3.5 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">
+                          {radarData.retention_plan.action}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-400 italic">Aucun plan de r{'\u00e9'}tention g{'\u00e9'}n{'\u00e9'}r{'\u00e9'} pour ce compte.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Upsell Opportunities */}
+              <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 flex flex-col gap-4 shadow-sm border border-black/5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <Icons.TrendingUp size={16} className="text-[#4F6CE8]" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Opportunit{'\u00e9'}s d{"'"}Upsell
+                  </h4>
+                </div>
+                {radarData.upsell_opportunities.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {radarData.upsell_opportunities.map((op, i) => (
+                      <div key={i} className="p-4 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl text-xs space-y-2">
+                        <div className="font-semibold text-zinc-900 dark:text-white">{op.solution}</div>
+                        {op.trigger && <div className="text-zinc-500 dark:text-zinc-400"><strong>D{'\u00e9'}clencheur :</strong> {op.trigger}</div>}
+                        {op.estimated_value && <div className="text-zinc-500 dark:text-zinc-400"><strong>Valeur estim{'\u00e9'}e :</strong> {op.estimated_value}</div>}
+                        {op.talking_point && (
+                          <div className="p-2.5 bg-[#4F6CE8]/10 dark:bg-[#4F6CE8]/20 rounded-xl text-[11px] text-[#4F6CE8] dark:text-[#7B92F2] font-550">
+                            {op.talking_point}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-400 italic">Aucune opportunit{'\u00e9'} d{"'"}upsell identifi{'\u00e9'}e pour le moment.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="p-10 text-center text-xs text-zinc-400">Aucune donn{'\u00e9'}e Radar disponible.</div>
+          )}
+        </div>
+      ) : (
+      <>
       {/* Règle d'or Cruciale */}
       <div className="p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl flex items-start gap-4 text-xs text-blue-950 dark:text-blue-200 border border-blue-200/60 dark:border-blue-500/20">
         <Icons.Shield size={20} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
@@ -436,6 +670,8 @@ export default function KamBriefingView({
         </div>
 
       </div>
+      </>
+      )}
 
       {/* ========================================================================= */}
       {/* MODALE : ÉDITION DE LA FICHE CLIENT & DÉCIDEURS                            */}

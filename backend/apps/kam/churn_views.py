@@ -68,9 +68,11 @@ class AccountRadarDetailView(APIView):
     permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, enterprise_id: int):
+        from sales.models import Enterprise
+        enterprise = Enterprise.objects.filter(id=enterprise_id, assigned_kam=request.user).first()
+        if not enterprise:
+            return Response({"error": "Entreprise introuvable ou non assignée"}, status=status.HTTP_404_NOT_FOUND)
         detail = ChurnRadarService.get_account_radar_detail(enterprise_id)
-        if "error" in detail:
-            return Response(detail, status=status.HTTP_404_NOT_FOUND)
         return Response(detail, status=status.HTTP_200_OK)
 
 
@@ -84,9 +86,9 @@ class ChurnRadarRecalculateView(APIView):
 
         if enterprise_id:
             from sales.models import Enterprise
-            ent = Enterprise.objects.filter(id=enterprise_id).first()
+            ent = Enterprise.objects.filter(id=enterprise_id, assigned_kam=request.user).first()
             if not ent:
-                return Response({"error": "Entreprise introuvable"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "Entreprise introuvable ou non assignée"}, status=status.HTTP_404_NOT_FOUND)
             assessment = ChurnRadarService.refresh_account_assessment(ent, use_ai=use_ai)
             return Response({"detail": f"Évaluation actualisée pour {ent.name}", "health_score": assessment.health_score}, status=status.HTTP_200_OK)
 
