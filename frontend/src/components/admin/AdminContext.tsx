@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, ReactNode } from 'react';
 
 export interface AdminCounts {
   converted?: number;
@@ -47,9 +47,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateCount = (key: keyof AdminCounts, value: number) => {
-    setCounts((prev) => ({ ...prev, [key]: value }));
-  };
+  // List loading effects depend on this callback; keep it stable across count updates.
+  const updateCount = useCallback((key: keyof AdminCounts, value: number) => {
+    setCounts((prev) => prev[key] === value ? prev : { ...prev, [key]: value });
+  }, []);
 
   return (
     <AdminContext.Provider
