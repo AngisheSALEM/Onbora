@@ -271,7 +271,7 @@ export default function DailyReportView({
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-zinc-500/10 text-[#787570] flex items-center justify-center">
               <Icons.FileText size={18} />
             </div>
             <h3 className="text-base font-extrabold text-[#242124] dark:text-white tracking-tight">
@@ -291,7 +291,7 @@ export default function DailyReportView({
               onClick={() => handleDateModeChange('today')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 dateMode === 'today'
-                  ? 'bg-[#4F6CE8] text-white shadow-xs'
+                  ? 'bg-[#55524E] text-white shadow-xs'
                   : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
               }`}
             >
@@ -302,7 +302,7 @@ export default function DailyReportView({
               onClick={() => handleDateModeChange('yesterday')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 dateMode === 'yesterday'
-                  ? 'bg-[#4F6CE8] text-white shadow-xs'
+                  ? 'bg-[#55524E] text-white shadow-xs'
                   : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
               }`}
             >
@@ -313,7 +313,7 @@ export default function DailyReportView({
               onClick={() => handleDateModeChange('all')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 dateMode === 'all'
-                  ? 'bg-[#4F6CE8] text-white shadow-xs'
+                  ? 'bg-[#55524E] text-white shadow-xs'
                   : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
               }`}
             >
@@ -356,7 +356,7 @@ export default function DailyReportView({
             <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
               Visites Réalisées
             </span>
-            <div className="w-6 h-6 rounded-lg bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-zinc-500/10 text-[#787570] flex items-center justify-center">
               <Icons.FileText size={13} />
             </div>
           </div>
@@ -374,11 +374,11 @@ export default function DailyReportView({
             <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
               Commerciaux Actifs
             </span>
-            <div className="w-6 h-6 rounded-lg bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-zinc-500/10 text-[#787570] flex items-center justify-center">
               <Icons.Users size={13} />
             </div>
           </div>
-          <span className="text-2xl font-extrabold text-[#4F6CE8] mt-1">
+          <span className="text-2xl font-extrabold text-[#787570] mt-1">
             {kpis.activeSalespersonsCount}
           </span>
           <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -392,11 +392,11 @@ export default function DailyReportView({
             <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
               Besoins Détectés
             </span>
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 flex items-center justify-center">
               <Icons.CheckCircle size={13} />
             </div>
           </div>
-          <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+          <span className="text-2xl font-extrabold text-zinc-600 dark:text-zinc-400 mt-1">
             {kpis.needsCount}
           </span>
           <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -410,7 +410,7 @@ export default function DailyReportView({
             <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
               Opportunités Qualifiées
             </span>
-            <div className="w-6 h-6 rounded-lg bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-zinc-500/10 text-[#787570] flex items-center justify-center">
               <Icons.Target size={13} />
             </div>
           </div>
@@ -525,7 +525,7 @@ export default function DailyReportView({
                         <button
                           type="button"
                           onClick={() => handleDateModeChange('all')}
-                          className="mt-2 px-3.5 py-1.5 rounded-xl bg-[#4F6CE8] text-white text-xs font-semibold cursor-pointer shadow-xs hover:bg-[#3D5BD9] transition-all"
+                          className="mt-2 px-3.5 py-1.5 rounded-xl bg-[#55524E] text-white text-xs font-semibold cursor-pointer shadow-xs hover:bg-[#55524E] transition-all"
                         >
                           Afficher toutes les visites historiques
                         </button>
@@ -549,7 +549,7 @@ export default function DailyReportView({
                       <td className="py-3.5 px-3 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="font-mono font-bold text-xs text-[#242124] dark:text-white flex items-center gap-1">
-                            <Icons.Clock size={11} className="text-[#4F6CE8]" />
+                            <Icons.Clock size={11} className="text-[#787570]" />
                             {visit.timeString}
                           </span>
                           {dateMode === 'all' && (
@@ -590,7 +590,7 @@ export default function DailyReportView({
                           </span>
                           <div className="flex items-center gap-1.5 text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
                             {visit.plaque_code && (
-                              <span className="px-1.5 py-0.2 rounded bg-[#4F6CE8]/10 text-[#4F6CE8] font-bold">
+                              <span className="px-1.5 py-0.2 rounded bg-zinc-500/10 text-[#787570] font-bold">
                                 {visit.plaque_code}
                               </span>
                             )}
@@ -607,7 +607,7 @@ export default function DailyReportView({
                               {visit.detected_needs.slice(0, 2).map((need, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px] truncate max-w-[140px]"
+                                  className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] font-semibold text-[10px] truncate max-w-[140px]"
                                   title={need}
                                 >
                                   {need}
@@ -626,7 +626,7 @@ export default function DailyReportView({
                           )}
 
                           {visit.objections.length > 0 && (
-                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate max-w-[180px]">
+                            <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium truncate max-w-[180px]">
                               Contrainte : {visit.objections[0]}
                             </span>
                           )}
@@ -638,16 +638,16 @@ export default function DailyReportView({
                         {visit.qualification_score !== undefined ? (
                           <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
                             visit.qualification_score >= 70
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                              ? 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400'
                               : visit.qualification_score >= 50
-                              ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                              ? 'bg-zinc-500/15 text-[#787570]'
                               : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                           }`}>
                             <Icons.CheckCircle size={10} />
                             <span>Score {visit.qualification_score}/100</span>
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px] inline-flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 font-semibold text-[10px] inline-flex items-center gap-1">
                             <Icons.CheckCircle size={10} />
                             <span>Visite Réalisée</span>
                           </span>
@@ -659,7 +659,7 @@ export default function DailyReportView({
                         <button
                           type="button"
                           onClick={() => onOpenReportDetail(visit.rawObject)}
-                          className="px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                          className="px-3 py-1.5 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
                           title="Consulter les détails du rapport de visite"
                         >
                           <Icons.FileText size={12} />

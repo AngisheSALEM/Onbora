@@ -106,7 +106,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
             </span>
             <div className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
               <span>{tier1Count} comptes</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-500/10 text-[#787570]">
                 Score &ge; 75
               </span>
             </div>
@@ -116,7 +116,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
             <span className="text-[11px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
               Potentiel MRR Total Pondéré
             </span>
-            <div className="text-2xl font-extrabold text-[#4F6CE8]">
+            <div className="text-2xl font-extrabold text-[#787570]">
               ~{totalPipelineMrr.toLocaleString('fr-FR')} USD/mois
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
               onClick={() => setTierFilter(tier)}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 tierFilter === tier
-                  ? 'bg-[#4F6CE8] text-white shadow-none'
+                  ? 'bg-[#55524E] text-white shadow-none'
                   : 'bg-[#FFFFFF] dark:bg-[#2F2C30] text-zinc-700 dark:text-zinc-300 hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D]'
               }`}
             >
@@ -160,7 +160,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
             placeholder="Rechercher entreprise..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#FFFFFF] dark:bg-[#2F2C30] text-xs font-medium text-zinc-900 dark:text-white pl-9 pr-4 py-2.5 rounded-2xl shadow-none focus:outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+            className="w-full bg-[#FFFFFF] dark:bg-[#2F2C30] text-xs font-medium text-zinc-900 dark:text-white pl-9 pr-4 py-2.5 rounded-2xl shadow-none focus:outline-none focus:ring-2 focus:ring-[#9B978F]"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
             <Icons.Search size={14} />
@@ -171,14 +171,14 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
       {/* 3. LEADS LIST */}
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.Sparkles size={36} className="animate-spin text-[#4F6CE8] mb-3" />
+          <Icons.Sparkles size={36} className="animate-spin text-[#787570] mb-3" />
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
             Calcul du scoring en direct sur vos comptes...
           </span>
         </div>
       ) : error ? (
         <div className="p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#2F2C30] text-center max-w-md mx-auto my-auto space-y-3">
-          <Icons.AlertTriangle size={32} className="text-[#EF4444] mx-auto" />
+          <Icons.AlertTriangle size={32} className="text-zinc-600 dark:text-zinc-300 mx-auto" />
           <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Erreur de chargement</h4>
           <p className="text-xs text-zinc-500">{error}</p>
         </div>
@@ -201,7 +201,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
                     <div
                       className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 font-extrabold ${
                         isTier1
-                          ? 'bg-[#4F6CE8] text-white'
+                          ? 'bg-[#55524E] text-white'
                           : lead.scoring_tier === 'TIER_2_PROSPECT'
                           ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200'
                           : 'bg-black/5 dark:bg-white/5 text-zinc-400'
@@ -234,7 +234,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
                             key={idx}
                             className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-[#ECEAE5] dark:bg-[#3B373D] text-zinc-700 dark:text-zinc-300"
                           >
-                            <strong className="text-[#4F6CE8] mr-1">{drv.points}</strong>
+                            <strong className="text-[#787570] mr-1">{drv.points}</strong>
                             {drv.factor}
                           </span>
                         ))}
@@ -254,7 +254,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
                       <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider block">
                         Potentiel MRR
                       </span>
-                      <span className="text-sm font-extrabold text-[#4F6CE8]">
+                      <span className="text-sm font-extrabold text-[#787570]">
                         ~{lead.estimated_mrr_usd.toLocaleString('fr-FR')} $/mois
                       </span>
                     </div>
@@ -262,7 +262,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
                     {onOpenPreCallForLead && (
                       <button
                         onClick={() => onOpenPreCallForLead(lead.enterprise_id)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-semibold rounded-xl shadow-none cursor-pointer transition-all"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#55524E] hover:bg-[#55524E] active:scale-95 text-white text-xs font-semibold rounded-xl shadow-none cursor-pointer transition-all"
                       >
                         <Icons.Sparkles size={13} />
                         <span>Préparer le Pre-Call</span>

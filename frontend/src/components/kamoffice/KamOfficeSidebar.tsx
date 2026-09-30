@@ -139,7 +139,7 @@ export default function KamOfficeSidebar() {
                   isSidebarCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'
                 } rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-sm'
+                    ? 'bg-[#55524E] text-white shadow-sm'
                     : 'text-zinc-600 dark:text-[#A1A1AA] hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >

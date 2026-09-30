@@ -76,7 +76,7 @@ export default function KamOfficeGrandsComptesView() {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
           <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">Total Grands Comptes</span>
-          <span className="text-xl font-extrabold text-[#4F6CE8]">
+          <span className="text-xl font-extrabold text-[#787570]">
             {grandsComptesAll.length}
           </span>
           <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Chiffre d&apos;affaires supérieur à 1M$</span>
@@ -84,7 +84,7 @@ export default function KamOfficeGrandsComptesView() {
 
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
           <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">GC Affectés</span>
-          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+          <span className="text-xl font-extrabold text-zinc-600 dark:text-zinc-400">
             {grandsComptesAll.filter((a) => a.assigned_kam).length}
           </span>
           <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Pris en charge par l&apos;équipe</span>
@@ -199,11 +199,11 @@ export default function KamOfficeGrandsComptesView() {
                       <div className="flex flex-col">
                         <button
                           onClick={() => setSelectedAccountForDetail(acc)}
-                          className="font-semibold text-zinc-900 dark:text-white hover:text-[#4F6CE8] dark:hover:text-[#4F6CE8] text-left transition-colors cursor-pointer flex items-center gap-1.5 group"
+                          className="font-semibold text-zinc-900 dark:text-white hover:text-[#787570] dark:hover:text-[#787570] text-left transition-colors cursor-pointer flex items-center gap-1.5 group"
                           title="Voir la fiche détaillée du compte"
                         >
                           <span className="group-hover:underline">{acc.name}</span>
-                          <Icons.ExternalLink size={12} className="opacity-0 group-hover:opacity-100 text-[#4F6CE8] transition-opacity" />
+                          <Icons.ExternalLink size={12} className="opacity-0 group-hover:opacity-100 text-[#787570] transition-opacity" />
                         </button>
                         <span className="text-[10px] font-mono text-[#6E6C67] dark:text-[#A1A1AA]">
                           {acc.crm_id} • {acc.sector}
@@ -238,7 +238,7 @@ export default function KamOfficeGrandsComptesView() {
 
                     <td className="py-3.5 px-3">
                       {acc.assigned_kam ? (
-                        <span className="font-semibold text-[#4F6CE8]">
+                        <span className="font-semibold text-[#787570]">
                           {acc.assigned_kam.full_name}
                         </span>
                       ) : (
@@ -251,7 +251,7 @@ export default function KamOfficeGrandsComptesView() {
                     <td className="py-3.5 px-3 text-right">
                       <button
                         onClick={() => setSelectedAccountToAssign(acc)}
-                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#4F6CE8] border border-black/5 dark:border-white/5 transition-all cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#787570] border border-black/5 dark:border-white/5 transition-all cursor-pointer"
                       >
                         {acc.assigned_kam ? "Changer KAM" : "Affecter KAM"}
                       </button>

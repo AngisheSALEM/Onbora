@@ -288,7 +288,7 @@ export default function AdminScoringView() {
   if (loading && profiles.length === 0) {
     return (
       <div className="w-full h-80 rounded-3xl bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center gap-3">
-        <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
         <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
           Chargement de la configuration des alertes clients...
         </span>
@@ -302,7 +302,7 @@ export default function AdminScoringView() {
       <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8]">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-zinc-500/10 text-[#787570]">
               Pilotage Commercial & Rétention
             </span>
             <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -322,14 +322,14 @@ export default function AdminScoringView() {
             href="/admin/scoring-lab"
             className="px-3.5 py-2 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-semibold text-[#242124] dark:text-white transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Icons.Activity size={14} className="text-[#4F6CE8]" />
+            <Icons.Activity size={14} className="text-[#787570]" />
             <span>Tester dans le Scoring Lab</span>
           </Link>
 
           <button
             onClick={handleRecalculateAll}
             disabled={calculating || !activeProfile}
-            className="px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D56C7] text-white text-xs font-semibold transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-none"
+            className="primary-cta px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-none"
           >
             <Icons.RefreshCw size={14} className={calculating ? "animate-spin" : ""} />
             <span>{calculating ? "Mise à jour en cours..." : "Mettre à jour les alertes"}</span>
@@ -339,15 +339,15 @@ export default function AdminScoringView() {
 
       {/* Messages d'état */}
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3">
-          <Icons.Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">{successMsg}</span>
+        <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
+          <Icons.Check size={16} className="text-zinc-600 dark:text-zinc-400 shrink-0" />
+          <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-300">{successMsg}</span>
         </div>
       )}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 flex items-center gap-3">
-          <Icons.AlertTriangle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />
-          <span className="text-xs font-semibold text-rose-800 dark:text-rose-300">{errorMsg}</span>
+        <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
+          <Icons.AlertTriangle size={16} className="text-zinc-600 dark:text-zinc-400 shrink-0" />
+          <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-300">{errorMsg}</span>
         </div>
       )}
 
@@ -412,7 +412,7 @@ export default function AdminScoringView() {
                   {activeProfile.name}
                 </h3>
               </div>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-1.5">
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800/40 flex items-center gap-1.5">
                 <Icons.Check size={13} />
                 <span>Modèle actif</span>
               </span>
@@ -467,7 +467,7 @@ export default function AdminScoringView() {
               </div>
               <button
                 onClick={() => setShowAdvancedParams(!showAdvancedParams)}
-                className="text-xs font-semibold text-[#4F6CE8] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#787570] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>{showAdvancedParams ? "Masquer les paramètres techniques" : "Voir les paramètres avancés"}</span>
                 <Icons.ChevronRight size={13} className={`transition-transform ${showAdvancedParams ? 'rotate-90' : ''}`} />
@@ -491,7 +491,7 @@ export default function AdminScoringView() {
                       <tr key={rule.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
                         <td className="py-3.5 px-4 font-medium text-[#242124] dark:text-white">
                           <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#55524E]" />
                             <span>{human.situation}</span>
                           </div>
                         </td>
@@ -499,14 +499,14 @@ export default function AdminScoringView() {
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                               human.level === 'high_pos'
-                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
+                                ? 'bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-300'
                                 : human.level === 'pos'
-                                ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
+                                ? 'bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-300'
                                 : human.level === 'moderate'
                                 ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                                 : human.level === 'neg'
-                                ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300'
-                                : 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300'
+                                ? 'bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-300'
+                                : 'bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-300'
                             }`}
                           >
                             {human.impact}
@@ -521,7 +521,7 @@ export default function AdminScoringView() {
                           <button
                             onClick={() => handleToggleRule(rule.id, rule.is_active)}
                             className={`w-9 h-5 rounded-full transition-colors cursor-pointer relative p-0.5 ${
-                              rule.is_active ? 'bg-[#4F6CE8]' : 'bg-zinc-300 dark:bg-zinc-700'
+                              rule.is_active ? 'bg-[#55524E]' : 'bg-zinc-300 dark:bg-zinc-700'
                             }`}
                             title={rule.is_active ? "Désactiver cette situation" : "Activer cette situation"}
                           >
@@ -560,9 +560,9 @@ export default function AdminScoringView() {
                 onClick={() => setWizardStep(st.num as any)}
                 className={`flex flex-col text-left cursor-pointer transition-all pb-1 border-b-2 ${
                   wizardStep === st.num
-                    ? 'border-[#4F6CE8] text-[#4F6CE8]'
+                    ? 'border-[#9B978F] text-[#787570]'
                     : wizardStep > st.num
-                    ? 'border-emerald-600 text-emerald-600'
+                    ? 'border-zinc-600 text-zinc-600'
                     : 'border-transparent text-[#6E6C67] dark:text-[#A1A1AA]'
                 }`}
               >
@@ -615,7 +615,7 @@ export default function AdminScoringView() {
                     onClick={() => setWizardObjective(opt.id)}
                     className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-3 ${
                       wizardObjective === opt.id
-                        ? 'border-[#4F6CE8] bg-[#4F6CE8]/5'
+                        ? 'border-[#9B978F] bg-zinc-500/5'
                         : 'border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/20'
                     }`}
                   >
@@ -628,8 +628,8 @@ export default function AdminScoringView() {
                       </div>
                       <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA] leading-relaxed">{opt.desc}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#4F6CE8]">
-                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${wizardObjective === opt.id ? 'border-[#4F6CE8] bg-[#4F6CE8] text-white' : 'border-zinc-300'}`}>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#787570]">
+                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${wizardObjective === opt.id ? 'border-[#9B978F] bg-[#55524E] text-white' : 'border-zinc-300'}`}>
                         {wizardObjective === opt.id && <Icons.Check size={10} />}
                       </span>
                       <span>{wizardObjective === opt.id ? "Sélectionné" : "Choisir cet objectif"}</span>
@@ -641,7 +641,7 @@ export default function AdminScoringView() {
               <div className="flex justify-end pt-4">
                 <button
                   onClick={() => setWizardStep(2)}
-                  className="px-5 py-2.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D56C7] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
+                  className="px-5 py-2.5 rounded-2xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
                 >
                   <span>Continuer vers les signaux</span>
                   <Icons.ArrowRight size={14} />
@@ -675,7 +675,7 @@ export default function AdminScoringView() {
                 ].map((sig) => (
                   <div key={sig.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#F6F5F2] dark:bg-[#242124]">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-2 h-2 rounded-full bg-[#4F6CE8]" />
+                      <span className="w-2 h-2 rounded-full bg-[#55524E]" />
                       <span className="text-xs font-semibold text-[#242124] dark:text-white">{sig.label}</span>
                     </div>
 
@@ -703,7 +703,7 @@ export default function AdminScoringView() {
                 </button>
                 <button
                   onClick={() => setWizardStep(3)}
-                  className="px-5 py-2.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D56C7] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
+                  className="px-5 py-2.5 rounded-2xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
                 >
                   <span>Continuer vers les seuils</span>
                   <Icons.ArrowRight size={14} />
@@ -739,7 +739,7 @@ export default function AdminScoringView() {
                       onClick={() => setWizardAlertCondition(cond.id)}
                       className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
                         wizardAlertCondition === cond.id
-                          ? 'border-[#4F6CE8] bg-[#4F6CE8]/5'
+                          ? 'border-[#9B978F] bg-zinc-500/5'
                           : 'border-black/5 dark:border-white/5 hover:border-black/20'
                       }`}
                     >
@@ -765,7 +765,7 @@ export default function AdminScoringView() {
                       onClick={() => setWizardPrudenceLevel(pr.id)}
                       className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
                         wizardPrudenceLevel === pr.id
-                          ? 'border-[#4F6CE8] bg-[#4F6CE8]/5'
+                          ? 'border-[#9B978F] bg-zinc-500/5'
                           : 'border-black/5 dark:border-white/5 hover:border-black/20'
                       }`}
                     >
@@ -785,7 +785,7 @@ export default function AdminScoringView() {
                 </button>
                 <button
                   onClick={() => setWizardStep(4)}
-                  className="px-5 py-2.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D56C7] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
+                  className="px-5 py-2.5 rounded-2xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
                 >
                   <span>Continuer vers les actions</span>
                   <Icons.ArrowRight size={14} />
@@ -819,13 +819,13 @@ export default function AdminScoringView() {
                       type="checkbox"
                       checked={wizardActions[act.key] || false}
                       onChange={(e) => setWizardActions({ ...wizardActions, [act.key]: e.target.checked })}
-                      className="mt-0.5 w-4 h-4 rounded text-[#4F6CE8] focus:ring-[#4F6CE8] cursor-pointer"
+                      className="mt-0.5 w-4 h-4 rounded text-[#787570] focus:ring-[#9B978F] cursor-pointer"
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-[#242124] dark:text-white">{act.label}</span>
                         {act.recommended && (
-                          <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400">
+                          <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-zinc-50 dark:bg-zinc-950/30 text-zinc-700 dark:text-zinc-400">
                             Recommandé
                           </span>
                         )}
@@ -849,7 +849,7 @@ export default function AdminScoringView() {
                     setSuccessMsg("Configuration enregistrée ! Vos critères métier sont désormais appliqués.");
                     setTimeout(() => setSuccessMsg(null), 4000);
                   }}
-                  className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
+                  className="px-6 py-2.5 rounded-2xl bg-zinc-600 hover:bg-zinc-700 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none"
                 >
                   <Icons.Check size={14} />
                   <span>Enregistrer et appliquer ce modèle</span>

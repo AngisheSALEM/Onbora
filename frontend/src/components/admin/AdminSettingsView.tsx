@@ -40,13 +40,13 @@ export default function AdminSettingsView() {
         </div>
 
         {avatarSuccessMsg && (
-          <div className="px-4 py-2 bg-[#4F6CE8]/10 text-[#4F6CE8] rounded-2xl text-xs font-medium flex items-center gap-2 animate-fade-in shrink-0">
+          <div className="px-4 py-2 bg-zinc-500/10 text-[#787570] rounded-2xl text-xs font-medium flex items-center gap-2 animate-fade-in shrink-0">
             <Icons.CheckCircle size={15} />
             <span>{avatarSuccessMsg}</span>
           </div>
         )}
         {avatarErrorMsg && (
-          <div className="px-4 py-2 bg-red-500/10 text-red-500 rounded-2xl text-xs font-medium flex items-center gap-2 animate-fade-in shrink-0">
+          <div className="px-4 py-2 bg-zinc-500/10 text-zinc-500 rounded-2xl text-xs font-medium flex items-center gap-2 animate-fade-in shrink-0">
             <Icons.AlertCircle size={15} />
             <span>{avatarErrorMsg}</span>
           </div>
@@ -61,14 +61,14 @@ export default function AdminSettingsView() {
               src={user?.profile_picture_url || user?.avatar}
               name={user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin'}
               size="xl"
-              className="border-2 border-[#4F6CE8] shadow-md"
+              className="border-2 border-[#9B978F] shadow-md"
             />
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-semibold text-[#242124] dark:text-white">
                   {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin Onbora'}
                 </h3>
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8]">
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/15 text-[#787570]">
                   {user?.role === 'ADMIN' ? 'Super Administrateur' : user?.role || 'Admin'}
                 </span>
               </div>
@@ -80,7 +80,7 @@ export default function AdminSettingsView() {
 
           <button
             onClick={() => logout()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-500/10 hover:bg-zinc-500/20 text-zinc-600 dark:text-zinc-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-zinc-500/20 self-start sm:self-auto shadow-none"
             title="Se déconnecter du portail Administrateur"
           >
             <Icons.LogOut size={16} />

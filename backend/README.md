@@ -57,3 +57,9 @@ Les applications Django sont organisées par domaines métier étanches :
 | `POST` | `/api/ai/analyze/` | Analyse d'échanges, détection de besoin de validation humaine |
 | `POST` | `/api/ai/validate/` | Enregistrement de la décision humaine (approved / rejected) |
 | `GET` | `/api/ai/session/<id>/` | Consultation de l'historique et de la mémoire de session |
+
+## Démonstration des portefeuilles KAM
+
+`python manage.py seed_kam_portfolios` ajoute 16 comptes clairement identifiés comme démo à chaque KAM actif. `--kam kam1` permet de cibler un seul portefeuille. Les entreprises existantes sont conservées et les relances ne créent pas de doublons. Le seed alimente les quatre cas de fiche compte (churn seul, upsell seul, les deux, aucun), les renouvellements, les prochaines actions et les historiques du radar sans appeler l’IA externe. Il est également intégré à `seed_all` lorsque des KAM actifs existent.
+
+Validation : `python manage.py test kam.test_seed_portfolios kam.test_churn_radar --noinput`.

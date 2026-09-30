@@ -205,7 +205,7 @@ export default function BackofficeSalespersonsView() {
                     {selectedSalespersonDetail.full_name}
                   </h3>
                   {selectedSalespersonDetail.is_available ? (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1">
                       <Icons.CheckCircle size={10} /> En tournée
                     </span>
                   ) : (
@@ -236,7 +236,7 @@ export default function BackofficeSalespersonsView() {
                   <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Plaques attribuées :</span>
                   {selectedSalespersonDetail.assigned_plaques && selectedSalespersonDetail.assigned_plaques.length > 0 ? (
                     selectedSalespersonDetail.assigned_plaques.map((code) => (
-                      <span key={code} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
+                      <span key={code} className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] font-semibold text-[10px]">
                         {code}
                       </span>
                     ))
@@ -251,11 +251,11 @@ export default function BackofficeSalespersonsView() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
               <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
                 <span className="text-[10px] uppercase font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Points Cumulés</span>
-                <span className="text-base font-extrabold text-[#4F6CE8]">{selectedSalespersonDetail.incentive_points || 0} pts</span>
+                <span className="text-base font-extrabold text-[#787570]">{selectedSalespersonDetail.incentive_points || 0} pts</span>
               </div>
               <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
                 <span className="text-[10px] uppercase font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Signatures SOHO</span>
-                <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">{selectedSalespersonDetail.conversions_count || 0}</span>
+                <span className="text-base font-extrabold text-zinc-600 dark:text-zinc-400">{selectedSalespersonDetail.conversions_count || 0}</span>
               </div>
               <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
                 <span className="text-[10px] uppercase font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Visites Réalisées</span>
@@ -274,7 +274,7 @@ export default function BackofficeSalespersonsView() {
               onClick={() => setSalespersonDetailTab('enterprises')}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                 salespersonDetailTab === 'enterprises'
-                  ? 'bg-[#4F6CE8] text-white shadow-xs'
+                  ? 'bg-[#55524E] text-white shadow-xs'
                   : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
               }`}
             >
@@ -285,7 +285,7 @@ export default function BackofficeSalespersonsView() {
               onClick={() => setSalespersonDetailTab('reports')}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                 salespersonDetailTab === 'reports'
-                  ? 'bg-[#4F6CE8] text-white shadow-xs'
+                  ? 'bg-[#55524E] text-white shadow-xs'
                   : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
               }`}
             >
@@ -307,7 +307,7 @@ export default function BackofficeSalespersonsView() {
                     }}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailFilter === 'ALL'
-                        ? 'bg-[#4F6CE8] text-white shadow-xs'
+                        ? 'bg-[#55524E] text-white shadow-xs'
                         : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                     }`}
                   >
@@ -320,8 +320,8 @@ export default function BackofficeSalespersonsView() {
                     }}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailFilter === 'VISITED'
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-white dark:bg-[#363336] text-emerald-600 dark:text-emerald-400 border border-black/5 dark:border-white/5'
+                        ? 'bg-zinc-600 text-white shadow-xs'
+                        : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-400 border border-black/5 dark:border-white/5'
                     }`}
                   >
                     Visités sur le terrain ({salespersonDetailKpis.visited})
@@ -333,8 +333,8 @@ export default function BackofficeSalespersonsView() {
                     }}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailFilter === 'UNVISITED'
-                        ? 'bg-[#4F6CE8] text-white shadow-xs'
-                        : 'bg-white dark:bg-[#363336] text-[#4F6CE8] border border-black/5 dark:border-white/5'
+                        ? 'bg-[#55524E] text-white shadow-xs'
+                        : 'bg-white dark:bg-[#363336] text-[#787570] border border-black/5 dark:border-white/5'
                     }`}
                   >
                     Pas encore visités ({salespersonDetailKpis.unvisited})
@@ -351,7 +351,7 @@ export default function BackofficeSalespersonsView() {
                       setSalespersonDetailPage(1);
                     }}
                     placeholder="Rechercher un compte..."
-                    className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#4F6CE8]"
+                    className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#9B978F]"
                   />
                 </div>
               </div>
@@ -390,7 +390,7 @@ export default function BackofficeSalespersonsView() {
                             </td>
                             <td className="py-3 px-3">
                               <div className="flex flex-col">
-                                <span className="font-semibold text-xs text-[#4F6CE8]">{ent.plaque_code || ent.plaque || '—'}</span>
+                                <span className="font-semibold text-xs text-[#787570]">{ent.plaque_code || ent.plaque || '—'}</span>
                                 <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{ent.commune || ent.city || 'Kinshasa'}</span>
                               </div>
                             </td>
@@ -403,7 +403,7 @@ export default function BackofficeSalespersonsView() {
                             <td className="py-3 px-3">
                               {ent.is_visited ? (
                                 <div className="flex flex-col">
-                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
+                                  <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
                                     <Icons.CheckCircle size={10} /> Visité sur le terrain
                                   </span>
                                   {ent.last_visited_at && (
@@ -413,7 +413,7 @@ export default function BackofficeSalespersonsView() {
                                   )}
                                   <button
                                     onClick={() => setSalespersonDetailTab('reports')}
-                                    className="text-[9px] font-bold text-[#4F6CE8] hover:underline mt-0.5 pl-1 text-left flex items-center gap-1 cursor-pointer"
+                                    className="text-[9px] font-bold text-[#787570] hover:underline mt-0.5 pl-1 text-left flex items-center gap-1 cursor-pointer"
                                   >
                                     <span>Consulter le rapport</span>
                                     <Icons.ArrowRight size={10} />
@@ -428,8 +428,8 @@ export default function BackofficeSalespersonsView() {
                             <td className="py-3 px-3">
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                                 ent.conversion_status === 'CONVERTED' || ent.is_converted
-                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                  : 'bg-[#4F6CE8]/10 text-[#4F6CE8]'
+                                  ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400'
+                                  : 'bg-zinc-500/10 text-[#787570]'
                               }`}>
                                 {ent.conversion_status || 'PROSPECT'}
                               </span>
@@ -482,7 +482,7 @@ export default function BackofficeSalespersonsView() {
                     onClick={() => setSalespersonDetailReportsFilter('ALL')}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailReportsFilter === 'ALL'
-                        ? 'bg-[#4F6CE8] text-white shadow-xs'
+                        ? 'bg-[#55524E] text-white shadow-xs'
                         : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                     }`}
                   >
@@ -492,7 +492,7 @@ export default function BackofficeSalespersonsView() {
                     onClick={() => setSalespersonDetailReportsFilter('FORMS')}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailReportsFilter === 'FORMS'
-                        ? 'bg-[#4F6CE8] text-white shadow-xs'
+                        ? 'bg-[#55524E] text-white shadow-xs'
                         : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                     }`}
                   >
@@ -502,7 +502,7 @@ export default function BackofficeSalespersonsView() {
                     onClick={() => setSalespersonDetailReportsFilter('AI_REPORTS')}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       salespersonDetailReportsFilter === 'AI_REPORTS'
-                        ? 'bg-[#4F6CE8] text-white shadow-xs'
+                        ? 'bg-[#55524E] text-white shadow-xs'
                         : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                     }`}
                   >
@@ -520,7 +520,7 @@ export default function BackofficeSalespersonsView() {
               {/* Reports Feed Cards */}
               {loadingSalespersonReports ? (
                 <div className="p-8 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 flex flex-col items-center justify-center gap-3">
-                  <div className="w-6 h-6 border-2 border-[#4F6CE8] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-[#9B978F] border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">Chargement des comptes-rendus de visite...</span>
                 </div>
               ) : (salespersonReports.length === 0 && salespersonSubmissions.length === 0) ? (
@@ -546,15 +546,15 @@ export default function BackofficeSalespersonsView() {
                               <h4 className="text-sm font-extrabold text-[#242124] dark:text-white">
                                 {sub.enterprise_name}
                               </h4>
-                              <span className="px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                              <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-[#787570] text-[10px] font-semibold">
                                 Formulaire Guidé
                               </span>
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1">
+                              <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1">
                                 <Icons.CheckCircle size={10} /> Score : {sub.qualification_score}/100
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5 flex-wrap">
-                              {sub.plaque_code && <span className="font-semibold text-[#4F6CE8]">{sub.plaque_code}</span>}
+                              {sub.plaque_code && <span className="font-semibold text-[#787570]">{sub.plaque_code}</span>}
                               {sub.enterprise_commune && <span>• {sub.enterprise_commune}</span>}
                               {sub.enterprise_sector && <span>• {sub.enterprise_sector}</span>}
                               <span>• Visité le {new Date(sub.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
@@ -588,7 +588,7 @@ export default function BackofficeSalespersonsView() {
                             <div className="flex items-center gap-1.5 flex-wrap mt-1">
                               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Besoins détectés :</span>
                               {sub.detected_needs.map((need, idx) => (
-                                <span key={idx} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                                <span key={idx} className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] text-[10px] font-semibold">
                                   {need}
                                 </span>
                               ))}
@@ -596,7 +596,7 @@ export default function BackofficeSalespersonsView() {
                           )}
 
                           {sub.objections_noted && (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                            <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                               <span className="text-[10px] font-semibold">Points d'attention / Objections :</span>
                               <span>{sub.objections_noted}</span>
                             </div>
@@ -618,12 +618,12 @@ export default function BackofficeSalespersonsView() {
                               <h4 className="text-sm font-extrabold text-[#242124] dark:text-white">
                                 {rep.enterprise_name}
                               </h4>
-                              <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-semibold">
+                              <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold">
                                 Compte-Rendu Dictaphone / IA
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-[11px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5 flex-wrap">
-                              {rep.plaque_code && <span className="font-semibold text-[#4F6CE8]">{rep.plaque_code}</span>}
+                              {rep.plaque_code && <span className="font-semibold text-[#787570]">{rep.plaque_code}</span>}
                               <span>• Visite enregistrée le {new Date(rep.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           </div>
@@ -650,7 +650,7 @@ export default function BackofficeSalespersonsView() {
                             <div className="flex items-center gap-1.5 flex-wrap mt-1">
                               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">Besoins confirmés :</span>
                               {rep.confirmed_needs.map((need, idx) => (
-                                <span key={idx} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                                <span key={idx} className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] text-[10px] font-semibold">
                                   {need}
                                 </span>
                               ))}
@@ -689,7 +689,7 @@ export default function BackofficeSalespersonsView() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsAddSalespersonOpen(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                className="primary-cta px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
               >
                 <Icons.UserPlus size={14} />
                 <span>Ajouter un Commercial</span>
@@ -714,7 +714,7 @@ export default function BackofficeSalespersonsView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   salespersonFilter === f.id
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                 }`}
               >
@@ -765,7 +765,7 @@ export default function BackofficeSalespersonsView() {
                               />
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-extrabold text-[#242124] dark:text-white hover:text-[#4F6CE8] transition-colors">{sp.full_name}</span>
+                              <span className="font-extrabold text-[#242124] dark:text-white hover:text-[#787570] transition-colors">{sp.full_name}</span>
                               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">@{sp.username} • {sp.phone || 'Non renseigné'}</span>
                             </div>
                           </div>
@@ -774,7 +774,7 @@ export default function BackofficeSalespersonsView() {
                           <div className="flex flex-wrap gap-1">
                             {sp.assigned_plaques && sp.assigned_plaques.length > 0 ? (
                               sp.assigned_plaques.map((plCode) => (
-                                <span key={plCode} className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
+                                <span key={plCode} className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] font-semibold text-[10px]">
                                   {plCode}
                                 </span>
                               ))
@@ -784,12 +784,12 @@ export default function BackofficeSalespersonsView() {
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="font-extrabold text-xs text-[#4F6CE8]">
+                          <span className="font-extrabold text-xs text-[#787570]">
                             {sp.incentive_points || 0} pts
                           </span>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-xs">
+                          <span className="font-semibold text-zinc-600 dark:text-zinc-400 text-xs">
                             {sp.conversions_count || 0}
                           </span>
                         </td>
@@ -800,7 +800,7 @@ export default function BackofficeSalespersonsView() {
                         </td>
                         <td className="py-3 px-3">
                           {sp.is_available ? (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
                               <Icons.CheckCircle size={10} /> En tournée
                             </span>
                           ) : (
@@ -813,7 +813,7 @@ export default function BackofficeSalespersonsView() {
                           <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => setSelectedSalespersonDetail(sp)}
-                              className="px-2.5 py-1 rounded-xl bg-[#4F6CE8]/10 hover:bg-[#4F6CE8]/20 text-[#4F6CE8] font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1 border border-[#4F6CE8]/20"
+                              className="px-2.5 py-1 rounded-xl bg-zinc-500/10 hover:bg-zinc-500/20 text-[#787570] font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1 border border-zinc-500/20"
                               title="Ouvrir la fiche détaillée du commercial"
                             >
                               <Icons.Eye size={12} />
@@ -826,7 +826,7 @@ export default function BackofficeSalespersonsView() {
                                   await loadDashboardData();
                                 }
                               }}
-                              className="p-1.5 rounded-xl hover:bg-red-500/10 text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-xl hover:bg-zinc-500/10 text-zinc-400 hover:text-zinc-500 transition-colors cursor-pointer"
                               title="Révoquer le compte"
                             >
                               <Icons.Trash2 size={13} />

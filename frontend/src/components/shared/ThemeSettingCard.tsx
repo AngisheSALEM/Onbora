@@ -53,7 +53,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
         <div>
           <div className="flex items-center gap-2">
-            <Icons.Sun size={17} className="text-[#4F6CE8]" />
+            <Icons.Sun size={17} className="text-[#787570]" />
             <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
               Apparence & Thème de l'Interface
             </h3>
@@ -73,14 +73,14 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
           onClick={() => handleSelectTheme('light')}
           className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-4 ${
             currentTheme === 'light'
-              ? 'border-[#4F6CE8] bg-white dark:bg-[#242124] shadow-xs'
+              ? 'border-[#9B978F] bg-white dark:bg-[#242124] shadow-xs'
               : 'border-black/5 dark:border-white/5 bg-white/60 dark:bg-[#242124]/60 hover:border-black/20 dark:hover:border-white/20'
           }`}
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 flex items-center justify-center shrink-0">
                   <Icons.Sun size={18} />
                 </div>
                 <div>
@@ -96,7 +96,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                   currentTheme === 'light'
-                    ? 'border-[#4F6CE8] bg-[#4F6CE8]'
+                    ? 'border-[#9B978F] bg-[#55524E]'
                     : 'border-zinc-300 dark:border-zinc-600'
                 }`}
               >
@@ -116,7 +116,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
             }}
             className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               currentTheme === 'light'
-                ? 'bg-[#4F6CE8] text-white'
+                ? 'bg-[#55524E] text-white'
                 : 'bg-black/5 dark:bg-white/5 text-[#242124] dark:text-white hover:bg-black/10'
             }`}
           >
@@ -136,14 +136,14 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
           onClick={() => handleSelectTheme('dark')}
           className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-4 ${
             currentTheme === 'dark'
-              ? 'border-[#4F6CE8] bg-white dark:bg-[#242124] shadow-xs'
+              ? 'border-[#9B978F] bg-white dark:bg-[#242124] shadow-xs'
               : 'border-black/5 dark:border-white/5 bg-white/60 dark:bg-[#242124]/60 hover:border-black/20 dark:hover:border-white/20'
           }`}
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-zinc-500/15 text-zinc-500 dark:text-zinc-400 flex items-center justify-center shrink-0">
                   <Icons.Moon size={18} />
                 </div>
                 <div>
@@ -159,7 +159,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                   currentTheme === 'dark'
-                    ? 'border-[#4F6CE8] bg-[#4F6CE8]'
+                    ? 'border-[#9B978F] bg-[#55524E]'
                     : 'border-zinc-300 dark:border-zinc-600'
                 }`}
               >
@@ -176,7 +176,7 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
             }}
             className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               currentTheme === 'dark'
-                ? 'bg-[#4F6CE8] text-white'
+                ? 'bg-[#55524E] text-white'
                 : 'bg-black/5 dark:bg-white/5 text-[#242124] dark:text-white hover:bg-black/10'
             }`}
           >

@@ -44,14 +44,14 @@ export default function AdminKamPortfolioModal({
               src={kam.avatar}
               name={kam.full_name}
               size="lg"
-              className="shrink-0 border-2 border-[#4F6CE8]/30 shadow-sm"
+              className="shrink-0 border-2 border-zinc-500/30 shadow-sm"
             />
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold text-[#242124] dark:text-white">
                   Portefeuille de {kam.full_name}
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] font-semibold text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-zinc-500/15 text-[#787570] font-semibold text-[10px]">
                   KAM Office
                 </span>
               </div>
@@ -79,14 +79,14 @@ export default function AdminKamPortfolioModal({
             <span className="text-base font-medium text-[#242124] dark:text-white">{accounts.length}</span>
           </div>
           <div className="p-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl flex flex-col gap-0.5">
-            <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 uppercase">Comptes Convertis</span>
-            <span className="text-base font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400 uppercase">Comptes Convertis</span>
+            <span className="text-base font-medium text-zinc-600 dark:text-zinc-400">
               {accounts.filter(a => a.is_converted || a.conversion_status === 'CONVERTED').length}
             </span>
           </div>
           <div className="p-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl flex flex-col gap-0.5">
-            <span className="text-[10px] font-medium text-[#4F6CE8] uppercase">CA Signé Portefeuille</span>
-            <span className="text-base font-medium text-[#4F6CE8]">
+            <span className="text-[10px] font-medium text-[#787570] uppercase">CA Signé Portefeuille</span>
+            <span className="text-base font-medium text-[#787570]">
               +{(kam.converted_amount || 0).toLocaleString()} $
             </span>
           </div>
@@ -125,7 +125,7 @@ export default function AdminKamPortfolioModal({
         <div className="flex-1 overflow-y-auto min-h-64 border border-black/5 dark:border-white/5 rounded-2xl">
           {loading ? (
             <div className="py-20 flex justify-center items-center">
-              <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
             </div>
           ) : filteredAccounts.length === 0 ? (
             <div className="py-16 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -156,7 +156,7 @@ export default function AdminKamPortfolioModal({
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           acc.segment === 'GRAND_COMPTE'
                             ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
-                            : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                            : 'bg-zinc-500/15 text-[#787570]'
                         }`}>
                           {acc.segment === 'GRAND_COMPTE' ? 'Grand Compte' : 'PME'}
                         </span>
@@ -167,7 +167,7 @@ export default function AdminKamPortfolioModal({
                       <td className="py-2.5 px-3">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           isConverted
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400'
                             : 'bg-black/5 dark:bg-white/10 text-[#6E6C67] dark:text-[#A1A1AA]'
                         }`}>
                           {isConverted ? 'Converti' : 'En prospection'}

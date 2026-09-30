@@ -180,7 +180,7 @@ export default function AdminCatalogView() {
           </button>
           <button
             onClick={handleOpenCreateOffer}
-            className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-2xl text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="primary-cta px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-2xl text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2"
           >
             <Icons.Plus size={14} />
             <span>Nouvelle Offre B2B</span>
@@ -202,7 +202,7 @@ export default function AdminCatalogView() {
           <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
             Catégories Métier
           </span>
-          <span className="text-2xl font-extrabold text-[#4F6CE8] mt-1">{b2bCategories.length}</span>
+          <span className="text-2xl font-extrabold text-[#787570] mt-1">{b2bCategories.length}</span>
           <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">Connectivité, Cloud, Cybersécurité, Mobile...</span>
         </div>
 
@@ -250,7 +250,7 @@ export default function AdminCatalogView() {
 
         {loading ? (
           <div className="py-16 flex justify-center">
-            <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
           </div>
         ) : b2bOffers.length === 0 ? (
           <div className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -272,7 +272,7 @@ export default function AdminCatalogView() {
                           {offer.service_id}
                         </span>
                       </div>
-                      <span className="text-[10px] text-[#4F6CE8] font-medium block mt-0.5">
+                      <span className="text-[10px] text-[#787570] font-medium block mt-0.5">
                         {offer.category}
                       </span>
                     </div>
@@ -314,7 +314,7 @@ export default function AdminCatalogView() {
                     href={offer.source_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[10px] text-[#6E6C67] hover:text-[#4F6CE8] transition-colors truncate max-w-[180px]"
+                    className="text-[10px] text-[#6E6C67] hover:text-[#787570] transition-colors truncate max-w-[180px]"
                   >
                     Documentation officielle ↗
                   </a>
@@ -329,7 +329,7 @@ export default function AdminCatalogView() {
                     </button>
                     <button
                       onClick={() => handleDeleteOffer(offer.service_id, offer.name)}
-                      className="p-1.5 hover:bg-red-500/10 text-[#6E6C67] hover:text-red-500 rounded-xl transition-colors cursor-pointer"
+                      className="p-1.5 hover:bg-zinc-500/10 text-[#6E6C67] hover:text-zinc-500 rounded-xl transition-colors cursor-pointer"
                       title="Supprimer l'offre"
                     >
                       <Icons.Trash2 size={14} />

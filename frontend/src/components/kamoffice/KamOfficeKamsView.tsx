@@ -100,7 +100,7 @@ export default function KamOfficeKamsView() {
                 onClick={() => handleUpdateKam(selectedKamDetail.id, { is_available: !selectedKamDetail.is_available })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5 ${
                   selectedKamDetail.is_available
-                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                    ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                     : 'bg-black/5 dark:bg-white/10 text-zinc-500'
                 }`}
               >
@@ -124,7 +124,7 @@ export default function KamOfficeKamsView() {
               src={selectedKamDetail.avatar}
               name={selectedKamDetail.full_name}
               size="xl"
-              className="border border-[#4F6CE8]/30 shadow-md shrink-0"
+              className="border border-zinc-500/30 shadow-md shrink-0"
             />
 
             <div className="flex-1 text-center sm:text-left">
@@ -132,7 +132,7 @@ export default function KamOfficeKamsView() {
                 <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
                   {selectedKamDetail.full_name}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#4F6CE8]/10 text-[#4F6CE8]">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-500/10 text-[#787570]">
                   {selectedKamDetail.kam_specialization === 'GRAND_COMPTE' ? 'Spécialiste Grands Comptes' : 'Spécialiste PME'}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function KamOfficeKamsView() {
 
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">CA Portefeuille</span>
-              <span className="text-xl font-extrabold text-[#4F6CE8]">
+              <span className="text-xl font-extrabold text-[#787570]">
                 {(selectedKamAccounts.reduce((sum, a) => sum + Number(a.annual_revenue || 0), 0) / 1_000_000).toFixed(1)}M$
               </span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Volume sous gestion</span>
@@ -176,7 +176,7 @@ export default function KamOfficeKamsView() {
 
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">Dossiers Convertis</span>
-              <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="text-xl font-extrabold text-zinc-600 dark:text-zinc-400">
                 {selectedKamAccounts.filter((a) => a.conversion_status === 'CONVERTED').length}
               </span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Contrats signés actifs</span>
@@ -184,7 +184,7 @@ export default function KamOfficeKamsView() {
 
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">Statut Opérationnel</span>
-              <span className={`text-sm font-extrabold ${selectedKamDetail.is_available ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500'}`}>
+              <span className={`text-sm font-extrabold ${selectedKamDetail.is_available ? 'text-zinc-600 dark:text-zinc-400' : 'text-zinc-500'}`}>
                 {selectedKamDetail.is_available ? "Actif & Disponible" : "Indisponible"}
               </span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Affectations autorisées</span>
@@ -225,11 +225,11 @@ export default function KamOfficeKamsView() {
                         <td className="py-3 px-3">
                           <button
                             onClick={() => setSelectedAccountForDetail(acc)}
-                            className="font-semibold text-zinc-900 dark:text-white hover:text-[#4F6CE8] dark:hover:text-[#4F6CE8] text-left transition-colors cursor-pointer flex items-center gap-1.5 group"
+                            className="font-semibold text-zinc-900 dark:text-white hover:text-[#787570] dark:hover:text-[#787570] text-left transition-colors cursor-pointer flex items-center gap-1.5 group"
                             title="Voir la fiche détaillée du compte"
                           >
                             <span className="group-hover:underline">{acc.name}</span>
-                            <Icons.ExternalLink size={12} className="opacity-0 group-hover:opacity-100 text-[#4F6CE8] transition-opacity" />
+                            <Icons.ExternalLink size={12} className="opacity-0 group-hover:opacity-100 text-[#787570] transition-opacity" />
                           </button>
                         </td>
                         <td className="py-3 px-3">
@@ -254,7 +254,7 @@ export default function KamOfficeKamsView() {
                         <td className="py-3 px-3 text-right">
                           <button
                             onClick={() => handleUnassignAccount(acc.id)}
-                            className="px-2.5 py-1 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-500/10 transition-colors cursor-pointer"
                           >
                             Désaffecter
                           </button>
@@ -311,7 +311,7 @@ export default function KamOfficeKamsView() {
 
             <button
               onClick={() => setIsCreateKamModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+              className="primary-cta px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <Icons.UserPlus size={14} />
               <span>Nouveau KAM</span>
@@ -324,7 +324,7 @@ export default function KamOfficeKamsView() {
               <div
                 key={kam.id}
                 onClick={() => setSelectedKamDetail(kam)}
-                className="group bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 hover:border-[#4F6CE8]/40 dark:hover:border-[#4F6CE8]/40 transition-all cursor-pointer flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md"
+                className="group bg-[#F6F5F2] dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 hover:border-zinc-500/40 dark:hover:border-zinc-500/40 transition-all cursor-pointer flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -334,7 +334,7 @@ export default function KamOfficeKamsView() {
                       size="md"
                     />
                     <div className="flex flex-col">
-                      <span className="font-bold text-sm text-zinc-900 dark:text-white group-hover:text-[#4F6CE8] transition-colors">
+                      <span className="font-bold text-sm text-zinc-900 dark:text-white group-hover:text-[#787570] transition-colors">
                         {kam.full_name}
                       </span>
                       <span className="text-[10px] font-mono text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -346,7 +346,7 @@ export default function KamOfficeKamsView() {
                   <span
                     className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                       kam.is_available
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                         : 'bg-black/5 dark:bg-white/10 text-zinc-500'
                     }`}
                   >
@@ -364,14 +364,14 @@ export default function KamOfficeKamsView() {
 
                   <div className="flex flex-col">
                     <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Volume Sous Gestion</span>
-                    <span className="font-extrabold text-xs text-[#4F6CE8]">
+                    <span className="font-extrabold text-xs text-[#787570]">
                       {(kam.total_portfolio_revenue_usd / 1_000_000).toFixed(1)}M$
                     </span>
                   </div>
 
                   <div className="flex flex-col">
                     <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Signatures</span>
-                    <span className="font-extrabold text-xs text-emerald-600 dark:text-emerald-400">
+                    <span className="font-extrabold text-xs text-zinc-600 dark:text-zinc-400">
                       {kam.converted_accounts_count}
                     </span>
                   </div>
@@ -382,7 +382,7 @@ export default function KamOfficeKamsView() {
                     Spécialité : {kam.kam_specialization === 'GRAND_COMPTE' ? 'Grands Comptes' : 'PME Stratégiques'}
                   </span>
 
-                  <span className="text-xs font-semibold text-[#4F6CE8] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                  <span className="text-xs font-semibold text-[#787570] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                     <span>Consulter Portefeuille</span>
                     <Icons.ChevronRight size={14} />
                   </span>

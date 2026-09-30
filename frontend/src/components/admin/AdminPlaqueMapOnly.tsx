@@ -116,9 +116,9 @@ export default function AdminPlaqueMapOnly({
         try {
           const geoJsonLayer = L.geoJSON(p.boundary_geojson, {
             style: {
-              color: '#4F6CE8',
+              color: '#787570',
               weight: 2,
-              fillColor: '#4F6CE8',
+              fillColor: '#787570',
               fillOpacity: 0.15,
             },
           });
@@ -138,10 +138,10 @@ export default function AdminPlaqueMapOnly({
         className: 'custom-admin-marker',
         html: `
           <div class="cursor-pointer group flex flex-col items-center select-none" style="transform: translate(-50%, -50%);">
-            <div class="px-2.5 py-1 rounded-xl bg-[#4F6CE8] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
+            <div class="px-2.5 py-1 rounded-xl bg-[#55524E] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
               <span>${p.code}</span>
             </div>
-            <div class="w-1.5 h-1.5 bg-[#4F6CE8] rounded-full mt-0.5"></div>
+            <div class="w-1.5 h-1.5 bg-[#55524E] rounded-full mt-0.5"></div>
           </div>
         `,
         iconSize: [0, 0],
@@ -162,7 +162,7 @@ export default function AdminPlaqueMapOnly({
   }, [plaques, onSelectPlaque]);
 
   return (
-    <div className="relative w-full h-[620px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#ECEAE5] dark:bg-[#242124]">
+    <div className="management-map relative w-full h-[620px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#ECEAE5] dark:bg-[#242124]">
       {/* Container de la carte */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
@@ -199,7 +199,7 @@ export default function AdminPlaqueMapOnly({
         <div className="absolute bottom-4 left-4 max-w-sm w-full bg-white/95 dark:bg-[#2D2A2D]/95 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-black/5 dark:border-white/5 z-10 animate-fade-in flex flex-col gap-2.5">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <span className="font-mono font-extrabold text-xs px-2 py-0.5 rounded-md bg-[#4F6CE8]/15 text-[#4F6CE8]">
+              <span className="font-mono font-extrabold text-xs px-2 py-0.5 rounded-md bg-zinc-500/15 text-[#787570]">
                 {activePlaque.code}
               </span>
               <h4 className="font-extrabold text-sm text-[#242124] dark:text-white mt-1">
@@ -221,7 +221,7 @@ export default function AdminPlaqueMapOnly({
           <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-black/5 dark:border-white/5">
             <div className="p-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl">
               <span className="text-[10px] text-[#787570] dark:text-[#9B978F] block">Comptes TPE</span>
-              <span className="font-extrabold text-[#4F6CE8] text-sm">
+              <span className="font-extrabold text-[#787570] text-sm">
                 {activePlaque.enterprises_count}
               </span>
             </div>
@@ -242,7 +242,7 @@ export default function AdminPlaqueMapOnly({
                 {activePlaque.assigned_salespersons_names.map((name, i) => (
                   <span
                     key={i}
-                    className="px-2 py-0.5 rounded-lg bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]"
+                    className="px-2 py-0.5 rounded-lg bg-zinc-500/10 text-[#787570] font-semibold text-[10px]"
                   >
                     {name}
                   </span>

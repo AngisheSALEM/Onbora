@@ -107,7 +107,7 @@ export default function AdminKamsTeamView() {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center">
-                    <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin mx-auto" />
+                    <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : kamsTeam.length === 0 ? (
@@ -134,14 +134,14 @@ export default function AdminKamsTeamView() {
                     <td className="py-3 px-3 font-medium text-[#242124] dark:text-white">
                       <button
                         onClick={() => handleOpenKamPortfolio(k)}
-                        className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-[#4F6CE8]/15 hover:text-[#4F6CE8] transition-colors cursor-pointer font-medium inline-flex items-center gap-1"
+                        className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-zinc-500/15 hover:text-[#787570] transition-colors cursor-pointer font-medium inline-flex items-center gap-1"
                         title="Inspecter les comptes gérés"
                       >
                         <span>{k.portfolio_count || 0} comptes</span>
                         <Icons.ChevronRight size={10} />
                       </button>
                     </td>
-                    <td className="py-3 px-3 font-medium text-[#4F6CE8]">
+                    <td className="py-3 px-3 font-medium text-[#787570]">
                       {k.converted_count || 0} convertis
                     </td>
                     <td className="py-3 px-3 font-medium text-[#242124] dark:text-white">

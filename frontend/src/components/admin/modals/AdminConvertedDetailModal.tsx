@@ -23,7 +23,7 @@ export default function AdminConvertedDetailModal({
             <span className={`text-[9px] font-medium uppercase px-2 py-0.5 rounded-full ${
               account.converted_by_entity === 'BACK_OFFICE'
                 ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
-                : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                : 'bg-zinc-500/15 text-[#787570]'
             }`}>
               {account.converted_by_entity === 'BACK_OFFICE' ? 'Converti par le Back-Office Terrain' : 'Converti par le KAM Office'}
             </span>
@@ -47,7 +47,7 @@ export default function AdminConvertedDetailModal({
           </div>
           <div>
             <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Offre Commerciale :</span>
-            <span className="text-xs font-medium text-[#4F6CE8]">
+            <span className="text-xs font-medium text-[#787570]">
               {account.converted_offer || "Fibre Entreprise Dédiée"}
             </span>
           </div>
@@ -79,7 +79,7 @@ export default function AdminConvertedDetailModal({
         <div className="flex justify-end pt-2">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-medium cursor-pointer hover:bg-[#3D5BD9] transition-all"
+            className="px-5 py-2 bg-[#55524E] text-white rounded-xl text-xs font-medium cursor-pointer hover:bg-[#55524E] transition-all"
           >
             Fermer
           </button>

@@ -82,7 +82,7 @@ export default function AdminManagerModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500 text-xs font-medium">
+          <div className="p-3 rounded-2xl bg-zinc-500/10 text-zinc-500 text-xs font-medium">
             {error}
           </div>
         )}
@@ -97,7 +97,7 @@ export default function AdminManagerModal({
                 value={form.first_name}
                 onChange={(e) => setForm({ ...form, first_name: e.target.value })}
                 placeholder="Ex: Alain"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -108,7 +108,7 @@ export default function AdminManagerModal({
                 value={form.last_name}
                 onChange={(e) => setForm({ ...form, last_name: e.target.value })}
                 placeholder="Ex: Mabiala"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -122,7 +122,7 @@ export default function AdminManagerModal({
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().trim() })}
                 placeholder="Ex: sup_kinshasa"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -133,7 +133,7 @@ export default function AdminManagerModal({
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="••••••••"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function AdminManagerModal({
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="alain@onbora.cg"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -157,7 +157,7 @@ export default function AdminManagerModal({
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 placeholder="+243810000000"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -171,7 +171,7 @@ export default function AdminManagerModal({
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
               placeholder={targetRole === 'SUPERVISOR' ? 'Ex: Direction Régionale Kinshasa' : 'Ex: Banques & Groupes Miniers Katanga'}
-              className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+              className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
             />
           </div>
 
@@ -203,7 +203,7 @@ export default function AdminManagerModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              className="primary-cta px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.CheckCircle size={14} />
               <span>{loading ? "Création en cours..." : "Créer le Compte"}</span>

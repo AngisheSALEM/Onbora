@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
 import { fetchAPI } from '@/lib/api';
+import KamAccountSignalsSheet, { AccountRadarDetail } from './KamAccountSignalsSheet';
 
 // ============================================================================
 // DATA TYPES
@@ -195,7 +196,26 @@ export default function KamPreCallView({
   const [error, setError] = useState<string | null>(null);
 
   // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance)
-  const [activeTab, setActiveTab] = useState<'brief' | 'details'>('brief');
+  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'churn' | 'upsell'>('brief');
+  const [radarResult, setRadarResult] = useState<{ accountId: string; data: AccountRadarDetail | null; error?: string } | null>(null);
+  const radarData = radarResult?.accountId === selectedAccountId ? radarResult.data : null;
+  const hasChurnRisk = !!radarData && ['MEDIUM', 'HIGH', 'CRITICAL'].includes(radarData.risk_level);
+  const hasUpsell = !!radarData?.upsell_opportunities?.length;
+  const visibleTab = (activeTab === 'churn' && !hasChurnRisk) || (activeTab === 'upsell' && !hasUpsell) ? 'brief' : activeTab;
+
+  useEffect(() => {
+    if (!selectedAccountId) return;
+    const controller = new AbortController();
+    const cleanId = String(selectedAccountId).replace('account-', '');
+    fetchAPI(`/api/kam/accounts/${cleanId}/radar/`, { signal: controller.signal })
+      .then((data: AccountRadarDetail) => {
+        if (!controller.signal.aborted) setRadarResult({ accountId: selectedAccountId, data });
+      })
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) setRadarResult({ accountId: selectedAccountId, data: null, error: err instanceof Error ? err.message : 'Impossible de charger les signaux du compte.' });
+      });
+    return () => controller.abort();
+  }, [selectedAccountId]);
 
   // Manual Editing States
   const [isEditing, setIsEditing] = useState(false);
@@ -466,11 +486,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
   const enterpriseTitle = briefingData?.enterprise_name || currentAccount?.account_name || "Entreprise";
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-6 md:p-10 select-none transition-colors duration-300">
+    <div className="flex-1 min-w-0 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-4 sm:p-6 md:p-10 select-none transition-colors duration-300">
       
       {/* 1. TOP HEADER: ONLY COMPANY NAME & CLEAN ACTIONS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/5 dark:border-white/5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {onBackToAccounts && (
             <button
               onClick={onBackToAccounts}
@@ -481,8 +501,8 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             </button>
           )}
 
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight break-words">
               {enterpriseTitle}
             </h1>
             {briefingData?.company?.province && (
@@ -494,8 +514,8 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
         </div>
 
         {/* Clean, discreet top actions */}
-        <div className="flex items-center gap-2">
-          {briefingData && (
+        <div className="flex items-center flex-wrap gap-2">
+          {briefingData && (visibleTab === 'brief' || visibleTab === 'details') && (
             <button
               onClick={() => {
                 if (isEditing) {
@@ -520,7 +540,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             <button
               onClick={() => handleSaveBrief(true)}
               disabled={isSaving}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              className="primary-cta px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             >
               {isSaving ? <Icons.RefreshCw size={13} className="animate-spin" /> : <Icons.Check size={13} />}
               <span>{isSaving ? "Mise à jour..." : "Enregistrer"}</span>
@@ -533,7 +553,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             title="Mettre à jour la synthèse et les solutions"
             className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
           >
-            <Icons.RefreshCw size={14} className={isSaving || loading ? "animate-spin text-[#4F6CE8]" : ""} />
+            <Icons.RefreshCw size={14} className={isSaving || loading ? "animate-spin text-[#787570]" : ""} />
           </button>
 
           <button
@@ -542,13 +562,13 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             title="Copier le document"
             className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
           >
-            {copied ? <Icons.Check size={14} className="text-emerald-500" /> : <Icons.Copy size={14} />}
+            {copied ? <Icons.Check size={14} className="text-zinc-500" /> : <Icons.Copy size={14} />}
           </button>
 
-          {onLaunchMeetingForAccount && briefingData && (
+          {onLaunchMeetingForAccount && (briefingData || currentAccount) && !isEditing && !error && (
             <button
-              onClick={() => onLaunchMeetingForAccount(briefingData.enterprise_id)}
-              className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
+              onClick={() => onLaunchMeetingForAccount(briefingData?.enterprise_id || currentAccount!.account_id || selectedAccountId.replace('account-', ''))}
+              className="primary-cta px-4 py-2 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
             >
               <Icons.Mic size={14} />
               <span>Démarrer RDV</span>
@@ -559,26 +579,26 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
 
       {/* Save Success Banner */}
       {saveSuccess && (
-        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2">
-          <Icons.Check size={14} className="text-emerald-600" />
+        <div className="mb-4 p-3 rounded-xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-800 dark:text-zinc-300 text-xs font-medium flex items-center gap-2">
+          <Icons.Check size={14} className="text-zinc-600" />
           <span>Synthèse et solutions recommandées mises à jour.</span>
         </div>
       )}
 
       {saveError && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center gap-2">
-          <Icons.AlertTriangle size={14} className="text-rose-600" />
+        <div className="mb-4 p-3 rounded-xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-800 dark:text-zinc-300 text-xs font-medium flex items-center gap-2">
+          <Icons.AlertTriangle size={14} className="text-zinc-600" />
           <span>{saveError}</span>
         </div>
       )}
 
       {/* 2. DISCREET TABS (Minimalist underline style, zero visual clutter) */}
-      {briefingData && !loading && !error && (
-        <div className="flex items-center gap-8 border-b border-black/5 dark:border-white/5 mb-6">
+      {(briefingData || currentAccount || radarData) && (
+        <nav aria-label="Sections du compte" className="flex items-center gap-6 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
           <button
             onClick={() => setActiveTab('brief')}
             className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
-              activeTab === 'brief'
+              visibleTab === 'brief'
                 ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
                 : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
             }`}
@@ -588,20 +608,29 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           <button
             onClick={() => setActiveTab('details')}
             className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
-              activeTab === 'details'
+              visibleTab === 'details'
                 ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
                 : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
             }`}
           >
             Faits & Vigilance
           </button>
-        </div>
+          {hasChurnRisk && (
+            <button type="button" onClick={() => { setActiveTab('churn'); setIsEditing(false); }} aria-current={visibleTab === 'churn' ? 'page' : undefined} className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${visibleTab === 'churn' ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}>Risques de churn</button>
+          )}
+          {hasUpsell && (
+            <button type="button" onClick={() => { setActiveTab('upsell'); setIsEditing(false); }} aria-current={visibleTab === 'upsell' ? 'page' : undefined} className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${visibleTab === 'upsell' ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}>Opportunités d’upsell</button>
+          )}
+        </nav>
       )}
+      {radarResult?.accountId === selectedAccountId && radarResult.error && <p role="alert" className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">Les risques et opportunités ne sont pas disponibles : {radarResult.error}</p>}
 
       {/* 3. LOADING & ERROR STATES */}
-      {loading ? (
+      {radarData && (visibleTab === 'churn' || visibleTab === 'upsell') ? (
+        <KamAccountSignalsSheet data={radarData} kind={visibleTab} />
+      ) : loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.RefreshCw size={28} className="animate-spin text-[#4F6CE8] mb-3" />
+          <Icons.RefreshCw size={28} className="animate-spin text-[#787570] mb-3" />
           <p className="text-xs text-zinc-500">Chargement...</p>
         </div>
       ) : error ? (
@@ -609,7 +638,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           <p className="text-xs text-zinc-500">{error}</p>
           <button
             onClick={() => fetchBriefing(selectedAccountId)}
-            className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
+            className="primary-cta px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
           >
             Réessayer
           </button>
@@ -620,7 +649,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           {/* ========================================================================= */}
           {/* TAB 1: SINGLE CARD (LIKE A WORD DOCUMENT) - RÉSUMÉ ET SOLUTIONS            */}
           {/* ========================================================================= */}
-          {activeTab === 'brief' && (
+          {visibleTab === 'brief' && (
             <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 text-zinc-800 dark:text-zinc-200 animate-in fade-in duration-150">
               
               {/* Executive Summary (No title, flows naturally like a page) */}
@@ -631,7 +660,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                       value={editOverview}
                       onChange={(e) => setEditOverview(e.target.value)}
                       rows={7}
-                      className="w-full p-3 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-[#4F6CE8] leading-relaxed resize-y"
+                      className="w-full p-3 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-[#9B978F] leading-relaxed resize-y"
                       placeholder="Saisissez la synthèse..."
                     />
                     <p className="text-[11px] text-zinc-400">
@@ -658,7 +687,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     <button
                       onClick={() => handleSaveBrief(true)}
                       disabled={isSaving}
-                      className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
                       <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
@@ -695,7 +724,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                           />
                           <button
                             onClick={() => setEditSolutions(editSolutions.filter((_, i) => i !== idx))}
-                            className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                            className="p-1.5 text-zinc-400 hover:text-zinc-500 cursor-pointer"
                             title="Supprimer"
                           >
                             <Icons.Trash2 size={14} />
@@ -724,7 +753,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                         <button
                           type="button"
                           onClick={() => handleSearchCatalog(newSolName)}
-                          className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
+                          className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
                         >
                           <Icons.Search size={12} />
                           <span>Parcourir le catalogue</span>
@@ -745,7 +774,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                               if (newSolName.trim().length > 0) setShowCatalogSuggestions(true);
                             }}
                             placeholder="Tapez le nom d'une solution (ex: Fibre, SD-WAN, CyberSOC)..."
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none focus:ring-2 focus:ring-[#9B978F]"
                           />
 
                           {/* Search Button Next to Input */}
@@ -776,7 +805,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                                       {item.description}
                                     </div>
                                   </div>
-                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0 font-semibold">
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 shrink-0 font-semibold">
                                     {item.category}
                                   </span>
                                 </button>
@@ -853,7 +882,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                         </div>
 
                         {sol.sla && (
-                          <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
+                          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 shrink-0 self-start sm:self-auto">
                             {sol.sla}
                           </span>
                         )}
@@ -869,7 +898,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           {/* ========================================================================= */}
           {/* TAB 2: SINGLE CLEAN CARD - FAITS, VIGILANCE ET MANQUES                    */}
           {/* ========================================================================= */}
-          {activeTab === 'details' && (
+          {visibleTab === 'details' && (
             <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 space-y-8 animate-in fade-in duration-150">
               
               {/* Faits clés */}
@@ -894,7 +923,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                         />
                         <button
                           onClick={() => setEditKeyFacts(editKeyFacts.filter((_, i) => i !== idx))}
-                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                          className="p-1.5 text-zinc-400 hover:text-zinc-500 cursor-pointer"
                         >
                           <Icons.Trash2 size={14} />
                         </button>
@@ -966,7 +995,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                         />
                         <button
                           onClick={() => setEditGaps(editGaps.filter((_, i) => i !== idx))}
-                          className="p-1.5 text-zinc-400 hover:text-rose-500 cursor-pointer"
+                          className="p-1.5 text-zinc-400 hover:text-zinc-500 cursor-pointer"
                         >
                           <Icons.Trash2 size={14} />
                         </button>
@@ -999,7 +1028,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     {(briefingData.ai_summary?.gaps || []).length > 0 ? (
                       (briefingData.ai_summary?.gaps || []).map((gap, idx) => (
                         <li key={idx} className="flex items-start gap-2.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 shrink-0 mt-1.5" />
                           <span className="leading-relaxed">{gap}</span>
                         </li>
                       ))
@@ -1030,7 +1059,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:underline text-blue-600 dark:text-blue-400 truncate max-w-sm inline-flex items-center gap-1"
+                            className="hover:underline text-zinc-600 dark:text-zinc-400 truncate max-w-sm inline-flex items-center gap-1"
                           >
                             <span>{item.title || item.publisher}</span>
                             <Icons.ExternalLink size={10} />
@@ -1056,7 +1085,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           <div className="bg-white dark:bg-[#282528] rounded-2xl w-full max-w-xl p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
               <div className="flex items-center gap-2">
-                <Icons.Search size={16} className="text-[#4F6CE8]" />
+                <Icons.Search size={16} className="text-[#787570]" />
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                   Rechercher dans le Catalogue Orange Business
                 </h3>
@@ -1080,7 +1109,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     if (e.key === 'Enter') handleSearchCatalog(catalogModalQuery);
                   }}
                   placeholder="Rechercher (ex: Fibre, SD-WAN, Datacenter, CyberSOC, VoIP)..."
-                  className="w-full px-4 py-2.5 pl-9 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none focus:ring-2 focus:ring-[#4F6CE8]"
+                  className="w-full px-4 py-2.5 pl-9 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] text-xs outline-none focus:ring-2 focus:ring-[#9B978F]"
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
                   <Icons.Search size={14} />
@@ -1089,7 +1118,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               <button
                 onClick={() => handleSearchCatalog(catalogModalQuery)}
                 disabled={isSearchingCatalog}
-                className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-semibold rounded-xl cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2.5 bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold rounded-xl cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shrink-0"
               >
                 {isSearchingCatalog ? <Icons.RefreshCw size={13} className="animate-spin" /> : <Icons.Search size={13} />}
                 <span>Chercher</span>
@@ -1100,7 +1129,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             <div className="flex-1 overflow-y-auto divide-y divide-black/5 dark:divide-white/5 space-y-2 pr-1">
               {isSearchingCatalog ? (
                 <div className="py-8 text-center text-xs text-zinc-400">
-                  <Icons.RefreshCw size={20} className="animate-spin text-[#4F6CE8] mx-auto mb-2" />
+                  <Icons.RefreshCw size={20} className="animate-spin text-[#787570] mx-auto mb-2" />
                   <span>Recherche dans l&apos;index catalogue...</span>
                 </div>
               ) : catalogSearchResults.length > 0 ? (
@@ -1117,7 +1146,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     >
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 font-semibold">
                             {offerCat}
                           </span>
                           <strong className="text-zinc-900 dark:text-white font-bold">
@@ -1127,7 +1156,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                         <p className="text-[11px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
                           {offerDesc}
                         </p>
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block">
+                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium block">
                           {offerSla}
                         </span>
                       </div>
@@ -1141,7 +1170,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                             sla: offerSla,
                           })
                         }
-                        className="px-3 py-1.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-lg text-[11px] font-bold cursor-pointer shrink-0 transition-all"
+                        className="px-3 py-1.5 bg-[#55524E] hover:bg-[#55524E] active:scale-95 text-white rounded-lg text-[11px] font-bold cursor-pointer shrink-0 transition-all"
                       >
                         Sélectionner
                       </button>

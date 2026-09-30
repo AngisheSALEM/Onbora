@@ -84,7 +84,7 @@ export default function Pagination({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center flex-wrap gap-1">
         {/* Précédent */}
         <button
           type="button"
@@ -119,7 +119,7 @@ export default function Pagination({
                 aria-current={isActive ? 'page' : undefined}
                 className={`min-w-[32px] h-8 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
                   isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-none font-bold'
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 shadow-none font-bold'
                     : 'bg-white dark:bg-[#2D2A2D] text-zinc-700 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 border border-black/5 dark:border-white/5'
                 }`}
               >

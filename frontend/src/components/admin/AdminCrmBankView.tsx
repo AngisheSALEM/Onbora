@@ -96,7 +96,7 @@ export default function AdminCrmBankView() {
 
         {loading ? (
           <div className="py-16 flex justify-center">
-            <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
           </div>
         ) : enterprises.length === 0 ? (
           <div className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -116,7 +116,7 @@ export default function AdminCrmBankView() {
                         ent.segment === 'GRAND_COMPTE'
                           ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white font-medium'
                           : ent.segment === 'PME'
-                          ? 'bg-[#4F6CE8]/15 text-[#4F6CE8] font-medium'
+                          ? 'bg-zinc-500/15 text-[#787570] font-medium'
                           : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] font-medium'
                       }`}
                     >
@@ -144,7 +144,7 @@ export default function AdminCrmBankView() {
                         className={`text-[9px] font-medium px-2 py-0.5 rounded-full inline-block ${
                           ent.assigned_entity === 'BACK_OFFICE'
                             ? 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
-                            : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                            : 'bg-zinc-500/15 text-[#787570]'
                         }`}
                       >
                         {ent.assigned_entity === 'BACK_OFFICE' ? 'Back-Office Terrain' : 'KAM Office'}

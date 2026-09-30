@@ -79,12 +79,12 @@ class ChurnRadarService:
 
         # 3. RÈGLE : Insatisfaction client dans les rapports ou niveau de douleur
         pain = getattr(enterprise, 'pain_level', '')
-        has_pain = pain in ['HIGH', 'CRITICAL']
+        has_pain = pain in ['HIGH', 'CRITICAL', 'Critique']
         if not has_pain:
             # Vérification des derniers rapports de visite
             recent_reports = enterprise.kam_visit_reports.all()[:3]
             for rep in recent_reports:
-                notes = (rep.client_feedback or rep.general_notes or '').lower()
+                notes = (rep.executive_summary or rep.raw_transcript or '').lower()
                 if any(w in notes for w in ['insatisfaction', 'mécontent', 'panne', 'coupure', 'rupture', 'dégradation', 'litige']):
                     has_pain = True
                     break
@@ -207,8 +207,8 @@ class ChurnRadarService:
 
                 notes_list = [f"Secteur: {enterprise.sector or 'B2B'}", f"Opérateur actuel: {enterprise.current_operator or 'Non renseigné'}"]
                 for r in enterprise.kam_visit_reports.all()[:2]:
-                    if r.client_feedback:
-                        notes_list.append(f"Rapport: {r.client_feedback}")
+                    if r.executive_summary:
+                        notes_list.append(f"Rapport: {r.executive_summary}")
                 notes = "\n".join(notes_list)
 
                 inp = ChurnRadarInput(

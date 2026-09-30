@@ -31,9 +31,9 @@ const DOT_SIZE_CLASSES = {
 };
 
 const STATUS_COLORS: Record<ActivityStatus, string> = {
-  AVAILABLE: 'bg-emerald-500',
-  CLIENT_MEETING: 'bg-amber-500',
-  IN_MEETING: 'bg-[#4F6CE8]',
+  AVAILABLE: 'bg-zinc-500',
+  CLIENT_MEETING: 'bg-zinc-500',
+  IN_MEETING: 'bg-[#55524E]',
   UNAVAILABLE: 'bg-zinc-400',
 };
 
@@ -80,7 +80,7 @@ export default function UserAvatar({
   return (
     <div className={`relative inline-flex items-center justify-center shrink-0 rounded-2xl overflow-visible select-none ${className}`}>
       <div className={`relative flex items-center justify-center rounded-2xl overflow-hidden font-extrabold border border-black/5 dark:border-white/5 ${SIZE_CLASSES[size]} ${
-        hasRealPhoto ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-white' : 'bg-[#4F6CE8]/12 dark:bg-[#4F6CE8]/20 text-[#4F6CE8] dark:text-[#7C97F8]'
+        hasRealPhoto ? 'bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-white' : 'bg-zinc-500/12 dark:bg-zinc-500/20 text-[#787570] dark:text-[#787570]'
       }`}>
         {hasRealPhoto ? (
           <img

@@ -131,7 +131,7 @@ export default function KamOfficeReportsView() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-200 border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
             title="Actualiser les rapports"
           >
-            <Icons.RefreshCw size={13} className={loadingKamReports ? 'animate-spin text-[#4F6CE8]' : ''} />
+            <Icons.RefreshCw size={13} className={loadingKamReports ? 'animate-spin text-[#787570]' : ''} />
             <span>Actualiser</span>
           </button>
           <span className="text-xs font-semibold text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -160,7 +160,7 @@ export default function KamOfficeReportsView() {
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
                       <span>Chargement des rapports de visite...</span>
                     </div>
                   </td>
@@ -188,10 +188,10 @@ export default function KamOfficeReportsView() {
                     <td className="py-2.5 px-3 whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         report.meeting_type === 'PHYSICAL'
-                          ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                          ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                           : report.meeting_type === 'GOOGLE_MEET'
-                          ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300'
-                          : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                          ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
+                          : 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                       }`}>
                         {report.meeting_type_label || (
                           report.meeting_type === 'PHYSICAL' ? 'Visite Physique' :
@@ -216,7 +216,7 @@ export default function KamOfficeReportsView() {
                         {report.executive_summary || 'Synthèse non disponible'}
                       </p>
                       {report.bant_scores?.total !== undefined && (
-                        <span className="text-[11px] font-mono text-[#4F6CE8] font-bold block mt-0.5">
+                        <span className="text-[11px] font-mono text-[#787570] font-bold block mt-0.5">
                           Score BANT : {report.bant_scores.total}/100
                         </span>
                       )}
@@ -225,11 +225,11 @@ export default function KamOfficeReportsView() {
                     <td className="py-3.5 px-3">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                         report.conversion_status === 'CONVERTED'
-                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                          ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                           : report.conversion_status === 'IN_NEGOTIATION'
-                          ? 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                          ? 'bg-zinc-500/15 text-[#787570]'
                           : report.conversion_status === 'LOST'
-                          ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                          ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                           : 'bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300'
                       }`}>
                         {report.conversion_status === 'CONVERTED' ? 'Converti' :
@@ -245,7 +245,7 @@ export default function KamOfficeReportsView() {
                     <td className="py-3.5 px-3 text-right">
                       <button
                         onClick={() => setSelectedReportDetail(report)}
-                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#4F6CE8] border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#787570] border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
                       >
                         Consulter
                       </button>

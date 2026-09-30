@@ -133,7 +133,7 @@ export default function BackofficePagination({
                   onClick={() => onPageChange(pageNum)}
                   className={`min-w-8 h-8 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
                     isActive
-                      ? 'bg-[#4F6CE8] text-white shadow-xs'
+                      ? 'bg-[#55524E] text-white shadow-xs'
                       : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-black/5 dark:border-white/5'
                   }`}
                 >

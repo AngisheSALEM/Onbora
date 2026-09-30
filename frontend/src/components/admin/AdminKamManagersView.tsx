@@ -94,7 +94,7 @@ export default function AdminKamManagersView() {
             setModalError(null);
             setIsModalOpen(true);
           }}
-          className="px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-2xl text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2 shrink-0"
+          className="primary-cta px-4 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-2xl text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2 shrink-0"
         >
           <Icons.UserPlus size={14} />
           <span>Nouveau Gérant KAM</span>
@@ -117,7 +117,7 @@ export default function AdminKamManagersView() {
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center">
-                    <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin mx-auto" />
+                    <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : kamManagers.length === 0 ? (
@@ -149,7 +149,7 @@ export default function AdminKamManagersView() {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                           km.is_active
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400'
                             : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
                         }`}
                       >

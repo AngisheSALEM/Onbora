@@ -53,7 +53,7 @@ export default function AdminImportOffersModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500 text-xs font-medium">
+          <div className="p-3 rounded-2xl bg-zinc-500/10 text-zinc-500 text-xs font-medium">
             {error}
           </div>
         )}
@@ -67,7 +67,7 @@ export default function AdminImportOffersModal({
               value={rawJson}
               onChange={(e) => setRawJson(e.target.value)}
               placeholder={`{\n  "schema_version": "1.0",\n  "catalog_version": "custom-catalog-2026",\n  "status": "approved",\n  "services": [\n    {\n      "service_id": "fibre_pro",\n      "name": "Fibre Pro",\n      "category": "Internet fixe et réseaux",\n      ...\n    }\n  ]\n}`}
-              className="px-3.5 py-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl font-mono text-[11px] focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 leading-relaxed"
+              className="px-3.5 py-3 bg-[#F6F5F2] dark:bg-[#242124] rounded-2xl font-mono text-[11px] focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0 leading-relaxed"
             />
           </div>
 
@@ -82,7 +82,7 @@ export default function AdminImportOffersModal({
             <button
               type="submit"
               disabled={importing}
-              className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              className="primary-cta px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.CheckCircle size={14} />
               <span>{importing ? "Validation & Injection..." : "Valider & Synchroniser"}</span>

@@ -49,7 +49,7 @@ export default function BackofficeAccountDetailModal({
             <span className="font-semibold text-[#242124] dark:text-white">
               {account.contact_name || 'Direction'}
             </span>
-            <span className="text-[10px] text-[#4F6CE8]">{account.contact_phone || 'Aucun numéro'}</span>
+            <span className="text-[10px] text-[#787570]">{account.contact_phone || 'Aucun numéro'}</span>
           </div>
           <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
             <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Commercial Affecté</span>
@@ -62,7 +62,7 @@ export default function BackofficeAccountDetailModal({
         <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1 text-xs">
           <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Solution Proposée & Concurrence</span>
           <div className="flex items-center justify-between mt-1">
-            <span className="font-semibold text-[#4F6CE8]">{account.recommended_solution || 'Pack Fibre TPE'}</span>
+            <span className="font-semibold text-[#787570]">{account.recommended_solution || 'Pack Fibre TPE'}</span>
             <span className="text-[10px] text-zinc-500 font-medium">
               Actuel : {account.current_operator || 'Inconnu'}
             </span>
@@ -72,7 +72,7 @@ export default function BackofficeAccountDetailModal({
         <div className="pt-2 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-2xl bg-[#4F6CE8] text-white text-xs font-semibold cursor-pointer"
+            className="px-4 py-2 rounded-2xl bg-[#55524E] text-white text-xs font-semibold cursor-pointer"
           >
             Fermer
           </button>

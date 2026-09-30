@@ -55,7 +55,7 @@ export default function BackofficePlaqueAssignModal({
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 w-full max-w-lg border border-black/5 dark:border-white/5 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-hidden">
         <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-zinc-500/10 text-[#787570] flex items-center justify-center">
               <Icons.UserPlus size={18} />
             </div>
             <div>
@@ -76,14 +76,14 @@ export default function BackofficePlaqueAssignModal({
         </div>
 
         {successMsg && (
-          <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 shrink-0">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-2 shrink-0">
             <Icons.CheckCircle size={15} />
             <span>{successMsg}</span>
           </div>
         )}
 
         {errorMsg && (
-          <div className="p-3 rounded-2xl bg-red-500/15 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2 shrink-0">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-2 shrink-0">
             <Icons.AlertCircle size={15} />
             <span>{errorMsg}</span>
           </div>
@@ -122,7 +122,7 @@ export default function BackofficePlaqueAssignModal({
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleSalesperson(sp.id)}
-                    className="w-4 h-4 rounded text-[#4F6CE8] focus:ring-[#4F6CE8] border-zinc-300 dark:border-zinc-600 cursor-pointer"
+                    className="w-4 h-4 rounded text-[#787570] focus:ring-[#9B978F] border-zinc-300 dark:border-zinc-600 cursor-pointer"
                   />
                 </label>
               );
@@ -146,7 +146,7 @@ export default function BackofficePlaqueAssignModal({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold cursor-pointer transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+              className="primary-cta px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold cursor-pointer transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
             >
               <Icons.Check size={14} className={saving ? "animate-spin" : ""} />
               <span>{saving ? "Enregistrement..." : "Valider l'Affectation"}</span>

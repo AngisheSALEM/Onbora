@@ -130,7 +130,7 @@ export default function AdminConvertedView() {
           <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
             Signé par le KAM Office
           </span>
-          <span className="text-2xl font-extrabold text-[#4F6CE8] mt-1">
+          <span className="text-2xl font-extrabold text-[#787570] mt-1">
             {convertedSummary.kam_office_signed_amount_usd.toLocaleString()} $
           </span>
           <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -152,7 +152,7 @@ export default function AdminConvertedView() {
 
         {loading ? (
           <div className="py-12 flex justify-center">
-            <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
           </div>
         ) : convertedAccounts.length === 0 ? (
           <div className="py-12 text-center text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -172,14 +172,14 @@ export default function AdminConvertedView() {
                       className={`w-9 h-9 rounded-xl flex items-center justify-center font-medium text-xs shrink-0 ${
                         acc.converted_by_entity === 'BACK_OFFICE'
                           ? 'bg-black/5 dark:bg-white/10 text-[#242124] dark:text-white'
-                          : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                          : 'bg-zinc-500/15 text-[#787570]'
                       }`}
                     >
                       {acc.converted_by_entity === 'BACK_OFFICE' ? 'BO' : 'KAM'}
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-[#242124] dark:text-white group-hover:text-[#4F6CE8] transition-colors">
+                        <span className="text-xs font-medium text-[#242124] dark:text-white group-hover:text-[#787570] transition-colors">
                           {acc.name}
                         </span>
                         <span className="text-[9px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase">

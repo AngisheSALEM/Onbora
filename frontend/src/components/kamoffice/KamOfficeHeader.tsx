@@ -70,8 +70,8 @@ export default function KamOfficeHeader({ onRefresh, loading }: KamOfficeHeaderP
         <div
           className={`p-3 rounded-2xl text-xs font-semibold flex items-center gap-2 transition-all ${
             notification.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-              : 'bg-red-500/10 text-red-500 border border-red-500/20'
+              ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20'
+              : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'
           }`}
         >
           {notification.type === 'success' ? (

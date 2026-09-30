@@ -13,12 +13,12 @@ function KamShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans antialiased overflow-hidden select-none transition-colors duration-300">
       <KamSidebar unreadSignalsCount={visits.length > 0 ? 1 : 0} />
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         <KamHeader />
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="flex flex-col items-center gap-3">
-              <Icons.Sparkles size={32} className="animate-spin text-[#4F6CE8]" />
+              <Icons.Sparkles size={32} className="animate-spin text-zinc-500" />
               <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 Chargement de votre portefeuille de comptes assignés...
               </span>
@@ -27,7 +27,7 @@ function KamShell({ children }: { children: React.ReactNode }) {
         ) : error ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="p-8 max-w-md bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 text-center space-y-3">
-              <Icons.AlertTriangle size={32} className="text-rose-500 mx-auto" />
+              <Icons.AlertTriangle size={32} className="text-zinc-500 mx-auto" />
               <h3 className="font-extrabold text-sm text-zinc-900 dark:text-white">Portefeuille indisponible</h3>
               <p className="text-xs text-zinc-500">{error}</p>
               <button
@@ -39,7 +39,7 @@ function KamShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 min-w-0 flex overflow-hidden">
             {children}
           </div>
         )}

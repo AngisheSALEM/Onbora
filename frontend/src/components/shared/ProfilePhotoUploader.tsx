@@ -148,7 +148,7 @@ export default function ProfilePhotoUploader({
       {title && (
         <div>
           <h4 className="text-xs font-semibold text-[#242124] dark:text-white flex items-center gap-1.5">
-            <Icons.Camera size={14} className="text-[#4F6CE8]" />
+            <Icons.Camera size={14} className="text-[#787570]" />
             <span>{title}</span>
           </h4>
           {description && (
@@ -161,14 +161,14 @@ export default function ProfilePhotoUploader({
 
       {/* Messages de feedback */}
       {successMsg && (
-        <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-medium flex items-center gap-2 animate-fade-in">
+        <div className="p-2.5 rounded-xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-700 dark:text-zinc-300 text-xs font-medium flex items-center gap-2 animate-fade-in">
           <Icons.CheckCircle size={14} className="shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-2 animate-fade-in">
+        <div className="p-2.5 rounded-xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-700 dark:text-zinc-300 text-xs font-medium flex items-center gap-2 animate-fade-in">
           <Icons.AlertCircle size={14} className="shrink-0" />
           <span>{errorMsg}</span>
         </div>
@@ -199,7 +199,7 @@ export default function ProfilePhotoUploader({
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             aria-label="Changer la photo"
-            className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-[#4F6CE8] text-white shadow-md hover:bg-[#3D5BD9] transition-all cursor-pointer disabled:opacity-50"
+            className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-[#55524E] text-white shadow-md hover:bg-[#55524E] transition-all cursor-pointer disabled:opacity-50"
             title="Changer la photo"
           >
             <Icons.Camera size={12} />
@@ -214,8 +214,8 @@ export default function ProfilePhotoUploader({
           onClick={() => fileInputRef.current?.click()}
           className={`flex-1 w-full p-3.5 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center ${
             isDragging
-              ? 'border-[#4F6CE8] bg-[#4F6CE8]/10'
-              : 'border-black/10 dark:border-white/10 hover:border-[#4F6CE8]/50 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-[#4F6CE8]/5'
+              ? 'border-[#9B978F] bg-zinc-500/10'
+              : 'border-black/10 dark:border-white/10 hover:border-zinc-500/50 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-zinc-500/5'
           }`}
         >
           <input
@@ -226,7 +226,7 @@ export default function ProfilePhotoUploader({
             className="hidden"
           />
           <div className="flex items-center gap-2 text-xs font-semibold text-[#242124] dark:text-white">
-            <Icons.Upload size={14} className="text-[#4F6CE8]" />
+            <Icons.Upload size={14} className="text-[#787570]" />
             <span>{isDragging ? "Déposez l'image ici" : "Cliquez ou glissez une photo ici"}</span>
           </div>
           <p className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] mt-0.5">
@@ -240,7 +240,7 @@ export default function ProfilePhotoUploader({
             type="button"
             onClick={handleReset}
             disabled={isUploading}
-            className="px-3 py-2.5 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA] transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+            className="px-3 py-2.5 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-zinc-500/10 hover:text-zinc-600 dark:hover:text-zinc-400 text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA] transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
             title="Supprimer la photo et utiliser la silhouette par défaut"
           >
             <Icons.Trash size={13} />

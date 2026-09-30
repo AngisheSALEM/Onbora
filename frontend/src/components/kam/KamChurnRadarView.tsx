@@ -112,7 +112,7 @@ Argumentaire :
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#4F6CE8]/10 text-[#4F6CE8]">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-500/10 text-[#787570]">
                 <Icons.AlertTriangle size={12} />
                 Radar Proactif
               </span>
@@ -130,7 +130,7 @@ Argumentaire :
             disabled={loading}
             className="p-2.5 bg-[#FFFFFF] dark:bg-[#2F2C30] hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D] text-zinc-700 dark:text-zinc-200 rounded-2xl transition-colors cursor-pointer self-start md:self-auto"
           >
-            <Icons.RefreshCw size={16} className={loading ? "animate-spin text-[#4F6CE8]" : ""} />
+            <Icons.RefreshCw size={16} className={loading ? "animate-spin text-[#787570]" : ""} />
           </button>
         </div>
 
@@ -140,14 +140,14 @@ Argumentaire :
             onClick={() => setActiveTab('CHURN')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'CHURN'
-                ? 'bg-[#4F6CE8] text-white shadow-none'
+                ? 'bg-[#55524E] text-white shadow-none'
                 : 'bg-[#FFFFFF] dark:bg-[#2F2C30] text-zinc-700 dark:text-zinc-300 hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D]'
             }`}
           >
             <Icons.AlertTriangle size={15} />
             <span>Risques d&apos;abandon ({radarData?.churn_alerts.length || 0})</span>
             {radarData && radarData.critical_churn_count > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-[#EF4444] text-white text-[10px]">
+              <span className="px-1.5 py-0.2 rounded-full bg-zinc-600 text-white text-[10px]">
                 {radarData.critical_churn_count} critiques
               </span>
             )}
@@ -157,14 +157,14 @@ Argumentaire :
             onClick={() => setActiveTab('UPSELL')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'UPSELL'
-                ? 'bg-[#4F6CE8] text-white shadow-none'
+                ? 'bg-[#55524E] text-white shadow-none'
                 : 'bg-[#FFFFFF] dark:bg-[#2F2C30] text-zinc-700 dark:text-zinc-300 hover:bg-[#ECEAE5] dark:hover:bg-[#3B373D]'
             }`}
           >
             <Icons.TrendingUp size={15} />
             <span>Opportunités de Vente additionnelle ({radarData?.upsell_opportunities.length || 0})</span>
             {radarData && (
-              <span className="px-2 py-0.5 rounded-full bg-[#10B981]/10 text-[#10B981] text-[10px] font-extrabold">
+              <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 text-[10px] font-extrabold">
                 +{(radarData.total_upsell_potential_mrr || 0).toLocaleString('fr-FR')} $/mois
               </span>
             )}
@@ -175,14 +175,14 @@ Argumentaire :
       {/* 2. MAIN CONTENT AREA */}
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.Sparkles size={36} className="animate-spin text-[#4F6CE8] mb-3" />
+          <Icons.Sparkles size={36} className="animate-spin text-[#787570] mb-3" />
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
             Analyse des signaux faibles sur le portefeuille...
           </span>
         </div>
       ) : error ? (
         <div className="p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#2F2C30] text-center max-w-md mx-auto my-auto space-y-3">
-          <Icons.AlertTriangle size={32} className="text-[#EF4444] mx-auto" />
+          <Icons.AlertTriangle size={32} className="text-zinc-600 dark:text-zinc-300 mx-auto" />
           <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Erreur radar</h4>
           <p className="text-xs text-zinc-500">{error}</p>
         </div>
@@ -191,7 +191,7 @@ Argumentaire :
         <div className="space-y-4">
           {totalChurnItems === 0 ? (
             <div className="p-12 text-center bg-[#FFFFFF] dark:bg-[#2F2C30] rounded-3xl space-y-2">
-              <Icons.CheckCircle size={32} className="text-[#10B981] mx-auto" />
+              <Icons.CheckCircle size={32} className="text-zinc-600 dark:text-zinc-300 mx-auto" />
               <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Aucun risque critique détecté</h4>
               <p className="text-xs text-zinc-500">Tous vos comptes sont sous surveillance nominale.</p>
             </div>
@@ -204,7 +204,7 @@ Argumentaire :
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-[#EF4444]/10 text-[#EF4444] flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-2xl bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
                         <Icons.AlertTriangle size={20} />
                       </div>
                       <div>
@@ -212,7 +212,7 @@ Argumentaire :
                           <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
                             {alert.enterprise_name}
                           </h3>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EF4444]/10 text-[#EF4444] uppercase tracking-wider">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
                             {alert.churn_risk_level === 'CRITICAL' ? 'Risque Critique' : 'Risque Élevé'}
                           </span>
                         </div>
@@ -242,7 +242,7 @@ Argumentaire :
                           key={idx}
                           className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
                           <span>{sig}</span>
                         </div>
                       ))}
@@ -282,7 +282,7 @@ Argumentaire :
         <div className="space-y-4">
           {totalUpsellItems === 0 ? (
             <div className="p-12 text-center bg-[#FFFFFF] dark:bg-[#2F2C30] rounded-3xl space-y-2">
-              <Icons.TrendingUp size={32} className="text-[#4F6CE8] mx-auto" />
+              <Icons.TrendingUp size={32} className="text-[#787570] mx-auto" />
               <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Aucune opportunité disponible</h4>
               <p className="text-xs text-zinc-500">Les opportunités d&apos;expansion apparaîtront ici.</p>
             </div>
@@ -298,17 +298,17 @@ Argumentaire :
                       <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
                         {opp.enterprise_name}
                       </h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8]">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570]">
                         {opp.sector}
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#10B981]/10 text-[#10B981]">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-300">
                         Confiance {opp.confidence_score}%
                       </span>
                     </div>
 
                     <div className="text-xs text-zinc-700 dark:text-zinc-300">
                       <strong className="text-zinc-900 dark:text-white">Solution d&apos;expansion recommandée : </strong>
-                      <span className="text-[#4F6CE8] font-bold">{opp.target_solution}</span>
+                      <span className="text-[#787570] font-bold">{opp.target_solution}</span>
                     </div>
 
                     <p className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -324,7 +324,7 @@ Argumentaire :
                     <span className="text-[10px] font-bold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider block">
                       Gain MRR Estimé
                     </span>
-                    <span className="text-base font-extrabold text-[#10B981]">
+                    <span className="text-base font-extrabold text-zinc-600 dark:text-zinc-300">
                       +{opp.potential_additional_mrr_usd.toLocaleString('fr-FR')} $/mois
                     </span>
                   </div>

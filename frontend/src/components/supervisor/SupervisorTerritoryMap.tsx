@@ -177,16 +177,16 @@ export default function SupervisorTerritoryMap({
 
     if (drawnPoints.length >= 3) {
       const polygon = L.polygon(drawnPoints, {
-        color: '#4F6CE8',
+        color: '#787570',
         weight: 2,
         dashArray: '4, 4',
-        fillColor: '#4F6CE8',
+        fillColor: '#787570',
         fillOpacity: 0.2,
       });
       polygon.addTo(drawGroup);
     } else {
       const polyline = L.polyline(drawnPoints, {
-        color: '#4F6CE8',
+        color: '#787570',
         weight: 3,
         dashArray: '4, 4',
       });
@@ -199,7 +199,7 @@ export default function SupervisorTerritoryMap({
         radius: 5,
         color: '#FFFFFF',
         weight: 2,
-        fillColor: '#4F6CE8',
+        fillColor: '#787570',
         fillOpacity: 1,
       });
       circle.addTo(drawGroup);
@@ -224,9 +224,9 @@ export default function SupervisorTerritoryMap({
         try {
           const geoJsonLayer = L.geoJSON(p.boundary_geojson, {
             style: {
-              color: '#4F6CE8',
+              color: '#787570',
               weight: 2,
-              fillColor: '#4F6CE8',
+              fillColor: '#787570',
               fillOpacity: 0.15,
             },
           });
@@ -245,10 +245,10 @@ export default function SupervisorTerritoryMap({
         className: 'custom-supervisor-marker',
         html: `
           <div class="cursor-pointer group flex flex-col items-center select-none" style="transform: translate(-50%, -50%);">
-            <div class="px-2.5 py-1 rounded-xl bg-[#4F6CE8] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
+            <div class="px-2.5 py-1 rounded-xl bg-[#55524E] text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 border border-white/30 transition-transform group-hover:scale-110">
               <span>${p.code}</span>
             </div>
-            <div class="w-1.5 h-1.5 bg-[#4F6CE8] rounded-full mt-0.5"></div>
+            <div class="w-1.5 h-1.5 bg-[#55524E] rounded-full mt-0.5"></div>
           </div>
         `,
         iconSize: [0, 0],
@@ -345,7 +345,7 @@ export default function SupervisorTerritoryMap({
   };
 
   return (
-    <div className="relative w-full h-[650px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#242124]">
+    <div className="management-map relative w-full h-[650px] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#242124]">
       {/* Map Container */}
       <div
         ref={mapContainerRef}
@@ -364,7 +364,7 @@ export default function SupervisorTerritoryMap({
             }}
             className={`px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
               isDrawingMode
-                ? 'bg-[#4F6CE8] text-white shadow-xs'
+                ? 'bg-[#55524E] text-white shadow-xs'
                 : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-[#242124] dark:text-white'
             }`}
           >
@@ -373,7 +373,7 @@ export default function SupervisorTerritoryMap({
           </button>
 
           {isDrawingMode && (
-            <span className="text-[11px] font-semibold text-[#4F6CE8] px-2">
+            <span className="text-[11px] font-semibold text-[#787570] px-2">
               {drawnPoints.length} point{drawnPoints.length > 1 ? 's' : ''} posé{drawnPoints.length > 1 ? 's' : ''}
             </span>
           )}
@@ -389,7 +389,7 @@ export default function SupervisorTerritoryMap({
                 }
               }}
               disabled={drawnPoints.length < 3}
-              className="px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-medium transition-all cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shadow-xs"
+              className="px-3 py-1.5 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-medium transition-all cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shadow-xs"
             >
               <Icons.Check size={13} />
               <span>Valider la Plaque ({drawnPoints.length} sommets)</span>
@@ -410,7 +410,7 @@ export default function SupervisorTerritoryMap({
                 setIsDrawingMode(false);
                 setDrawnPoints([]);
               }}
-              className="p-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-red-500/15 text-zinc-500 hover:text-red-500 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-zinc-500/15 text-zinc-500 hover:text-zinc-500 transition-colors cursor-pointer"
               title="Quitter le mode tracé"
             >
               <Icons.X size={14} />
@@ -425,7 +425,7 @@ export default function SupervisorTerritoryMap({
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
             <div className="flex flex-col">
-              <span className="text-[10px] font-medium text-[#4F6CE8] uppercase">Plaque Sélectionnée</span>
+              <span className="text-[10px] font-medium text-[#787570] uppercase">Plaque Sélectionnée</span>
               <h3 className="text-base font-semibold text-[#242124] dark:text-white">{selectedPlaque.code}</h3>
               <span className="text-xs text-[#6E6C67] dark:text-[#A1A1AA]">{selectedPlaque.name} • {selectedPlaque.city}</span>
             </div>
@@ -445,7 +445,7 @@ export default function SupervisorTerritoryMap({
             </div>
             <div className="bg-black/5 dark:bg-white/5 p-3 rounded-2xl flex flex-col">
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Commerciaux</span>
-              <span className="text-lg font-bold text-[#4F6CE8]">
+              <span className="text-lg font-bold text-[#787570]">
                 {assigningSalespersonIds.length}
               </span>
             </div>
@@ -455,7 +455,7 @@ export default function SupervisorTerritoryMap({
           {onOpenPlaqueDetail && (
             <button
               onClick={() => onOpenPlaqueDetail(selectedPlaque)}
-              className="w-full py-2 px-3 rounded-2xl bg-[#4F6CE8]/10 hover:bg-[#4F6CE8]/20 text-[#4F6CE8] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="w-full py-2 px-3 rounded-2xl bg-zinc-500/10 hover:bg-zinc-500/20 text-[#787570] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>Accéder à la Fiche Complète & Dispatch</span>
               <Icons.ExternalLink size={13} />
@@ -476,7 +476,7 @@ export default function SupervisorTerritoryMap({
                     key={sp.id}
                     className={`flex items-center gap-2.5 p-2 rounded-xl text-xs cursor-pointer transition-colors ${
                       isAssigned
-                        ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold'
+                        ? 'bg-zinc-500/10 text-[#787570] font-semibold'
                         : 'hover:bg-black/5 dark:hover:bg-white/5 text-[#242124] dark:text-white'
                     }`}
                   >
@@ -490,7 +490,7 @@ export default function SupervisorTerritoryMap({
                           setAssigningSalespersonIds((prev) => prev.filter((id) => id !== sp.id));
                         }
                       }}
-                      className="rounded accent-[#4F6CE8] cursor-pointer"
+                      className="rounded accent-[#9B978F] cursor-pointer"
                     />
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold">
@@ -504,13 +504,13 @@ export default function SupervisorTerritoryMap({
             </div>
 
             {assignSuccessMsg && (
-              <span className="text-[11px] font-medium text-[#10B981] mt-1">{assignSuccessMsg}</span>
+              <span className="text-[11px] font-medium text-[#787570] mt-1">{assignSuccessMsg}</span>
             )}
 
             <button
               onClick={handleSaveDirectAssignment}
               disabled={isSavingAssign}
-              className="w-full mt-2 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+              className="w-full mt-2 py-2 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
             >
               {isSavingAssign ? (
                 <>
@@ -547,7 +547,7 @@ export default function SupervisorTerritoryMap({
             </div>
 
             {savePlaqueError && (
-              <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-semibold">
+              <div className="p-3 rounded-2xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-500 text-xs font-semibold">
                 {savePlaqueError}
               </div>
             )}
@@ -603,7 +603,7 @@ export default function SupervisorTerritoryMap({
                         key={sp.id}
                         className={`flex items-center gap-2 p-2 rounded-xl text-xs cursor-pointer border transition-colors ${
                           isSelected
-                            ? 'bg-[#4F6CE8]/10 border-[#4F6CE8] text-[#4F6CE8] font-bold'
+                            ? 'bg-zinc-500/10 border-[#9B978F] text-[#787570] font-bold'
                             : 'bg-white dark:bg-[#363336] border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300'
                         }`}
                       >
@@ -617,7 +617,7 @@ export default function SupervisorTerritoryMap({
                               setNewPlaqueSalespersonIds((prev) => prev.filter((id) => id !== sp.id));
                             }
                           }}
-                          className="accent-[#4F6CE8]"
+                          className="accent-[#9B978F]"
                         />
                         <span className="truncate">{sp.full_name}</span>
                       </label>
@@ -637,7 +637,7 @@ export default function SupervisorTerritoryMap({
               <button
                 onClick={handleSavePlaque}
                 disabled={isSavingPlaque}
-                className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-bold transition-all cursor-pointer shadow-md disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-bold transition-all cursor-pointer shadow-md disabled:opacity-50"
               >
                 {isSavingPlaque ? 'Enregistrement...' : 'Enregistrer la Plaque'}
               </button>

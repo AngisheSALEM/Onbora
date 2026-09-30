@@ -32,7 +32,7 @@ export default function AdminHeader() {
             }
           }}
           placeholder={searchPlaceholder}
-          className="w-full pl-10 pr-20 py-2 bg-black/5 dark:bg-white/5 rounded-2xl text-xs font-semibold text-[#242124] dark:text-white placeholder-[#6E6C67] dark:placeholder-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#4F6CE8]/50 transition-all border-0"
+          className="w-full pl-10 pr-20 py-2 bg-black/5 dark:bg-white/5 rounded-2xl text-xs font-semibold text-[#242124] dark:text-white placeholder-[#6E6C67] dark:placeholder-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-zinc-500/50 transition-all border-0"
         />
         <div className="absolute right-2.5 flex items-center gap-1">
           {searchQuery && (
@@ -51,7 +51,7 @@ export default function AdminHeader() {
           <button
             type="button"
             onClick={executeSearch}
-            className="px-2 py-0.5 rounded-lg bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white font-mono text-[10px] font-medium transition-all cursor-pointer"
+            className="px-2 py-0.5 rounded-lg bg-zinc-500/10 hover:bg-[#55524E] text-[#787570] hover:text-white font-mono text-[10px] font-medium transition-all cursor-pointer"
             title="Valider la recherche (Entrée)"
           >
             ↵
@@ -61,7 +61,7 @@ export default function AdminHeader() {
 
       <div className="flex items-center gap-3">
         {successMessage && (
-          <div className="px-3.5 py-1.5 bg-[#4F6CE8]/10 text-[#4F6CE8] rounded-full text-[11px] font-semibold flex items-center gap-1.5 animate-fade-in">
+          <div className="px-3.5 py-1.5 bg-zinc-500/10 text-[#787570] rounded-full text-[11px] font-semibold flex items-center gap-1.5 animate-fade-in">
             <Icons.CheckCircle size={13} />
             <span>{successMessage}</span>
           </div>

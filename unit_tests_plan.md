@@ -119,3 +119,9 @@ Ces tests sont écrits dans `backend/sales/tests.py`.
     *   *Attendu* : Exécute le flux bout-en-bout : Onbora ➔ POST Kaabu CRM ➔ ArrowSphere ➔ Webhook POST ➔ Déverrouillage des formations dans l'espace client.
 
 
+
+## Portefeuille KAM, churn et upsell
+
+- `kam.test_seed_portfolios` : seed réexécutable sans doublons, préservation des entreprises existantes, quatre combinaisons churn/upsell, compteurs alimentés, API paginée et isolation entre KAM.
+- `kam.test_churn_radar` : règles de santé, persistance, snapshots, compteurs et endpoints du radar.
+- Navigateur : dashboard limité à six comptes, lien Voir tout sans fond ni bordure, pagination et recherche, onglets conditionnels sur les quatre cohortes, sheets sans bordure, un seul CTA primaire et palette neutre sur admin/KAM office/back office.

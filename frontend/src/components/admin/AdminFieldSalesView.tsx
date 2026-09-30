@@ -15,7 +15,7 @@ const AdminPlaqueMapOnly = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full h-[520px] rounded-3xl bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
         <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA]">
           Chargement de la carte des plaques...
         </span>
@@ -119,7 +119,7 @@ export default function AdminFieldSalesView() {
             onClick={() => setFieldSubTab('commerciaux')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               fieldSubTab === 'commerciaux'
-                ? 'bg-[#4F6CE8] text-white shadow-sm'
+                ? 'bg-[#55524E] text-white shadow-sm'
                 : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
             }`}
           >
@@ -129,7 +129,7 @@ export default function AdminFieldSalesView() {
             onClick={() => setFieldSubTab('plaques')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               fieldSubTab === 'plaques'
-                ? 'bg-[#4F6CE8] text-white shadow-sm'
+                ? 'bg-[#55524E] text-white shadow-sm'
                 : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
             }`}
           >
@@ -160,7 +160,7 @@ export default function AdminFieldSalesView() {
                   {loadingSalespersons ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center text-[#6E6C67] dark:text-[#A1A1AA]">
-                        <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin mx-auto" />
+                        <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin mx-auto" />
                       </td>
                     </tr>
                   ) : salespersons.length === 0 ? (
@@ -189,7 +189,7 @@ export default function AdminFieldSalesView() {
                               sp.assigned_plaques.map((p, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-medium text-[10px]"
+                                  className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] font-medium text-[10px]"
                                 >
                                   {p}
                                 </span>
@@ -199,7 +199,7 @@ export default function AdminFieldSalesView() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 font-medium text-emerald-600 dark:text-emerald-400">
+                        <td className="py-3 px-3 font-medium text-zinc-600 dark:text-zinc-400">
                           {sp.conversions_count || 0} signés
                         </td>
                         <td className="py-3 px-3 font-medium text-[#242124] dark:text-white">
@@ -209,7 +209,7 @@ export default function AdminFieldSalesView() {
                           {sp.form_submissions_count || 0}
                         </td>
                         <td className="py-3 px-3">
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] font-semibold text-[10px]">
+                          <span className="px-2.5 py-0.5 rounded-full bg-zinc-500/15 text-[#787570] font-semibold text-[10px]">
                             {sp.incentive_points || 0} pts
                           </span>
                         </td>
@@ -217,7 +217,7 @@ export default function AdminFieldSalesView() {
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                               sp.is_available
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400'
                                 : 'bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA]'
                             }`}
                           >
@@ -271,7 +271,7 @@ export default function AdminFieldSalesView() {
                 onClick={() => setPlaqueViewMode(plaqueViewMode === 'list' ? 'map' : 'list')}
                 className={`px-4 py-2 rounded-2xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
                   plaqueViewMode === 'map'
-                    ? 'bg-[#4F6CE8] text-white shadow-sm'
+                    ? 'bg-[#55524E] text-white shadow-sm'
                     : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[#242124] dark:text-white'
                 }`}
               >
@@ -303,7 +303,7 @@ export default function AdminFieldSalesView() {
                     {loadingPlaques ? (
                       <tr>
                         <td colSpan={6} className="py-12 text-center text-[#6E6C67] dark:text-[#A1A1AA]">
-                          <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin mx-auto" />
+                          <div className="w-6 h-6 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin mx-auto" />
                         </td>
                       </tr>
                     ) : filteredPlaques.length === 0 ? (
@@ -326,18 +326,18 @@ export default function AdminFieldSalesView() {
                           <td className="py-3 px-3 text-[#6E6C67] dark:text-[#A1A1AA]">
                             {p.city}
                           </td>
-                          <td className="py-3 px-3 font-medium text-[#4F6CE8]">
+                          <td className="py-3 px-3 font-medium text-[#787570]">
                             {p.enterprises_count || 0} entreprises
                           </td>
                           <td className="py-3 px-3">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-500/10 text-zinc-600 dark:text-zinc-400">
                               Active
                             </span>
                           </td>
                           <td className="py-3 px-3 text-right">
                             <button
                               onClick={() => setPlaqueViewMode('map')}
-                              className="px-2.5 py-1 bg-[#4F6CE8]/10 hover:bg-[#4F6CE8] text-[#4F6CE8] hover:text-white rounded-xl text-[10px] font-medium transition-all cursor-pointer flex items-center gap-1 inline-flex"
+                              className="px-2.5 py-1 bg-zinc-500/10 hover:bg-[#55524E] text-[#787570] hover:text-white rounded-xl text-[10px] font-medium transition-all cursor-pointer flex items-center gap-1 inline-flex"
                             >
                               <Icons.Map size={10} />
                               <span>Localiser</span>

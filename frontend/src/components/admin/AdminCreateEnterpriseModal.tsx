@@ -77,7 +77,7 @@ export default function AdminCreateEnterpriseModal({
       <form onSubmit={handleSubmit} className="my-8 flex w-full max-w-2xl flex-col gap-5 rounded-3xl border border-black/10 bg-[#F6F5F2] p-6 text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#2D2A2D] dark:text-white">
         <div className="flex items-start justify-between gap-4 border-b border-black/5 pb-4 dark:border-white/5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#4F6CE8] text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#55524E] text-white">
               <Icons.Building size={18} />
             </div>
             <div>
@@ -90,55 +90,55 @@ export default function AdminCreateEnterpriseModal({
           </button>
         </div>
 
-        {error && <div className="rounded-2xl bg-rose-500/15 px-3 py-2.5 text-xs font-medium text-rose-700 dark:text-rose-300">{error}</div>}
+        {error && <div className="rounded-2xl bg-zinc-500/15 px-3 py-2.5 text-xs font-medium text-zinc-700 dark:text-zinc-300">{error}</div>}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs font-medium">Nom de l&apos;entreprise *
-            <input required value={form.name} onChange={(e) => updateField('name', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input required value={form.name} onChange={(e) => updateField('name', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Identifiant CRM
-            <input value={form.crm_id} onChange={(e) => updateField('crm_id', e.target.value)} placeholder="Ex. CRM-CD-1002" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input value={form.crm_id} onChange={(e) => updateField('crm_id', e.target.value)} placeholder="Ex. CRM-CD-1002" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Secteur d&apos;activité *
-            <input required value={form.sector} onChange={(e) => updateField('sector', e.target.value)} placeholder="Ex. Télécoms et IT" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input required value={form.sector} onChange={(e) => updateField('sector', e.target.value)} placeholder="Ex. Télécoms et IT" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Chiffre d&apos;affaires annuel (USD) *
-            <input required type="number" min="0" step="0.01" value={form.annual_revenue} onChange={(e) => updateField('annual_revenue', Number(e.target.value))} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input required type="number" min="0" step="0.01" value={form.annual_revenue} onChange={(e) => updateField('annual_revenue', Number(e.target.value))} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Effectif *
-            <input required type="number" min="1" value={form.employee_count} onChange={(e) => updateField('employee_count', Number(e.target.value))} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input required type="number" min="1" value={form.employee_count} onChange={(e) => updateField('employee_count', Number(e.target.value))} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Connectivité actuelle
-            <select value={form.current_connectivity} onChange={(e) => updateField('current_connectivity', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]">
+            <select value={form.current_connectivity} onChange={(e) => updateField('current_connectivity', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]">
               <option>4G LTE</option><option>Fibre Optique</option><option>Faisceau Hertzien</option><option>VSAT</option><option>Aucune</option>
             </select>
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Ville *
-            <input required value={form.city} onChange={(e) => updateField('city', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input required value={form.city} onChange={(e) => updateField('city', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Commune
-            <input value={form.commune} onChange={(e) => updateField('commune', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input value={form.commune} onChange={(e) => updateField('commune', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
         </div>
 
         <div className="grid grid-cols-1 gap-3 border-t border-black/5 pt-4 sm:grid-cols-2 dark:border-white/5">
           <label className="flex flex-col gap-1 text-xs font-medium">Contact principal
-            <input value={form.contact_name} onChange={(e) => updateField('contact_name', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input value={form.contact_name} onChange={(e) => updateField('contact_name', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Fonction
-            <input value={form.contact_role} onChange={(e) => updateField('contact_role', e.target.value)} placeholder="Ex. DSI" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input value={form.contact_role} onChange={(e) => updateField('contact_role', e.target.value)} placeholder="Ex. DSI" className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">Téléphone
-            <input value={form.contact_phone} onChange={(e) => updateField('contact_phone', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input value={form.contact_phone} onChange={(e) => updateField('contact_phone', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium">E-mail
-            <input type="email" value={form.contact_email} onChange={(e) => updateField('contact_email', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4F6CE8] dark:border-white/10 dark:bg-[#242124]" />
+            <input type="email" value={form.contact_email} onChange={(e) => updateField('contact_email', e.target.value)} className="rounded-xl border border-black/5 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9B978F] dark:border-white/10 dark:bg-[#242124]" />
           </label>
         </div>
 
         <div className="flex justify-end gap-3 border-t border-black/5 pt-4 dark:border-white/5">
           <button type="button" onClick={onClose} disabled={isSaving} className="rounded-xl px-4 py-2 text-xs font-medium text-[#6E6C67] transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50 dark:text-[#A1A1AA] dark:hover:bg-white/10">Annuler</button>
-          <button type="submit" disabled={isSaving} className="flex items-center gap-2 rounded-xl bg-[#4F6CE8] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#3D5BD9] disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" disabled={isSaving} className="primary-cta flex items-center gap-2 rounded-xl bg-[#4F6CE8] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#3E5AC8] disabled:cursor-not-allowed disabled:opacity-50">
             {isSaving ? <Icons.Loader size={14} className="animate-spin" /> : <Icons.Plus size={14} />}
             <span>{isSaving ? 'Création…' : 'Créer l’entreprise'}</span>
           </button>

@@ -83,7 +83,7 @@ export default function BackofficeDirectoryView() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   directoryVisitFilter === f.id
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
                 }`}
               >
@@ -106,7 +106,7 @@ export default function BackofficeDirectoryView() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   directoryStatusFilter === f.id
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:text-[#242124] dark:hover:text-white'
                 }`}
               >
@@ -116,7 +116,7 @@ export default function BackofficeDirectoryView() {
           </div>
         </div>
 
-        <span className="text-xs font-semibold text-[#4F6CE8] bg-[#4F6CE8]/10 px-2.5 py-1 rounded-xl">
+        <span className="text-xs font-semibold text-[#787570] bg-zinc-500/10 px-2.5 py-1 rounded-xl">
           {filteredDirectoryAccounts.length} entreprise(s)
         </span>
       </div>
@@ -170,7 +170,7 @@ export default function BackofficeDirectoryView() {
                     <td className="py-3 px-3">
                       <div className="flex flex-col">
                         <span className="font-semibold text-[#242124] dark:text-white">{account.contact_name || 'Direction'}</span>
-                        <span className="text-[10px] text-[#4F6CE8] font-semibold">{account.contact_phone || 'Non renseigné'}</span>
+                        <span className="text-[10px] text-[#787570] font-semibold">{account.contact_phone || 'Non renseigné'}</span>
                       </div>
                     </td>
                     <td className="py-3 px-3">
@@ -188,14 +188,14 @@ export default function BackofficeDirectoryView() {
                       </span>
                     </td>
                     <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
+                      <span className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] font-semibold text-[10px]">
                         {account.recommended_solution || 'Pack Fibre TPE'}
                       </span>
                     </td>
                     <td className="py-3 px-3 text-right">
                       <button
                         onClick={() => setSelectedAccountForDetail(account)}
-                        className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#4F6CE8] transition-colors cursor-pointer"
+                        className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#787570] transition-colors cursor-pointer"
                         title="Consulter la fiche"
                       >
                         <Icons.ExternalLink size={13} />

@@ -113,7 +113,7 @@ export default function AdminOfferModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500 text-xs font-medium">
+          <div className="p-3 rounded-2xl bg-zinc-500/10 text-zinc-500 text-xs font-medium">
             {error}
           </div>
         )}
@@ -131,7 +131,7 @@ export default function AdminOfferModal({
                 value={formState.service_id}
                 onChange={(e) => setFormState({ ...formState, service_id: e.target.value.toLowerCase().trim() })}
                 placeholder="Ex: fibre_pro_kinshasa"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 disabled:opacity-50"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0 disabled:opacity-50"
               />
             </div>
 
@@ -145,7 +145,7 @@ export default function AdminOfferModal({
                 value={formState.name}
                 onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                 placeholder="Ex: Fibre Entreprise Dédiée 100 Mbps"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function AdminOfferModal({
                 value={formState.category}
                 onChange={(e) => setFormState({ ...formState, category: e.target.value })}
                 placeholder="Ex: Internet fixe et réseaux"
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function AdminOfferModal({
               <select
                 value={formState.rdc_availability}
                 onChange={(e) => setFormState({ ...formState, rdc_availability: e.target.value as any })}
-                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 cursor-pointer"
+                className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0 cursor-pointer"
               >
                 <option value="published_local">Publié Local RDC (published_local)</option>
                 <option value="to_confirm">À confirmer (to_confirm)</option>
@@ -184,7 +184,7 @@ export default function AdminOfferModal({
               value={formState.description}
               onChange={(e) => setFormState({ ...formState, description: e.target.value })}
               placeholder="Présentation détaillée de la solution, débits, technologies..."
-              className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-normal focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0 leading-relaxed"
+              className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl font-normal focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0 leading-relaxed"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function AdminOfferModal({
                 value={formState.allowed_benefits}
                 onChange={(e) => setFormState({ ...formState, allowed_benefits: e.target.value })}
                 placeholder="Débit garanti 1:1&#10;GTR 4h en RDC&#10;IP fixe incluse"
-                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
 
@@ -207,7 +207,7 @@ export default function AdminOfferModal({
                 value={formState.target_customers}
                 onChange={(e) => setFormState({ ...formState, target_customers: e.target.value })}
                 placeholder="Grands comptes miniers&#10;PME du secteur bancaire"
-                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -220,7 +220,7 @@ export default function AdminOfferModal({
                 value={formState.commercial_terms}
                 onChange={(e) => setFormState({ ...formState, commercial_terms: e.target.value })}
                 placeholder="Sur devis personnalisé selon éligibilité fibre"
-                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
 
@@ -231,7 +231,7 @@ export default function AdminOfferModal({
                 value={formState.need_keywords}
                 onChange={(e) => setFormState({ ...formState, need_keywords: e.target.value })}
                 placeholder="fibre, débit garanti, gtr 4h, internet haut débit"
-                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function AdminOfferModal({
               value={formState.source_url}
               onChange={(e) => setFormState({ ...formState, source_url: e.target.value })}
               placeholder="https://business.orange.cd/fr/catalogs/..."
-              className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+              className="px-3.5 py-2.5 bg-[#F6F5F2] dark:bg-[#242124] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
             />
           </div>
 
@@ -258,7 +258,7 @@ export default function AdminOfferModal({
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              className="primary-cta px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white rounded-xl font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Icons.CheckCircle size={14} />
               <span>{saving ? "Enregistrement Core AI..." : "Enregistrer dans le Core AI"}</span>

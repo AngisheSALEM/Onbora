@@ -145,7 +145,7 @@ export default function AdminSidebar() {
                   isCollapsed ? 'justify-center p-3' : 'justify-between px-3.5 py-2.5'
                 } rounded-2xl text-xs font-medium transition-all flex items-center cursor-pointer ${
                   active
-                    ? 'bg-[#4F6CE8] text-white shadow-sm'
+                    ? 'bg-[#55524E] text-white shadow-sm'
                     : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#242124] dark:hover:text-white'
                 }`}
               >
@@ -182,11 +182,11 @@ export default function AdminSidebar() {
               src={user?.profile_picture_url || user?.avatar}
               name={user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin Onbora'}
               size="sm"
-              className="shrink-0 group-hover:ring-2 group-hover:ring-[#4F6CE8] transition-all"
+              className="shrink-0 group-hover:ring-2 group-hover:ring-[#9B978F] transition-all"
             />
             {!isCollapsed && (
               <div className="flex flex-col truncate max-w-[130px]">
-                <span className="text-xs font-medium leading-tight text-[#242124] dark:text-white truncate group-hover:text-[#4F6CE8] transition-colors">
+                <span className="text-xs font-medium leading-tight text-[#242124] dark:text-white truncate group-hover:text-[#787570] transition-colors">
                   {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Admin Onbora'}
                 </span>
                 <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] truncate">

@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import KamAccountsTable from './KamAccountsTable';
 import { fetchAPI } from '@/lib/api';
 import { StrategicVisit } from './kamTypes';
 import { useKamContext } from './KamContext';
@@ -217,44 +219,14 @@ export default function KamAccountsListView({
           </div>
         </div>
       </div>
-      {summaryError && <p role="alert" className="text-sm text-red-700">{summaryError}</p>}
-      {/* Liste générale des comptes attribués au KAM */}
-      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5">
-        <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Tous mes comptes ({visits.length})</h2>
-        {accountsError && <p role="alert" className="text-sm text-red-700 mb-4">{accountsError}</p>}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-black/5 dark:border-white/5 text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">
-                <th className="pb-3 font-semibold">Compte</th>
-                <th className="pb-3 font-semibold">Secteur</th>
-                <th className="pb-3 font-semibold">Contact principal</th>
-                <th className="pb-3 font-semibold">Opérateur actuel</th>
-                <th className="pb-3 font-semibold">Fin du contrat</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!accountsLoading && !accountsError && filteredAccounts.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-sm text-zinc-500">{visits.length === 0 ? 'Aucun compte attribué à votre portefeuille.' : 'Aucun compte ne correspond à la recherche.'}</td></tr>}
-              {filteredAccounts.map((acc) => (
-                <tr
-                  key={acc.id}
-                  className="border-b border-black/5 dark:border-white/5 last:border-0 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
-                >
-                  <td className="py-3.5 text-xs font-semibold text-zinc-900 dark:text-white pr-4">
-                    <button type="button" onClick={() => onSelectAccount(acc)} className="text-left hover:underline focus-visible:underline cursor-pointer">
-                      {acc.account_name}
-                    </button>
-                  </td>
-                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 pr-4">{acc.briefing?.industry || 'Non renseigné'}</td>
-                  <td className="py-3.5 text-xs text-zinc-700 dark:text-zinc-300 pr-4">{acc.contact_name || 'Non renseigné'}</td>
-                  <td className="py-3.5 text-xs text-zinc-600 dark:text-zinc-400 pr-4">{acc.current_operator || 'Non renseigné'}</td>
-                  <td className="py-3.5 text-xs text-zinc-500 dark:text-zinc-400">{acc.orange_contract_end_date || 'Non renseignée'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {summaryError && <p role="alert" className="text-sm text-zinc-600 dark:text-zinc-300">{summaryError}</p>}
+      <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Mes comptes B2B ({visits.length})</h2>
+          <Link href="/kam/accounts/all" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:underline focus-visible:underline">Voir tout</Link>
         </div>
-      </div>
+        <KamAccountsTable accounts={filteredAccounts.slice(0, 6)} loading={accountsLoading} error={accountsError} onSelectAccount={onSelectAccount} />
+      </section>
     </div>
   );
 }

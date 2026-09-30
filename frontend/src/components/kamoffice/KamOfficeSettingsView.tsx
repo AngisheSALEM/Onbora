@@ -92,7 +92,7 @@ export default function KamOfficeSettingsView() {
 
           <button
             onClick={() => logout()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-500/10 hover:bg-zinc-500/20 text-zinc-600 dark:text-zinc-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-zinc-500/20 self-start sm:self-auto shadow-none"
             title="Se déconnecter du portail KAM Office"
           >
             <Icons.LogOut size={16} />
@@ -101,13 +101,13 @@ export default function KamOfficeSettingsView() {
         </div>
 
         {avatarSuccessMsg && (
-          <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
             {avatarSuccessMsg}
           </div>
         )}
 
         {avatarErrorMsg && (
-          <div className="p-3 rounded-2xl bg-rose-500/15 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
             {avatarErrorMsg}
           </div>
         )}
@@ -140,7 +140,7 @@ export default function KamOfficeSettingsView() {
       {/* 3. FAQ & Règles de Gestion KAM Office */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <Icons.HelpCircle size={18} className="text-[#4F6CE8]" />
+          <Icons.HelpCircle size={18} className="text-[#787570]" />
           <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
             Foire Aux Questions & Règles de Gestion KAM Office
           </h3>

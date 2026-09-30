@@ -33,6 +33,10 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("\n3. Peuplement de la Banque de 1 000 Entreprises Congolaises CRM..."))
         call_command('seed_1000_crm_enterprises')
 
+        # Portefeuilles KAM de démonstration : comptes sains, churn et upsell.
+        if User.objects.filter(role=User.KAM, is_active=True).exists():
+            call_command('seed_kam_portfolios')
+
         # 4. Rapport de vérification
         users_count = User.objects.count()
         services_count = ServiceCatalog.objects.count()

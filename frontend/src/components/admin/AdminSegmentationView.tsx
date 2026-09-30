@@ -65,7 +65,7 @@ export default function AdminSegmentationView() {
   if (loading) {
     return (
       <div className="py-20 flex justify-center">
-        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export default function AdminSegmentationView() {
                 step="100"
                 value={tpeThreshold}
                 onChange={(e) => setTpeThreshold(Number(e.target.value))}
-                className="w-full px-4 py-2 bg-white dark:bg-[#2D2A2D] rounded-xl text-sm font-medium text-[#242124] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="w-full px-4 py-2 bg-white dark:bg-[#2D2A2D] rounded-xl text-sm font-medium text-[#242124] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
               <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA] shrink-0">USD / an</span>
             </div>
@@ -119,7 +119,7 @@ export default function AdminSegmentationView() {
           <div className="flex flex-col gap-2 bg-[#F6F5F2] dark:bg-[#242124] p-4 rounded-2xl">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-[#242124] dark:text-white">Seuil Entrée Grand Compte</span>
-              <span className="text-[10px] font-medium text-[#4F6CE8] uppercase tracking-wider">
+              <span className="text-[10px] font-medium text-[#787570] uppercase tracking-wider">
                 &gt; 2 500 $/mois
               </span>
             </div>
@@ -130,7 +130,7 @@ export default function AdminSegmentationView() {
                 step="500"
                 value={pmeThreshold}
                 onChange={(e) => setPmeThreshold(Number(e.target.value))}
-                className="w-full px-4 py-2 bg-white dark:bg-[#2D2A2D] rounded-xl text-sm font-medium text-[#242124] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] border-0"
+                className="w-full px-4 py-2 bg-white dark:bg-[#2D2A2D] rounded-xl text-sm font-medium text-[#242124] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9B978F] border-0"
               />
               <span className="text-xs font-medium text-[#6E6C67] dark:text-[#A1A1AA] shrink-0">USD / an</span>
             </div>
@@ -161,18 +161,18 @@ export default function AdminSegmentationView() {
 
           <div className="p-4 rounded-2xl bg-[#F6F5F2] dark:bg-[#242124] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#4F6CE8]/15 text-[#4F6CE8] rounded-xl">
+              <div className="p-2.5 bg-zinc-500/15 text-[#787570] rounded-xl">
                 <Icons.Briefcase size={18} />
               </div>
               <div>
                 <h4 className="text-xs font-semibold text-[#242124] dark:text-white">Direction KAM Office</h4>
-                <span className="text-[10px] text-[#4F6CE8] font-medium">
+                <span className="text-[10px] text-[#787570] font-medium">
                   Portefeuilles PME & Grands Comptes
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-sm font-medium text-[#4F6CE8] block">
+              <span className="text-sm font-medium text-[#787570] block">
                 {(config?.stats?.pme_count || 0) + (config?.stats?.grand_compte_count || 0)}
               </span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">comptes routés</span>
@@ -182,11 +182,11 @@ export default function AdminSegmentationView() {
 
         {/* Submit */}
         <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
-          <div className="text-xs font-medium text-[#4F6CE8]">{configSuccessMsg}</div>
+          <div className="text-xs font-medium text-[#787570]">{configSuccessMsg}</div>
           <button
             type="submit"
             disabled={savingConfig}
-            className="px-6 py-3 bg-[#4F6CE8] hover:bg-[#3D5BD9] active:scale-98 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2"
+            className="primary-cta px-6 py-3 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-98 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2"
           >
             <Icons.Refresh size={14} className={savingConfig ? "animate-spin" : ""} />
             <span>{savingConfig ? "Recalcul de la segmentation..." : "Enregistrer & Ré-appliquer"}</span>
@@ -212,7 +212,7 @@ export default function AdminSegmentationView() {
           <span className="text-[10px] font-medium text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
             PME ({tpeThreshold.toLocaleString()} $ - {pmeThreshold.toLocaleString()} $)
           </span>
-          <span className="text-2xl font-extrabold text-[#4F6CE8] mt-1">{config?.stats?.pme_count || 0}</span>
+          <span className="text-2xl font-extrabold text-[#787570] mt-1">{config?.stats?.pme_count || 0}</span>
           <span className="text-[11px] text-[#6E6C67] dark:text-[#A1A1AA]">Routés vers le KAM Office</span>
         </div>
 

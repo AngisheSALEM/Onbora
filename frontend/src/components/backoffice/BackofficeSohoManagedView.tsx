@@ -87,7 +87,7 @@ export default function BackofficeSohoManagedView() {
           <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">
             Signatures & Convertis
           </span>
-          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{kpis.converted}</span>
+          <span className="text-xl font-extrabold text-zinc-600 dark:text-zinc-400">{kpis.converted}</span>
           <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
             Taux de transfo : {kpis.total > 0 ? Math.round((kpis.converted / kpis.total) * 100) : 0}%
           </span>
@@ -96,7 +96,7 @@ export default function BackofficeSohoManagedView() {
           <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase">
             Visités sur le Terrain
           </span>
-          <span className="text-xl font-extrabold text-[#4F6CE8]">{kpis.visited}</span>
+          <span className="text-xl font-extrabold text-[#787570]">{kpis.visited}</span>
           <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{kpis.total - kpis.visited} restants à prospecter</span>
         </div>
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
@@ -207,7 +207,7 @@ export default function BackofficeSohoManagedView() {
                       </td>
                       <td className="py-3 px-3">
                         {account.plaque_code ? (
-                          <span className="px-2.5 py-1 rounded-lg bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-500/10 text-[#787570] font-semibold text-[10px]">
                             {account.plaque_code}
                           </span>
                         ) : (
@@ -217,7 +217,7 @@ export default function BackofficeSohoManagedView() {
                       <td className="py-3 px-3">
                         {account.assigned_salesperson_name ? (
                           <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center text-[9px] font-semibold">
+                            <div className="w-5 h-5 rounded-full bg-[#55524E] text-white flex items-center justify-center text-[9px] font-semibold">
                               {account.assigned_salesperson_name[0]}
                             </div>
                             <span className="font-semibold text-[#242124] dark:text-white">
@@ -225,19 +225,19 @@ export default function BackofficeSohoManagedView() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[10px] font-medium text-[#4F6CE8]">Non affecté</span>
+                          <span className="text-[10px] font-medium text-[#787570]">Non affecté</span>
                         )}
                       </td>
                       <td className="py-3 px-3">
                         {vInfo.count > 0 ? (
                           <div className="flex flex-col gap-0.5">
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
                               <Icons.CheckCircle size={10} /> {vInfo.label}
                             </span>
                             {vInfo.lastReport && (
                               <button
                                 onClick={() => setSelectedReportToInspect(vInfo.lastReport)}
-                                className="text-[9px] font-bold text-[#4F6CE8] hover:underline text-left cursor-pointer"
+                                className="text-[9px] font-bold text-[#787570] hover:underline text-left cursor-pointer"
                               >
                                 Voir dernier CR
                               </button>
@@ -251,11 +251,11 @@ export default function BackofficeSohoManagedView() {
                       </td>
                       <td className="py-3 px-3">
                         {isConverted ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
+                          <span className="px-2.5 py-0.5 rounded-full bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 font-semibold text-[10px]">
                             Converti
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] font-semibold text-[10px]">
+                          <span className="px-2.5 py-0.5 rounded-full bg-zinc-500/10 text-[#787570] font-semibold text-[10px]">
                             En prospection
                           </span>
                         )}
@@ -264,7 +264,7 @@ export default function BackofficeSohoManagedView() {
                         <div className="inline-flex items-center gap-1">
                           <button
                             onClick={() => setSelectedEnterpriseForActions(account)}
-                            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#4F6CE8] transition-colors cursor-pointer"
+                            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#787570] transition-colors cursor-pointer"
                             title="Consulter actions, notes et comptes-rendus"
                           >
                             <Icons.FileText size={13} />

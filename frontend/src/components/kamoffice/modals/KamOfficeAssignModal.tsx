@@ -93,7 +93,7 @@ export default function KamOfficeAssignModal({
             type="button"
             onClick={handleConfirm}
             disabled={submitting}
-            className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+            className="primary-cta px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
           >
             {submitting && <Icons.Loader size={14} className="animate-spin" />}
             <span>Confirmer l&apos;affectation</span>

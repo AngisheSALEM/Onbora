@@ -79,7 +79,7 @@ export default function EnterpriseActionsModal({
         <div className="flex items-start justify-between border-b border-black/5 dark:border-white/5 pb-4">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#4F6CE8] bg-[#4F6CE8]/10 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#787570] bg-zinc-500/10 px-2.5 py-0.5 rounded-full">
                 Compte TPE
               </span>
               <span className="font-mono text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
@@ -91,7 +91,7 @@ export default function EnterpriseActionsModal({
             </h3>
             <div className="flex items-center gap-3 text-xs text-[#6E6C67] dark:text-[#A1A1AA] flex-wrap">
               {enterprise.plaque_code && (
-                <span className="font-semibold text-[#4F6CE8]">
+                <span className="font-semibold text-[#787570]">
                   Plaque {enterprise.plaque_code}
                 </span>
               )}
@@ -118,7 +118,7 @@ export default function EnterpriseActionsModal({
               Commercial Affecté
             </span>
             <div className="flex items-center gap-2 mt-1">
-              <div className="w-6 h-6 rounded-full bg-[#4F6CE8] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[#55524E] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                 {enterprise.assigned_salesperson_name ? enterprise.assigned_salesperson_name[0] : '?'}
               </div>
               <span className="text-xs font-bold text-[#242124] dark:text-white truncate">
@@ -134,7 +134,7 @@ export default function EnterpriseActionsModal({
             </span>
             <div className="mt-1">
               {isVisited ? (
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold inline-flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-xs font-bold inline-flex items-center gap-1.5">
                   <Icons.CheckCircle size={12} />
                   <span>{totalVisits > 0 ? `${totalVisits} visite${totalVisits > 1 ? 's' : ''}` : 'Visité sur le terrain'}</span>
                 </span>
@@ -154,12 +154,12 @@ export default function EnterpriseActionsModal({
             </span>
             <div className="mt-1">
               {isConverted ? (
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold inline-flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-full bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 text-xs font-bold inline-flex items-center gap-1.5">
                   <Icons.Award size={12} />
                   <span>Converti / Signé</span>
                 </span>
               ) : (
-                <span className="px-2.5 py-1 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] text-xs font-bold inline-flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-full bg-zinc-500/10 text-[#787570] text-xs font-bold inline-flex items-center gap-1.5">
                   <Icons.Target size={12} />
                   <span>En prospection</span>
                 </span>
@@ -209,7 +209,7 @@ export default function EnterpriseActionsModal({
               {allNeeds.map((need, idx) => (
                 <span
                   key={`need-${idx}`}
-                  className="px-3 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] text-xs font-semibold flex items-center gap-1.5"
+                  className="px-3 py-1 rounded-xl bg-zinc-500/10 text-[#787570] text-xs font-semibold flex items-center gap-1.5"
                 >
                   <Icons.CheckCircle size={12} />
                   <span>{need}</span>
@@ -222,14 +222,14 @@ export default function EnterpriseActionsModal({
         {/* Section: Objections relevées */}
         {allObjections.length > 0 && (
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            <span className="text-xs font-extrabold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
               Objections & Contraintes Notées
             </span>
             <div className="flex flex-col gap-1.5">
               {allObjections.map((obj, idx) => (
                 <div
                   key={`obj-${idx}`}
-                  className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2"
+                  className="p-2.5 rounded-xl bg-zinc-500/10 border border-zinc-500/20 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2"
                 >
                   <Icons.AlertTriangle size={13} className="shrink-0" />
                   <span>{obj}</span>
@@ -251,7 +251,7 @@ export default function EnterpriseActionsModal({
                   key={`act-${idx}`}
                   className="p-2.5 rounded-xl bg-white dark:bg-[#363336] border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white flex items-center gap-2"
                 >
-                  <Icons.CheckCircle size={13} className="text-[#4F6CE8] shrink-0" />
+                  <Icons.CheckCircle size={13} className="text-[#787570] shrink-0" />
                   <span className="font-semibold">{act}</span>
                 </div>
               ))}
@@ -281,7 +281,7 @@ export default function EnterpriseActionsModal({
                       <span className="font-bold text-[#242124] dark:text-white">
                         {r.salesperson_name || 'Commercial'}
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold">
+                      <span className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] text-[10px] font-semibold">
                         Dictaphone IA
                       </span>
                     </div>
@@ -295,7 +295,7 @@ export default function EnterpriseActionsModal({
                   <button
                     type="button"
                     onClick={() => onOpenReportDetail({ ...r, type: 'REPORT' })}
-                    className="px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   >
                     <Icons.FileText size={12} />
                     <span>Consulter le rapport</span>
@@ -313,7 +313,7 @@ export default function EnterpriseActionsModal({
                       <span className="font-bold text-[#242124] dark:text-white">
                         {s.salesperson_name || 'Commercial'}
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold">
+                      <span className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold">
                         Formulaire Guidé • Score {s.qualification_score}/100
                       </span>
                     </div>
@@ -327,7 +327,7 @@ export default function EnterpriseActionsModal({
                   <button
                     type="button"
                     onClick={() => onOpenReportDetail({ ...s, type: 'SUBMISSION' })}
-                    className="px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   >
                     <Icons.FileText size={12} />
                     <span>Consulter le rapport</span>

@@ -215,8 +215,8 @@ export default function BackofficePlaquesView() {
         <div
           className={`p-3 rounded-2xl text-xs font-semibold flex items-center gap-2 ${
             dispatchNotification.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-              : 'bg-red-500/10 text-red-500 border border-red-500/20'
+              ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20'
+              : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'
           }`}
         >
           {dispatchNotification.type === 'success' ? (
@@ -245,7 +245,7 @@ export default function BackofficePlaquesView() {
               </button>
 
               <div className="flex items-center gap-2.5">
-                <span className="px-2.5 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] font-extrabold text-xs">
+                <span className="px-2.5 py-1 rounded-xl bg-zinc-500/10 text-[#787570] font-extrabold text-xs">
                   {selectedPlaqueDetail.code}
                 </span>
                 <div className="flex flex-col">
@@ -272,7 +272,7 @@ export default function BackofficePlaquesView() {
               <button
                 onClick={() => onAutoDispatchClick(selectedPlaqueDetail)}
                 disabled={dispatchingPlaqueId === selectedPlaqueDetail.id}
-                className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-2xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50"
               >
                 <Icons.Zap size={14} className={dispatchingPlaqueId === selectedPlaqueDetail.id ? 'animate-spin' : ''} />
                 <span>{dispatchingPlaqueId === selectedPlaqueDetail.id ? 'Calcul...' : 'Auto dispatch'}</span>
@@ -293,7 +293,7 @@ export default function BackofficePlaquesView() {
                   </span>
                 ))
               ) : (
-                <span className="text-xs text-[#4F6CE8] font-550">
+                <span className="text-xs text-[#787570] font-550">
                   Aucun commercial affecté à cette zone cartographique
                 </span>
               )}
@@ -301,7 +301,7 @@ export default function BackofficePlaquesView() {
 
             <button
               onClick={() => setSelectedPlaqueForAssign(selectedPlaqueDetail)}
-              className="text-xs text-[#4F6CE8] font-semibold hover:underline cursor-pointer inline-flex items-center gap-1"
+              className="text-xs text-[#787570] font-semibold hover:underline cursor-pointer inline-flex items-center gap-1"
             >
               <span>Modifier l'équipe de la plaque</span>
               <Icons.ArrowRight size={12} />
@@ -316,25 +316,25 @@ export default function BackofficePlaquesView() {
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">dans la plaque</span>
             </div>
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
-              <span className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400">Visités sur le terrain</span>
-              <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{plaqueDetailKpis.visited}</span>
+              <span className="text-[10px] uppercase font-semibold text-zinc-600 dark:text-zinc-400">Visités sur le terrain</span>
+              <span className="text-lg font-extrabold text-zinc-600 dark:text-zinc-400 mt-1">{plaqueDetailKpis.visited}</span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
                 {plaqueDetailKpis.total > 0 ? Math.round((plaqueDetailKpis.visited / plaqueDetailKpis.total) * 100) : 0}% de couverture
               </span>
             </div>
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
-              <span className="text-[10px] uppercase font-semibold text-[#4F6CE8]">Pas encore visités</span>
-              <span className="text-lg font-extrabold text-[#4F6CE8] mt-1">{plaqueDetailKpis.unvisited}</span>
+              <span className="text-[10px] uppercase font-semibold text-[#787570]">Pas encore visités</span>
+              <span className="text-lg font-extrabold text-[#787570] mt-1">{plaqueDetailKpis.unvisited}</span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">à prospecter</span>
             </div>
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
-              <span className="text-[10px] uppercase font-semibold text-[#4F6CE8]">Assignés</span>
-              <span className="text-lg font-extrabold text-[#4F6CE8] mt-1">{plaqueDetailKpis.assigned}</span>
+              <span className="text-[10px] uppercase font-semibold text-[#787570]">Assignés</span>
+              <span className="text-lg font-extrabold text-[#787570] mt-1">{plaqueDetailKpis.assigned}</span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">avec commercial</span>
             </div>
             <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
               <span className="text-[10px] uppercase font-semibold text-zinc-500 dark:text-zinc-400">Non assignés</span>
-              <span className={`text-lg font-extrabold mt-1 ${plaqueDetailKpis.unassigned > 0 ? 'text-[#4F6CE8]' : 'text-[#242124] dark:text-white'}`}>
+              <span className={`text-lg font-extrabold mt-1 ${plaqueDetailKpis.unassigned > 0 ? 'text-[#787570]' : 'text-[#242124] dark:text-white'}`}>
                 {plaqueDetailKpis.unassigned}
               </span>
               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">en attente</span>
@@ -343,7 +343,7 @@ export default function BackofficePlaquesView() {
 
           {/* Success Banner */}
           {plaqueDetailSuccessMsg && (
-            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-zinc-500/10 border border-zinc-500/20 text-zinc-600 dark:text-zinc-400 text-xs font-semibold flex items-center gap-2">
               <Icons.CheckCircle size={14} />
               <span>{plaqueDetailSuccessMsg}</span>
             </div>
@@ -381,7 +381,7 @@ export default function BackofficePlaquesView() {
                 <button
                   onClick={handleBulkDispatch}
                   disabled={!bulkDispatchSalespersonId || isBulkDispatching}
-                  className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50 shrink-0"
+                  className="px-4 py-2 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50 shrink-0"
                 >
                   <Icons.UserPlus size={13} />
                   <span>{isBulkDispatching ? 'Affectation...' : 'Affecter en masse'}</span>
@@ -400,7 +400,7 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaqueDetailFilter === 'ALL'
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                 }`}
               >
@@ -413,8 +413,8 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaqueDetailFilter === 'VISITED'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-[#363336] text-emerald-600 dark:text-emerald-400 border border-black/5 dark:border-white/5'
+                    ? 'bg-zinc-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-400 border border-black/5 dark:border-white/5'
                 }`}
               >
                 Visités ({plaqueDetailKpis.visited})
@@ -426,8 +426,8 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaqueDetailFilter === 'UNVISITED'
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
-                    : 'bg-white dark:bg-[#363336] text-[#4F6CE8] border border-black/5 dark:border-white/5'
+                    ? 'bg-[#55524E] text-white shadow-xs'
+                    : 'bg-white dark:bg-[#363336] text-[#787570] border border-black/5 dark:border-white/5'
                 }`}
               >
                 Non visités ({plaqueDetailKpis.unvisited})
@@ -439,7 +439,7 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaqueDetailFilter === 'ASSIGNED'
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                 }`}
               >
@@ -452,8 +452,8 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaqueDetailFilter === 'UNASSIGNED'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-[#363336] text-amber-600 dark:text-amber-400 border border-black/5 dark:border-white/5'
+                    ? 'bg-zinc-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-[#363336] text-zinc-600 dark:text-zinc-400 border border-black/5 dark:border-white/5'
                 }`}
               >
                 Non assignés ({plaqueDetailKpis.unassigned})
@@ -470,7 +470,7 @@ export default function BackofficePlaquesView() {
                   setPlaqueDetailPage(1);
                 }}
                 placeholder="Rechercher une entreprise..."
-                className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#4F6CE8]"
+                className="w-full bg-white dark:bg-[#363336] pl-8 pr-3 py-1.5 rounded-xl border border-black/5 dark:border-white/5 text-xs text-[#242124] dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#9B978F]"
               />
             </div>
           </div>
@@ -528,7 +528,7 @@ export default function BackofficePlaquesView() {
                         </td>
                         <td className="py-3 px-3">
                           {ent.is_visited ? (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold flex items-center gap-1 w-fit">
                               <Icons.CheckCircle size={10} /> Visité
                             </span>
                           ) : (
@@ -540,8 +540,8 @@ export default function BackofficePlaquesView() {
                         <td className="py-3 px-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                             ent.conversion_status === 'CONVERTED' || ent.is_converted
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-[#4F6CE8]/10 text-[#4F6CE8]'
+                              ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400'
+                              : 'bg-zinc-500/10 text-[#787570]'
                           }`}>
                             {ent.conversion_status || 'PROSPECT'}
                           </span>
@@ -549,7 +549,7 @@ export default function BackofficePlaquesView() {
                         <td className="py-3 px-3 text-right">
                           <button
                             onClick={() => setSelectedAccountForDetail(ent)}
-                            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#4F6CE8] transition-colors cursor-pointer"
+                            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#787570] transition-colors cursor-pointer"
                             title="Voir la fiche complète"
                           >
                             <Icons.ExternalLink size={13} />
@@ -611,7 +611,7 @@ export default function BackofficePlaquesView() {
 
               <button
                 onClick={() => setIsAddPlaqueOpen(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                className="primary-cta px-3.5 py-1.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
               >
                 <Icons.Plus size={14} />
                 <span>Créer une Plaque</span>
@@ -636,7 +636,7 @@ export default function BackofficePlaquesView() {
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   plaquesListFilter === f.id
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
+                    ? 'bg-[#55524E] text-white shadow-xs'
                     : 'bg-white dark:bg-[#363336] text-[#6E6C67] dark:text-[#A1A1AA] border border-black/5 dark:border-white/5'
                 }`}
               >
@@ -682,13 +682,13 @@ export default function BackofficePlaquesView() {
                           className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           <td className="py-3 px-3">
-                            <span className="px-2.5 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] font-extrabold text-xs">
+                            <span className="px-2.5 py-1 rounded-xl bg-zinc-500/10 text-[#787570] font-extrabold text-xs">
                               {plaque.code}
                             </span>
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-[#242124] dark:text-white hover:text-[#4F6CE8] transition-colors">{plaque.name}</span>
+                              <span className="font-semibold text-[#242124] dark:text-white hover:text-[#787570] transition-colors">{plaque.name}</span>
                               <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">{plaque.city}</span>
                             </div>
                           </td>
@@ -701,7 +701,7 @@ export default function BackofficePlaquesView() {
                                   </span>
                                 ))
                               ) : (
-                                <span className="text-[10px] text-[#4F6CE8] font-550">
+                                <span className="text-[10px] text-[#787570] font-550">
                                   Aucun commercial affecté
                                 </span>
                               )}
@@ -714,7 +714,7 @@ export default function BackofficePlaquesView() {
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-2 text-[10px]">
-                              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{visitedCount} visités</span>
+                              <span className="text-zinc-600 dark:text-zinc-400 font-semibold">{visitedCount} visités</span>
                               <span className="text-zinc-400">•</span>
                               <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{unvisitedCount} restants</span>
                             </div>
@@ -732,7 +732,7 @@ export default function BackofficePlaquesView() {
                               <button
                                 onClick={() => onAutoDispatchClick(plaque)}
                                 disabled={isDispatching}
-                                className="px-2.5 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                                className="px-2.5 py-1.5 rounded-xl bg-[#55524E] hover:bg-[#55524E] text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm disabled:opacity-50"
                                 title="Déclencher l'algorithme d'affectation automatique avec anti-collision"
                               >
                                 <Icons.Zap size={12} className={isDispatching ? "animate-spin" : ""} />

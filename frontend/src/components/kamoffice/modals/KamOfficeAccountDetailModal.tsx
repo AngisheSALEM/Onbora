@@ -36,7 +36,7 @@ export default function KamOfficeAccountDetailModal({
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                   account.segment === 'GRAND_COMPTE'
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                    : 'bg-[#4F6CE8]/15 text-[#4F6CE8]'
+                    : 'bg-zinc-500/15 text-[#787570]'
                 }`}>
                   {account.segment === 'GRAND_COMPTE' ? 'Grand Compte (> 1M$)' : 'PME Stratégique'}
                 </span>
@@ -78,7 +78,7 @@ export default function KamOfficeAccountDetailModal({
 
           <div className="bg-white dark:bg-[#363336] p-3 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
             <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Chiffre d&apos;Affaires & Effectif</span>
-            <span className="font-bold text-[#4F6CE8] mt-0.5">
+            <span className="font-bold text-[#787570] mt-0.5">
               {Number(account.annual_revenue).toLocaleString('fr-FR')} $ / an
             </span>
             <span className="text-[10px] text-zinc-500">
@@ -91,7 +91,7 @@ export default function KamOfficeAccountDetailModal({
             <span className="font-semibold text-[#242124] dark:text-white mt-0.5">
               {account.contact_name || 'Direction Générale'}
             </span>
-            <span className="text-[10px] text-[#4F6CE8] font-mono">
+            <span className="text-[10px] text-[#787570] font-mono">
               {account.contact_phone || 'Aucun numéro renseigné'}
             </span>
             {account.contact_email && (
@@ -113,10 +113,10 @@ export default function KamOfficeAccountDetailModal({
             </span>
           </div>
           <div className="flex items-center justify-between mt-1 pt-1 border-t border-black/5 dark:border-white/5">
-            <span className="font-bold text-[#4F6CE8]">
+            <span className="font-bold text-[#787570]">
               {account.recommended_solution || (account.segment === 'GRAND_COMPTE' ? 'Liaison Fibre Dédiée Symétrique 1 Gbps + SD-WAN Managé & Double Adduction' : 'Pack Entreprise Fibre Pro 200 Mbps + Téléphonie IP')}
             </span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 font-semibold shrink-0">
               99.99% SLA
             </span>
           </div>
@@ -130,11 +130,11 @@ export default function KamOfficeAccountDetailModal({
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <div className="p-2 rounded-xl bg-black/3 dark:bg-white/3 flex items-center justify-between">
               <span className="text-zinc-600 dark:text-zinc-400">Remise Engagement Pluriannuel :</span>
-              <strong className="text-[#4F6CE8] font-mono">-15% (36 mois)</strong>
+              <strong className="text-[#787570] font-mono">-15% (36 mois)</strong>
             </div>
             <div className="p-2 rounded-xl bg-black/3 dark:bg-white/3 flex items-center justify-between">
               <span className="text-zinc-600 dark:text-zinc-400">Frais de Raccordement Optique :</span>
-              <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">Offerts</strong>
+              <strong className="text-zinc-600 dark:text-zinc-400 font-semibold">Offerts</strong>
             </div>
             <div className="p-2 rounded-xl bg-black/3 dark:bg-white/3 flex items-center justify-between">
               <span className="text-zinc-600 dark:text-zinc-400">Bascule Secours 4G/Satellite :</span>
@@ -172,7 +172,7 @@ export default function KamOfficeAccountDetailModal({
           {onOpenAssignModal && (
             <button
               onClick={() => onOpenAssignModal(account)}
-              className="px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+              className="primary-cta px-3 py-1.5 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <Icons.UserPlus size={13} />
               <span>{account.assigned_kam ? "Changer d'affectation" : "Affecter un KAM"}</span>

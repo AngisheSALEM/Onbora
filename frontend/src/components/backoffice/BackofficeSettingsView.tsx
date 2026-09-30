@@ -144,13 +144,13 @@ export default function BackofficeSettingsView() {
           </p>
         </div>
         {avatarSuccessMsg && (
-          <div className="px-4 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl text-xs font-semibold flex items-center gap-2 shrink-0">
+          <div className="px-4 py-2 bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 rounded-2xl text-xs font-semibold flex items-center gap-2 shrink-0">
             <Icons.CheckCircle size={15} />
             <span>{avatarSuccessMsg}</span>
           </div>
         )}
         {avatarErrorMsg && (
-          <div className="px-4 py-2 bg-red-500/10 text-red-500 rounded-2xl text-xs font-semibold flex items-center gap-2 shrink-0">
+          <div className="px-4 py-2 bg-zinc-500/10 text-zinc-500 rounded-2xl text-xs font-semibold flex items-center gap-2 shrink-0">
             <Icons.AlertCircle size={15} />
             <span>{avatarErrorMsg}</span>
           </div>
@@ -161,7 +161,7 @@ export default function BackofficeSettingsView() {
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 border-2 border-[#4F6CE8] flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+            <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 border-2 border-[#9B978F] flex items-center justify-center overflow-hidden shadow-xs shrink-0">
               <img
                 src={profilePictureInput || user?.profile_picture_url || '/avatars/default_avatar.svg'}
                 alt="Photo de profil"
@@ -176,7 +176,7 @@ export default function BackofficeSettingsView() {
                 <h3 className="text-base font-extrabold text-[#242124] dark:text-white">
                   {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Superviseur Onbora'}
                 </h3>
-                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8]">
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-500/15 text-[#787570]">
                   Superviseur Back-Office Terrain
                 </span>
               </div>
@@ -188,7 +188,7 @@ export default function BackofficeSettingsView() {
 
           <button
             onClick={() => logout()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-rose-500/20 self-start sm:self-auto shadow-none"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-500/10 hover:bg-zinc-500/20 text-zinc-600 dark:text-zinc-400 text-xs font-bold transition-all cursor-pointer shrink-0 border border-zinc-500/20 self-start sm:self-auto shadow-none"
             title="Se déconnecter du Back-Office"
           >
             <Icons.LogOut size={16} />
@@ -267,9 +267,9 @@ export default function BackofficeSettingsView() {
       </div>
 
       {/* 4. DANGER ZONE : DÉCONNEXION */}
-      <div className="bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-zinc-500/5 dark:bg-zinc-500/10 border border-zinc-500/20 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col">
-          <span className="text-sm font-extrabold text-red-600 dark:text-red-400">
+          <span className="text-sm font-extrabold text-zinc-600 dark:text-zinc-400">
             Déconnexion de votre compte
           </span>
           <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -279,7 +279,7 @@ export default function BackofficeSettingsView() {
         <button
           type="button"
           onClick={logout}
-          className="px-5 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center justify-center gap-2 shadow-sm shrink-0"
+          className="px-5 py-2.5 rounded-2xl bg-zinc-600 hover:bg-zinc-700 text-white font-semibold text-xs transition-all cursor-pointer inline-flex items-center justify-center gap-2 shadow-sm shrink-0"
         >
           <Icons.LogOut size={16} />
           <span>Déconnexion</span>

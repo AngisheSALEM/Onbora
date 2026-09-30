@@ -19,7 +19,7 @@ export default function BackofficeReportInspectModal({
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl max-w-2xl w-full p-6 border border-black/10 dark:border-white/10 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-[#4F6CE8]">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-[#787570]">
               {report.type === 'SUBMISSION' ? 'Formulaire de Qualification Guidé' : 'Compte-Rendu Dictaphone / IA'}
             </span>
             <h3 className="text-base font-extrabold text-[#242124] dark:text-white">
@@ -37,12 +37,12 @@ export default function BackofficeReportInspectModal({
         {/* Metadata Chips */}
         <div className="flex items-center gap-2 flex-wrap text-xs text-[#6E6C67] dark:text-[#A1A1AA]">
           {report.plaque_code && (
-            <span className="px-2.5 py-1 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] font-bold">
+            <span className="px-2.5 py-1 rounded-xl bg-zinc-500/10 text-[#787570] font-bold">
               Plaque : {report.plaque_code}
             </span>
           )}
           {report.qualification_score !== undefined && (
-            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+            <span className="px-2.5 py-1 rounded-xl bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 font-bold">
               Score : {report.qualification_score}/100
             </span>
           )}
@@ -103,7 +103,7 @@ export default function BackofficeReportInspectModal({
                 {(report.detected_needs || report.confirmed_needs || []).map((need: string, idx: number) => (
                   <span
                     key={idx}
-                    className="px-2 py-0.5 rounded-md bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-semibold"
+                    className="px-2 py-0.5 rounded-md bg-zinc-500/10 text-[#787570] text-[10px] font-semibold"
                   >
                     {need}
                   </span>
@@ -114,7 +114,7 @@ export default function BackofficeReportInspectModal({
 
           {(report.objections_noted || (report.objections_raised?.length || 0) > 0) && (
             <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
-              <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+              <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
                 Objections / Contraintes
               </span>
               <p className="text-xs text-[#242124] dark:text-white">
@@ -126,7 +126,7 @@ export default function BackofficeReportInspectModal({
 
         {/* Next Action */}
         {report.next_action && (
-          <div className="p-3 rounded-2xl bg-[#4F6CE8]/10 text-xs flex items-center justify-between text-[#4F6CE8]">
+          <div className="p-3 rounded-2xl bg-zinc-500/10 text-xs flex items-center justify-between text-[#787570]">
             <span className="font-semibold">Prochaine action :</span>
             <span className="font-bold">{report.next_action}</span>
           </div>

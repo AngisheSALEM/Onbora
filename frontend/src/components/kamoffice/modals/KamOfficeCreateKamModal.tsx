@@ -89,7 +89,7 @@ export default function KamOfficeCreateKamModal({
         </div>
 
         {(error || localError) && (
-          <div className="p-3 rounded-2xl bg-rose-500/15 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
             {error || localError}
           </div>
         )}
@@ -191,7 +191,7 @@ export default function KamOfficeCreateKamModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
+              className="primary-cta px-5 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
             >
               {submitting ? "Création en cours..." : "Créer le compte"}
             </button>

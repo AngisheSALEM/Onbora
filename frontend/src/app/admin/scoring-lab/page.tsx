@@ -263,7 +263,7 @@ export default function ScoringLabPage() {
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F6F5F2] dark:bg-[#242124]">
-        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#4F6CE8] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-[#9B978F] rounded-full animate-spin" />
       </div>
     );
   }
@@ -289,7 +289,7 @@ export default function ScoringLabPage() {
               <div>
                 <h1 className="text-xs font-bold text-[#242124] dark:text-white flex items-center gap-2">
                   <span>Laboratoire de Test des Alertes Clients</span>
-                  <span className="text-[9px] uppercase px-2 py-0.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] font-bold">
+                  <span className="text-[9px] uppercase px-2 py-0.5 rounded-full bg-zinc-500/15 text-[#787570] font-bold">
                     Banc d'essai
                   </span>
                 </h1>
@@ -378,8 +378,8 @@ export default function ScoringLabPage() {
                     ))}
                   </select>
 
-                  <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2.5">
-                    <Icons.Check size={16} className="text-[#4F6CE8] shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800/40 text-xs text-zinc-800 dark:text-zinc-300 flex items-start gap-2.5">
+                    <Icons.Check size={16} className="text-[#787570] shrink-0 mt-0.5" />
                     <span>
                       Les métriques sont directement lues depuis l'historique des réunions, des propositions et des contacts réels du CRM.
                     </span>
@@ -396,14 +396,14 @@ export default function ScoringLabPage() {
                       <button
                         type="button"
                         onClick={() => loadPreset('expansion_prime')}
-                        className="px-3 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 text-xs font-bold text-left transition-all border border-emerald-200 dark:border-emerald-800/40 cursor-pointer"
+                        className="px-3 py-2 rounded-2xl bg-zinc-50 dark:bg-zinc-950/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300 text-xs font-bold text-left transition-all border border-zinc-200 dark:border-zinc-800/40 cursor-pointer"
                       >
                         Client en forte expansion
                       </button>
                       <button
                         type="button"
                         onClick={() => loadPreset('churn_risk')}
-                        className="px-3 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 text-rose-700 dark:text-rose-300 text-xs font-bold text-left transition-all border border-rose-200 dark:border-rose-800/40 cursor-pointer"
+                        className="px-3 py-2 rounded-2xl bg-zinc-50 dark:bg-zinc-950/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300 text-xs font-bold text-left transition-all border border-zinc-200 dark:border-zinc-800/40 cursor-pointer"
                       >
                         Compte en risque critique
                       </button>
@@ -421,7 +421,7 @@ export default function ScoringLabPage() {
                   <div className="p-4 rounded-2xl bg-[#F6F5F2] dark:bg-[#242124] space-y-2">
                     <div className="flex justify-between items-center text-xs font-bold">
                       <span>Délai depuis le dernier contact commercial</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-white dark:bg-[#2D2A2D] text-[#4F6CE8]">
+                      <span className="px-2.5 py-0.5 rounded-full bg-white dark:bg-[#2D2A2D] text-[#787570]">
                         {metrics.days_since_last_meeting} jours
                       </span>
                     </div>
@@ -432,7 +432,7 @@ export default function ScoringLabPage() {
                       step="5"
                       value={metrics.days_since_last_meeting}
                       onChange={(e) => updateMetric('days_since_last_meeting', Number(e.target.value))}
-                      className="w-full accent-[#4F6CE8] cursor-pointer"
+                      className="w-full accent-[#9B978F] cursor-pointer"
                     />
                   </div>
 
@@ -464,14 +464,14 @@ export default function ScoringLabPage() {
                             onClick={() => updateMetric(item.key, !active)}
                             className={`p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                               active
-                                ? 'bg-[#4F6CE8]/10 border-[#4F6CE8] text-[#242124] dark:text-white'
+                                ? 'bg-zinc-500/10 border-[#9B978F] text-[#242124] dark:text-white'
                                 : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/5 dark:border-white/5 text-[#6E6C67] dark:text-[#A1A1AA] hover:bg-black/5'
                             }`}
                           >
                             <span className="text-xs font-semibold">{item.label}</span>
                             <div
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ml-2 ${
-                                active ? 'border-[#4F6CE8] bg-[#4F6CE8]' : 'border-zinc-400'
+                                active ? 'border-[#9B978F] bg-[#55524E]' : 'border-zinc-400'
                               }`}
                             >
                               {active && <Icons.Check size={10} className="text-white" />}
@@ -510,12 +510,12 @@ export default function ScoringLabPage() {
                       <span
                         className={`text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full ${
                           simResult.status_color === 'emerald'
-                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                            ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border border-zinc-500/30'
                             : simResult.status_color === 'blue'
-                            ? 'bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/30'
+                            ? 'bg-zinc-500/15 text-[#787570] border border-zinc-500/30'
                             : simResult.status_color === 'amber'
-                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
-                            : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                            ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border border-zinc-500/30'
+                            : 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border border-zinc-500/30'
                         }`}
                       >
                         Priorité : {simResult.status_label}
@@ -524,7 +524,7 @@ export default function ScoringLabPage() {
 
                     {simResult.triggered_action && (
                       <div className="w-full p-3.5 rounded-2xl bg-[#F6F5F2] dark:bg-[#242124] border border-black/5 dark:border-white/5 text-xs text-left flex items-start gap-2.5">
-                        <Icons.Check size={16} className="text-[#4F6CE8] shrink-0 mt-0.5" />
+                        <Icons.Check size={16} className="text-[#787570] shrink-0 mt-0.5" />
                         <div>
                           <span className="font-bold text-[#242124] dark:text-white block">Recommandation pour le KAM :</span>
                           <span className="text-[#6E6C67] dark:text-[#A1A1AA]">{simResult.triggered_action}</span>
@@ -537,7 +537,7 @@ export default function ScoringLabPage() {
                   <div className="bg-white dark:bg-[#2D2A2D] p-5 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-[#242124] dark:text-white flex items-center gap-2">
-                        <Icons.CheckCircle size={14} className="text-[#4F6CE8]" />
+                        <Icons.CheckCircle size={14} className="text-[#787570]" />
                         <span>Situations actives ({simResult.triggered_rules.length})</span>
                       </h3>
                       <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">Base : {simResult.base_score} pts</span>
@@ -564,8 +564,8 @@ export default function ScoringLabPage() {
                               <span
                                 className={`px-2.5 py-0.5 rounded-lg font-bold text-[11px] shrink-0 ${
                                   isPos
-                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                                    : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                                    ? 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
+                                    : 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300'
                                 }`}
                               >
                                 {isPos ? "Augmente" : "Réduit"} ({rule.points_formatted})
@@ -579,7 +579,7 @@ export default function ScoringLabPage() {
                 </>
               ) : (
                 <div className="bg-white dark:bg-[#2D2A2D] p-8 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col items-center justify-center text-center text-[#6E6C67]">
-                  <Icons.Target size={32} className="mb-2 text-[#4F6CE8]" />
+                  <Icons.Target size={32} className="mb-2 text-[#787570]" />
                   <span>Calcul en direct...</span>
                 </div>
               )}

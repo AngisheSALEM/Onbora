@@ -10,7 +10,7 @@ function KamOfficeShell({ children }: { children: React.ReactNode }) {
   const { loadKamOfficeData, loadingData } = useKamOfficeContext();
 
   return (
-    <div className="flex h-screen w-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans antialiased overflow-hidden select-none transition-colors duration-300">
+    <div className="management-surface flex h-screen w-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans antialiased overflow-hidden select-none transition-colors duration-300">
       <KamOfficeSidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden p-4 pl-4 min-w-0">
         <KamOfficeHeader onRefresh={loadKamOfficeData} loading={loadingData} />

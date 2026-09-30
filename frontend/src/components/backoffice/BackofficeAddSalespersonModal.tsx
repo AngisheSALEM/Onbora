@@ -53,7 +53,7 @@ export default function BackofficeAddSalespersonModal({
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl p-6 w-full max-w-md border border-black/5 dark:border-white/5 shadow-2xl flex flex-col gap-4">
         <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
           <div className="flex items-center gap-2.5">
-            <Icons.UserPlus size={18} className="text-[#4F6CE8]" />
+            <Icons.UserPlus size={18} className="text-[#787570]" />
             <h3 className="font-extrabold text-sm text-[#242124] dark:text-white">Nouveau Commercial Terrain</h3>
           </div>
           <button
@@ -65,7 +65,7 @@ export default function BackofficeAddSalespersonModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-red-500/15 text-red-700 dark:text-red-300 text-xs font-semibold">
+          <div className="p-3 rounded-2xl bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
             {error}
           </div>
         )}
@@ -155,7 +155,7 @@ export default function BackofficeAddSalespersonModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D5BD9] text-white text-xs font-semibold cursor-pointer transition-all disabled:opacity-50"
+              className="primary-cta px-4 py-2 rounded-2xl bg-[#4F6CE8] hover:bg-[#3E5AC8] text-white text-xs font-semibold cursor-pointer transition-all disabled:opacity-50"
             >
               {loading ? "Création..." : "Enregistrer"}
             </button>

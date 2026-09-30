@@ -127,7 +127,7 @@ export default function BackofficeSidebar() {
                   isSidebarCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'
                 } rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-sm'
+                    ? 'bg-[#55524E] text-white shadow-sm'
                     : 'text-zinc-600 dark:text-[#A1A1AA] hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
@@ -174,11 +174,11 @@ export default function BackofficeSidebar() {
               src={user?.profile_picture_url || user?.avatar}
               name={user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Superviseur'}
               size="sm"
-              className="shrink-0 group-hover:ring-2 group-hover:ring-[#4F6CE8] transition-all"
+              className="shrink-0 group-hover:ring-2 group-hover:ring-[#9B978F] transition-all"
             />
             {!isSidebarCollapsed && (
               <div className="flex flex-col truncate max-w-[130px]">
-                <span className="text-xs font-medium leading-tight text-zinc-900 dark:text-white truncate group-hover:text-[#4F6CE8] transition-colors">
+                <span className="text-xs font-medium leading-tight text-zinc-900 dark:text-white truncate group-hover:text-[#787570] transition-colors">
                   {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username || 'Superviseur'}
                 </span>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">

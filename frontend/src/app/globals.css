@@ -2,6 +2,29 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "leaflet/dist/leaflet.css";
 
+/* Les cartes de gestion partagent la palette neutre de l'interface. */
+.management-map .leaflet-tile-pane {
+  filter: grayscale(1);
+}
+
+.management-map .leaflet-control-attribution {
+  filter: grayscale(1);
+}
+
+.management-map .leaflet-control-attribution a {
+  color: inherit;
+}
+
+.management-surface input[type="checkbox"],
+.management-surface input[type="radio"] {
+  accent-color: #55524E;
+}
+
+/* Quand un dialogue est ouvert, son action principale porte l'accent. */
+.management-surface:has(.fixed.inset-0) .primary-cta:not(.fixed.inset-0 .primary-cta) {
+  background-color: #55524E;
+}
+
 @font-face {
   font-family: 'SF Pro Display';
   src: url('/fonts/SF-Pro-Display-Bold.otf') format('opentype');
