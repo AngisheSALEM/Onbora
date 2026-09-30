@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../common/screen/widget/swipe_tab_views.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -87,8 +88,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: [
               // 1. Vues de contenu Commercial Terrain
               Positioned.fill(
-                child: IndexedStack(
+                child: SwipeTabViews(
                   index: controller.currentIndex.value < _salesViews.length ? controller.currentIndex.value : 0,
+                  onChanged: controller.changePage,
                   children: _salesViews,
                 ),
               ),

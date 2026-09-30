@@ -49,13 +49,14 @@ export default function KamHeader({
   }, [pathname]);
 
   return (
-    <header className="h-16 px-6 md:px-8 flex items-center justify-between shrink-0 select-none border-b border-black/5 dark:border-white/5 bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md z-20">
-      {/* Barre de recherche unique, alignée en haut à gauche */}
-      <div className="flex items-center gap-3 w-full max-w-md">
+    <header className="h-16 px-6 md:px-8 flex items-center justify-end shrink-0 select-none border-b border-black/5 dark:border-white/5 bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md z-20">
+      {/* Recherche alignée à droite dans l'espace de travail KAM. */}
+      <div className="ml-auto flex items-center gap-3 w-full max-w-md">
         <div className="flex items-center gap-2.5 px-3.5 py-1.5 bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full border border-black/5 dark:border-white/5 text-xs font-medium w-full transition-all focus-within:ring-1 focus-within:ring-zinc-400 dark:focus-within:ring-zinc-600">
           <Icons.Search size={14} className="text-zinc-400 shrink-0" />
           <input
             type="text"
+            aria-label="Rechercher dans l'espace KAM"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchPlaceholder}
@@ -73,9 +74,6 @@ export default function KamHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* Réservé pour statut et indicateurs contextuels discrets */}
-      </div>
     </header>
   );
 }

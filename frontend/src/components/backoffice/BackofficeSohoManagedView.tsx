@@ -7,7 +7,6 @@ import EnterpriseActionsModal from './EnterpriseActionsModal';
 import { EnterpriseItem } from './backofficeTypes';
 import { useBackofficeContext } from './BackofficeContext';
 import BackofficeAccountDetailModal from './BackofficeAccountDetailModal';
-import BackofficeReportInspectModal from './BackofficeReportInspectModal';
 
 export default function BackofficeSohoManagedView() {
   const {
@@ -21,8 +20,7 @@ export default function BackofficeSohoManagedView() {
     getEnterpriseVisitInfo,
     selectedAccountForDetail,
     setSelectedAccountForDetail,
-    selectedReportToInspect,
-    setSelectedReportToInspect,
+    openReportDetail,
     recentReportsFeed,
     recentFormSubmissions,
     handleAssignEnterpriseSalesperson,
@@ -236,7 +234,7 @@ export default function BackofficeSohoManagedView() {
                             </span>
                             {vInfo.lastReport && (
                               <button
-                                onClick={() => setSelectedReportToInspect(vInfo.lastReport)}
+                                onClick={() => openReportDetail(vInfo.lastReport)}
                                 className="text-[9px] font-bold text-[#787570] hover:underline text-left cursor-pointer"
                               >
                                 Voir dernier CR
@@ -307,7 +305,7 @@ export default function BackofficeSohoManagedView() {
           reports={recentReportsFeed}
           submissions={recentFormSubmissions}
           onClose={() => setSelectedEnterpriseForActions(null)}
-          onOpenReportDetail={(rep) => setSelectedReportToInspect(rep)}
+          onOpenReportDetail={openReportDetail}
         />
       )}
 
@@ -317,11 +315,6 @@ export default function BackofficeSohoManagedView() {
         onClose={() => setSelectedAccountForDetail(null)}
       />
 
-      {/* Report Inspection Modal */}
-      <BackofficeReportInspectModal
-        report={selectedReportToInspect}
-        onClose={() => setSelectedReportToInspect(null)}
-      />
     </div>
   );
 }

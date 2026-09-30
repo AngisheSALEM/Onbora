@@ -146,7 +146,7 @@ export default function KamSidebar({
 
             const buttonClass = `group flex items-center justify-center p-3 ${isCollapsed ? 'md:justify-center md:p-3.5' : 'md:justify-between md:p-3.5'} rounded-2xl transition-all text-left cursor-pointer ${
               isActive
-                ? 'bg-[#55524E] text-white shadow-none font-semibold'
+                ? 'bg-primary-blue text-white shadow-none font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-[#787570] dark:hover:text-[#787570]'
             }`;
 
@@ -187,6 +187,7 @@ export default function KamSidebar({
                 <button
                   key={item.id}
                   aria-label={item.label}
+                  aria-current={isActive ? 'page' : undefined}
                   onClick={() => onViewChange(item.id)}
                   title={isCollapsed ? item.label : undefined}
                   className={buttonClass}
@@ -200,6 +201,7 @@ export default function KamSidebar({
               <Link
                 key={item.id}
                 aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
                 className={buttonClass}

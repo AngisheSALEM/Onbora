@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { Icons } from '@/components/shared/Icons';
 import Pagination from '@/components/kam/Pagination';
 import { useKamOfficeContext } from './KamOfficeContext';
-import KamOfficeReportDetailModal from './modals/KamOfficeReportDetailModal';
 
 export default function KamOfficeReportsView() {
   const {
@@ -13,9 +13,6 @@ export default function KamOfficeReportsView() {
     loadKamReports,
     setHeaderTitle,
     setSearchPlaceholder,
-    selectedReportDetail,
-    setSelectedReportDetail,
-    setNotification,
   } = useKamOfficeContext();
 
   const [reportsMeetingTypeFilter, setReportsMeetingTypeFilter] = useState<'ALL' | 'PHYSICAL' | 'GOOGLE_MEET' | 'CALL'>('ALL');
@@ -243,12 +240,12 @@ export default function KamOfficeReportsView() {
                     </td>
 
                     <td className="py-3.5 px-3 text-right">
-                      <button
-                        onClick={() => setSelectedReportDetail(report)}
+                      <Link
+                        href={`/kamoffice/reports/${report.id}`}
                         className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold text-[#787570] border border-black/5 dark:border-white/5 transition-all cursor-pointer shadow-2xs"
                       >
-                        Consulter
-                      </button>
+                        Voir le rapport
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -267,20 +264,6 @@ export default function KamOfficeReportsView() {
         />
       </div>
 
-      {/* Report Detail Modal */}
-      {selectedReportDetail && (
-        <KamOfficeReportDetailModal
-          report={selectedReportDetail}
-          onClose={() => setSelectedReportDetail(null)}
-          onCopyDraftSuccess={() => {
-            setNotification({
-              type: 'success',
-              message: "Projet d'e-mail copié dans le presse-papier !",
-            });
-            setTimeout(() => setNotification(null), 3000);
-          }}
-        />
-      )}
     </div>
   );
 }

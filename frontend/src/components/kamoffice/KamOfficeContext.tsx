@@ -50,8 +50,6 @@ interface KamOfficeContextType {
   setIsCreateKamModalOpen: (open: boolean) => void;
   selectedAccountForDetail: KamAccount | null;
   setSelectedAccountForDetail: (acc: KamAccount | null) => void;
-  selectedReportDetail: KamVisitRecord | null;
-  setSelectedReportDetail: (rep: KamVisitRecord | null) => void;
   selectedKamDetail: KamUser | null;
   setSelectedKamDetail: (kam: KamUser | null) => void;
 }
@@ -78,7 +76,6 @@ export function KamOfficeProvider({ children }: { children: ReactNode }) {
   const [selectedAccountToAssign, setSelectedAccountToAssign] = useState<KamAccount | null>(null);
   const [isCreateKamModalOpen, setIsCreateKamModalOpen] = useState(false);
   const [selectedAccountForDetail, setSelectedAccountForDetail] = useState<KamAccount | null>(null);
-  const [selectedReportDetail, setSelectedReportDetail] = useState<KamVisitRecord | null>(null);
   const [selectedKamDetail, setSelectedKamDetail] = useState<KamUser | null>(null);
 
   const toggleSidebar = () => setIsSidebarCollapsed((prev) => !prev);
@@ -288,8 +285,6 @@ export function KamOfficeProvider({ children }: { children: ReactNode }) {
         setIsCreateKamModalOpen,
         selectedAccountForDetail,
         setSelectedAccountForDetail,
-        selectedReportDetail,
-        setSelectedReportDetail,
         selectedKamDetail,
         setSelectedKamDetail,
       }}

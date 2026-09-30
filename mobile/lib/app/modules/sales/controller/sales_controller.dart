@@ -925,37 +925,19 @@ class SalesController extends GetxController {
     });
 
     try {
-      // 1. Assurer qu'une fiche de préparation existe pour l'entreprise
+      final finalTranscript = transcript.trim();
+      if (finalTranscript.isEmpty) {
+        throw StateError('Ajoutez une transcription ou des notes avant de générer le rapport.');
+      }
+      if (selectedEnterprise.value == null) {
+        throw StateError('Sélectionnez l’entreprise concernée avant de générer le rapport.');
+      }
       if (currentPrep.value == null) {
-        if (selectedEnterprise.value == null) {
-          if (searchResults.isNotEmpty) {
-            selectEnterprise(searchResults.first);
-          } else if (_allEnterprises.isNotEmpty) {
-            selectEnterprise(_allEnterprises.first);
-          } else {
-            await fetchEnterprises();
-            if (_allEnterprises.isNotEmpty) {
-              selectEnterprise(_allEnterprises.first);
-            }
-          }
-        }
-
-        if (selectedEnterprise.value != null) {
-          final prepCreated = await prepareVisit();
-          if (!prepCreated || currentPrep.value == null) {
-            throw Exception("Impossible d'initialiser la fiche de préparation pour ${selectedEnterprise.value?.name ?? 'l\'entreprise'}.");
-          }
-        } else {
-          throw Exception("Veuillez sélectionner une entreprise cible avant de rédiger le compte-rendu.");
+        final prepared = await prepareVisit();
+        if (!prepared || currentPrep.value == null) {
+          throw StateError('La préparation de cette visite est indisponible.');
         }
       }
-
-      // 2. Transcription de secours si vide
-      final finalTranscript = transcript.trim().isNotEmpty
-          ? transcript.trim()
-          : (selectedEnterprise.value != null
-              ? "Entretien commercial avec la direction de ${selectedEnterprise.value!.name} sur ses besoins d'infrastructure télécoms et connectivité Orange Business."
-              : "Entretien commercial de qualification des besoins télécoms.");
 
       final body = <String, dynamic>{
         'preparation': currentPrep.value!.id,

@@ -47,18 +47,6 @@ export const KAM_OFFICE_NAV_ITEMS: KamOfficeNavItem[] = [
     getBadge: (metrics) => metrics?.pme_count,
   },
   {
-    id: 'leadscoring',
-    href: '/kamoffice/leadscoring',
-    label: 'Pipeline & Scoring B2B',
-    icon: Icons.Award,
-  },
-  {
-    id: 'churnradar',
-    href: '/kamoffice/churnradar',
-    label: "Radar Taux d'abandon",
-    icon: Icons.AlertTriangle,
-  },
-  {
     id: 'reports',
     href: '/kamoffice/reports',
     label: 'Rapports de Visite',
@@ -134,12 +122,13 @@ export default function KamOfficeSidebar() {
               <Link
                 key={item.id}
                 href={item.href}
+                aria-current={isActive ? 'page' : undefined}
                 title={isSidebarCollapsed ? item.label : undefined}
                 className={`group flex items-center ${
                   isSidebarCollapsed ? 'justify-center p-3.5' : 'justify-between p-3.5'
                 } rounded-2xl transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-[#55524E] text-white shadow-sm'
+                    ? 'bg-primary-blue text-white shadow-sm'
                     : 'text-zinc-600 dark:text-[#A1A1AA] hover:bg-[#E4E1DB]/60 dark:hover:bg-[#363336]/60 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >

@@ -6,7 +6,6 @@ import BackofficePagination from './BackofficePagination';
 import { SalespersonItem, EnterpriseItem, VisitReportItem, VisitSubmissionItem } from './backofficeTypes';
 import { useBackofficeContext } from './BackofficeContext';
 import BackofficeAddSalespersonModal from './BackofficeAddSalespersonModal';
-import BackofficeReportInspectModal from './BackofficeReportInspectModal';
 import BackofficeAccountDetailModal from './BackofficeAccountDetailModal';
 import { fetchAPI } from '@/lib/api';
 
@@ -21,8 +20,7 @@ export default function BackofficeSalespersonsView() {
     setIsAddSalespersonOpen,
     handleCreateSalesperson,
     handleAssignEnterpriseSalesperson,
-    selectedReportToInspect,
-    setSelectedReportToInspect,
+    openReportDetail,
     selectedAccountForDetail,
     setSelectedAccountForDetail,
     loadDashboardData,
@@ -563,7 +561,7 @@ export default function BackofficeSalespersonsView() {
 
                           <div className="flex items-center gap-2 shrink-0">
                             <button
-                              onClick={() => setSelectedReportToInspect({ ...sub, type: 'SUBMISSION' })}
+                              onClick={() => openReportDetail({ ...sub, type: 'SUBMISSION' })}
                               className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] text-[#242124] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold border border-black/5 dark:border-white/5 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                             >
                               <Icons.FileText size={13} />
@@ -630,7 +628,7 @@ export default function BackofficeSalespersonsView() {
 
                           <div className="flex items-center gap-2 shrink-0">
                             <button
-                              onClick={() => setSelectedReportToInspect({ ...rep, type: 'REPORT' })}
+                              onClick={() => openReportDetail({ ...rep, type: 'REPORT' })}
                               className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#363336] text-[#242124] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold border border-black/5 dark:border-white/5 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                             >
                               <Icons.FileText size={13} />
@@ -863,13 +861,6 @@ export default function BackofficeSalespersonsView() {
         onCreateSalesperson={handleCreateSalesperson}
       />
 
-      {/* Inspect Report Modal */}
-      {selectedReportToInspect && (
-        <BackofficeReportInspectModal
-          report={selectedReportToInspect}
-          onClose={() => setSelectedReportToInspect(null)}
-        />
-      )}
 
       {/* Account Detail Modal */}
       {selectedAccountForDetail && (

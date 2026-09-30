@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import ProspectDossier, KamAppointment, KamVisitReport, RelationshipCoverage
+from .appointment_serializers import KamAppointmentUpdateSerializer
 from .services.visit_purpose_service import build_appointment_preparation, suggest_visit_purpose
 from .services.account_update_service import update_enterprise_account_info
 from twin.models import BusinessTwin
@@ -743,23 +744,9 @@ class KamAppointmentDetailView(APIView):
         if user.role == User.KAM and app.kam_id != user.id:
             return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
 
-        data = request.data
-        if 'status' in data and data['status'] in dict(KamAppointment.STATUS_CHOICES):
-            app.status = data['status']
-        if 'meet_url' in data:
-            app.meet_url = data['meet_url'].strip()
-        if 'objective' in data:
-            app.objective = data['objective'].strip()
-        if 'visit_purpose' in data:
-            if data['visit_purpose'] not in dict(KamAppointment.VISIT_PURPOSES):
-                return Response({"detail": "Type de visite invalide."}, status=status.HTTP_400_BAD_REQUEST)
-            app.visit_purpose = data['visit_purpose']
-            app.purpose_source = 'MANUAL'
-            app.purpose_reason = 'Choix du KAM.'
-        if 'scheduled_at' in data:
-            app.scheduled_at = data['scheduled_at']
-
-        app.save()
+        serializer = KamAppointmentUpdateSerializer(app, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        app = serializer.save()
         return Response(serialize_kam_appointment(app), status=status.HTTP_200_OK)
 
     def delete(self, request, pk):

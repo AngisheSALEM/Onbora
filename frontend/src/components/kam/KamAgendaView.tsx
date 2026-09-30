@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
+import { useKamContext } from './KamContext';
 import { AppointmentData } from './KamVocalVisitModal';
 import KamExpressMeetingModal from './KamExpressMeetingModal';
 import { KamVisitPurpose, PurposeSuggestion, VISIT_PURPOSE_LABELS, VISIT_PURPOSE_TITLES } from './kamVisitPurpose';
@@ -16,6 +17,8 @@ interface KamAgendaViewProps {
   onAccountUpdated?: (account: StrategicVisit) => void;
 }
 
+const APPOINTMENTS_PAGE_SIZE = 6;
+
 export default function KamAgendaView({
   assignedAccounts,
   onOpenVisitsHistory,
@@ -23,6 +26,8 @@ export default function KamAgendaView({
   onAccountUpdated,
 }: KamAgendaViewProps) {
   const router = useRouter();
+  const { searchQuery } = useKamContext();
+  const [pagination, setPagination] = useState({ page: 1, filter: 'ALL', query: '' });
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -256,6 +261,7 @@ export default function KamAgendaView({
   }, [appointments]);
 
   const filteredAppointments = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase('fr-FR');
     return sortedAppointments.filter((app) => {
       const appDate = new Date(app.scheduled_at);
       const today = new Date();
@@ -264,10 +270,25 @@ export default function KamAgendaView({
       if (filterTab === 'TODAY' && !isToday) return false;
       if (filterTab === 'UPCOMING' && !(app.status === 'SCHEDULED' && appDate >= today)) return false;
       if (filterTab === 'COMPLETED' && app.status !== 'COMPLETED') return false;
+      if (query && ![app.enterprise_name, app.title, app.contact_name, app.contact_role, app.location]
+        .some((value) => value?.toLocaleLowerCase('fr-FR').includes(query))) return false;
 
       return true;
     });
-  }, [sortedAppointments, filterTab]);
+  }, [sortedAppointments, filterTab, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / APPOINTMENTS_PAGE_SIZE));
+  const currentPage = pagination.filter === filterTab && pagination.query === searchQuery
+    ? Math.min(pagination.page, totalPages)
+    : 1;
+  if (pagination.page !== currentPage || pagination.filter !== filterTab || pagination.query !== searchQuery) {
+    setPagination({ page: currentPage, filter: filterTab, query: searchQuery });
+  }
+  const pageStart = (currentPage - 1) * APPOINTMENTS_PAGE_SIZE;
+  const visibleAppointments = filteredAppointments.slice(pageStart, pageStart + APPOINTMENTS_PAGE_SIZE);
+  const changePage = (page: number) => {
+    setPagination({ page: Math.max(1, Math.min(page, totalPages)), filter: filterTab, query: searchQuery });
+  };
 
   const formatDate = (isoStr: string) => {
     try {
@@ -328,7 +349,7 @@ export default function KamAgendaView({
         </div>
 
         {/* Filter Tabs discrets sans bordure */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none w-fit">
+        <div className="flex items-center flex-wrap gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-2xl sm:rounded-full border-none w-fit">
           {[
             { id: 'ALL', label: `Tous (${appointments.length})` },
             { id: 'TODAY', label: `Aujourd'hui (${appointments.filter(a => new Date(a.scheduled_at).toDateString() === new Date().toDateString()).length})` },
@@ -426,7 +447,7 @@ export default function KamAgendaView({
       ) : (
         /* Grid of Scheduled Appointments */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredAppointments.map((app) => {
+          {visibleAppointments.map((app) => {
             const isCompleted = app.status === 'COMPLETED';
             const isInProgress = app.status === 'IN_PROGRESS';
 
@@ -536,6 +557,21 @@ export default function KamAgendaView({
             );
           })}
         </div>
+      )}
+
+      {!loading && !error && totalPages > 1 && (
+        <nav aria-label="Pagination de l'agenda" className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 dark:border-white/5 pt-3 text-xs text-zinc-500 dark:text-zinc-400">
+          <span>{pageStart + 1}–{Math.min(pageStart + APPOINTMENTS_PAGE_SIZE, filteredAppointments.length)} sur {filteredAppointments.length} rendez-vous</span>
+          <div className="flex items-center gap-2">
+            <button type="button" aria-label="Page précédente" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-blue">
+              <Icons.ChevronLeft size={16} />
+            </button>
+            <span aria-live="polite" aria-atomic="true" className="tabular-nums">Page {currentPage} sur {totalPages}</span>
+            <button type="button" aria-label="Page suivante" disabled={currentPage === totalPages} onClick={() => changePage(currentPage + 1)} className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-blue">
+              <Icons.ChevronRight size={16} />
+            </button>
+          </div>
+        </nav>
       )}
 
       {/* 3. MODAL NOUVEAU RENDEZ-VOUS */}

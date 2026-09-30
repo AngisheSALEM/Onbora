@@ -125,3 +125,21 @@ Ces tests sont écrits dans `backend/sales/tests.py`.
 - `kam.test_seed_portfolios` : seed réexécutable sans doublons, préservation des entreprises existantes, quatre combinaisons churn/upsell, compteurs alimentés, API paginée et isolation entre KAM.
 - `kam.test_churn_radar` : règles de santé, persistance, snapshots, compteurs et endpoints du radar.
 - Navigateur : dashboard limité à six comptes, lien Voir tout sans fond ni bordure, pagination et recherche, onglets conditionnels sur les quatre cohortes, sheets sans bordure, un seul CTA primaire et palette neutre sur admin/KAM office/back office.
+
+## Agenda et pages de rapport de visite (30 septembre 2026)
+
+- `cd frontend` puis `node --test tests/backofficeReport.test.mjs` : six tests couvrent la séparation des identifiants des rapports et formulaires, le retour à la page source, la conservation des synthèses, besoins, objections, actions, emails, transcriptions et réponses au questionnaire, le score zéro, les URL directes et les rapports introuvables.
+- Navigateur KAM : six rendez-vous par page, filtres et recherche réinitialisant la pagination, dernière page désactivée, navigation au clavier et affichage à 390 px.
+- Navigateur KAM Office : ouverture et rechargement d'une page de rapport, onglets et retour à la liste, absence de fenêtre modale, menus scoring et churn retirés.
+- Navigation KAM, KAM Office, administrateur et back-office : élément actif en bleu primaire. Recherche KAM alignée à droite dans l'espace de travail.
+- Back-office : vérifier les rapports dictés et les formulaires guidés avec leurs données propres. L'adaptateur est couvert par les tests ; les listes locales ne contenaient aucune visite lors de la vérification navigateur.
+
+
+## KAM mobile, rapports et conservation de la transcription (30 septembre 2026)
+
+- `cd mobile` puis `flutter test` : 32 tests passent, dont la conservation et la reprise des segments vocaux, les brouillons séparés par utilisateur et réunion, les écritures ordonnées, le payload exact envoyé au backend, la conservation après erreur et le nettoyage après succès, le blocage des générations concurrentes et des réunions vides.
+- Navigation : balayage entre onglets, sélection cohérente lors des sauts, conservation de l'état, gestes depuis les bords lorsqu'une carte utilise ses propres gestes. Le parcours Comptes → Agenda → Visites → Rapport est vérifié avec les contrats API.
+- Rapports : une action primaire visible, aucune icône, onglets rapport/email/transcription, largeur 320/390/768 px et thèmes clair/sombre. Captures des écrans réels Flutter avec la police SFPro pour la vérification visuelle.
+- `flutter analyze --no-pub` : aucune anomalie. `flutter build apk --debug` : compilation Android réussie.
+- `cd backend` puis `manage.py test kam.tests kam.test_mobile_appointment_update --noinput` avec base SQLite de test : 22 tests passent. Les nouveaux tests couvrent tous les champs éditables d'un rendez-vous, la validation atomique, l'isolation entre KAM et la conservation en base du texte vocal combiné aux notes.
+- Les tests automatisés vérifient le transport et la persistance de la transcription. La reconnaissance d'une voix réelle par le microphone Android/iOS reste à valider sur appareil ; aucun enregistrement réel ni envoi CRM externe n'a été effectué pendant la validation.

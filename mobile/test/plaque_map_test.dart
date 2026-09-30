@@ -70,7 +70,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppConstants.salesVisitsTitle), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Mes Plaques Assignées'), 240,
+      scrollable: find.byType(Scrollable).first);
     expect(find.text('Mes Plaques Assignées'), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
   });
 
   testWidgets('CatalogScreen renders Orange B2B catalog title', (WidgetTester tester) async {

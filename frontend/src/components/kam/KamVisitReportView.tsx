@@ -3,20 +3,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
-import { KamVisitRecord } from './KamVisitsHistoryView';
+import type { KamVisitRecord } from './KamVisitsHistoryView';
+
+export type VisitReportData = Pick<KamVisitRecord,
+  'id' | 'enterprise_name' | 'created_at' | 'executive_summary' | 'confirmed_needs' |
+  'objections_raised' | 'actions_todo' | 'follow_up_email_draft' | 'bant_scores'
+> & Partial<Pick<KamVisitRecord, 'visit_purpose_label' | 'conversion_status'>> & {
+  raw_transcript?: string;
+  source_label?: string;
+  salesperson_name?: string;
+  plaque_code?: string;
+  target_offer_name?: string;
+  qualification_score?: number;
+  answers?: { question_id?: string; question_text?: string; answer?: unknown }[];
+};
+
+const fetchKamReport = (id: number, signal?: AbortSignal): Promise<VisitReportData> =>
+  fetchAPI(`/api/kam/visits/${id}/`, { signal });
 
 interface KamVisitReportViewProps {
   reportId?: number | null;
-  initialReport?: KamVisitRecord | null;
+  initialReport?: VisitReportData | null;
+  fetchReport?: (id: number, signal?: AbortSignal) => Promise<VisitReportData>;
+  allowCrmSync?: boolean;
   onBack: () => void;
 }
 
 export default function KamVisitReportView({
   reportId,
   initialReport,
+  fetchReport = fetchKamReport,
+  allowCrmSync = true,
   onBack,
 }: KamVisitReportViewProps) {
-  const [report, setReport] = useState<KamVisitRecord | null>(initialReport || null);
+  const [report, setReport] = useState<VisitReportData | null>(initialReport || null);
   const [loading, setLoading] = useState<boolean>(!initialReport && !!reportId);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'report' | 'email'>('report');
@@ -25,31 +45,40 @@ export default function KamVisitReportView({
   const [syncCrmMessage, setSyncCrmMessage] = useState<string | null>(null);
   const [isVerbatimExpanded, setIsVerbatimExpanded] = useState(false);
 
-  const loadReport = useCallback(async (id: number) => {
+  const loadReport = useCallback(async (id: number, signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchAPI(`/api/kam/visits/${id}/`);
+      const data = await fetchReport(id, signal);
+      if (signal?.aborted) return;
       if (data && data.id) {
         setReport(data);
       } else {
         setError("Rapport de visite introuvable.");
       }
-    } catch (err: any) {
-      console.error("Erreur chargement rapport:", err);
-      setError("Impossible de charger le rapport de visite.");
+    } catch (err: unknown) {
+      if (signal?.aborted) return;
+      setError(err instanceof Error ? err.message : "Impossible de charger le rapport de visite.");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, []);
+  }, [fetchReport]);
 
   useEffect(() => {
+    const controller = new AbortController();
     if (initialReport) {
       setReport(initialReport);
       setLoading(false);
-    } else if (reportId) {
-      loadReport(reportId);
+      setError(null);
+    } else if (reportId && Number.isSafeInteger(reportId) && reportId > 0) {
+      setReport(null);
+      loadReport(reportId, controller.signal);
+    } else {
+      setReport(null);
+      setLoading(false);
+      setError("Rapport de visite introuvable.");
     }
+    return () => controller.abort();
   }, [reportId, initialReport, loadReport]);
 
   const handleSyncDynamics = async () => {
@@ -69,11 +98,15 @@ export default function KamVisitReportView({
     }
   };
 
-  const copyEmailToClipboard = (text: string) => {
+  const copyEmailToClipboard = async (text: string) => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch {
+      setSyncCrmMessage("Impossible de copier l'email. Vous pouvez sélectionner son texte dans l'onglet email.");
+    }
   };
 
   const formatDate = (isoStr?: string) => {
@@ -129,17 +162,18 @@ export default function KamVisitReportView({
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-[#ECEAE5] dark:bg-[#242124] p-6 md:p-8 select-text transition-colors duration-300">
       
       {/* 1. TOP HEADER WITH BACK BUTTON & ACTIONS */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={onBack}
             className="p-2 rounded-xl bg-white dark:bg-[#282528] text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-black/5 dark:border-white/5 transition-colors cursor-pointer"
             title="Retour"
+            aria-label="Retour"
           >
             <Icons.ArrowLeft size={16} />
           </button>
           <div>
-            <h2 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            <h2 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight break-words">
               {report?.enterprise_name || 'Rapport de visite'}
             </h2>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -167,17 +201,18 @@ export default function KamVisitReportView({
         {/* Action Buttons on Right */}
         {report && (
           <div className="flex items-center gap-2.5 flex-wrap">
-            <button
+            {allowCrmSync && <button
               onClick={handleSyncDynamics}
               disabled={syncingCrm}
               className="px-3.5 py-2 bg-white dark:bg-[#282528] hover:bg-zinc-100 dark:hover:bg-[#363336] text-zinc-800 dark:text-zinc-200 text-xs font-semibold rounded-xl border border-black/5 dark:border-white/5 shadow-xs cursor-pointer transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               <Icons.RefreshCw size={13} className={syncingCrm ? "animate-spin" : ""} />
               <span>{syncingCrm ? "Synchronisation..." : "Pousser vers Dynamics 365"}</span>
-            </button>
+            </button>}
             <button
               onClick={() => copyEmailToClipboard(report.follow_up_email_draft)}
-              className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
+              disabled={!report.follow_up_email_draft}
+              className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {copiedEmail ? <Icons.Check size={13} /> : <Icons.Copy size={13} />}
               <span>{copiedEmail ? "Email copié !" : "Copier l'email"}</span>
@@ -196,7 +231,7 @@ export default function KamVisitReportView({
 
       {/* 2. DISCREET TABS (Minimalist underline style, identical to PreCallView) */}
       {report && !loading && !error && (
-        <div className="flex items-center gap-8 border-b border-black/5 dark:border-white/5 mb-6">
+        <div className="flex items-center gap-4 sm:gap-8 border-b border-black/5 dark:border-white/5 mb-6">
           <button
             onClick={() => setActiveTab('report')}
             className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
@@ -215,7 +250,7 @@ export default function KamVisitReportView({
                 : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
             }`}
           >
-            Email de relance & Détails CRM
+            {allowCrmSync ? 'Email de relance & Détails CRM' : 'Email de relance & Qualification'}
           </button>
         </div>
       )}
@@ -229,12 +264,12 @@ export default function KamVisitReportView({
       ) : error ? (
         <div className="p-8 rounded-2xl bg-white dark:bg-[#282528] text-center max-w-md mx-auto my-auto space-y-3 border border-black/5 dark:border-white/5">
           <p className="text-xs text-zinc-500">{error}</p>
-          <button
+          {reportId && Number.isSafeInteger(reportId) && reportId > 0 && <button
             onClick={() => reportId && loadReport(reportId)}
             className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
           >
             Réessayer
-          </button>
+          </button>}
         </div>
       ) : report ? (
         <div className="max-w-4xl mx-auto w-full pb-12">
@@ -244,6 +279,16 @@ export default function KamVisitReportView({
           {/* ========================================================================= */}
           {activeTab === 'report' && (
             <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 text-zinc-800 dark:text-zinc-200 animate-in fade-in duration-150 space-y-8">
+
+              {report.source_label && (
+                <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="font-semibold text-primary-blue">{report.source_label}</span>
+                  {report.salesperson_name && <span>Commercial : {report.salesperson_name}</span>}
+                  {report.plaque_code && <span>Plaque : {report.plaque_code}</span>}
+                  {report.target_offer_name && <span>Offre : {report.target_offer_name}</span>}
+                  {report.qualification_score !== undefined && <span>Qualification : {report.qualification_score}/100</span>}
+                </div>
+              )}
               
               {/* Synthèse Exécutive */}
               <div className="space-y-3">
@@ -320,6 +365,19 @@ export default function KamVisitReportView({
                 )}
               </div>
 
+              {report.answers && report.answers.length > 0 && (
+                <section className="space-y-4 border-t border-black/5 dark:border-white/5 pt-6">
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">Réponses au questionnaire guidé</h3>
+                  <dl className="space-y-4 text-xs md:text-sm">
+                    {report.answers.map((answer, index) => (
+                      <div key={answer.question_id || index} className="space-y-1">
+                        <dt className="text-zinc-500 dark:text-zinc-400">{answer.question_text || answer.question_id || `Question ${index + 1}`}</dt>
+                        <dd className="font-medium whitespace-pre-wrap break-words">{Array.isArray(answer.answer) ? answer.answer.join(', ') : String(answer.answer ?? 'Non renseigné')}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
             </div>
           )}
 
@@ -337,7 +395,8 @@ export default function KamVisitReportView({
                   </h3>
                   <button
                     onClick={() => copyEmailToClipboard(report.follow_up_email_draft)}
-                    className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
+                    disabled={!report.follow_up_email_draft}
+                    className="text-xs text-[#4F6CE8] hover:underline cursor-pointer flex items-center gap-1 font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {copiedEmail ? <Icons.Check size={12} /> : <Icons.Copy size={12} />}
                     <span>{copiedEmail ? "Copié !" : "Copier"}</span>
@@ -354,7 +413,7 @@ export default function KamVisitReportView({
               <div className="border-t border-black/5 dark:border-white/5" />
 
               {/* BANT Qualification Score */}
-              <div className="space-y-3">
+              {report.bant_scores && <div className="space-y-3">
                 <h3 className="text-base font-bold text-zinc-900 dark:text-white">
                   Qualification BANT & Statut commercial
                 </h3>
@@ -384,7 +443,15 @@ export default function KamVisitReportView({
                     </span>
                   </div>
                 </div>
-              </div>
+              </div>}
+
+              {report.qualification_score !== undefined && (
+                <div className="space-y-2">
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">Qualification commerciale</h3>
+                  <p className="text-sm">Score : <strong className="text-primary-blue tabular-nums">{report.qualification_score}/100</strong></p>
+                  {report.target_offer_name && <p className="text-sm">Offre recommandée : {report.target_offer_name}</p>}
+                </div>
+              )}
 
               {/* Seamless Divider */}
               {report.raw_transcript && (

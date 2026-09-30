@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../common/screen/widget/swipe_tab_views.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,7 +12,8 @@ import '../screen/kam_profile_screen.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
-import '../../../routes/app_routes.dart';
+import 'kam_workspace_screens.dart';
+import '../controller/kam_workspace_controller.dart';
 
 class _NavItem {
   final IconData? icon;
@@ -85,8 +87,9 @@ class _KamMainNavigationScreenState extends State<KamMainNavigationScreen> {
             children: [
               // 1. Vues de contenu avec extension continue de l'arrière-plan
               Positioned.fill(
-                child: IndexedStack(
+                child: SwipeTabViews(
                   index: controller.currentIndex.value < _kamViews.length ? controller.currentIndex.value : 0,
+                  onChanged: controller.changePage,
                   children: _kamViews,
                 ),
               ),
@@ -268,7 +271,7 @@ class _KamMainNavigationScreenState extends State<KamMainNavigationScreen> {
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                             child: ScaleTap(
-                              onTap: () => Get.toNamed(Routes.ENTERPRISE_SEARCH),
+                              onTap: () => _openAccountSearch(context, controller),
                               child: Container(
                                 width: 64,
                                 height: 64,
@@ -307,4 +310,56 @@ class _KamMainNavigationScreenState extends State<KamMainNavigationScreen> {
       ),
     );
   }
+  Future<void> _openAccountSearch(
+    BuildContext context,
+    KamNavigationController controller,
+  ) async {
+    controller.changePage(0);
+    await showSearch<KamData?>(
+      context: context,
+      delegate: _AccountSearch(workspace()),
+    );
+  }
+}
+
+class _AccountSearch extends SearchDelegate<KamData?> {
+  _AccountSearch(this.ctrl)
+    : super(searchFieldLabel: 'Rechercher dans mes comptes');
+  final KamWorkspaceController ctrl;
+  @override
+  List<Widget> buildActions(BuildContext context) => [
+    TextButton(onPressed: () => query = '', child: const Text('Effacer')),
+  ];
+  @override
+  Widget buildLeading(BuildContext context) => TextButton(
+    onPressed: () => close(context, null),
+    child: const Text('Retour'),
+  );
+  @override
+  Widget buildResults(BuildContext context) => buildSuggestions(context);
+  @override
+  Widget buildSuggestions(BuildContext context) => ListView(
+    children: ctrl.accounts
+        .where(
+          (a) => '${a['account_name']} ${a['crm_id']}'.toLowerCase().contains(
+            query.toLowerCase(),
+          ),
+        )
+        .map(
+          (a) => ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 12,
+            ),
+            title: Text('${a['account_name']}'),
+            subtitle: Text('${a['crm_id']}'),
+            onTap: () {
+              ctrl.selectedAccount = a;
+              close(context, a);
+              Get.to(() => KamAccountPage(account: a));
+            },
+          ),
+        )
+        .toList(),
+  );
 }

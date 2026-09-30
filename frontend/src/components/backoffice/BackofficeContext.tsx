@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { fetchAPI } from '@/lib/api';
+import { usePathname, useRouter } from 'next/navigation';
+import { getBackofficeReportHref, type BackofficeReportSource } from './backofficeReport';
 import {
   EnterpriseItem,
   PlaqueItem,
@@ -58,8 +60,7 @@ interface BackofficeContextType {
   // Modals & Selected Entities
   selectedAccountForDetail: EnterpriseItem | null;
   setSelectedAccountForDetail: (ent: EnterpriseItem | null) => void;
-  selectedReportToInspect: any | null;
-  setSelectedReportToInspect: (rep: any | null) => void;
+  openReportDetail: (report: BackofficeReportSource) => void;
   selectedPlaqueForAssign: PlaqueItem | null;
   setSelectedPlaqueForAssign: (plaque: PlaqueItem | null) => void;
   isAddSalespersonOpen: boolean;
@@ -82,6 +83,11 @@ interface BackofficeContextType {
 const BackofficeContext = createContext<BackofficeContextType | null>(null);
 
 export function BackofficeProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const openReportDetail = (report: BackofficeReportSource) => {
+    if (report?.id) router.push(getBackofficeReportHref(report, pathname.split('/')[2] || 'daily-report'));
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchPlaceholder, setSearchPlaceholder] = useState('Rechercher...');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -98,7 +104,6 @@ export function BackofficeProvider({ children }: { children: ReactNode }) {
 
   // Modals & Inspection states
   const [selectedAccountForDetail, setSelectedAccountForDetail] = useState<EnterpriseItem | null>(null);
-  const [selectedReportToInspect, setSelectedReportToInspect] = useState<any | null>(null);
   const [selectedPlaqueForAssign, setSelectedPlaqueForAssign] = useState<PlaqueItem | null>(null);
   const [isAddSalespersonOpen, setIsAddSalespersonOpen] = useState(false);
   const [isAddPlaqueOpen, setIsAddPlaqueOpen] = useState(false);
@@ -362,8 +367,7 @@ export function BackofficeProvider({ children }: { children: ReactNode }) {
         getEnterpriseVisitInfo,
         selectedAccountForDetail,
         setSelectedAccountForDetail,
-        selectedReportToInspect,
-        setSelectedReportToInspect,
+        openReportDetail,
         selectedPlaqueForAssign,
         setSelectedPlaqueForAssign,
         isAddSalespersonOpen,

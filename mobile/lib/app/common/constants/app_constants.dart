@@ -109,7 +109,7 @@ abstract class AppConstants {
   static const Color accentRed = Color(0xFFEF4444);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color accentPurple = Color(0xFF2563EB); // Apple Royal Blue
-  static const Color primaryBlue = Color(0xFF007AFF); // Apple System Blue
+  static const Color primaryBlue = Color(0xFF4F6CE8); // Couleur primaire Onbora
   static const Color accentBlue = Color(0xFF007AFF);
   static const Color accentYellow = Color(0xFF64748B);
   static const Color accentYellowDark = Color(0xFF94A3B8);

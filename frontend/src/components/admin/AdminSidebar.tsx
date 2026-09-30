@@ -74,12 +74,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: <Icons.Sliders size={16} />,
   },
   {
-    id: 'scoring',
-    href: '/admin/scoring',
-    label: 'Moteur de Scoring',
-    icon: <Icons.Target size={16} />,
-  },
-  {
     id: 'settings',
     href: '/admin/settings',
     label: 'Paramètres & FAQ',
@@ -140,12 +134,13 @@ export default function AdminSidebar() {
               <Link
                 key={item.id}
                 href={item.href}
+                aria-current={active ? 'page' : undefined}
                 title={item.label}
                 className={`w-full ${
                   isCollapsed ? 'justify-center p-3' : 'justify-between px-3.5 py-2.5'
                 } rounded-2xl text-xs font-medium transition-all flex items-center cursor-pointer ${
                   active
-                    ? 'bg-[#55524E] text-white shadow-sm'
+                    ? 'bg-primary-blue text-white shadow-sm'
                     : 'text-[#6E6C67] dark:text-[#A1A1AA] hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#242124] dark:hover:text-white'
                 }`}
               >

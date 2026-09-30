@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import DailyReportView from '@/components/backoffice/DailyReportView';
 import { useBackofficeContext } from '@/components/backoffice/BackofficeContext';
-import BackofficeReportInspectModal from '@/components/backoffice/BackofficeReportInspectModal';
 
 export default function BackofficeDailyReportPage() {
   const {
@@ -12,8 +11,7 @@ export default function BackofficeDailyReportPage() {
     salespersons,
     enterprises,
     plaques,
-    selectedReportToInspect,
-    setSelectedReportToInspect,
+    openReportDetail,
     loadDashboardData,
     loading,
     setHeaderTitle,
@@ -33,16 +31,10 @@ export default function BackofficeDailyReportPage() {
         salespersons={salespersons}
         enterprises={enterprises}
         plaques={plaques}
-        onOpenReportDetail={(report) => setSelectedReportToInspect(report)}
+        onOpenReportDetail={openReportDetail}
         onRefresh={loadDashboardData}
         loading={loading}
       />
-      {selectedReportToInspect && (
-        <BackofficeReportInspectModal
-          report={selectedReportToInspect}
-          onClose={() => setSelectedReportToInspect(null)}
-        />
-      )}
     </>
   );
 }
