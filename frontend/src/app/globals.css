@@ -23,6 +23,7 @@
 /* Quand un dialogue est ouvert, son action principale porte l'accent. */
 .management-surface:has(.fixed.inset-0) .primary-cta:not(.fixed.inset-0 .primary-cta) {
   background-color: #55524E;
+  transition: none;
 }
 
 @font-face {
