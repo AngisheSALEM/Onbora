@@ -5,7 +5,7 @@ class ApiConfig {
   static const String renderUrl = 'https://onbora-backend.onrender.com';
   
   /// Local development backend hosts
-  static const String localIpUrl = 'http://10.69.77.195:8000';
+  static const String localIpUrl = 'http://10.252.252.54:8000';
   static const String emulatorUrl = 'http://10.0.2.2:8000';
   static const String localhostUrl = 'http://localhost:8000';
 

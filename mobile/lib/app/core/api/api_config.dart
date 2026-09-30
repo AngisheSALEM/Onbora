@@ -2,7 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
   static const String defaultRenderUrl = 'https://onbora-backend.onrender.com';
-  static const String defaultLocalUrl = 'http://10.69.77.195:8000';
+  static const String defaultLocalUrl = 'http://10.252.252.54:8000';
 
   static String? _customUrl;
 
