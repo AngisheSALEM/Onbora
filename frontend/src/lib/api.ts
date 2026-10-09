@@ -1,5 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
+function isAbortError(error: unknown, signal?: AbortSignal | null): boolean {
+  if (signal?.aborted) return true;
+  if (!error) return false;
+  if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') return true;
+  if (error instanceof Error) {
+    if (error.name === 'AbortError') return true;
+    const msg = error.message.toLowerCase();
+    if (msg.includes('aborted') || msg.includes('abort')) return true;
+  }
+  return false;
+}
+
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -17,6 +29,9 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
       headers,
     });
   } catch (networkError: unknown) {
+    if (isAbortError(networkError, options.signal)) {
+      throw networkError;
+    }
     console.error(`[API Network Error] Impossible de joindre ${targetUrl}:`, networkError);
     throw new Error(
       `Impossible de joindre le serveur backend (${API_URL}). Vérifiez que Django est démarré sur le port 8000.`
@@ -55,6 +70,9 @@ export async function uploadAudioAPI(endpoint: string, formData: FormData) {
       body: formData,
     });
   } catch (networkError: unknown) {
+    if (isAbortError(networkError)) {
+      throw networkError;
+    }
     console.error(`[API Network Error] Impossible de joindre ${targetUrl}:`, networkError);
     throw new Error(
       `Impossible de joindre le serveur backend (${API_URL}). Vérifiez que Django est démarré sur le port 8000.`

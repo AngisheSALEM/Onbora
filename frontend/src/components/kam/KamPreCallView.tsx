@@ -212,7 +212,14 @@ export default function KamPreCallView({
         if (!controller.signal.aborted) setRadarResult({ accountId: selectedAccountId, data });
       })
       .catch((err: unknown) => {
-        if (!controller.signal.aborted) setRadarResult({ accountId: selectedAccountId, data: null, error: err instanceof Error ? err.message : 'Impossible de charger les signaux du compte.' });
+        if (
+          controller.signal.aborted ||
+          (typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError') ||
+          (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('aborted')))
+        ) {
+          return;
+        }
+        setRadarResult({ accountId: selectedAccountId, data: null, error: err instanceof Error ? err.message : 'Impossible de charger les signaux du compte.' });
       });
     return () => controller.abort();
   }, [selectedAccountId]);

@@ -57,7 +57,13 @@ export default function KamVisitReportView({
         setError("Rapport de visite introuvable.");
       }
     } catch (err: unknown) {
-      if (signal?.aborted) return;
+      if (
+        signal?.aborted ||
+        (typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError') ||
+        (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('aborted')))
+      ) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Impossible de charger le rapport de visite.");
     } finally {
       if (!signal?.aborted) setLoading(false);
@@ -201,14 +207,14 @@ export default function KamVisitReportView({
         {/* Action Buttons on Right */}
         {report && (
           <div className="flex items-center gap-2.5 flex-wrap">
-            {allowCrmSync && <button
+            {/* {allowCrmSync && <button
               onClick={handleSyncDynamics}
               disabled={syncingCrm}
               className="px-3.5 py-2 bg-white dark:bg-[#282528] hover:bg-zinc-100 dark:hover:bg-[#363336] text-zinc-800 dark:text-zinc-200 text-xs font-semibold rounded-xl border border-black/5 dark:border-white/5 shadow-xs cursor-pointer transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               <Icons.RefreshCw size={13} className={syncingCrm ? "animate-spin" : ""} />
               <span>{syncingCrm ? "Synchronisation..." : "Pousser vers Dynamics 365"}</span>
-            </button>}
+            </button>} */}
             <button
               onClick={() => copyEmailToClipboard(report.follow_up_email_draft)}
               disabled={!report.follow_up_email_draft}

@@ -313,7 +313,7 @@ export default function KamAgendaView({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
-              Agenda & Rendez-vous
+              Rendez-vous
             </h1>
           
           </div>

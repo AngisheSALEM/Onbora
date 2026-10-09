@@ -62,7 +62,7 @@ export default function KamSidebar({
     {
       id: 'agenda' as KamView,
       href: '/kam/agenda',
-      label: 'Agenda & Rendez-vous',
+      label: 'Rendez-vous',
       icon: Icons.Calendar,
       badge: null,
     },
