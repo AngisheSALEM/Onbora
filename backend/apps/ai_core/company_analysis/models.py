@@ -143,6 +143,44 @@ class CompanyInfo(BaseModel):
         return str(v)
 
 
+class RetentionPlanModel(BaseModel):
+    urgency: str = "PLANNED_7D"
+    action: str = ""
+    email_draft: str = ""
+
+
+class ChurnRiskData(BaseModel):
+    health_score: int = 100
+    churn_risk_score: int = 0
+    risk_level: str = "LOW"
+    priority_level: str = "P3"
+    trend: str = "STABLE"
+    is_renewal_imminent: bool = False
+    renewal_days: Optional[int] = None
+    unresolved_incidents_count: int = 0
+    current_operator: str = "Orange Business RDC"
+    signals: List[str] = Field(default_factory=list)
+    retention_plan: Dict[str, Any] = Field(default_factory=dict)
+
+
+class UpsellOpportunityItem(BaseModel):
+    solution: str
+    category: str = "CONNECTIVITE"
+    trigger: str = ""
+    estimated_value: str = ""
+    estimated_mrr_usd: float = 0.0
+    talking_point: str = ""
+    target_decision_maker: str = "DSI"
+    confidence: str = "élevée"
+
+
+class UpsellData(BaseModel):
+    has_upsell: bool = False
+    opportunity_count: int = 0
+    total_potential_mrr_usd: float = 0.0
+    opportunities: List[UpsellOpportunityItem] = Field(default_factory=list)
+
+
 class CompanyBriefOutput(BaseModel):
     run_id: int = 1
     state: str = "reviewed"
@@ -153,6 +191,9 @@ class CompanyBriefOutput(BaseModel):
     summary: DiscoverySummary
     sector_segmentation: SectorSegmentation
     lead_qualification: LeadQualification
+    churn_risk: Dict[str, Any] = Field(default_factory=dict)
+    upsell: Dict[str, Any] = Field(default_factory=dict)
+    upsell_opportunities: List[Dict[str, Any]] = Field(default_factory=list)
     ai_summary: AISummary
     evidence: List[EvidenceItem] = Field(default_factory=list)
     sources: List[DiscoveredSource] = Field(default_factory=list)

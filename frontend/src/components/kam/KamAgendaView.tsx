@@ -38,6 +38,10 @@ export default function KamAgendaView({
 
   // New Appointment Form State
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [highlightedAccountIndex, setHighlightedAccountIndex] = useState(-1);
+  const accountComboboxRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState('');
   const [meetingType, setMeetingType] = useState<'PHYSICAL' | 'GOOGLE_MEET' | 'CALL'>('PHYSICAL');
   const [scheduledAt, setScheduledAt] = useState('');
@@ -72,6 +76,99 @@ export default function KamAgendaView({
     const localISOTime = (new Date(now.getTime() - tzOffset)).toISOString().slice(0, 16);
     setScheduledAt(localISOTime);
   }, []);
+
+  const selectedAccount = useMemo(() => {
+    return assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
+  }, [assignedAccounts, selectedAccountId]);
+
+  const filteredAccounts = useMemo(() => {
+    const q = accountSearchQuery.trim().toLowerCase();
+    if (!q) return assignedAccounts;
+    return assignedAccounts.filter((acc) => {
+      const nameMatch = acc.account_name?.toLowerCase().includes(q);
+      const industryMatch = acc.briefing?.industry?.toLowerCase().includes(q);
+      const locationMatch = acc.location?.toLowerCase().includes(q);
+      return nameMatch || industryMatch || locationMatch;
+    });
+  }, [assignedAccounts, accountSearchQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountComboboxRef.current && !accountComboboxRef.current.contains(event.target as Node)) {
+        setIsAccountDropdownOpen(false);
+        if (selectedAccountId) {
+          const acc = assignedAccounts.find(a => a.id === selectedAccountId || a.account_id === selectedAccountId);
+          if (acc) {
+            setAccountSearchQuery(acc.account_name);
+          }
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [assignedAccounts, selectedAccountId]);
+
+  const handleSelectAccount = (account: StrategicVisit) => {
+    setAccountSearchQuery(account.account_name);
+    setIsAccountDropdownOpen(false);
+    setHighlightedAccountIndex(-1);
+    void handleAccountChange(account.id);
+  };
+
+  const handleClearAccount = () => {
+    setAccountSearchQuery('');
+    setSelectedAccountId('');
+    setIsAccountDropdownOpen(false);
+    setHighlightedAccountIndex(-1);
+    setTitle('');
+    setTitleEdited(false);
+    setPurposeManuallySelected(false);
+    setFormError('');
+    setPurposeSuggestion(null);
+    setSelectedPurpose(null);
+    setPurposeError(false);
+    setAccountSignalOpen(false);
+    setSignalMessage('');
+    setOrangeContractEndDate('');
+    setGrowthProject('');
+    setContactName('');
+    setContactRole('');
+    setContactFromAccount(false);
+    setContactEditorOpen(false);
+    setLocation('');
+  };
+
+  const handleAccountInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isAccountDropdownOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setIsAccountDropdownOpen(true);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedAccountIndex((prev) =>
+        prev < filteredAccounts.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedAccountIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredAccounts.length - 1
+      );
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightedAccountIndex >= 0 && highlightedAccountIndex < filteredAccounts.length) {
+        handleSelectAccount(filteredAccounts[highlightedAccountIndex]);
+      } else if (filteredAccounts.length === 1) {
+        handleSelectAccount(filteredAccounts[0]);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsAccountDropdownOpen(false);
+    }
+  };
 
   const handleAccountChange = async (accountId: string) => {
     const requestId = ++purposeRequestId.current;
@@ -226,6 +323,9 @@ export default function KamAgendaView({
         setTitleEdited(false);
         setObjective('');
         setSelectedAccountId('');
+        setAccountSearchQuery('');
+        setIsAccountDropdownOpen(false);
+        setHighlightedAccountIndex(-1);
         setSelectedPurpose(null);
         setPurposeSuggestion(null);
         setPurposeManuallySelected(false);
@@ -608,25 +708,116 @@ export default function KamAgendaView({
             {/* Modal Form */}
             <form onSubmit={handleCreateAppointment} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               
-              {/* Account Selection */}
-              <div className="space-y-1.5">
-                <label htmlFor="kam-appointment-enterprise" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
+              {/* Account Selection via Search Bar */}
+              <div ref={accountComboboxRef} className="space-y-1.5 relative">
+                <label htmlFor="kam-appointment-enterprise-search" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
                   Entreprise assignée *
                 </label>
-                <select
-                  id="kam-appointment-enterprise"
-                  value={selectedAccountId}
-                  onChange={(e) => { void handleAccountChange(e.target.value); }}
-                  required
-                  className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all cursor-pointer"
-                >
-                  <option value="">Sélectionner un compte de votre portefeuille...</option>
-                  {assignedAccounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.account_name} ({acc.briefing?.industry || 'B2B'})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative flex items-center bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/10 dark:border-white/10 rounded-2xl focus-within:border-zinc-400 dark:focus-within:border-zinc-500 transition-colors">
+                  <div className="pl-3.5 pr-2 text-zinc-400 flex items-center pointer-events-none">
+                    <Icons.Search size={16} />
+                  </div>
+                  <input
+                    id="kam-appointment-enterprise-search"
+                    type="text"
+                    autoComplete="off"
+                    value={accountSearchQuery}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAccountSearchQuery(val);
+                      setIsAccountDropdownOpen(true);
+                      setHighlightedAccountIndex(-1);
+                      if (selectedAccountId) {
+                        setSelectedAccountId('');
+                        setPurposeSuggestion(null);
+                        setSelectedPurpose(null);
+                      }
+                    }}
+                    onFocus={() => {
+                      setIsAccountDropdownOpen(true);
+                    }}
+                    onKeyDown={handleAccountInputKeyDown}
+                    placeholder="Taper le nom de l'entreprise à assigner..."
+                    className="w-full py-3 pr-2 bg-transparent text-xs text-zinc-900 dark:text-white border-0 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 shadow-none placeholder:text-zinc-400"
+                    style={{ outline: 'none', boxShadow: 'none' }}
+                    aria-expanded={isAccountDropdownOpen}
+                    aria-controls="kam-appointment-enterprise-listbox"
+                    aria-autocomplete="list"
+                    role="combobox"
+                  />
+                  <div className="flex items-center pr-2.5 gap-1 shrink-0">
+                    {(accountSearchQuery || selectedAccountId) && (
+                      <button
+                        type="button"
+                        onClick={handleClearAccount}
+                        aria-label="Effacer la sélection"
+                        title="Effacer"
+                        className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <Icons.X size={14} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
+                      aria-label="Afficher ou masquer la liste des entreprises"
+                      title="Liste des entreprises"
+                      className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <Icons.ChevronDown size={14} className={`transition-transform duration-200 ${isAccountDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dropdown list of matching accounts */}
+                {isAccountDropdownOpen && (
+                  <div
+                    role="listbox"
+                    id="kam-appointment-enterprise-listbox"
+                    className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-56 overflow-y-auto rounded-2xl bg-white dark:bg-[#1E1B1E] border border-black/10 dark:border-white/10 shadow-xl p-1.5 space-y-0.5"
+                  >
+                    {filteredAccounts.length > 0 ? (
+                      filteredAccounts.map((acc, index) => {
+                        const isSelected = acc.id === selectedAccountId || acc.account_id === selectedAccountId;
+                        const isHighlighted = index === highlightedAccountIndex;
+                        return (
+                          <button
+                            key={acc.id}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            onClick={() => handleSelectAccount(acc)}
+                            onMouseEnter={() => setHighlightedAccountIndex(index)}
+                            className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                              isSelected
+                                ? 'bg-black/5 dark:bg-white/5 font-semibold text-zinc-900 dark:text-white'
+                                : isHighlighted
+                                ? 'bg-black/5 dark:bg-white/5 text-zinc-900 dark:text-white'
+                                : 'text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <span className="truncate leading-tight font-medium">
+                              {acc.account_name}
+                            </span>
+                            {isSelected && (
+                              <Icons.Check size={14} className="text-zinc-500 dark:text-zinc-400 shrink-0 ml-2" />
+                            )}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                        Aucune entreprise trouvée
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {formError && !selectedAccountId && (
+                  <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                    Veuillez sélectionner une entreprise dans la liste.
+                  </p>
+                )}
               </div>
 
               {selectedAccountId && (

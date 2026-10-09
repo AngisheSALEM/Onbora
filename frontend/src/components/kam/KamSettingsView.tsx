@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
-import KamActivityStatusSelector, { ACTIVITY_STATUSES } from './KamActivityStatusSelector';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
 
@@ -98,8 +97,6 @@ export default function KamSettingsView() {
     },
   ];
 
-  const currentStatusConfig = ACTIVITY_STATUSES.find((s) => s.key === activityStatus) || ACTIVITY_STATUSES[0];
-
   return (
     <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none font-sans max-w-5xl">
       
@@ -128,9 +125,6 @@ export default function KamSettingsView() {
               </h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none">
                 Key Account Manager
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none">
-                {currentStatusConfig.label}
               </span>
             </div>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">

@@ -48,148 +48,85 @@ export default function ThemeSettingCard({ className = "" }: ThemeSettingCardPro
   };
 
   return (
-    <div className={`bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-5 shadow-xs ${className}`}>
-      {/* En-tête de la section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/5">
+    <div className={`bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-2xs ${className}`}>
+      {/* Information & Titre */}
+      <div className="flex items-center gap-4">
+        <div className="w-11 h-11 rounded-2xl bg-black/5 dark:bg-white/10 flex items-center justify-center shrink-0 text-zinc-800 dark:text-zinc-200 transition-colors">
+          {currentTheme === 'dark' ? (
+            <Icons.Moon size={20} className="text-zinc-200" />
+          ) : (
+            <Icons.Sun size={20} className="text-zinc-800" />
+          )}
+        </div>
         <div>
           <div className="flex items-center gap-2">
-            <Icons.Sun size={17} className="text-[#787570]" />
             <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
               Apparence & Thème de l'Interface
             </h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
+              {currentTheme === 'dark' ? 'Mode Sombre' : 'Mode Clair'}
+            </span>
           </div>
-         
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Basculez entre le thème clair et le thème sombre selon votre préférence visuelle.
+          </p>
         </div>
-
-        <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 text-[#6E6C67] dark:text-[#A1A1AA] shrink-0 self-start sm:self-auto">
-          Thème actif : <strong className="text-[#242124] dark:text-white capitalize">{currentTheme === 'dark' ? 'Sombre' : 'Clair'}</strong>
-        </span>
       </div>
 
-      {/* Cartes de sélection Clair / Sombre */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-        {/* CARTE 1 : THÈME CLAIR */}
-        <div
+      {/* Switch Toggle Interactif */}
+      <div className="flex items-center gap-3 shrink-0 self-start sm:self-auto bg-black/5 dark:bg-white/5 p-1.5 px-3 rounded-2xl border border-black/5 dark:border-white/5">
+        <button
+          type="button"
           onClick={() => handleSelectTheme('light')}
-          className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-4 ${
+          className={`flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer ${
             currentTheme === 'light'
-              ? 'border-[#9B978F] bg-white dark:bg-[#242124] shadow-xs'
-              : 'border-black/5 dark:border-white/5 bg-white/60 dark:bg-[#242124]/60 hover:border-black/20 dark:hover:border-white/20'
+              ? 'text-zinc-900 dark:text-white font-bold'
+              : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
           }`}
+          title="Activer le mode clair"
         >
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 flex items-center justify-center shrink-0">
-                  <Icons.Sun size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
-                    Mode Clair
-                  </h4>
-                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                    Standard diurne
-                  </span>
-                </div>
-              </div>
+          <Icons.Sun size={14} className={currentTheme === 'light' ? 'text-amber-500' : 'text-zinc-400'} />
+          <span>Clair</span>
+        </button>
 
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  currentTheme === 'light'
-                    ? 'border-[#9B978F] bg-[#55524E]'
-                    : 'border-zinc-300 dark:border-zinc-600'
-                }`}
-              >
-                {currentTheme === 'light' && <Icons.Check size={11} className="text-white" />}
-              </div>
-            </div>
-
-          
-         
-          </div>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSelectTheme('light');
-            }}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              currentTheme === 'light'
-                ? 'bg-[#55524E] text-white'
-                : 'bg-black/5 dark:bg-white/5 text-[#242124] dark:text-white hover:bg-black/10'
-            }`}
-          >
-            {currentTheme === 'light' ? (
-              <>
-                <Icons.Check size={13} />
-                <span>Actif</span>
-              </>
-            ) : (
-              <span>Activer le mode clair</span>
-            )}
-          </button>
-        </div>
-
-        {/* CARTE 2 : THÈME SOMBRE */}
-        <div
-          onClick={() => handleSelectTheme('dark')}
-          className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-4 ${
-            currentTheme === 'dark'
-              ? 'border-[#9B978F] bg-white dark:bg-[#242124] shadow-xs'
-              : 'border-black/5 dark:border-white/5 bg-white/60 dark:bg-[#242124]/60 hover:border-black/20 dark:hover:border-white/20'
+        <button
+          type="button"
+          role="switch"
+          aria-checked={currentTheme === 'dark'}
+          aria-label="Basculer entre le mode clair et le mode sombre"
+          onClick={() => handleSelectTheme(currentTheme === 'dark' ? 'light' : 'dark')}
+          className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out p-0.5 focus:outline-hidden ${
+            currentTheme === 'dark' ? 'bg-[#55524E]' : 'bg-black/20'
           }`}
+          title={currentTheme === 'dark' ? "Passer au thème clair" : "Passer au thème sombre"}
         >
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-zinc-500/15 text-zinc-500 dark:text-zinc-400 flex items-center justify-center shrink-0">
-                  <Icons.Moon size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
-                    Mode Sombre
-                  </h4>
-                  <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA]">
-                    Confort nocturne
-                  </span>
-                </div>
-              </div>
-
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  currentTheme === 'dark'
-                    ? 'border-[#9B978F] bg-[#55524E]'
-                    : 'border-zinc-300 dark:border-zinc-600'
-                }`}
-              >
-                {currentTheme === 'dark' && <Icons.Check size={11} className="text-white" />}
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSelectTheme('dark');
-            }}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              currentTheme === 'dark'
-                ? 'bg-[#55524E] text-white'
-                : 'bg-black/5 dark:bg-white/5 text-[#242124] dark:text-white hover:bg-black/10'
+          <span className="sr-only">Changer de thème</span>
+          <span
+            className={`pointer-events-none flex h-6 w-6 items-center justify-center rounded-full bg-white dark:bg-[#1E1C1E] shadow-sm transition-transform duration-200 ease-in-out ${
+              currentTheme === 'dark' ? 'translate-x-6' : 'translate-x-0'
             }`}
           >
             {currentTheme === 'dark' ? (
-              <>
-                <Icons.Check size={13} />
-                <span>Actif</span>
-              </>
+              <Icons.Moon size={12} className="text-zinc-200" />
             ) : (
-              <span>Activer le mode sombre</span>
+              <Icons.Sun size={12} className="text-amber-500" />
             )}
-          </button>
-        </div>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectTheme('dark')}
+          className={`flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+            currentTheme === 'dark'
+              ? 'text-zinc-900 dark:text-white font-bold'
+              : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+          title="Activer le mode sombre"
+        >
+          <span>Sombre</span>
+          <Icons.Moon size={14} className={currentTheme === 'dark' ? 'text-zinc-200' : 'text-zinc-400'} />
+        </button>
       </div>
     </div>
   );

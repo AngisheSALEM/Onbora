@@ -9,7 +9,7 @@ Rôle : Moteur de scoring déterministe auditable (health_score 0-100) enrichi p
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -163,7 +163,8 @@ class ChurnRadarService:
     def refresh_account_assessment(
         cls,
         enterprise: Enterprise,
-        use_ai: bool = False
+        use_ai: bool = False,
+        use_analysis_service: bool = False
     ) -> ChurnRadarAssessment:
         """
         Calcule ou actualise l'évaluation Radar de Churn d'une entreprise.
@@ -198,6 +199,29 @@ class ChurnRadarService:
 
         retention_plan = assessment.retention_plan or {}
         upsell_opportunities = assessment.upsell_opportunities or []
+
+        # Enrichissement via Onbora Analysis si demandé
+        if use_analysis_service and (not upsell_opportunities or not retention_plan):
+            try:
+                from apps.ai_core.company_analysis.service import CompanyAnalysisClient
+                analysis_client = CompanyAnalysisClient()
+                analysis = analysis_client.get_analysis_for_enterprise(
+                    company_name=enterprise.name,
+                    sector=enterprise.sector,
+                    rccm=getattr(enterprise, 'rccm', None),
+                    province=getattr(enterprise, 'city', None) or 'Kinshasa',
+                    site_count=getattr(enterprise, 'site_count', 1),
+                )
+                if not upsell_opportunities and analysis.upsell_opportunities:
+                    upsell_opportunities = analysis.upsell_opportunities
+                if not retention_plan and analysis.churn_risk and analysis.churn_risk.get("retention_plan"):
+                    retention_plan = analysis.churn_risk["retention_plan"]
+                if analysis.churn_risk and analysis.churn_risk.get("signals"):
+                    for sig in analysis.churn_risk["signals"]:
+                        if sig not in det["risk_reasons"]:
+                            det["risk_reasons"].append(sig)
+            except Exception as exc:
+                logger.debug("[ChurnRadarService] Enrichissement onbora-analysis non disponible: %s", exc)
 
         # L'analyse externe est uniquement déclenchée sur demande explicite.
         if use_ai:

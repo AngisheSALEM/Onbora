@@ -154,12 +154,78 @@ class Command(BaseCommand):
             f"- TPE / Informel : {updated_tpe} (CA 15k$ à 85k$)\n"
         ))
 
+        # Provisionnement Churn Radar & Upsell via Onbora Analysis pour les portefeuilles KAM
+        self.stdout.write("Provisionnement Churn Radar & Upsell via Onbora Analysis pour les comptes KAM...")
+        from kam.services.churn_radar_service import ChurnRadarService
+        from kam.models import KamAppointment, KamVisitReport, ChurnRadarSnapshot
+
+        assigned_enterprises = list(Enterprise.objects.filter(assigned_kam__isnull=False))
+        self.stdout.write(f"Actualisation de {len(assigned_enterprises)} comptes affectés à des KAMs...")
+
+        today_dt = timezone.now()
+        for ent in assigned_enterprises:
+            h = abs(hash(ent.name))
+            cohort = h % 4
+            past_days = 45 if cohort == 0 else 22 if cohort == 2 else 5
+            last_date = today_dt - timedelta(days=past_days)
+
+            appt, _ = KamAppointment.objects.update_or_create(
+                enterprise=ent,
+                kam=ent.assigned_kam,
+                title=f"Revue de compte · {ent.name}",
+                defaults={
+                    'scheduled_at': last_date,
+                    'status': 'COMPLETED',
+                    'visit_purpose': 'FOLLOW_UP'
+                }
+            )
+
+            summary_txt = "Insatisfaction liée à des coupures réseau et instabilité des débits." if cohort == 0 else "Services globalement satisfaisants. Projets d'expansion en cours de cadrage."
+            KamVisitReport.objects.update_or_create(
+                appointment=appt,
+                defaults={
+                    'enterprise': ent,
+                    'kam': ent.assigned_kam,
+                    'executive_summary': summary_txt
+                }
+            )
+            KamVisitReport.objects.filter(appointment=appt).update(created_at=last_date)
+
+            if cohort in (1, 3):
+                KamAppointment.objects.update_or_create(
+                    enterprise=ent,
+                    kam=ent.assigned_kam,
+                    title=f"Prochaine revue d'étape · {ent.name}",
+                    defaults={
+                        'scheduled_at': today_dt + timedelta(days=7 + (h % 10)),
+                        'status': 'SCHEDULED',
+                        'visit_purpose': 'FOLLOW_UP'
+                    }
+                )
+
+            # Actualiser l'évaluation Radar avec Onbora Analysis
+            assessment = ChurnRadarService.refresh_account_assessment(ent, use_ai=False)
+
+            # Instantanés historiques
+            for days_ago in (7, 30, 60, 90):
+                ChurnRadarSnapshot.objects.get_or_create(
+                    enterprise=ent,
+                    calculated_at__date=today_dt.date() - timedelta(days=days_ago),
+                    defaults={
+                        'calculated_at': today_dt - timedelta(days=days_ago),
+                        'health_score': assessment.health_score,
+                        'churn_risk_score': assessment.churn_risk_score,
+                        'risk_level': assessment.risk_level
+                    }
+                )
+
+        self.stdout.write(self.style.SUCCESS(f"Churn Radar & Upsell provisionnés avec succès pour {len(assigned_enterprises)} comptes KAM !"))
+
         # Pré-calcul Core AI si demandé
         do_precompute = options.get('precompute_ai', False)
         if do_precompute:
             self.stdout.write("Inférence Core AI sur les comptes affectés aux KAMs...")
             engine = get_unified_core_ai()
-            assigned_enterprises = list(Enterprise.objects.filter(assigned_kam__isnull=False))
             total_assigned = len(assigned_enterprises)
             self.stdout.write(f"Lancement pour {total_assigned} comptes affectés...")
 

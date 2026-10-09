@@ -132,12 +132,84 @@ class CompanyAnalysisClient:
         src_ref1 = SourceReference(evidence_id=1, title=ev1.title, url=ev1.url, publisher=ev1.publisher)
         src_ref2 = SourceReference(evidence_id=2, title=ev2.title, url=ev2.url, publisher=ev2.publisher)
 
+        h = abs(hash(company_name))
+        cohort = h % 4
+        if cohort == 0:
+            renewal_days = 20 + (h % 20)
+            health_score = 32
+            risk_level = "HIGH"
+            signals = [f"Contrat arrivant à échéance dans {renewal_days} jours (< 45 jours)", "Interruptions réseau non résolues"]
+            action = f"Déclencher sous 48h un comité de gouvernance d'urgence avec le DSI de {company_name}."
+        elif cohort == 2:
+            renewal_days = 60 + (h % 25)
+            health_score = 55
+            risk_level = "MEDIUM"
+            signals = [f"Échéance contractuelle dans {renewal_days} jours (< 90 jours)", "Besoin d'extension de bande passante"]
+            action = f"Planifier une revue de compte sous 7 jours avec {company_name}."
+        else:
+            renewal_days = 200 + (h % 150)
+            health_score = 85
+            risk_level = "LOW"
+            signals = ["Indicateurs SLA conformes aux engagements"]
+            action = f"Assurer le suivi régulier et présenter les innovations Orange Business."
+
+        churn_risk_dict = {
+            "health_score": health_score,
+            "churn_risk_score": 100 - health_score,
+            "risk_level": risk_level,
+            "priority_level": "P1" if risk_level == "HIGH" else "P2" if risk_level == "MEDIUM" else "P3",
+            "trend": "DOWN" if risk_level in ["HIGH", "MEDIUM"] else "STABLE",
+            "is_renewal_imminent": renewal_days <= 90,
+            "renewal_days": renewal_days,
+            "unresolved_incidents_count": 2 if risk_level == "HIGH" else 1 if risk_level == "MEDIUM" else 0,
+            "current_operator": "Opérateur tiers",
+            "signals": signals,
+            "retention_plan": {
+                "urgency": "IMMEDIATE_48H" if risk_level == "HIGH" else "PLANNED_7D",
+                "action": action,
+                "email_draft": f"Bonjour,\\n\\nJe souhaite solliciter un échange avec {company_name} pour faire un point sur vos services.\\n\\nBien cordialement,\\nVotre KAM Orange Business"
+            }
+        }
+
+        upsell_opps = [
+            {
+                "solution": "Fibre Dédiée Pro Sécurisée (GTR 4h)",
+                "category": "CONNECTIVITE",
+                "trigger": "Accélération et sécurisation des applications critiques",
+                "estimated_value": "1 800 USD / mois",
+                "estimated_mrr_usd": 1800.0,
+                "talking_point": "Garantir un débit symétrique dédié et un temps de rétablissement de 4h.",
+                "target_decision_maker": "DSI",
+                "confidence": "élevée"
+            },
+            {
+                "solution": "Business SD-WAN Managé & Secours Hybride",
+                "category": "MULTI_SITES",
+                "trigger": "Interconnexion et sécurisation des agences",
+                "estimated_value": "2 500 USD / mois",
+                "estimated_mrr_usd": 2500.0,
+                "talking_point": "Basculement automatique sans perte de session sur rupture de liaison.",
+                "target_decision_maker": "Directeur Technique",
+                "confidence": "élevée"
+            }
+        ]
+
+        upsell_dict = {
+            "has_upsell": True,
+            "opportunity_count": len(upsell_opps),
+            "total_potential_mrr_usd": 4300.0,
+            "opportunities": upsell_opps
+        }
+
         return CompanyBriefOutput(
             run_id=abs(hash(company_name)) % 9000 + 1000,
             state="reviewed",
             coverage="complete" if sites == 1 else "partial",
             limitations=[] if sites == 1 else ["Les adresses exactes des agences secondaires sont à consolider."],
             identity_status="probable",
+            churn_risk=churn_risk_dict,
+            upsell=upsell_dict,
+            upsell_opportunities=upsell_opps,
             company=CompanyInfo(
                 legal_name=company_name,
                 trade_name=company_name.split()[0],
