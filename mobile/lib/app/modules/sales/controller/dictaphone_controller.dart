@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'sales_controller.dart';
-import '../../../core/storage/transcript_draft.dart';
 
 enum RecordingState { idle, recording, stopped, uploading, completed }
 
@@ -25,14 +24,8 @@ class DictaphoneController extends GetxController {
   final RxString lastSpeechChunk = "".obs;
   Timer? _silenceDebounceTimer;
   Timer? _restartListenTimer;
-  final TranscriptBuffer _transcript = TranscriptBuffer();
-  late final TranscriptDraft _draft;
-  Future<void> restored = Future.value();
-  late final TranscriptDraft notesDraft;
-  final manualNotes = ''.obs;
-  final ready = false.obs;
-  bool _acceptResults = true;
-  Completer<void>? _finalResult;
+  String _accumulatedWords = "";
+  String _currentSessionWords = "";
   String _lastDispatchedText = "";
 
   // Guard pour éviter les tentatives de relance concurrentes (ERROR_BUSY)
@@ -43,12 +36,7 @@ class DictaphoneController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final sales = Get.find<SalesController>();
-    _draft = TranscriptDraft(
-      'sales:enterprise:${sales.selectedEnterprise.value?.id ?? 'unassigned'}',
-    );
-    notesDraft = TranscriptDraft('${_draft.scope}:notes');
-    restored = _restoreDraft();
+    _initSpeechRecognizer();
   }
 
   Future<void> _initSpeechRecognizer() async {
@@ -67,16 +55,6 @@ class DictaphoneController extends GetxController {
           }
         },
       );
-      _speechToText.statusListener = _handleSpeechStatus;
-      _speechToText.errorListener = (errorNotification) {
-        speechStatus.value =
-            'Reconnaissance interrompue : ${errorNotification.errorMsg}';
-        if (!errorNotification.permanent && state == RecordingState.recording) {
-          _scheduleErrorRestart();
-        } else if (errorNotification.permanent) {
-          unawaited(stopRecording());
-        }
-      };
       isSpeechAvailable.value = available;
     } catch (_) {
       isSpeechAvailable.value = false;
@@ -89,6 +67,14 @@ class DictaphoneController extends GetxController {
     // (pause naturelle apres silence), on consolide et on relance.
     if ((status == 'done' || status == 'notListening') &&
         _state.value == RecordingState.recording) {
+      if (_currentSessionWords.trim().isNotEmpty) {
+        _accumulatedWords = (_accumulatedWords.isEmpty
+                ? _currentSessionWords
+                : "$_accumulatedWords $_currentSessionWords")
+            .trim();
+        _currentSessionWords = "";
+        transcribedText.value = _accumulatedWords;
+      }
       _scheduleStatusRestart();
     }
   }
@@ -102,8 +88,7 @@ class DictaphoneController extends GetxController {
 
     _restartListenTimer = Timer(const Duration(milliseconds: 600), () {
       _isRelaunching = false;
-      if (_state.value == RecordingState.recording &&
-          !_speechToText.isListening) {
+      if (_state.value == RecordingState.recording && !_speechToText.isListening) {
         _startListeningLoop();
       }
     });
@@ -119,8 +104,7 @@ class DictaphoneController extends GetxController {
 
     _restartListenTimer = Timer(const Duration(milliseconds: 1200), () {
       _isRelaunching = false;
-      if (_state.value == RecordingState.recording &&
-          !_speechToText.isListening) {
+      if (_state.value == RecordingState.recording && !_speechToText.isListening) {
         _startListeningLoop();
       }
     });
@@ -133,36 +117,7 @@ class DictaphoneController extends GetxController {
     return '$minutes:$seconds';
   }
 
-  Future<void> _restoreDraft() async {
-    final saved = await _draft.read();
-    manualNotes.value = await notesDraft.read();
-    _transcript.restore(saved);
-    transcribedText.value = saved;
-    if (saved.isNotEmpty || manualNotes.isNotEmpty) {
-      _state.value = RecordingState.stopped;
-    }
-    ready.value = true;
-  }
-
-  Future<void> saveEditedTranscript(String text) async {
-    _transcript.restore(text);
-    transcribedText.value = text;
-    await _draft.save(text);
-  }
-
-  Future<void> saveNotes(String text) async {
-    manualNotes.value = text;
-    await notesDraft.save(text);
-  }
-
-  Future<void> clearSubmittedDraft() async {
-    _acceptResults = false;
-    await _draft.clear();
-    await notesDraft.clear();
-  }
-
   Future<void> startRecording() async {
-    await restored;
     final micPerm = await Permission.microphone.request();
     if (!micPerm.isGranted) {
       Get.snackbar(
@@ -173,18 +128,11 @@ class DictaphoneController extends GetxController {
       return;
     }
 
-    await _initSpeechRecognizer();
-    if (!isSpeechAvailable.value) {
-      Get.snackbar(
-        'Reconnaissance indisponible',
-        'Vous pouvez saisir vos notes manuellement.',
-      );
-      return;
-    }
-    _acceptResults = true;
     _state.value = RecordingState.recording;
     recordingSeconds.value = 0;
-    _transcript.restore(transcribedText.value);
+    transcribedText.value = "";
+    _accumulatedWords = "";
+    _currentSessionWords = "";
     _lastDispatchedText = "";
     lastSpeechChunk.value = "";
     isVADSpeaking.value = false;
@@ -206,16 +154,15 @@ class DictaphoneController extends GetxController {
     if (_state.value != RecordingState.recording) return;
     _isRelaunching = false;
 
-    _transcript.beginSegment();
     try {
       await _speechToText.listen(
         onResult: (result) {
-          if (!_acceptResults) return;
-          transcribedText.value = _transcript.update(result.recognizedWords);
-          unawaited(_draft.save(transcribedText.value));
-          if (result.finalResult && !(_finalResult?.isCompleted ?? true)) {
-            _finalResult!.complete();
-          }
+          _currentSessionWords = result.recognizedWords;
+          final fullText = (_accumulatedWords.isEmpty
+                  ? _currentSessionWords
+                  : "$_accumulatedWords $_currentSessionWords")
+              .trim();
+          transcribedText.value = fullText;
           isVADSpeaking.value = true;
 
           // Reinitialisation de la fenetre temporelle de silence (VAD)
@@ -223,6 +170,11 @@ class DictaphoneController extends GetxController {
           _silenceDebounceTimer = Timer(const Duration(milliseconds: 600), () {
             _onSilenceDetected();
           });
+
+          if (result.finalResult) {
+            _accumulatedWords = fullText;
+            _currentSessionWords = "";
+          }
         },
         listenOptions: stt.SpeechListenOptions(
           listenMode: stt.ListenMode.dictation,
@@ -279,18 +231,14 @@ class DictaphoneController extends GetxController {
     _isRelaunching = false;
     isVADSpeaking.value = false;
 
-    await restored;
-    final listening = _speechToText.isListening;
-    _state.value = RecordingState.stopped;
-    _finalResult = Completer<void>();
-    await _speechToText.stop();
-    if (listening) {
-      await _finalResult!.future.timeout(
-        const Duration(milliseconds: 2500),
-        onTimeout: () {},
-      );
+    if (_currentSessionWords.trim().isNotEmpty) {
+      _accumulatedWords = (_accumulatedWords.isEmpty
+              ? _currentSessionWords
+              : "$_accumulatedWords $_currentSessionWords")
+          .trim();
+      _currentSessionWords = "";
+      transcribedText.value = _accumulatedWords;
     }
-    await _draft.save(transcribedText.value);
 
     // Dispatch final si reliquat de parole non encore envoye
     final currentFull = transcribedText.value.trim();
@@ -314,16 +262,23 @@ class DictaphoneController extends GetxController {
   }
 
   Future<String> uploadAndTranscribe(String companyName) async {
-    await restored;
-    if (state == RecordingState.recording) await stopRecording();
-    await _draft.save(transcribedText.value);
-    if (transcribedText.value.trim().isEmpty) {
-      throw StateError(
-        'Aucune transcription. Dictez ou saisissez vos notes avant de générer le rapport.',
-      );
+    _state.value = RecordingState.uploading;
+    isUploading.value = true;
+
+    // Si Speech-to-text a capture la voix reelle de l'utilisateur, l'utiliser
+    if (transcribedText.value.trim().isNotEmpty) {
+      isUploading.value = false;
+      _state.value = RecordingState.completed;
+      return transcribedText.value;
     }
+
+    // Si aucune parole n'a ete detectee par le moteur STT local
+    const noSpeechMsg = "Aucune parole detectee. Verifiez que le microphone est "
+        "actif et que la langue francaise est disponible sur votre appareil.";
+    transcribedText.value = noSpeechMsg;
+    isUploading.value = false;
     _state.value = RecordingState.completed;
-    return transcribedText.value.trim();
+    return transcribedText.value;
   }
 
   void reset() {
@@ -337,8 +292,8 @@ class DictaphoneController extends GetxController {
     _state.value = RecordingState.idle;
     recordingSeconds.value = 0;
     transcribedText.value = "";
-    _transcript.restore('');
-    unawaited(_draft.clear());
+    _accumulatedWords = "";
+    _currentSessionWords = "";
     _lastDispatchedText = "";
     lastSpeechChunk.value = "";
     isVADSpeaking.value = false;
@@ -347,7 +302,6 @@ class DictaphoneController extends GetxController {
 
   @override
   void onClose() {
-    _acceptResults = false;
     _timer?.cancel();
     _silenceDebounceTimer?.cancel();
     _restartListenTimer?.cancel();
