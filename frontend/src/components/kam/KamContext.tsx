@@ -12,6 +12,14 @@ interface KamContextType {
   setSelectedVisitId: React.Dispatch<React.SetStateAction<string>>;
   searchQuery: string;
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  headerTitle: string | null;
+  setHeaderTitle: React.Dispatch<React.SetStateAction<string | null>>;
+  headerSubtitle: string | null;
+  setHeaderSubtitle: React.Dispatch<React.SetStateAction<string | null>>;
+  headerBackLink: string | null;
+  setHeaderBackLink: React.Dispatch<React.SetStateAction<string | null>>;
+  isScrolled: boolean;
+  setIsScrolled: React.Dispatch<React.SetStateAction<boolean>>;
   loadAssignedAccounts: () => Promise<void>;
   updateVisit: (updated: StrategicVisit) => void;
 }
@@ -22,6 +30,10 @@ export function KamProvider({ children }: { children: React.ReactNode }) {
   const [visits, setVisits] = useState<StrategicVisit[]>([]);
   const [selectedVisitId, setSelectedVisitId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [headerTitle, setHeaderTitle] = useState<string | null>(null);
+  const [headerSubtitle, setHeaderSubtitle] = useState<string | null>(null);
+  const [headerBackLink, setHeaderBackLink] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +79,14 @@ export function KamProvider({ children }: { children: React.ReactNode }) {
         setSelectedVisitId,
         searchQuery,
         setSearchQuery,
+        headerTitle,
+        setHeaderTitle,
+        headerSubtitle,
+        setHeaderSubtitle,
+        headerBackLink,
+        setHeaderBackLink,
+        isScrolled,
+        setIsScrolled,
         loadAssignedAccounts,
         updateVisit,
       }}

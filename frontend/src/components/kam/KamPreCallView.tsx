@@ -802,7 +802,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                           : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                       }`}
                     >
-                      <Icons.Sparkles size={14} className={solutionsTab === 'recommended' ? 'text-[#4F6CE8]' : ''} />
+                      
                       <span>Solutions recommandées</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
                         {displayedSolutions.length}
@@ -818,7 +818,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                           : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                       }`}
                     >
-                      <Icons.Layers size={14} className={solutionsTab === 'installed' ? 'text-[#4F6CE8]' : ''} />
+                      
                       <span>Produits implantés</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
                         {installedOffers.length}

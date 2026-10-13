@@ -424,16 +424,7 @@ export default function KamAgendaView({
       
       {/* 1. TOP HEADER TOOLBAR */}
       <div className="flex flex-col gap-4 pb-2">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
-              Rendez-vous
-            </h1>
-          
-          </div>
-
-          {/* Top Actions : 1 seul CTA en couleur primaire */}
-          <div className="flex items-center gap-2.5 flex-wrap justify-end">
+        <div className="flex items-center gap-2.5 flex-wrap justify-end">
             {onOpenVisitsHistory && (
               <button
                 onClick={onOpenVisitsHistory}
@@ -460,7 +451,6 @@ export default function KamAgendaView({
               <span>Nouveau Rendez-vous</span>
             </button>
           </div>
-        </div>
 
         {/* Filter Tabs discrets sans bordure */}
         <div className="flex items-center flex-wrap gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-2xl sm:rounded-full border-none w-fit">

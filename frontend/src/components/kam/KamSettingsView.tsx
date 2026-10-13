@@ -99,14 +99,6 @@ export default function KamSettingsView() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none font-sans max-w-5xl">
-      
-      {/* Top Header */}
-      <div className="pb-3  ">
-        <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-          Paramètres & Base de Connaissances
-        </h2>
-    
-      </div>
 
       {/* 1. Profil Utilisateur & Avatar Actuel */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xs">

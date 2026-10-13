@@ -91,17 +91,7 @@ export default function KamAccountsListView({
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* 1. Header Sobre et Épuré (barre de recherche unique déléguée au Header supérieur) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
-            Portefeuille
-          </h1>
-        
-        </div>
-      </div>
-
-      {/* 2. Disposition Asymétrique des Cartes Cliquables (redirection vers pages détails dédiées) */}
+      {/* Disposition Asymétrique des Cartes Cliquables (redirection vers pages détails dédiées) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Grande Carte Principale à Gauche : Cliquable vers /kam/accounts/risk */}
         <div

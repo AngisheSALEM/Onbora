@@ -63,21 +63,11 @@ export default function RiskAccountsDetailPage() {
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
 {loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
-            {/* En-tête avec navigation de retour */}
+      {/* Filtres et comptage */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
-          <Link
-            href="/kam/accounts"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
-          >
-            <Icons.ArrowLeft size={13} />
-            <span>Retour au Portefeuille</span>
-          </Link>
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
-            Comptes à risque élevé
-          </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            {filtered.length} comptes présentant des signaux de fragilité ou d’insatisfaction
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            {filtered.length} compte{filtered.length > 1 ? 's' : ''} sous surveillance prioritaire
           </p>
         </div>
 
