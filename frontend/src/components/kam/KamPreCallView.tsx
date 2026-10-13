@@ -106,8 +106,28 @@ export interface OnboraAnalysisBrief {
   }>;
   evidence?: EvidenceItem[];
   sources?: DiscoveredSource[];
+  installed_offers?: InstalledOfferItem[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface InstalledOfferItem {
+  id: number | string;
+  installed_offer_name?: string;
+  name?: string;
+  category?: string;
+  provider?: string;
+  provider_label?: string;
+  contract_status?: string;
+  contract_status_label?: string;
+  installation_date?: string | null;
+  contract_end_date?: string | null;
+  monthly_cost_mrr?: number;
+  bandwidth_mbps?: number | null;
+  active_licenses_count?: number;
+  unresolved_tickets_count?: number;
+  technical_equipment?: string;
+  created_at?: string;
 }
 
 // Curated catalog presets for instant auto-completion
@@ -237,6 +257,24 @@ export default function KamPreCallView({
   const [editGaps, setEditGaps] = useState<string[]>([]);
   const [editSolutions, setEditSolutions] = useState<RecommendedSolutionItem[]>([]);
 
+  // Sub-tabs for Solutions: 'recommended' | 'installed'
+  const [solutionsTab, setSolutionsTab] = useState<'recommended' | 'installed'>('recommended');
+  const [installedOffers, setInstalledOffers] = useState<InstalledOfferItem[]>([]);
+  const [loadingInstalled, setLoadingInstalled] = useState(false);
+  const [showAddInstalledModal, setShowAddInstalledModal] = useState(false);
+
+  // Form buffers for new installed product modal
+  const [newInstalledName, setNewInstalledName] = useState('');
+  const [newInstalledCategory, setNewInstalledCategory] = useState('Connectivité');
+  const [newInstalledProvider, setNewInstalledProvider] = useState('ORANGE_BUSINESS');
+  const [newInstalledStatus, setNewInstalledStatus] = useState('ACTIVE');
+  const [newInstalledBandwidth, setNewInstalledBandwidth] = useState('');
+  const [newInstalledLicenses, setNewInstalledLicenses] = useState('1');
+  const [newInstalledMrr, setNewInstalledMrr] = useState('');
+  const [newInstalledEndDate, setNewInstalledEndDate] = useState('');
+  const [newInstalledEquipment, setNewInstalledEquipment] = useState('');
+  const [isSubmittingInstalled, setIsSubmittingInstalled] = useState(false);
+
   // Temp inline add inputs
   const [newFactText, setNewFactText] = useState('');
   const [newContraText, setNewContraText] = useState('');
@@ -263,10 +301,11 @@ export default function KamPreCallView({
     }
   }, [initialAccountId]);
 
-  // Charger le briefing dès que le compte change
+  // Charger le briefing et les solutions implantées dès que le compte change
   useEffect(() => {
     if (!selectedAccountId) return;
     fetchBriefing(selectedAccountId);
+    fetchInstalledOffers(selectedAccountId);
   }, [selectedAccountId]);
 
   // Extraire les solutions recommandées
@@ -340,6 +379,72 @@ export default function KamPreCallView({
     setEditContradictions((data.ai_summary?.contradictions || []).map((c) => c.text));
     setEditGaps(data.ai_summary?.gaps || []);
     setEditSolutions(extractRecommendedSolutions(data));
+    if (data.installed_offers) {
+      setInstalledOffers(data.installed_offers);
+    }
+  };
+
+  const fetchInstalledOffers = async (accountId: string) => {
+    const cleanId = String(accountId).replace('account-', '');
+    setLoadingInstalled(true);
+    try {
+      const data = await fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/`);
+      if (Array.isArray(data)) {
+        setInstalledOffers(data);
+      }
+    } catch (e) {
+      console.error('Erreur chargement solutions implantées:', e);
+    } finally {
+      setLoadingInstalled(false);
+    }
+  };
+
+  const handleAddInstalledOffer = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newInstalledName.trim() || !selectedAccountId) return;
+    setIsSubmittingInstalled(true);
+    try {
+      const cleanId = String(selectedAccountId).replace('account-', '');
+      const created = await fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          installed_offer_name: newInstalledName.trim(),
+          category: newInstalledCategory,
+          provider: newInstalledProvider,
+          contract_status: newInstalledStatus,
+          bandwidth_mbps: newInstalledBandwidth ? parseInt(newInstalledBandwidth, 10) : null,
+          active_licenses_count: newInstalledLicenses ? parseInt(newInstalledLicenses, 10) : 1,
+          monthly_cost_mrr: newInstalledMrr ? parseFloat(newInstalledMrr) : 0,
+          contract_end_date: newInstalledEndDate || null,
+          technical_equipment: newInstalledEquipment.trim(),
+        }),
+      });
+      setInstalledOffers((prev) => [created, ...prev]);
+      setShowAddInstalledModal(false);
+      setNewInstalledName('');
+      setNewInstalledBandwidth('');
+      setNewInstalledMrr('');
+      setNewInstalledEndDate('');
+      setNewInstalledEquipment('');
+    } catch (err) {
+      console.error('Erreur création solution implantée:', err);
+    } finally {
+      setIsSubmittingInstalled(false);
+    }
+  };
+
+  const handleDeleteInstalledOffer = async (offerId: string | number) => {
+    if (!selectedAccountId) return;
+    const cleanId = String(selectedAccountId).replace('account-', '');
+    try {
+      await fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/${offerId}/`, {
+        method: 'DELETE',
+      });
+      setInstalledOffers((prev) => prev.filter((o) => o.id !== offerId));
+    } catch (err) {
+      console.error('Erreur suppression solution implantée:', err);
+    }
   };
 
   const fetchBriefing = async (accountId: string, forceRegenerate = false) => {
@@ -684,217 +789,393 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               {/* Seamless transition within the SAME card */}
               <div className="border-t border-black/5 dark:border-white/5 my-8" />
 
-              {/* Solutions recommandées (Simple title, clean list, NO nested card) */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                    Solutions recommandées
-                  </h3>
-                  {!isEditing && (
+              {/* Sub-Tabs: Solutions recommandées vs Produits implantés */}
+              <div className="space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-2">
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleSaveBrief(true)}
-                      disabled={isSaving}
-                      className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1"
+                      type="button"
+                      onClick={() => setSolutionsTab('recommended')}
+                      className={`pb-2 px-1 text-sm font-bold flex items-center gap-2 transition-colors relative cursor-pointer ${
+                        solutionsTab === 'recommended'
+                          ? 'text-zinc-900 dark:text-white border-b-2 border-[#4F6CE8]'
+                          : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                      }`}
                     >
-                      <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
-                      <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
+                      <Icons.Sparkles size={14} className={solutionsTab === 'recommended' ? 'text-[#4F6CE8]' : ''} />
+                      <span>Solutions recommandées</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
+                        {displayedSolutions.length}
+                      </span>
                     </button>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => setSolutionsTab('installed')}
+                      className={`pb-2 px-1 text-sm font-bold flex items-center gap-2 transition-colors relative cursor-pointer ${
+                        solutionsTab === 'installed'
+                          ? 'text-zinc-900 dark:text-white border-b-2 border-[#4F6CE8]'
+                          : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                      }`}
+                    >
+                      <Icons.Layers size={14} className={solutionsTab === 'installed' ? 'text-[#4F6CE8]' : ''} />
+                      <span>Produits implantés</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
+                        {installedOffers.length}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {solutionsTab === 'recommended' && !isEditing && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveBrief(true)}
+                        disabled={isSaving}
+                        className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
+                        <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
+                      </button>
+                    )}
+
+                    {solutionsTab === 'installed' && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAddInstalledModal(true)}
+                        className="px-3 py-1.5 rounded-lg bg-[#4F6CE8] hover:bg-[#435ec9] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                      >
+                        <Icons.Plus size={13} />
+                        <span>Ajouter un produit</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {isEditing ? (
-                  <div className="space-y-4">
-                    {editSolutions.map((sol, idx) => (
-                      <div key={idx} className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <input
-                            type="text"
-                            value={sol.name}
-                            onChange={(e) => {
-                              const updated = [...editSolutions];
-                              updated[idx] = { ...updated[idx], name: e.target.value };
-                              setEditSolutions(updated);
-                            }}
-                            placeholder="Nom de l'offre"
-                            className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs font-bold outline-none"
-                          />
-                          <input
-                            type="text"
-                            value={sol.category}
-                            onChange={(e) => {
-                              const updated = [...editSolutions];
-                              updated[idx] = { ...updated[idx], category: e.target.value };
-                              setEditSolutions(updated);
-                            }}
-                            placeholder="Catégorie"
-                            className="w-32 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
-                          />
-                          <button
-                            onClick={() => setEditSolutions(editSolutions.filter((_, i) => i !== idx))}
-                            className="p-1.5 text-zinc-400 hover:text-zinc-500 cursor-pointer"
-                            title="Supprimer"
-                          >
-                            <Icons.Trash2 size={14} />
-                          </button>
-                        </div>
-                        <textarea
-                          value={sol.description}
-                          onChange={(e) => {
-                            const updated = [...editSolutions];
-                            updated[idx] = { ...updated[idx], description: e.target.value };
-                            setEditSolutions(updated);
-                          }}
-                          rows={2}
-                          placeholder="Description de la solution..."
-                          className="w-full p-2.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none resize-y"
-                        />
-                      </div>
-                    ))}
-
-                    {/* Auto-completion & Search Input for New Solution */}
-                    <div className="p-4 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-3 relative">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                          Ajouter une solution Orange
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleSearchCatalog(newSolName)}
-                          className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
-                        >
-                          <Icons.Search size={12} />
-                          <span>Parcourir le catalogue</span>
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-2 relative">
-                        {/* Auto-completing Input Field */}
-                        <div className="relative flex-1">
-                          <input
-                            type="text"
-                            value={newSolName}
-                            onChange={(e) => {
-                              setNewSolName(e.target.value);
-                              setShowCatalogSuggestions(true);
-                            }}
-                            onFocus={() => {
-                              if (newSolName.trim().length > 0) setShowCatalogSuggestions(true);
-                            }}
-                            placeholder="Tapez le nom d'une solution (ex: Fibre, SD-WAN, CyberSOC)..."
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none focus:ring-2 focus:ring-[#9B978F]"
-                          />
-
-                          {/* Search Button Next to Input */}
-                          <button
-                            type="button"
-                            onClick={() => handleSearchCatalog(newSolName)}
-                            title="Rechercher dans le catalogue"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
-                          >
-                            <Icons.Search size={13} />
-                          </button>
-
-                          {/* Floating Auto-completion Suggestions Dropdown */}
-                          {showCatalogSuggestions && matchingSuggestions.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-white dark:bg-[#282528] rounded-xl shadow-lg border border-black/5 dark:border-white/10 max-h-56 overflow-y-auto divide-y divide-black/5 dark:divide-white/5 animate-in fade-in duration-100">
-                              {matchingSuggestions.map((item, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => selectCatalogOffer(item)}
-                                  className="w-full px-3.5 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-black/20 transition-colors flex items-center justify-between gap-2 cursor-pointer"
-                                >
-                                  <div>
-                                    <div className="text-xs font-bold text-zinc-900 dark:text-white">
-                                      {item.name}
-                                    </div>
-                                    <div className="text-[11px] text-zinc-500 truncate max-w-sm">
-                                      {item.description}
-                                    </div>
-                                  </div>
-                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 shrink-0 font-semibold">
-                                    {item.category}
-                                  </span>
-                                </button>
-                              ))}
+                {/* Sub-tab 1: Solutions recommandées */}
+                {solutionsTab === 'recommended' && (
+                  <div>
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        {editSolutions.map((sol, idx) => (
+                          <div key={idx} className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <input
+                                type="text"
+                                value={sol.name}
+                                onChange={(e) => {
+                                  const updated = [...editSolutions];
+                                  updated[idx] = { ...updated[idx], name: e.target.value };
+                                  setEditSolutions(updated);
+                                }}
+                                placeholder="Nom de l'offre"
+                                className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs font-bold outline-none"
+                              />
+                              <input
+                                type="text"
+                                value={sol.category}
+                                onChange={(e) => {
+                                  const updated = [...editSolutions];
+                                  updated[idx] = { ...updated[idx], category: e.target.value };
+                                  setEditSolutions(updated);
+                                }}
+                                placeholder="Catégorie"
+                                className="w-32 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                              />
+                              <button
+                                onClick={() => setEditSolutions(editSolutions.filter((_, i) => i !== idx))}
+                                className="p-1.5 text-zinc-400 hover:text-zinc-500 cursor-pointer"
+                                title="Supprimer"
+                              >
+                                <Icons.Trash2 size={14} />
+                              </button>
                             </div>
-                          )}
-                        </div>
-
-                        <input
-                          type="text"
-                          value={newSolCategory}
-                          onChange={(e) => setNewSolCategory(e.target.value)}
-                          placeholder="Catégorie"
-                          className="w-32 px-3 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={newSolDesc}
-                          onChange={(e) => setNewSolDesc(e.target.value)}
-                          placeholder="Description et valeur ajoutée..."
-                          className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (newSolName.trim()) {
-                              setEditSolutions([
-                                ...editSolutions,
-                                {
-                                  id: String(editSolutions.length + 1),
-                                  name: newSolName.trim(),
-                                  category: newSolCategory.trim() || 'Orange Business',
-                                  description: newSolDesc.trim() || 'Solution adaptée au compte.',
-                                  sla: newSolSla || 'SLA 99.9%',
-                                },
-                              ]);
-                              setNewSolName('');
-                              setNewSolDesc('');
-                              setNewSolCategory('');
-                              setShowCatalogSuggestions(false);
-                            }
-                          }}
-                          disabled={!newSolName.trim()}
-                          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shrink-0"
-                        >
-                          <Icons.Plus size={13} />
-                          <span>Ajouter</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {displayedSolutions.map((sol, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3.5 border-b border-black/5 dark:border-white/5 last:border-b-0"
-                      >
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-semibold text-zinc-500 uppercase">
-                              {sol.category}
-                            </span>
-                            <span className="text-[11px] font-bold text-zinc-900 dark:text-white">
-                              {sol.name}
-                            </span>
+                            <textarea
+                              value={sol.description}
+                              onChange={(e) => {
+                                const updated = [...editSolutions];
+                                updated[idx] = { ...updated[idx], description: e.target.value };
+                                setEditSolutions(updated);
+                              }}
+                              rows={2}
+                              placeholder="Description de la solution..."
+                              className="w-full p-2.5 rounded-lg bg-white dark:bg-black/30 border border-black/5 text-xs outline-none resize-y"
+                            />
                           </div>
-                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                            {sol.description}
+                        ))}
+
+                        {/* Auto-completion & Search Input for New Solution */}
+                        <div className="p-4 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] space-y-3 relative">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+                              Ajouter une solution Orange
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSearchCatalog(newSolName)}
+                              className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
+                            >
+                              <Icons.Search size={12} />
+                              <span>Parcourir le catalogue</span>
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2 relative">
+                            {/* Auto-completing Input Field */}
+                            <div className="relative flex-1">
+                              <input
+                                type="text"
+                                value={newSolName}
+                                onChange={(e) => {
+                                  setNewSolName(e.target.value);
+                                  setShowCatalogSuggestions(true);
+                                }}
+                                onFocus={() => {
+                                  if (newSolName.trim().length > 0) setShowCatalogSuggestions(true);
+                                }}
+                                placeholder="Tapez le nom d'une solution (ex: Fibre, SD-WAN, CyberSOC)..."
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none focus:ring-2 focus:ring-[#9B978F]"
+                              />
+
+                              {/* Search Button Next to Input */}
+                              <button
+                                type="button"
+                                onClick={() => handleSearchCatalog(newSolName)}
+                                title="Rechercher dans le catalogue"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                              >
+                                <Icons.Search size={13} />
+                              </button>
+
+                              {/* Floating Auto-completion Suggestions Dropdown */}
+                              {showCatalogSuggestions && matchingSuggestions.length > 0 && (
+                                <div className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-white dark:bg-[#282528] rounded-xl shadow-lg border border-black/5 dark:border-white/10 max-h-56 overflow-y-auto divide-y divide-black/5 dark:divide-white/5 animate-in fade-in duration-100">
+                                  {matchingSuggestions.map((item, i) => (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={() => selectCatalogOffer(item)}
+                                      className="w-full px-3.5 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-black/20 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+                                    >
+                                      <div>
+                                        <div className="text-xs font-bold text-zinc-900 dark:text-white">
+                                          {item.name}
+                                        </div>
+                                        <div className="text-[11px] text-zinc-500 truncate max-w-sm">
+                                          {item.description}
+                                        </div>
+                                      </div>
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 shrink-0 font-semibold">
+                                        {item.category}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <input
+                              type="text"
+                              value={newSolCategory}
+                              onChange={(e) => setNewSolCategory(e.target.value)}
+                              placeholder="Catégorie"
+                              className="w-32 px-3 py-2.5 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={newSolDesc}
+                              onChange={(e) => setNewSolDesc(e.target.value)}
+                              placeholder="Description et valeur ajoutée..."
+                              className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-black/30 border border-black/5 text-xs outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (newSolName.trim()) {
+                                  setEditSolutions([
+                                    ...editSolutions,
+                                    {
+                                      id: String(editSolutions.length + 1),
+                                      name: newSolName.trim(),
+                                      category: newSolCategory.trim() || 'Orange Business',
+                                      description: newSolDesc.trim() || 'Solution adaptée au compte.',
+                                      sla: newSolSla || 'SLA 99.9%',
+                                    },
+                                  ]);
+                                  setNewSolName('');
+                                  setNewSolDesc('');
+                                  setNewSolCategory('');
+                                  setShowCatalogSuggestions(false);
+                                }
+                              }}
+                              disabled={!newSolName.trim()}
+                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shrink-0"
+                            >
+                              <Icons.Plus size={13} />
+                              <span>Ajouter</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {displayedSolutions.map((sol, idx) => (
+                          <div
+                            key={idx}
+                            className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3.5 border-b border-black/5 dark:border-white/5 last:border-b-0"
+                          >
+                            <div className="space-y-1 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-semibold text-zinc-500 uppercase">
+                                  {sol.category}
+                                </span>
+                                <span className="text-[11px] font-bold text-zinc-900 dark:text-white">
+                                  {sol.name}
+                                </span>
+                              </div>
+                              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                {sol.description}
+                              </p>
+                            </div>
+
+                            {sol.sla && (
+                              <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 shrink-0 self-start sm:self-auto">
+                                {sol.sla}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sub-tab 2: Produits implantés */}
+                {solutionsTab === 'installed' && (
+                  <div className="space-y-3">
+                    {loadingInstalled ? (
+                      <div className="py-8 text-center text-xs text-zinc-400 flex items-center justify-center gap-2">
+                        <Icons.RefreshCw size={14} className="animate-spin text-[#4F6CE8]" />
+                        <span>Chargement des produits implantés...</span>
+                      </div>
+                    ) : installedOffers.length === 0 ? (
+                      <div className="py-8 px-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-center space-y-3 bg-[#FBFBFA] dark:bg-[#1C1A1C]">
+                        <div className="w-10 h-10 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center mx-auto">
+                          <Icons.Layers size={18} />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                            Aucun produit implanté répertorié
+                          </p>
+                          <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
+                            Référencez les solutions actives chez ce client ou enregistrez un compte-rendu de visite mentionnant un contrat signé pour une mise à jour automatique.
                           </p>
                         </div>
-
-                        {sol.sla && (
-                          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 shrink-0 self-start sm:self-auto">
-                            {sol.sla}
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setShowAddInstalledModal(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#282528] border border-black/10 dark:border-white/10 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:border-[#4F6CE8] transition-colors cursor-pointer"
+                        >
+                          <Icons.Plus size={13} className="text-[#4F6CE8]" />
+                          <span>Ajouter le premier produit</span>
+                        </button>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-3">
+                        {installedOffers.map((offer) => {
+                          const isOrange = offer.provider === 'ORANGE_BUSINESS';
+                          const statusLabels: Record<string, { label: string; color: string }> = {
+                            ACTIVE: { label: 'En service', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' },
+                            DEPLOYING: { label: 'En déploiement', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' },
+                            PENDING_RENEWAL: { label: 'À renouveler', color: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' },
+                            TERMINATED: { label: 'Résilié', color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20' },
+                          };
+                          const statusKey = offer.contract_status || 'ACTIVE';
+                          const statusInfo = statusLabels[statusKey] || {
+                            label: statusKey,
+                            color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20',
+                          };
+
+                          return (
+                            <div
+                              key={offer.id}
+                              className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 flex flex-col gap-2.5 transition-all"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                        isOrange
+                                          ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] border-[#4F6CE8]/20'
+                                          : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700'
+                                      }`}
+                                    >
+                                      {isOrange ? 'Orange Business' : (offer.provider || 'Opérateur tiers')}
+                                    </span>
+                                    <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">
+                                      {offer.category}
+                                    </span>
+                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border ${statusInfo.color}`}>
+                                      {statusInfo.label}
+                                    </span>
+                                  </div>
+                                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
+                                    {offer.installed_offer_name}
+                                  </h4>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteInstalledOffer(offer.id)}
+                                  title="Supprimer ce produit implanté"
+                                  className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <Icons.Trash2 size={13} />
+                                </button>
+                              </div>
+
+                              {/* Attributes Row */}
+                              <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-zinc-600 dark:text-zinc-400 border-t border-black/5 dark:border-white/5">
+                                {offer.bandwidth_mbps && (
+                                  <span className="flex items-center gap-1 font-mono font-medium">
+                                    <Icons.Activity size={12} className="text-[#4F6CE8]" />
+                                    <span>{offer.bandwidth_mbps} Mbps</span>
+                                  </span>
+                                )}
+                                {offer.monthly_cost_mrr && Number(offer.monthly_cost_mrr) > 0 && (
+                                  <span className="flex items-center gap-1 font-mono font-medium">
+                                    <Icons.FileText size={12} className="text-zinc-400" />
+                                    <span>{Number(offer.monthly_cost_mrr).toLocaleString('fr-FR')} €/mois</span>
+                                  </span>
+                                )}
+                                {offer.active_licenses_count && offer.active_licenses_count > 1 && (
+                                  <span className="flex items-center gap-1">
+                                    <Icons.Users size={12} className="text-zinc-400" />
+                                    <span>{offer.active_licenses_count} licences</span>
+                                  </span>
+                                )}
+                                {offer.contract_end_date && (
+                                  <span className="flex items-center gap-1">
+                                    <Icons.Calendar size={12} className="text-zinc-400" />
+                                    <span>Échéance : {offer.contract_end_date}</span>
+                                  </span>
+                                )}
+                                {offer.technical_equipment && (
+                                  <span className="flex items-center gap-1 text-zinc-500 truncate max-w-xs" title={offer.technical_equipment}>
+                                    <Icons.Server size={12} className="text-zinc-400" />
+                                    <span className="truncate">{offer.technical_equipment}</span>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1190,6 +1471,198 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Ajouter un produit implanté */}
+      {showAddInstalledModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1E1B1E] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Icons.Plus size={16} className="text-[#4F6CE8]" />
+                  <span>Ajouter un produit implanté</span>
+                </h3>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Référencez une solution actuellement déployée ou en service chez ce compte.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddInstalledModal(false)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors cursor-pointer"
+                title="Fermer"
+              >
+                <Icons.X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddInstalledOffer} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Nom de la solution ou offre *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newInstalledName}
+                  onChange={(e) => setNewInstalledName(e.target.value)}
+                  placeholder="Ex : Connect Entreprise Fibre 1Gbps, Business VPN..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Fournisseur
+                  </label>
+                  <select
+                    value={newInstalledProvider}
+                    onChange={(e) => setNewInstalledProvider(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  >
+                    <option value="ORANGE_BUSINESS">Orange Business</option>
+                    <option value="COMPETITOR">Opérateur tiers / Concurrent</option>
+                    <option value="INTERNAL">Solution interne client</option>
+                    <option value="OTHER">Autre</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Catégorie
+                  </label>
+                  <select
+                    value={newInstalledCategory}
+                    onChange={(e) => setNewInstalledCategory(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  >
+                    <option value="Connectivité">Connectivité & Réseaux</option>
+                    <option value="Cybersécurité">Cybersécurité</option>
+                    <option value="Cloud & Data">Cloud & Datacenter</option>
+                    <option value="Collaboration">Collaboration & Voix</option>
+                    <option value="Mobilité">Mobilité Entreprise</option>
+                    <option value="Sur-mesure">Offre Sur-Mesure</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Statut du contrat
+                  </label>
+                  <select
+                    value={newInstalledStatus}
+                    onChange={(e) => setNewInstalledStatus(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  >
+                    <option value="ACTIVE">En service (Actif)</option>
+                    <option value="DEPLOYING">En cours de déploiement</option>
+                    <option value="PENDING_RENEWAL">À renouveler / Proche échéance</option>
+                    <option value="TERMINATED">Résilié</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Débit (Mbps)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newInstalledBandwidth}
+                    onChange={(e) => setNewInstalledBandwidth(e.target.value)}
+                    placeholder="Ex : 1000"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Coût mensuel (MRR en €)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newInstalledMrr}
+                    onChange={(e) => setNewInstalledMrr(e.target.value)}
+                    placeholder="Ex : 1450"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Postes / Licences
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newInstalledLicenses}
+                    onChange={(e) => setNewInstalledLicenses(e.target.value)}
+                    placeholder="Ex : 50"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Échéance contrat
+                  </label>
+                  <input
+                    type="date"
+                    value={newInstalledEndDate}
+                    onChange={(e) => setNewInstalledEndDate(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Équipements & CPE
+                  </label>
+                  <input
+                    type="text"
+                    value={newInstalledEquipment}
+                    onChange={(e) => setNewInstalledEquipment(e.target.value)}
+                    placeholder="Ex : Routeur Cisco ISR 4331, ONT..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-black/5 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setShowAddInstalledModal(false)}
+                  disabled={isSubmittingInstalled}
+                  className="px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingInstalled || !newInstalledName.trim()}
+                  className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#435ec9] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmittingInstalled ? (
+                    <Icons.RefreshCw size={13} className="animate-spin" />
+                  ) : (
+                    <Icons.Check size={13} />
+                  )}
+                  <span>{isSubmittingInstalled ? "Enregistrement..." : "Ajouter le produit"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

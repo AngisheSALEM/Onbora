@@ -148,7 +148,26 @@ def _build_briefing_payload(ent: Enterprise, rev_str: str, wallet_share: float, 
                 f"Ne pas dénigrer {ent.current_operator} : insister sur notre engagement de rétablissement en moins de 2 heures.",
                 "Obtenir la validation du DAF avant d'arrêter l'architecture technique finale."
             ]
-        }
+        },
+        "installed_offers": [
+            {
+                "id": o.id,
+                "name": o.installed_offer_name,
+                "category": o.category or "CONNECTIVITY",
+                "provider": o.provider,
+                "provider_label": o.get_provider_display(),
+                "contract_status": o.contract_status,
+                "contract_status_label": o.get_contract_status_display(),
+                "installation_date": o.installation_date.strftime('%d/%m/%Y') if o.installation_date else None,
+                "contract_end_date": o.contract_end_date.strftime('%d/%m/%Y') if o.contract_end_date else None,
+                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
+                "bandwidth_mbps": o.bandwidth_mbps,
+                "active_licenses_count": o.active_licenses_count,
+                "unresolved_tickets_count": o.unresolved_tickets_count,
+                "technical_equipment": o.technical_equipment,
+            }
+            for o in getattr(ent, 'installed_offers', []).all()
+        ] if hasattr(ent, 'installed_offers') else [],
     }
 
 
@@ -413,10 +432,22 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
     enterprise = appointment.enterprise
     enterprise.is_visited = True
     enterprise.last_visited_at = timezone.now()
-    enterprise.last_visited_by = user
     if conversion_status_val in dict(Enterprise.CONVERSION_STATUS_CHOICES):
         enterprise.conversion_status = conversion_status_val
     enterprise.save()
+
+    # Synchronisation automatique du parc des solutions implantées si contrat signé
+    try:
+        from kam.services.installed_offers_service import sync_installed_offer_on_signed_contract
+        sync_installed_offer_on_signed_contract(
+            enterprise=enterprise,
+            text_content=f"{transcript} {executive_summary}",
+            confirmed_needs=confirmed_needs,
+            signed_offer_name=enterprise.converted_offer,
+            amount=float(enterprise.converted_amount) if enterprise.converted_amount else None
+        )
+    except Exception as exc:
+        logger.warning(f"[BriefingService] Erreur lors de la synchronisation d'offre implantée: {exc}")
 
     try:
         session_id = f"kam_account_{enterprise.id}"

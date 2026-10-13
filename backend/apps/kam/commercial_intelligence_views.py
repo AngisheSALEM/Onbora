@@ -43,12 +43,58 @@ class PreCallBriefingDetailView(APIView):
                 "golden_rules": briefing.golden_rules,
                 "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
                 "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
-                "ai_engine": "Onbora Analysis (Port 8001 / AI Core)"
+                "ai_engine": "Onbora Analysis (Port 8001 / AI Core)",
             }
+            from sales.models import EnterpriseInstalledOffer
+            offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
+            data["installed_offers"] = [
+                {
+                    "id": o.id,
+                    "installed_offer_name": o.installed_offer_name,
+                    "name": o.installed_offer_name,
+                    "category": o.category or "CONNECTIVITY",
+                    "provider": o.provider,
+                    "provider_label": o.get_provider_display(),
+                    "contract_status": o.contract_status,
+                    "contract_status_label": o.get_contract_status_display(),
+                    "installation_date": o.installation_date.isoformat() if o.installation_date else None,
+                    "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
+                    "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
+                    "bandwidth_mbps": o.bandwidth_mbps,
+                    "active_licenses_count": o.active_licenses_count,
+                    "unresolved_tickets_count": o.unresolved_tickets_count,
+                    "technical_equipment": o.technical_equipment,
+                    "created_at": o.created_at.isoformat(),
+                }
+                for o in offers
+            ]
             return Response(data, status=status.HTTP_200_OK)
 
         # Générer à la volée via Unified Core AI & Onbora Analysis Service
         data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
+        from sales.models import EnterpriseInstalledOffer
+        offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
+        data["installed_offers"] = [
+            {
+                "id": o.id,
+                "installed_offer_name": o.installed_offer_name,
+                "name": o.installed_offer_name,
+                "category": o.category or "CONNECTIVITY",
+                "provider": o.provider,
+                "provider_label": o.get_provider_display(),
+                "contract_status": o.contract_status,
+                "contract_status_label": o.get_contract_status_display(),
+                "installation_date": o.installation_date.isoformat() if o.installation_date else None,
+                "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
+                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
+                "bandwidth_mbps": o.bandwidth_mbps,
+                "active_licenses_count": o.active_licenses_count,
+                "unresolved_tickets_count": o.unresolved_tickets_count,
+                "technical_equipment": o.technical_equipment,
+                "created_at": o.created_at.isoformat(),
+            }
+            for o in offers
+        ]
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, account_id):

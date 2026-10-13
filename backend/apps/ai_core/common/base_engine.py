@@ -78,15 +78,25 @@ class BaseAIEngine:
             if system_instruction:
                 config_kwargs["system_instruction"] = system_instruction
 
-            resp = self._client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(**config_kwargs)
-            )
-            if resp and resp.text:
-                return extract_json_payload(resp.text)
+            models_to_try = [self.model_name]
+            for fallback in ("gemini-3.8-flash", "gemini-3.6-flash"):
+                if fallback not in models_to_try:
+                    models_to_try.append(fallback)
+
+            for current_model in models_to_try:
+                try:
+                    resp = self._client.models.generate_content(
+                        model=current_model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(**config_kwargs)
+                    )
+                    if resp and resp.text:
+                        return extract_json_payload(resp.text)
+                except Exception as exc:
+                    logger.warning("[BaseAIEngine] Appel Gemini (%s) echoue : %s", current_model, exc)
+                    continue
         except Exception as exc:
-            logger.warning("[BaseAIEngine] Appel Gemini echoue (%s), bascule sur le fallback local.", exc)
+            logger.warning("[BaseAIEngine] Erreur globale Gemini (%s), bascule sur le fallback local.", exc)
             return None
         return None
 

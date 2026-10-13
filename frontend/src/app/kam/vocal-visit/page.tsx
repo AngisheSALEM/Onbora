@@ -366,6 +366,8 @@ function KamVocalVisitContent() {
       const res = await fetchAPI(`/api/kam/appointments/${appointmentId}/complete-vocal/`, {
         method: 'POST',
         body: JSON.stringify({
+          transcript: voiceTranscript.trim(),
+          notes: writtenNotes.trim(),
           voice_transcript: voiceTranscript.trim(),
           written_notes: writtenNotes.trim(),
           conversion_status: conversionStatus,

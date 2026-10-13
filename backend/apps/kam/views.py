@@ -883,8 +883,8 @@ class KamCompleteVocalMeetingView(APIView):
             return Response({"detail": "Accès refusé : vous n'êtes pas l'organisateur de ce rendez-vous."}, status=status.HTTP_403_FORBIDDEN)
 
         data = request.data
-        transcript = data.get('transcript', '').strip()
-        notes = data.get('notes', '').strip()
+        transcript = (data.get('transcript') or data.get('voice_transcript') or '').strip()
+        notes = (data.get('notes') or data.get('written_notes') or '').strip()
         conversion_status_val = data.get('conversion_status', 'IN_NEGOTIATION')
         audio_file_path = data.get('audio_file_path', '')
 
@@ -1142,5 +1142,115 @@ class AccountRiskSignalsView(APIView):
         if "error" in signals:
             return Response(signals, status=status.HTTP_404_NOT_FOUND)
         return Response(signals, status=status.HTTP_200_OK)
+
+
+class KamInstalledOffersView(APIView):
+    """
+    GET: Liste les solutions et produits implantés pour un compte entreprise.
+    POST: Ajoute manuellement une nouvelle solution implantée au parc client.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, account_id):
+        from sales.models import Enterprise, EnterpriseInstalledOffer
+        try:
+            enterprise = Enterprise.objects.get(id=account_id)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Compte introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
+        results = [
+            {
+                "id": o.id,
+                "installed_offer_name": o.installed_offer_name,
+                "name": o.installed_offer_name,
+                "category": o.category or "CONNECTIVITY",
+                "provider": o.provider,
+                "provider_label": o.get_provider_display(),
+                "contract_status": o.contract_status,
+                "contract_status_label": o.get_contract_status_display(),
+                "installation_date": o.installation_date.isoformat() if o.installation_date else None,
+                "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
+                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
+                "bandwidth_mbps": o.bandwidth_mbps,
+                "active_licenses_count": o.active_licenses_count,
+                "unresolved_tickets_count": o.unresolved_tickets_count,
+                "technical_equipment": o.technical_equipment,
+                "created_at": o.created_at.isoformat(),
+            }
+            for o in offers
+        ]
+        return Response(results, status=status.HTTP_200_OK)
+
+    def post(self, request, account_id):
+        from sales.models import Enterprise, EnterpriseInstalledOffer
+        try:
+            enterprise = Enterprise.objects.get(id=account_id)
+        except Enterprise.DoesNotExist:
+            return Response({"detail": "Compte introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        offer_name = request.data.get('installed_offer_name') or request.data.get('name')
+        if not offer_name or not str(offer_name).strip():
+            return Response({"detail": "Le nom de l'offre ou de la solution est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        category = request.data.get('category', 'CONNECTIVITY')
+        provider = request.data.get('provider', 'ORANGE_BUSINESS')
+        contract_status = request.data.get('contract_status', 'ACTIVE')
+        contract_end_date = request.data.get('contract_end_date') or None
+        installation_date = request.data.get('installation_date') or timezone.now().date()
+        monthly_cost_mrr = request.data.get('monthly_cost_mrr', 0.0)
+        bandwidth_mbps = request.data.get('bandwidth_mbps') or None
+        active_licenses_count = request.data.get('active_licenses_count', 1)
+        technical_equipment = request.data.get('technical_equipment', '')
+
+        offer = EnterpriseInstalledOffer.objects.create(
+            enterprise=enterprise,
+            installed_offer_name=str(offer_name).strip(),
+            category=category,
+            provider=provider,
+            contract_status=contract_status,
+            installation_date=installation_date,
+            contract_end_date=contract_end_date,
+            monthly_cost_mrr=monthly_cost_mrr,
+            bandwidth_mbps=int(bandwidth_mbps) if bandwidth_mbps else None,
+            active_licenses_count=int(active_licenses_count) if active_licenses_count else 1,
+            technical_equipment=technical_equipment,
+        )
+
+        return Response({
+            "id": offer.id,
+            "installed_offer_name": offer.installed_offer_name,
+            "name": offer.installed_offer_name,
+            "category": offer.category,
+            "provider": offer.provider,
+            "provider_label": offer.get_provider_display(),
+            "contract_status": offer.contract_status,
+            "contract_status_label": offer.get_contract_status_display(),
+            "installation_date": offer.installation_date.isoformat() if offer.installation_date else None,
+            "contract_end_date": offer.contract_end_date.isoformat() if offer.contract_end_date else None,
+            "monthly_cost_mrr": float(offer.monthly_cost_mrr or 0),
+            "bandwidth_mbps": offer.bandwidth_mbps,
+            "active_licenses_count": offer.active_licenses_count,
+            "unresolved_tickets_count": offer.unresolved_tickets_count,
+            "technical_equipment": offer.technical_equipment,
+            "created_at": offer.created_at.isoformat(),
+        }, status=status.HTTP_201_CREATED)
+
+
+class KamInstalledOfferDetailView(APIView):
+    """
+    DELETE: Supprime une solution implantée du parc.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, account_id, offer_id):
+        from sales.models import EnterpriseInstalledOffer
+        try:
+            offer = EnterpriseInstalledOffer.objects.get(id=offer_id, enterprise_id=account_id)
+            offer.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except EnterpriseInstalledOffer.DoesNotExist:
+            return Response({"detail": "Offre introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
 
 

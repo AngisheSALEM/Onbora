@@ -443,6 +443,18 @@ class GenerateVisitReportWithAIUseCase(BaseUseCase[Tuple[int, Optional[str], Any
         report.original_ai_output = ai_payload
         report.save()
 
+        # Synchronisation automatique du parc des solutions implantées si contrat signé
+        try:
+            from kam.services.installed_offers_service import sync_installed_offer_on_signed_contract
+            sync_installed_offer_on_signed_contract(
+                enterprise=prep.enterprise,
+                text_content=f"{transcript} {qual_res.executive_summary}",
+                confirmed_needs=confirmed_needs,
+                signed_offer_name=qual_res.recommended_tier,
+            )
+        except Exception as exc:
+            logger.warning(f"[SalesUseCase] Erreur lors de la synchronisation d'offre implantée: {exc}")
+
         # Marquer la session live comme terminée
         if live_session:
             live_session.session_status = 'COMPLETED'

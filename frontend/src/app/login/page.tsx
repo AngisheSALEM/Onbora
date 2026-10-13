@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,7 +47,7 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
       const res = await fetch(`${API_URL}/api/auth/login/`, {
         method: 'POST',
         headers: {
@@ -57,7 +58,12 @@ export default function LoginPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        const errorMessage = errorData.detail || errorData.non_field_errors?.[0] || 'Identifiant ou mot de passe incorrect.';
+        const errorMessage =
+          errorData.detail ||
+          errorData.non_field_errors?.[0] ||
+          (res.status === 404
+            ? "Serveur d'authentification indisponible. Vérifiez que le bon backend est démarré sur le port 8000."
+            : 'Identifiant ou mot de passe incorrect.');
         throw new Error(errorMessage);
       }
 
@@ -128,14 +134,29 @@ export default function LoginPage() {
             <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Mot de passe
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-550 focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all text-zinc-950 dark:text-white border-0"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full pl-4 pr-11 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-550 focus:outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all text-zinc-950 dark:text-white border-0"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <Icons.EyeOff size={16} />
+                ) : (
+                  <Icons.Eye size={16} />
+                )}
+              </button>
+            </div>
           </div>
 
           <button

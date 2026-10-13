@@ -114,16 +114,49 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
             "Transcris cet enregistrement audio professionnel."
         )
 
-        model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-        response = client.models.generate_content(
-            model=model_name,
-            contents=[audio_part, prompt],
-            config=types.GenerateContentConfig(
-                system_instruction=_SYSTEM_PROMPT,
-                temperature=0.0,
-                max_output_tokens=4096,
-            ),
+        model_name = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+        # Normalisation automatique en cas de coquille dans la configuration
+        if "3.6" in model_name and "lite" in model_name:
+            model_name = "gemini-3.6-flash"
+        elif "2.5" in model_name:
+            model_name = "gemini-3.8-flash"
+
+        content_config = types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
+            temperature=0.0,
+            max_output_tokens=4096,
         )
+
+        candidate_models = [model_name]
+        for fallback in ("gemini-3.8-flash", "gemini-3.6-flash"):
+            if fallback not in candidate_models:
+                candidate_models.append(fallback)
+
+        response = None
+        last_error = None
+        for current_model in candidate_models:
+            try:
+                response = client.models.generate_content(
+                    model=current_model,
+                    contents=[audio_part, prompt],
+                    config=content_config,
+                )
+                break
+            except Exception as exc:
+                last_error = exc
+                err_msg = str(exc)
+                if "404" in err_msg or "NOT_FOUND" in err_msg:
+                    logger.warning(
+                        "[AudioTranscription] Modele '%s' non disponible (404), tentative avec repli...",
+                        current_model,
+                    )
+                    continue
+                raise exc
+
+        if response is None:
+            if last_error:
+                raise last_error
+            raise RuntimeError("Aucun modele Gemini n'a pu repondre a la requete de transcription.")
 
         transcript = (response.text or "").strip()
 

@@ -8,7 +8,8 @@ from .views import (
     KamAppointmentPreparationView, KamCompleteVocalMeetingView,
     KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView,
     RelationshipCoverageListCreateView, RelationshipCoverageDetailView, RelationshipCoverageDiagnosticView,
-    AccountMemoryEventListCreateView, AccountHandoverPackView, AccountRiskSignalsView
+    AccountMemoryEventListCreateView, AccountHandoverPackView, AccountRiskSignalsView,
+    KamInstalledOffersView, KamInstalledOfferDetailView
 )
 from .commercial_intelligence_views import (
     PreCallBriefingDetailView, PreCallBriefingListView,
@@ -53,6 +54,8 @@ urlpatterns = [
     path('accounts/', KamStrategicAccountListView.as_view(), name='kam-accounts-list'),
     path('accounts/<int:account_id>/debrief/', KamAccountDebriefView.as_view(), name='kam-account-debrief'),
     path('accounts/<int:account_id>/update-info/', KamAccountUpdateInfoView.as_view(), name='kam-account-update-info'),
+    path('accounts/<int:account_id>/installed-offers/', KamInstalledOffersView.as_view(), name='kam-account-installed-offers'),
+    path('accounts/<int:account_id>/installed-offers/<int:offer_id>/', KamInstalledOfferDetailView.as_view(), name='kam-account-installed-offer-detail'),
     path('briefing/<int:account_id>/', KamBriefingDetailView.as_view(), name='kam-briefing-detail'),
     
     # Agenda, Rendez-vous & Clôture vocale connectée à Core AI

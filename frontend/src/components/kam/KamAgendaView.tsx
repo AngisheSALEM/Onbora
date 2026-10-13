@@ -17,7 +17,7 @@ interface KamAgendaViewProps {
   onAccountUpdated?: (account: StrategicVisit) => void;
 }
 
-const APPOINTMENTS_PAGE_SIZE = 6;
+const APPOINTMENTS_PAGE_SIZE = 10;
 
 export default function KamAgendaView({
   assignedAccounts,
@@ -351,11 +351,25 @@ export default function KamAgendaView({
     router.push(`/kam/vocal-visit?appointmentId=${appointment.id}`);
   };
 
-  // Filter and sort appointments (du plus récent au moins récent)
+  // Filter and sort appointments (À venir en haut, passés en bas)
   const sortedAppointments = useMemo(() => {
+    const now = Date.now();
     return [...appointments].sort((a, b) => {
       const timeA = new Date(a.scheduled_at).getTime();
       const timeB = new Date(b.scheduled_at).getTime();
+      const isPastA = a.status === 'COMPLETED' || timeA < now;
+      const isPastB = b.status === 'COMPLETED' || timeB < now;
+
+      // 1. Rendez-vous à venir en premier, passés en bas
+      if (!isPastA && isPastB) return -1;
+      if (isPastA && !isPastB) return 1;
+
+      // 2. Si les deux sont à venir : chronologique (le plus proche en premier)
+      if (!isPastA && !isPastB) {
+        return timeA - timeB;
+      }
+
+      // 3. Si les deux sont passés : du plus récent au plus ancien
       return timeB - timeA;
     });
   }, [appointments]);
@@ -409,7 +423,7 @@ export default function KamAgendaView({
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
       
       {/* 1. TOP HEADER TOOLBAR */}
-      <div className="flex flex-col gap-4 pb-2 border-b border-black/5 dark:border-white/5">
+      <div className="flex flex-col gap-4 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
@@ -545,122 +559,116 @@ export default function KamAgendaView({
           <p className="text-xs font-bold text-zinc-500">Aucun rendez-vous ne correspond à ce filtre.</p>
         </div>
       ) : (
-        /* Grid of Scheduled Appointments */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {visibleAppointments.map((app) => {
-            const isCompleted = app.status === 'COMPLETED';
-            const isInProgress = app.status === 'IN_PROGRESS';
+        /* Tableau des Rendez-vous */
+        <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse" aria-label="Agenda des rendez-vous">
+              <thead>
+                <tr className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 bg-black/[0.02] dark:bg-white/[0.02]">
+                  <th scope="col" className="py-3.5 px-6 font-semibold">Entreprise</th>
+                  <th scope="col" className="py-3.5 px-4 font-semibold">Type de visite</th>
+                  <th scope="col" className="py-3.5 px-4 font-semibold">Date</th>
+                  <th scope="col" className="py-3.5 px-6 font-semibold text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleAppointments.map((app) => {
+                  const isPast = app.status === 'COMPLETED' || new Date(app.scheduled_at).getTime() < Date.now();
+                  const isCompleted = app.status === 'COMPLETED';
 
-            return (
-              <div
-                key={app.id}
-                className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-xs flex flex-col justify-between gap-5 hover:border-[#4F6CE8]/30 transition-all group"
-              >
-                {/* 1. Header: Enterprise Name & Visit State */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* <div className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-extrabold text-sm shrink-0">
-                      {app.enterprise_name.charAt(0)}
-                    </div> */}
-                    <h4 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight truncate">
-                      {app.enterprise_name}
-                    </h4>
-                  </div>
-
-                  {/* État de la visite sans bordure ni couleur interdite */}
-                  {isCompleted ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
-                      <Icons.CheckCircle size={12} />
-                      <span>Rapport généré</span>
-                    </span>
-                  ) : isInProgress ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
-                      <Icons.Mic size={12} />
-                      <span>En cours</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/5 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border-none shrink-0">
-                      <Icons.Clock size={12} />
-                      <span>Planifié</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* 2. Body: Type de visite + Date & Heure */}
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
-                      Type de visite
-                    </span>
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5 truncate">
-                      {app.visit_purpose_label || app.meeting_type_label || 'Rendez-vous'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase text-zinc-400 block tracking-wider">
-                      Date & Heure
-                    </span>
-                    <span className="font-sf text-xs font-semibold text-zinc-800 dark:text-zinc-200 block mt-0.5">
-                      {formatDate(app.scheduled_at)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 3. Card Bottom CTA */}
-                <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-end gap-2.5">
-                  {isCompleted ? (
-                    <button
-                      onClick={() => {
-                        if (onOpenReport) {
-                          onOpenReport(app.report_id || app.id);
-                        } else {
-                          router.push(`/kam/report?reportId=${app.report_id || app.id}&from=agenda`);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
-                      title="Consulter le rapport de visite"
+                  return (
+                    <tr
+                      key={app.id}
+                      className={`transition-colors ${
+                        isPast
+                          ? 'opacity-55 dark:opacity-40 bg-black/[0.02] dark:bg-white/[0.01]'
+                          : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
+                      }`}
                     >
-                      <Icons.FileText size={15} />
-                      <span>Voir le rapport</span>
-                    </button>
-                  ) : isInProgress ? (
-                    <button
-                      onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
-                    >
-                      <Icons.Mic size={15} />
-                      <span>Reprendre la réunion</span>
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/kam/prepare-visit?appointmentId=${app.id}`)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40] transition-colors cursor-pointer"
-                      >
-                        Préparer
-                      </button>
-                      <button
-                        onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
-                        title="Démarrer la réunion vocale"
-                      >
-                        <Icons.Mic size={15} />
-                        <span>Brief Vocal Live</span>
-                      </button>
-                    </>
-                  )}
-                </div>
+                      {/* 1. Nom de l'entreprise */}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-bold leading-tight ${
+                            isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-white'
+                          }`}>
+                            {app.enterprise_name}
+                          </span>
+                          {isPast && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 shrink-0">
+                              {isCompleted ? 'Effectué' : 'Passé'}
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
-              </div>
-            );
-          })}
+                      {/* 2. Type de visite */}
+                      <td className="py-4 px-4 text-xs">
+                        <span className={isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-700 dark:text-zinc-300 font-medium'}>
+                          {app.visit_purpose_label || app.meeting_type_label || 'Rendez-vous'}
+                        </span>
+                      </td>
+
+                      {/* 3. Date */}
+                      <td className="py-4 px-4 text-xs">
+                        <span className={`font-sf ${isPast ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200 font-semibold'}`}>
+                          {formatDate(app.scheduled_at)}
+                        </span>
+                      </td>
+
+                      {/* 4. Bouton Préparer */}
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/kam/prepare-visit?appointmentId=${app.id}`)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                              isPast
+                                ? 'bg-black/5 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-black/10 dark:hover:bg-white/10'
+                                : 'bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#403C40]'
+                            }`}
+                          >
+                            Préparer
+                          </button>
+                          {!isPast && (
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                              title="Démarrer le Brief Vocal Live"
+                            >
+                              <Icons.Mic size={13} />
+                              <span className="hidden sm:inline">Brief Vocal</span>
+                            </button>
+                          )}
+                          {isCompleted && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (onOpenReport) {
+                                  onOpenReport(app.report_id || app.id);
+                                } else {
+                                  router.push(`/kam/report?reportId=${app.report_id || app.id}&from=agenda`);
+                                }
+                              }}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-400 hover:bg-black/10 transition-colors cursor-pointer"
+                              title="Voir le rapport"
+                            >
+                              Rapport
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {!loading && !error && totalPages > 1 && (
-        <nav aria-label="Pagination de l'agenda" className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 dark:border-white/5 pt-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <nav aria-label="Pagination de l'agenda" className="flex flex-wrap items-center justify-between gap-3 pt-3 text-xs text-zinc-500 dark:text-zinc-400">
           <span>{pageStart + 1}–{Math.min(pageStart + APPOINTMENTS_PAGE_SIZE, filteredAppointments.length)} sur {filteredAppointments.length} rendez-vous</span>
           <div className="flex items-center gap-2">
             <button type="button" aria-label="Page précédente" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-blue">
@@ -680,7 +688,7 @@ export default function KamAgendaView({
           <div role="dialog" aria-modal="true" aria-labelledby="kam-create-appointment-title" className="bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white w-full max-w-lg rounded-[32px] border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden animate-scale-up">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-center justify-between">
+            <div className="p-6 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center font-bold">
                   <Icons.Calendar size={20} />
@@ -1028,7 +1036,7 @@ export default function KamAgendaView({
 
               {/* Modal Footer */}
               {formError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{formError}</p>}
-              <div className="pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-end gap-3">
+              <div className="pt-4 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsNewAppointmentModalOpen(false)}
