@@ -329,35 +329,73 @@ body {
 }
 
 /* Clean Form Inputs */
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="number"],
-textarea,
-select {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
+input[type="text"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="password"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="email"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="number"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="tel"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="url"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+input[type="search"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+textarea:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+select:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]) {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 14px;
-  color: var(--foreground) !important;
+  color: var(--foreground);
   transition: all 0.15s ease;
 }
 
-.dark input[type="text"],
-.dark input[type="password"],
-.dark input[type="email"],
-.dark input[type="number"],
-.dark textarea,
-.dark select {
-  background: #141416 !important;
-  border: 1px solid #282830 !important;
+.dark input[type="text"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="password"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="email"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="number"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="tel"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="url"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark input[type="search"]:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark textarea:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]),
+.dark select:not([class*="bg-transparent"]):not([class*="border-none"]):not([class*="border-0"]) {
+  background: #141416;
+  border: 1px solid #282830;
   border-radius: 14px;
-  color: #FFFFFF !important;
+  color: #FFFFFF;
 }
 
-input:focus, textarea:focus, select:focus {
-  border-color: #2563EB !important;
+input:focus:not([class*="bg-transparent"]),
+textarea:focus:not([class*="bg-transparent"]),
+select:focus:not([class*="bg-transparent"]) {
+  border-color: #2563EB;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Explicit rule for transparent / nested inputs to guarantee zero inner borders or backgrounds */
+input[class*="bg-transparent"],
+input[class*="border-none"],
+input[class*="border-0"],
+textarea[class*="bg-transparent"],
+textarea[class*="border-none"],
+textarea[class*="border-0"],
+.clean-input,
+.search-input {
+  background: transparent !important;
+  border: none !important;
+  border-width: 0 !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  box-shadow: none !important;
+}
+
+input[class*="bg-transparent"]:focus,
+input[class*="border-none"]:focus,
+input[class*="border-0"]:focus,
+textarea[class*="bg-transparent"]:focus,
+textarea[class*="border-none"]:focus,
+textarea[class*="border-0"]:focus,
+.clean-input:focus,
+.search-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-width: 0 !important;
 }
 
 /* Custom Scrollbars */

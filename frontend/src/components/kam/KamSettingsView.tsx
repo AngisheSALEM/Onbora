@@ -182,7 +182,7 @@ export default function KamSettingsView() {
 
       {/* 4. Base de Connaissances & FAQ Opérationnelle */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-4 shadow-2xs">
-        <div className="flex items-center gap-2 pb-2 border-b border-black/5 dark:border-white/5">
+        <div className="flex items-center gap-2 pb-1">
           <Icons.HelpCircle size={18} className="text-zinc-600 dark:text-zinc-400" />
           <div>
             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">

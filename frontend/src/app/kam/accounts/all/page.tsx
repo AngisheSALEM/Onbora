@@ -48,7 +48,7 @@ function AccountsDirectory() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto">
-      <div className="pb-2 border-b border-black/5 dark:border-white/5">
+      <div>
         <Link
           href="/kam/accounts"
           className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"

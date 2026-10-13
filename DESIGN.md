@@ -93,3 +93,15 @@ L'interface Onbora applique une discipline chromatique stricte :
 * **Podiums Discrets :** Les classements Top 3 (Commerciaux ou KAM) ne doivent pas envahir l'espace vertical. Ils sont proposés comme une option en retrait, pliable/dépliable (`[ Icons.Trophy ] Podium Top 3 Performance`), compacte et élégante.
 * **Filtres Déroulants :** Privilégier les menus déroulants sleek `<select>` aux grappes horizontales de boutons-pills pour les filtres complexes (statuts, entités, périmètres).
 
+---
+
+## 9. Règle Zéro Lignes de Séparation sur les Fonds & Zéro Doubles Bordures d'Input (*Clean Canvas & Borderless Nested Inputs*)
+
+* **INTERDICTION FORMELLE DES LIGNES SUR LES FONDS :**
+  * Il est strictement interdit d'ajouter des séparateurs horizontaux ou verticaux (`border-b`, `border-t`, `border-l`, `<hr />`, `<div className="border-t ...">`) sur les toiles de fond, sous les headers de navigation, sous les titres de pages (ex: *Portefeuille*, *Rendez-vous*) ou entre les blocs de cartes.
+  * **EXCEPTION UNIQUE ET STRICTE :** Les lignes séparatrices sont **réservées exclusivement aux lignes des tableaux de données** (`<thead>`, `<tbody>`, `<tr>`), où elles contribuent à la lisibilité et à la scannabilité des colonnes tabulaires.
+* **INTERDICTION FORMELLE DES DOUBLES BORDURES SUR LES INPUTS :**
+  * Les champs de recherche et inputs imbriqués doivent adopter un style pilule épuré (`rounded-full`), avec un `<input>` totalement transparent sans double contour intérieur (`border-none bg-transparent outline-none ring-0`).
+  * Les icônes d'action adjacentes (ex: icône filtres) s'insèrent naturellement dans la pilule sans séparateur vertical intermédiaire (`border-l`).
+
+

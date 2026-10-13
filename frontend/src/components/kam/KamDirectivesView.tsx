@@ -142,7 +142,7 @@ export default function KamDirectivesView({ onDirectivesCountChange }: KamDirect
     <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none font-sans">
       
       {/* Top Header Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3 border-b border-black/5 dark:border-white/5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
             Directives & Messages Stratégiques

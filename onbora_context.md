@@ -211,3 +211,4 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
     *   Tests mobiles Flutter Outbox & Sync validés.
     *   Hook 1 (Conformité Charte Graphique & Zéro Émoji) : 100% conforme.
     *   Hook 2 (Architecture & Zéro Dette Technique) : 100% conforme sur l'intégralité du code.
+    *   Règle Clean Canvas & Form Inputs (DESIGN.md §9 & agent.md Règle 7) : Zéro ligne de séparation sur les fonds/en-têtes (réservées aux tableaux `<thead>`/`<tbody>`), zéro double bordure sur les inputs et barres de recherche.

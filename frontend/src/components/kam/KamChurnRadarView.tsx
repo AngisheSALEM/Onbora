@@ -108,7 +108,7 @@ Argumentaire :
     <div className="flex-1 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-6 md:p-8 select-none transition-colors duration-300">
       
       {/* 1. TOP HEADER & METRICS */}
-      <div className="mb-6 space-y-4 pb-6 border-b border-black/5 dark:border-white/5">
+      <div className="mb-6 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">

@@ -120,7 +120,7 @@ export default function KamAccountsListView({
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
       {/* 1. Titre Portefeuille */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
             Portefeuille
@@ -153,7 +153,7 @@ export default function KamAccountsListView({
             {summaryData.highRiskDelta && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-medium">{summaryData.highRiskDelta}</p>}
           </div>
 
-          <div className="mt-6 pt-5 border-t border-black/5 dark:border-white/5 grid grid-cols-2 gap-4">
+          <div className="mt-6 pt-5 grid grid-cols-2 gap-4">
             <div>
               <span className="text-xs text-zinc-500 dark:text-zinc-400 block">
                 Comptes sains

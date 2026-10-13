@@ -94,6 +94,11 @@ L'interface d'Onbora se distingue par une rigueur visuelle premium et profession
     *   *30% Structure & surfaces* : Cartes `#2F2C30`, containers neutres, typographie hiérarchisée.
     *   *10% Accent unique* : Bleu Cobalt `#4F6CE8` / Orange Onbora `#F97316` (exclusivement pour CTAs d'action clé et pastilles de notification).
 *   **Zéro Bordure 1px Brute (Mobile)** : Bannir `Border.all(color: Colors.grey, width: 1)` ; le relief s'obtient par le contraste de fond et l'espace négatif.
+*   **Zéro Ligne de Séparation Inutile sur les Fonds & En-têtes (Strictement Réservées aux Tableaux)** :
+    *   Interdiction formelle d'ajouter des lignes de séparation horizontales ou verticales (`border-b`, `border-t`, `border-l`, `<hr />`, etc.) sur les toiles de fond, sous les en-têtes (headers), sous les titres de pages (ex: *Portefeuille*, *Rendez-vous*) ou dans la barre de recherche.
+    *   **Exception unique et absolue :** Les lignes séparatrices sont exclusivement réservées aux lignes des tableaux de données (`<thead>`, `<tbody>`, `<tr>`), où elles garantissent la lisibilité tabulaire.
+*   **Zéro Double Bordure sur les Inputs & Barres de Recherche** :
+    *   Interdiction d'encapsuler un `<input>` ayant ses propres bordures ou fonds blancs forcés à l'intérieur d'un conteneur stylisé. Tout champ de recherche ou input imbriqué doit être strictement transparent (`bg-transparent border-none border-0 outline-none ring-0 shadow-none`), dans une pilule fluide (`rounded-full`) sans séparateur vertical intermédiaire (`border-l`).
 *   **Zéro Ombre Colorée / Néon ("AI Slop")** : Interdiction des halos fluo (`shadow-[#4F6CE8]/20`, `shadow-emerald-500/10`). Seules les ombres neutres douces (`shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-none`) sont admises.
 *   **Zéro Cartes Imbriquées** : Éviter les sous-cartes grises dans des cartes déjà grises.
 *   **Hook de Vérification Automatisé** :

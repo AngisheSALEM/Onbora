@@ -237,7 +237,7 @@ export default function KamVisitReportView({
 
       {/* 2. DISCREET TABS (Minimalist underline style, identical to PreCallView) */}
       {report && !loading && !error && (
-        <div className="flex items-center gap-4 sm:gap-8 border-b border-black/5 dark:border-white/5 mb-6">
+        <div className="flex items-center gap-4 sm:gap-8 mb-6">
           <button
             onClick={() => setActiveTab('report')}
             className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${

@@ -601,7 +601,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
     <div className="flex-1 min-w-0 flex flex-col h-full bg-[#ECEAE5] dark:bg-[#242124] overflow-y-auto p-4 sm:p-6 md:p-10 select-none transition-colors duration-300">
       
       {/* 1. TOP HEADER: ONLY COMPANY NAME & CLEAN ACTIONS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/5 dark:border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3 min-w-0">
           {onBackToAccounts && (
             <button
@@ -706,7 +706,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
 
       {/* 2. DISCREET TABS (Minimalist underline style, zero visual clutter) */}
       {(briefingData || currentAccount || radarData) && (
-        <nav aria-label="Sections du compte" className="flex items-center gap-6 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
+        <nav aria-label="Sections du compte" className="flex items-center gap-6 overflow-x-auto shrink-0 mb-6">
           <button
             onClick={() => setActiveTab('brief')}
             className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
@@ -787,11 +787,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               </div>
 
               {/* Seamless transition within the SAME card */}
-              <div className="border-t border-black/5 dark:border-white/5 my-8" />
+              <div className="my-6" />
 
               {/* Sub-Tabs: Solutions recommandées vs Produits implantés */}
               <div className="space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"

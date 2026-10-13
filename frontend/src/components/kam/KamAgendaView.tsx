@@ -454,7 +454,7 @@ export default function KamAgendaView({
     <div className="flex-1 flex flex-col gap-4 sm:gap-5 p-5 md:p-6 lg:p-8 select-none bg-[#ECEAE5] dark:bg-[#242124]">
       
       {/* 1. Header Toolbar : Titre & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
             Rendez-vous

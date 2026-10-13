@@ -22,7 +22,7 @@ export default function KamOfficeHeader({ onRefresh, loading }: KamOfficeHeaderP
   return (
     <div className="flex flex-col gap-3 shrink-0 mb-4">
       {/* Top Bar */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/5 dark:border-white/5">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div className="flex flex-col">
           <h2 className="text-xl font-semibold text-[#242124] dark:text-white tracking-tight">
             {headerTitle}
