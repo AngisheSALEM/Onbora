@@ -90,10 +90,10 @@ export default function KamHeader({
   const activeDateLabel = dateOptions.find((d) => d.id === dateFilter)?.label || 'Toutes les dates';
 
   return (
-    <header className="h-16 px-6 md:px-8 flex items-center justify-between gap-4 shrink-0 select-none bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md z-30">
+    <header className="pt-4 pb-2 px-6 md:px-8 flex items-start justify-between gap-4 shrink-0 select-none bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md z-30">
       {/* Search Input Bar (Pilule épurée style Image 2 avec zéro bordure intérieure) */}
       <div className="flex-1 max-w-2xl md:max-w-3xl relative" ref={filterDropdownRef}>
-        <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full border border-black/8 dark:border-white/10 text-xs font-medium w-full transition-all focus-within:ring-2 focus-within:ring-zinc-400/20 dark:focus-within:ring-zinc-600/30 shadow-xs">
+        <div className="flex items-center gap-3 px-4 h-10 bg-white dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full border border-black/8 dark:border-white/10 text-xs font-medium w-full transition-all focus-within:ring-2 focus-within:ring-zinc-400/20 dark:focus-within:ring-zinc-600/30 shadow-xs">
           <Icons.Search size={16} className="text-zinc-400 shrink-0 ml-0.5" />
           <input
             type="text"
@@ -181,7 +181,7 @@ export default function KamHeader({
         <button
           type="button"
           onClick={() => setShowDateDropdown((prev) => !prev)}
-          className="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#2D2A2D] hover:bg-zinc-50 dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full border border-black/8 dark:border-white/10 text-xs font-semibold transition-all cursor-pointer shadow-xs"
+          className="flex items-center gap-2 px-3.5 h-10 bg-white dark:bg-[#2D2A2D] hover:bg-zinc-50 dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full border border-black/8 dark:border-white/10 text-xs font-semibold transition-all cursor-pointer shadow-xs"
         >
           <Icons.Calendar size={13} className="text-zinc-500" />
           <span className="truncate max-w-[120px] sm:max-w-none">{activeDateLabel}</span>
