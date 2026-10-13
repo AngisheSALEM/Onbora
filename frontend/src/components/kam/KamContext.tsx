@@ -4,6 +4,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { fetchAPI } from '@/lib/api';
 import { StrategicVisit } from './kamTypes';
 
+export interface KamFilterOption {
+  id: string;
+  label: string;
+  count?: number;
+}
+
 interface KamContextType {
   visits: StrategicVisit[];
   loading: boolean;
@@ -18,6 +24,14 @@ interface KamContextType {
   setHeaderSubtitle: React.Dispatch<React.SetStateAction<string | null>>;
   headerBackLink: string | null;
   setHeaderBackLink: React.Dispatch<React.SetStateAction<string | null>>;
+  activeFilter: string;
+  setActiveFilter: React.Dispatch<React.SetStateAction<string>>;
+  filterOptions: KamFilterOption[];
+  setFilterOptions: React.Dispatch<React.SetStateAction<KamFilterOption[]>>;
+  filterCategoryLabel: string;
+  setFilterCategoryLabel: React.Dispatch<React.SetStateAction<string>>;
+  dateFilter: string;
+  setDateFilter: React.Dispatch<React.SetStateAction<string>>;
   isScrolled: boolean;
   setIsScrolled: React.Dispatch<React.SetStateAction<boolean>>;
   loadAssignedAccounts: () => Promise<void>;
@@ -33,6 +47,10 @@ export function KamProvider({ children }: { children: React.ReactNode }) {
   const [headerTitle, setHeaderTitle] = useState<string | null>(null);
   const [headerSubtitle, setHeaderSubtitle] = useState<string | null>(null);
   const [headerBackLink, setHeaderBackLink] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('ALL');
+  const [filterOptions, setFilterOptions] = useState<KamFilterOption[]>([]);
+  const [filterCategoryLabel, setFilterCategoryLabel] = useState<string>('FILTRER PAR STATUT');
+  const [dateFilter, setDateFilter] = useState<string>('ALL');
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +103,14 @@ export function KamProvider({ children }: { children: React.ReactNode }) {
         setHeaderSubtitle,
         headerBackLink,
         setHeaderBackLink,
+        activeFilter,
+        setActiveFilter,
+        filterOptions,
+        setFilterOptions,
+        filterCategoryLabel,
+        setFilterCategoryLabel,
+        dateFilter,
+        setDateFilter,
         isScrolled,
         setIsScrolled,
         loadAssignedAccounts,

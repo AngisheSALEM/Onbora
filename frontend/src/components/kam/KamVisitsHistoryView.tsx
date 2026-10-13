@@ -46,10 +46,26 @@ export default function KamVisitsHistoryView({
   onScheduleMeeting,
   onOpenReport,
 }: KamVisitsHistoryViewProps) {
-  const { searchQuery } = useKamContext();
+  const {
+    searchQuery,
+    activeFilter,
+    setActiveFilter,
+    setFilterOptions,
+    setFilterCategoryLabel,
+  } = useKamContext();
   const [visits, setVisits] = useState<KamVisitRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'CONVERTED' | 'IN_NEGOTIATION' | 'PROSPECT' | 'LOST'>('ALL');
+
+  useEffect(() => {
+    setFilterCategoryLabel('FILTRER PAR STATUT');
+    setFilterOptions([
+      { id: 'ALL', label: 'Toutes les visites', count: visits.length },
+      { id: 'CONVERTED', label: 'Contrats signés', count: visits.filter((v) => v.conversion_status === 'CONVERTED').length },
+      { id: 'IN_NEGOTIATION', label: 'En négociation', count: visits.filter((v) => v.conversion_status === 'IN_NEGOTIATION').length },
+      { id: 'PROSPECT', label: 'Prospects', count: visits.filter((v) => v.conversion_status === 'PROSPECT').length },
+    ]);
+  }, [visits, setFilterCategoryLabel, setFilterOptions]);
 
   const loadVisits = useCallback(async () => {
     setLoading(true);
@@ -73,7 +89,8 @@ export default function KamVisitsHistoryView({
 
   const filteredVisits = useMemo(() => {
     return visits.filter((v) => {
-      if (statusFilter !== 'ALL' && v.conversion_status !== statusFilter) {
+      const effectiveFilter = activeFilter !== 'ALL' ? activeFilter : statusFilter;
+      if (effectiveFilter !== 'ALL' && v.conversion_status !== effectiveFilter) {
         return false;
       }
       if (searchQuery.trim()) {
@@ -85,7 +102,7 @@ export default function KamVisitsHistoryView({
       }
       return true;
     });
-  }, [visits, statusFilter, searchQuery]);
+  }, [visits, statusFilter, activeFilter, searchQuery]);
 
   const convertedCount = visits.filter((v) => v.conversion_status === 'CONVERTED').length;
   const negotiationCount = visits.filter((v) => v.conversion_status === 'IN_NEGOTIATION').length;
@@ -130,10 +147,13 @@ export default function KamVisitsHistoryView({
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      {/* 1. Header Toolbar : Synthèse & Unique CTA */}
+      {/* 1. Header Toolbar : Titre & Unique CTA */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Historique des Visites
+          </h1>
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
             {visits.length} visite{visits.length > 1 ? 's' : ''} réalisée{visits.length > 1 ? 's' : ''}
           </p>
         </div>
@@ -150,36 +170,6 @@ export default function KamVisitsHistoryView({
             </button>
           )}
         </div>
-      </div>
-
-      {/* 2. Synthèse Chiffrée Sobre (Zéro mot interdit, Zéro couleur interdite) */}
-     
-      {/* 3. Filtres Discrets Sans Bordure (pas de barre de recherche locale dupliquée) */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none">
-          {[
-            { id: 'ALL', label: 'Toutes les visites' },
-            { id: 'CONVERTED', label: 'Contrats signés' },
-            { id: 'IN_NEGOTIATION', label: 'En négociation' },
-            { id: 'PROSPECT', label: 'Prospects' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setStatusFilter(tab.id as any)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-                statusFilter === tab.id
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* <span className="text-xs text-zinc-400 dark:text-zinc-500">
-          {filteredVisits.length} {filteredVisits.length > 1 ? 'visites enregistrées' : 'visite enregistrée'}
-        </span> */}
       </div>
 
       {/* 4. Tableau Compact des Visites */}

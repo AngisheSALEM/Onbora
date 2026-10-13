@@ -20,8 +20,25 @@ export default function KamAccountsListView({
   visits,
   onSelectAccount,
 }: KamAccountsListViewProps) {
-  const router = useRouter();
-  const { searchQuery, loading: accountsLoading, error: accountsError } = useKamContext();
+  const {
+    searchQuery,
+    loading: accountsLoading,
+    error: accountsError,
+    activeFilter,
+    setActiveFilter,
+    setFilterOptions,
+    setFilterCategoryLabel,
+  } = useKamContext();
+
+  useEffect(() => {
+    setFilterCategoryLabel('FILTRER PAR SEGMENT');
+    setFilterOptions([
+      { id: 'ALL', label: 'Tous les comptes', count: visits.length },
+      { id: 'MINING', label: 'Mines & Énergie', count: visits.filter((v) => v.briefing?.industry?.toLowerCase().includes('mine') || v.briefing?.industry?.toLowerCase().includes('énerg')).length },
+      { id: 'BANKING', label: 'Banques & Finance', count: visits.filter((v) => v.briefing?.industry?.toLowerCase().includes('banque') || v.briefing?.industry?.toLowerCase().includes('finan')).length },
+      { id: 'OTHER', label: 'Autres secteurs', count: visits.filter((v) => !v.briefing?.industry?.toLowerCase().includes('mine') && !v.briefing?.industry?.toLowerCase().includes('banque')).length },
+    ]);
+  }, [visits, setFilterCategoryLabel, setFilterOptions]);
 
   const [summaryData, setSummaryData] = useState<{
     highRiskCount: number;
@@ -80,17 +97,37 @@ export default function KamAccountsListView({
     };
   }, []);
 
+  const router = useRouter();
+
   const filteredAccounts = useMemo(() => {
-    if (!searchQuery.trim()) return visits;
+    let list = visits;
+    if (activeFilter === 'MINING') {
+      list = list.filter((a) => a.briefing?.industry?.toLowerCase().includes('mine') || a.briefing?.industry?.toLowerCase().includes('énerg'));
+    } else if (activeFilter === 'BANKING') {
+      list = list.filter((a) => a.briefing?.industry?.toLowerCase().includes('banque') || a.briefing?.industry?.toLowerCase().includes('finan'));
+    } else if (activeFilter === 'OTHER') {
+      list = list.filter((a) => !a.briefing?.industry?.toLowerCase().includes('mine') && !a.briefing?.industry?.toLowerCase().includes('banque'));
+    }
+
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.trim().toLowerCase();
-    return visits.filter((account) =>
+    return list.filter((account) =>
       [account.account_name, account.briefing?.industry, account.contact_name, account.current_operator]
         .some((value) => value?.toLowerCase().includes(q))
     );
-  }, [visits, searchQuery]);
+  }, [visits, searchQuery, activeFilter]);
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
+      {/* 1. Titre Portefeuille */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Portefeuille
+          </h1>
+        </div>
+      </div>
+
       {/* Disposition Asymétrique des Cartes Cliquables (redirection vers pages détails dédiées) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Grande Carte Principale à Gauche : Cliquable vers /kam/accounts/risk */}

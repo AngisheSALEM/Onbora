@@ -7,9 +7,17 @@ import { Icons } from '@/components/shared/Icons';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
+import { useKamContext } from './KamContext';
 
 export default function KamSettingsView() {
   const { user, updateUser, logout } = useAuth();
+  let setFilterOptions: ((opts: any[]) => void) | undefined;
+  try {
+    const kamCtx = useKamContext();
+    setFilterOptions = kamCtx.setFilterOptions;
+  } catch {
+    // outside KamProvider
+  }
   const [photoUrlInput, setPhotoUrlInput] = useState('');
   const [savingPhoto, setSavingPhoto] = useState(false);
   const [photoSuccessMsg, setPhotoSuccessMsg] = useState('');
@@ -42,6 +50,12 @@ export default function KamSettingsView() {
       window.removeEventListener('kam:activity_status_changed', handleStatusChange);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (setFilterOptions) {
+      setFilterOptions([]);
+    }
+  }, [setFilterOptions]);
 
   const handleSavePhotoUrl = async (urlToSave: string) => {
     setSavingPhoto(true);
@@ -99,6 +113,10 @@ export default function KamSettingsView() {
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-8 overflow-y-auto select-none font-sans max-w-5xl">
+      <div>
+        <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Paramètres</h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Préférences du compte, statut d'activité et guide d'onboarding KAM</p>
+      </div>
 
       {/* 1. Profil Utilisateur & Avatar Actuel */}
       <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] p-6 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xs">

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Icons } from '@/components/shared/Icons';
 import { KamView } from './KamSidebar';
@@ -32,211 +31,195 @@ export default function KamHeader({
   const query = propSearchQuery !== undefined ? propSearchQuery : (kamContext?.searchQuery || '');
   const setQuery = propOnSearchChange || kamContext?.setSearchQuery || (() => {});
 
-  const [localScrolled, setLocalScrolled] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+  const dateDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic Scroll Listener capturing scroll events across all KAM views
+  // Close dropdowns on click outside
   useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target;
-      if (target instanceof HTMLElement) {
-        if (target.clientHeight > 180) {
-          const isDeepScrolled = target.scrollTop > 20;
-          setLocalScrolled(isDeepScrolled);
-          if (kamContext?.setIsScrolled) {
-            kamContext.setIsScrolled(isDeepScrolled);
-          }
-        }
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
+        setShowDateDropdown(false);
       }
     };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll, { capture: true });
-    };
-  }, [kamContext]);
-
-  // Reset scroll on navigation
+  // Close dropdowns on route change
   useEffect(() => {
-    setLocalScrolled(false);
-    if (kamContext?.setIsScrolled) {
-      kamContext.setIsScrolled(false);
-    }
-  }, [pathname, kamContext]);
-
-  // Determine Title, Subtitle and Back navigation based on current route
-  const pageMeta = useMemo(() => {
-    if (pathname.includes('/kam/accounts/risk')) {
-      return {
-        title: 'Comptes à risque élevé',
-        subtitle: 'Signaux de fragilité et d’attrition identifiés',
-        backHref: '/kam/accounts',
-      };
-    }
-    if (pathname.includes('/kam/accounts/renewals')) {
-      return {
-        title: 'Renouvellements à surveiller',
-        subtitle: 'Contrats arrivant à échéance sous 90 jours',
-        backHref: '/kam/accounts',
-      };
-    }
-    if (pathname.includes('/kam/accounts/upsell')) {
-      return {
-        title: 'Opportunités d’upsell',
-        subtitle: 'Potentiels d’expansion et nouvelles offres',
-        backHref: '/kam/accounts',
-      };
-    }
-    if (pathname.includes('/kam/accounts/no-action')) {
-      return {
-        title: 'Sans prochaine action',
-        subtitle: 'Comptes inactifs depuis plus de 14 jours',
-        backHref: '/kam/accounts',
-      };
-    }
-    if (pathname.includes('/kam/accounts/all')) {
-      return {
-        title: 'Tous mes comptes B2B',
-        subtitle: 'Annuaire complet du portefeuille',
-        backHref: '/kam/accounts',
-      };
-    }
-    if (pathname.startsWith('/kam/accounts') || pathname === '/kam' || pathname === '/kam/') {
-      return {
-        title: 'Portefeuille',
-        subtitle: null,
-        backHref: null,
-      };
-    }
-    if (pathname.startsWith('/kam/agenda')) {
-      return {
-        title: 'Rendez-vous',
-        subtitle: null,
-        backHref: null,
-      };
-    }
-    if (pathname.startsWith('/kam/visits')) {
-      return {
-        title: 'Historique des visites',
-        subtitle: null,
-        backHref: null,
-      };
-    }
-    if (pathname.startsWith('/kam/settings')) {
-      return {
-        title: 'Paramètres',
-        subtitle: null,
-        backHref: null,
-      };
-    }
-    if (pathname.startsWith('/kam/prepare-visit') || pathname.startsWith('/kam/briefing')) {
-      return {
-        title: 'Briefing Pré-Visite',
-        subtitle: null,
-        backHref: '/kam/agenda',
-      };
-    }
-    if (pathname.startsWith('/kam/vocal-visit')) {
-      return {
-        title: 'Compte-Rendu Vocal',
-        subtitle: null,
-        backHref: '/kam/agenda',
-      };
-    }
-    if (pathname.startsWith('/kam/report')) {
-      return {
-        title: 'Rapport de visite',
-        subtitle: null,
-        backHref: '/kam/visits',
-      };
-    }
-    return {
-      title: 'Portefeuille',
-      subtitle: null,
-      backHref: null,
-    };
+    setShowFilterDropdown(false);
+    setShowDateDropdown(false);
   }, [pathname]);
-
-  const activeTitle = kamContext?.headerTitle || pageMeta.title;
-  const activeSubtitle = kamContext?.headerSubtitle || pageMeta.subtitle;
-  const activeBackHref = kamContext?.headerBackLink !== undefined && kamContext?.headerBackLink !== null
-    ? kamContext.headerBackLink
-    : pageMeta.backHref;
 
   const searchPlaceholder = useMemo(() => {
-    if (pathname.includes('/kam/accounts/risk')) return 'Rechercher un compte à risque...';
-    if (pathname.includes('/kam/accounts/renewals')) return 'Rechercher un renouvellement...';
+    if (pathname.includes('/kam/accounts/risk')) return 'Rechercher un compte à risque dans ONBORA...';
+    if (pathname.includes('/kam/accounts/renewals')) return 'Rechercher un renouvellement sous 90j...';
     if (pathname.includes('/kam/accounts/upsell')) return 'Rechercher une opportunité d’upsell...';
-    if (pathname.includes('/kam/accounts/no-action')) return 'Rechercher un compte sans action...';
+    if (pathname.includes('/kam/accounts/no-action')) return 'Rechercher un compte sans engagement...';
     if (pathname.startsWith('/kam/accounts') || pathname === '/kam' || pathname === '/kam/') {
-      return 'Rechercher un compte, un signal...';
+      return 'Rechercher un compte, un secteur, un contact dans ONBORA...';
     }
     if (pathname.startsWith('/kam/agenda')) return 'Rechercher un rendez-vous, un contact...';
-    if (pathname.startsWith('/kam/visits')) return 'Rechercher une visite, un rapport...';
-    if (pathname.startsWith('/kam/briefing')) return 'Rechercher dans la fiche...';
-    return 'Rechercher...';
+    if (pathname.startsWith('/kam/visits')) return 'Rechercher une visite, un compte-rendu...';
+    if (pathname.startsWith('/kam/briefing') || pathname.startsWith('/kam/prepare-visit')) return 'Rechercher dans le briefing...';
+    if (pathname.startsWith('/kam/settings')) return 'Rechercher dans les paramètres...';
+    return 'Rechercher dans ONBORA...';
   }, [pathname]);
 
+  const filterOptions = kamContext?.filterOptions || [];
+  const activeFilter = kamContext?.activeFilter || 'ALL';
+  const setActiveFilter = kamContext?.setActiveFilter || (() => {});
+  const filterCategoryLabel = kamContext?.filterCategoryLabel || 'FILTRER PAR STATUT';
+
+  const dateFilter = kamContext?.dateFilter || 'ALL';
+  const setDateFilter = kamContext?.setDateFilter || (() => {});
+
+  const dateOptions = [
+    { id: 'ALL', label: 'Toutes les dates' },
+    { id: 'TODAY', label: "Aujourd'hui" },
+    { id: 'WEEK', label: 'Cette semaine' },
+    { id: 'MONTH', label: 'Ce mois' },
+    { id: 'UPCOMING', label: 'À venir' },
+  ];
+
+  const activeDateLabel = dateOptions.find((d) => d.id === dateFilter)?.label || 'Toutes les dates';
+
   return (
-    <header
-      className={`px-6 md:px-8 flex items-center justify-between shrink-0 select-none border-b transition-all duration-300 ease-out z-20 ${
-        localScrolled
-          ? 'h-14 bg-[#ECEAE5]/95 dark:bg-[#242124]/95 backdrop-blur-lg border-black/10 dark:border-white/10 shadow-xs'
-          : 'h-20 bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md border-black/5 dark:border-white/5'
-      }`}
-    >
-      {/* Title & Navigation on the left */}
-      <div className="flex items-center gap-3 min-w-0 mr-4">
-        {activeBackHref && (
-          <Link
-            href={activeBackHref}
-            className="p-2 rounded-xl bg-white/70 dark:bg-black/30 hover:bg-white dark:hover:bg-black/50 text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 transition-colors cursor-pointer shrink-0"
-            title="Retour"
-          >
-            <Icons.ArrowLeft size={15} />
-          </Link>
-        )}
-
-        <div className="flex flex-col min-w-0 justify-center">
-          <h1
-            className={`font-black text-zinc-900 dark:text-white tracking-tight truncate transition-all duration-300 origin-left ${
-              localScrolled
-                ? 'text-sm md:text-base'
-                : 'text-2xl md:text-3xl'
-            }`}
-          >
-            {activeTitle}
-          </h1>
-
-          {!localScrolled && activeSubtitle && (
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-              {activeSubtitle}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Search Input on the right */}
-      <div className="flex items-center gap-3 w-full max-w-xs sm:max-w-sm md:max-w-md shrink-0">
-        <div className="flex items-center gap-2.5 px-3.5 py-1.5 bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full border border-black/5 dark:border-white/5 text-xs font-medium w-full transition-all focus-within:ring-1 focus-within:ring-zinc-400 dark:focus-within:ring-zinc-600">
-          <Icons.Search size={14} className="text-zinc-400 shrink-0" />
+    <header className="h-16 px-6 md:px-8 flex items-center justify-between gap-4 shrink-0 select-none border-b border-black/5 dark:border-white/5 bg-[#ECEAE5]/80 dark:bg-[#242124]/80 backdrop-blur-md z-30">
+      {/* Search Input Bar (Allongée avec icône de filtres intégrée) */}
+      <div className="flex-1 max-w-2xl md:max-w-3xl relative" ref={filterDropdownRef}>
+        <div className="flex items-center gap-2.5 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-800 dark:text-zinc-200 rounded-full border border-black/5 dark:border-white/5 text-xs font-medium w-full transition-all focus-within:ring-1 focus-within:ring-zinc-400 dark:focus-within:ring-zinc-600 shadow-2xs">
+          <Icons.Search size={15} className="text-zinc-400 shrink-0" />
           <input
             type="text"
-            aria-label="Rechercher dans l'espace KAM"
+            aria-label="Rechercher dans ONBORA"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchPlaceholder}
-            className="bg-transparent outline-none w-full text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-xs"
+            className="bg-transparent outline-none flex-1 text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-xs"
           />
+
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
+              className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer shrink-0"
               title="Effacer la recherche"
             >
               <Icons.X size={13} />
             </button>
           )}
+
+          {/* Séparateur subtil et bouton Filtre (Sliders icon) */}
+          {filterOptions.length > 0 && (
+            <div className="flex items-center pl-1 border-l border-black/10 dark:border-white/10 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowFilterDropdown((prev) => !prev)}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer flex items-center justify-center relative ${
+                  activeFilter !== 'ALL' || showFilterDropdown
+                    ? 'bg-[#4F6CE8]/10 text-[#4F6CE8]'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+                title="Filtrer"
+              >
+                <Icons.Sliders size={14} />
+                {activeFilter !== 'ALL' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8] absolute top-1 right-1" />
+                )}
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Dropdown Filtres contextuels (Style Procezo) */}
+        {showFilterDropdown && filterOptions.length > 0 && (
+          <div className="absolute left-0 right-0 sm:left-auto sm:right-0 sm:w-72 top-full mt-2 z-40 bg-white dark:bg-[#1E1B1E] rounded-2xl shadow-xl border border-black/10 dark:border-white/10 p-2 animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 border-b border-black/5 dark:border-white/5 mb-1">
+              {filterCategoryLabel}
+            </div>
+            <div className="space-y-0.5">
+              {filterOptions.map((opt) => {
+                const isActive = activeFilter === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveFilter(opt.id);
+                      setShowFilterDropdown(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors cursor-pointer text-left ${
+                      isActive
+                        ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] font-bold'
+                        : 'text-zinc-700 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/5 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-4 flex items-center justify-center shrink-0">
+                        {isActive && <Icons.Check size={13} className="text-[#4F6CE8]" />}
+                      </span>
+                      <span className="truncate">{opt.label}</span>
+                    </div>
+                    {opt.count !== undefined && (
+                      <span className="text-[11px] font-mono text-zinc-400 ml-2 shrink-0">
+                        {opt.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Date Filter Dropdown (Toutes les dates ˅) */}
+      <div className="relative shrink-0" ref={dateDropdownRef}>
+        <button
+          type="button"
+          onClick={() => setShowDateDropdown((prev) => !prev)}
+          className="flex items-center gap-2 px-3.5 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full border border-black/5 dark:border-white/5 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+        >
+          <Icons.Calendar size={13} className="text-zinc-500" />
+          <span className="truncate max-w-[120px] sm:max-w-none">{activeDateLabel}</span>
+          <Icons.ChevronDown size={12} className="text-zinc-400" />
+        </button>
+
+        {showDateDropdown && (
+          <div className="absolute right-0 top-full mt-2 w-48 z-40 bg-white dark:bg-[#1E1B1E] rounded-2xl shadow-xl border border-black/10 dark:border-white/10 p-2 animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 border-b border-black/5 dark:border-white/5 mb-1">
+              Filtrer par date
+            </div>
+            <div className="space-y-0.5">
+              {dateOptions.map((opt) => {
+                const isActive = dateFilter === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setDateFilter(opt.id);
+                      setShowDateDropdown(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors cursor-pointer text-left ${
+                      isActive
+                        ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] font-bold'
+                        : 'text-zinc-700 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/5 font-medium'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {isActive && <Icons.Check size={13} className="text-[#4F6CE8]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

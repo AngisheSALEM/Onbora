@@ -17,7 +17,7 @@ interface KamAgendaViewProps {
   onAccountUpdated?: (account: StrategicVisit) => void;
 }
 
-const APPOINTMENTS_PAGE_SIZE = 10;
+const APPOINTMENTS_PAGE_SIZE = 5;
 
 export default function KamAgendaView({
   assignedAccounts,
@@ -26,12 +26,30 @@ export default function KamAgendaView({
   onAccountUpdated,
 }: KamAgendaViewProps) {
   const router = useRouter();
-  const { searchQuery } = useKamContext();
+  const {
+    searchQuery,
+    activeFilter,
+    setActiveFilter,
+    setFilterOptions,
+    setFilterCategoryLabel,
+    dateFilter,
+  } = useKamContext();
+
   const [pagination, setPagination] = useState({ page: 1, filter: 'ALL', query: '' });
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'ALL' | 'TODAY' | 'UPCOMING' | 'COMPLETED'>('ALL');
+
+  useEffect(() => {
+    setFilterCategoryLabel('FILTRER PAR STATUT');
+    setFilterOptions([
+      { id: 'ALL', label: 'Tous les rendez-vous', count: appointments.length },
+      { id: 'TODAY', label: "Aujourd'hui", count: appointments.filter((a) => new Date(a.scheduled_at).toDateString() === new Date().toDateString()).length },
+      { id: 'UPCOMING', label: 'À venir', count: appointments.filter((a) => a.status === 'SCHEDULED').length },
+      { id: 'COMPLETED', label: 'Effectués', count: appointments.filter((a) => a.status === 'COMPLETED').length },
+    ]);
+  }, [appointments, setFilterCategoryLabel, setFilterOptions]);
   const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
   const [isExpressMeetingOpen, setIsExpressMeetingOpen] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
@@ -381,15 +399,28 @@ export default function KamAgendaView({
       const today = new Date();
       const isToday = appDate.toDateString() === today.toDateString();
 
-      if (filterTab === 'TODAY' && !isToday) return false;
-      if (filterTab === 'UPCOMING' && !(app.status === 'SCHEDULED' && appDate >= today)) return false;
-      if (filterTab === 'COMPLETED' && app.status !== 'COMPLETED') return false;
+      const effectiveFilter = activeFilter !== 'ALL' ? activeFilter : filterTab;
+      if (effectiveFilter === 'TODAY' && !isToday) return false;
+      if (effectiveFilter === 'UPCOMING' && !(app.status === 'SCHEDULED' && appDate >= today)) return false;
+      if (effectiveFilter === 'COMPLETED' && app.status !== 'COMPLETED') return false;
+
+      // Date filtering
+      if (dateFilter === 'TODAY' && !isToday) return false;
+      if (dateFilter === 'WEEK') {
+        const diffDays = (appDate.getTime() - today.getTime()) / (1000 * 3600 * 24);
+        if (diffDays < -1 || diffDays > 7) return false;
+      }
+      if (dateFilter === 'MONTH') {
+        if (appDate.getMonth() !== today.getMonth() || appDate.getFullYear() !== today.getFullYear()) return false;
+      }
+      if (dateFilter === 'UPCOMING' && appDate < today) return false;
+
       if (query && ![app.enterprise_name, app.title, app.contact_name, app.contact_role, app.location]
         .some((value) => value?.toLocaleLowerCase('fr-FR').includes(query))) return false;
 
       return true;
     });
-  }, [sortedAppointments, filterTab, searchQuery]);
+  }, [sortedAppointments, filterTab, activeFilter, dateFilter, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / APPOINTMENTS_PAGE_SIZE));
   const currentPage = pagination.filter === filterTab && pagination.query === searchQuery
@@ -420,58 +451,43 @@ export default function KamAgendaView({
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
+    <div className="flex-1 flex flex-col gap-4 sm:gap-5 p-5 md:p-6 lg:p-8 select-none bg-[#ECEAE5] dark:bg-[#242124]">
       
-      {/* 1. TOP HEADER TOOLBAR */}
-      <div className="flex flex-col gap-4 pb-2">
-        <div className="flex items-center gap-2.5 flex-wrap justify-end">
-            {onOpenVisitsHistory && (
-              <button
-                onClick={onOpenVisitsHistory}
-                className="flex items-center gap-2 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5 shadow-xs"
-              >
-                <Icons.FileText size={14} />
-                <span>Voir l&apos;Historique</span>
-              </button>
-            )}
+      {/* 1. Header Toolbar : Titre & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Rendez-vous
+          </h1>
+        </div>
 
+        {/* Top Actions : 1 seul CTA en couleur primaire */}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {onOpenVisitsHistory && (
             <button
-              onClick={() => setIsExpressMeetingOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
+              onClick={onOpenVisitsHistory}
+              className="flex items-center gap-2 px-3.5 py-1.5 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5 shadow-xs"
             >
-              <Icons.Mic size={14} />
-              <span>Réunion express</span>
+              <Icons.FileText size={14} />
+              <span>Voir l&apos;Historique</span>
             </button>
+          )}
 
-            <button
-              onClick={() => setIsNewAppointmentModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-semibold transition-all cursor-pointer shadow-xs border-none"
-            >
-              <Icons.Plus size={15} />
-              <span>Nouveau Rendez-vous</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsExpressMeetingOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
+          >
+            <Icons.Mic size={14} />
+            <span>Réunion express</span>
+          </button>
 
-        {/* Filter Tabs discrets sans bordure */}
-        <div className="flex items-center flex-wrap gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-2xl sm:rounded-full border-none w-fit">
-          {[
-            { id: 'ALL', label: `Tous (${appointments.length})` },
-            { id: 'TODAY', label: `Aujourd'hui (${appointments.filter(a => new Date(a.scheduled_at).toDateString() === new Date().toDateString()).length})` },
-            { id: 'UPCOMING', label: `À venir (${appointments.filter(a => a.status === 'SCHEDULED').length})` },
-            { id: 'COMPLETED', label: `Effectués (${appointments.filter(a => a.status === 'COMPLETED').length})` },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilterTab(tab.id as any)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer shrink-0 border-none ${
-                filterTab === tab.id
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          <button
+            onClick={() => setIsNewAppointmentModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white rounded-full text-xs font-semibold transition-all cursor-pointer shadow-xs border-none"
+          >
+            <Icons.Plus size={15} />
+            <span>Nouveau Rendez-vous</span>
+          </button>
         </div>
       </div>
 
@@ -550,15 +566,15 @@ export default function KamAgendaView({
         </div>
       ) : (
         /* Tableau des Rendez-vous */
-        <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] overflow-hidden shadow-xs">
+        <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] overflow-hidden shadow-xs shrink-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse" aria-label="Agenda des rendez-vous">
               <thead>
                 <tr className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 bg-black/[0.02] dark:bg-white/[0.02]">
-                  <th scope="col" className="py-3.5 px-6 font-semibold">Entreprise</th>
-                  <th scope="col" className="py-3.5 px-4 font-semibold">Type de visite</th>
-                  <th scope="col" className="py-3.5 px-4 font-semibold">Date</th>
-                  <th scope="col" className="py-3.5 px-6 font-semibold text-right">Action</th>
+                  <th scope="col" className="py-3 px-6 font-semibold">Entreprise</th>
+                  <th scope="col" className="py-3 px-4 font-semibold">Type de visite</th>
+                  <th scope="col" className="py-3 px-4 font-semibold">Date</th>
+                  <th scope="col" className="py-3 px-6 font-semibold text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -569,14 +585,14 @@ export default function KamAgendaView({
                   return (
                     <tr
                       key={app.id}
-                      className={`transition-colors ${
+                      className={`transition-colors border-b border-black/[0.04] dark:border-white/[0.04] last:border-b-0 ${
                         isPast
                           ? 'opacity-55 dark:opacity-40 bg-black/[0.02] dark:bg-white/[0.01]'
                           : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
                       }`}
                     >
                       {/* 1. Nom de l'entreprise */}
-                      <td className="py-4 px-6">
+                      <td className="py-3 px-6">
                         <div className="flex items-center gap-2">
                           <span className={`text-xs font-bold leading-tight ${
                             isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-white'
@@ -592,21 +608,21 @@ export default function KamAgendaView({
                       </td>
 
                       {/* 2. Type de visite */}
-                      <td className="py-4 px-4 text-xs">
+                      <td className="py-3 px-4 text-xs">
                         <span className={isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-700 dark:text-zinc-300 font-medium'}>
                           {app.visit_purpose_label || app.meeting_type_label || 'Rendez-vous'}
                         </span>
                       </td>
 
                       {/* 3. Date */}
-                      <td className="py-4 px-4 text-xs">
+                      <td className="py-3 px-4 text-xs">
                         <span className={`font-sf ${isPast ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200 font-semibold'}`}>
                           {formatDate(app.scheduled_at)}
                         </span>
                       </td>
 
                       {/* 4. Bouton Préparer */}
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-3 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
@@ -658,7 +674,7 @@ export default function KamAgendaView({
       )}
 
       {!loading && !error && totalPages > 1 && (
-        <nav aria-label="Pagination de l'agenda" className="flex flex-wrap items-center justify-between gap-3 pt-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <nav aria-label="Pagination de l'agenda" className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
           <span>{pageStart + 1}–{Math.min(pageStart + APPOINTMENTS_PAGE_SIZE, filteredAppointments.length)} sur {filteredAppointments.length} rendez-vous</span>
           <div className="flex items-center gap-2">
             <button type="button" aria-label="Page précédente" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-blue">

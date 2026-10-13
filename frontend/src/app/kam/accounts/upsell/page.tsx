@@ -20,8 +20,7 @@ interface UpsellAccountRow {
 
 export default function UpsellAccountsDetailPage() {
   const router = useRouter();
-  const { searchQuery } = useKamContext();
-  const [filterCat, setFilterCat] = useState<'ALL' | 'CONNECTIVITE' | 'CLOUD_SECURITY' | 'MULTI_SITES'>('ALL');
+  const { searchQuery, activeFilter, setActiveFilter, setFilterOptions, setFilterCategoryLabel } = useKamContext();
   const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<UpsellAccountRow[] | null>(null);
 
@@ -40,9 +39,26 @@ export default function UpsellAccountsDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setActiveFilter('ALL');
+    setFilterCategoryLabel('CATÉGORIE SOLUTION');
+    const multiSitesCount = (apiAccounts ?? []).filter((a) => a.category === 'MULTI_SITES').length;
+    const connectiviteCount = (apiAccounts ?? []).filter((a) => a.category === 'CONNECTIVITE').length;
+    const cloudCount = (apiAccounts ?? []).filter((a) => a.category === 'CLOUD_SECURITY').length;
+    setFilterOptions([
+      { id: 'ALL', label: 'Toutes les catégories', count: (apiAccounts ?? []).length },
+      { id: 'MULTI_SITES', label: 'Multi-Sites', count: multiSitesCount },
+      { id: 'CONNECTIVITE', label: 'Connectivité', count: connectiviteCount },
+      { id: 'CLOUD_SECURITY', label: 'Cloud & Sécurité', count: cloudCount },
+    ]);
+    return () => {
+      setFilterOptions([]);
+    };
+  }, [apiAccounts, setActiveFilter, setFilterCategoryLabel, setFilterOptions]);
+
   const filtered = useMemo(() => {
     let list = apiAccounts ?? [];
-    if (filterCat !== 'ALL') list = list.filter((a) => a.category === filterCat);
+    if (activeFilter !== 'ALL') list = list.filter((a) => a.category === activeFilter);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -55,61 +71,27 @@ export default function UpsellAccountsDetailPage() {
       );
     }
     return list;
-  }, [apiAccounts, filterCat, searchQuery]);
+  }, [apiAccounts, activeFilter, searchQuery]);
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
-      {/* Filtres et comptage */}
+      {loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+      {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <Link
+            href="/kam/accounts"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
+          >
+            <Icons.ArrowLeft size={13} />
+            <span>Retour au Portefeuille</span>
+          </Link>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Opportunités d’upsell
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             {filtered.length} compte{filtered.length > 1 ? 's' : ''} avec potentiel d’expansion identifié
           </p>
-        </div>
-
-        {/* Filtres discrets sans bordure */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none">
-          <button
-            onClick={() => setFilterCat('ALL')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterCat === 'ALL'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Tous ({apiAccounts?.length ?? 0})
-          </button>
-          <button
-            onClick={() => setFilterCat('MULTI_SITES')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterCat === 'MULTI_SITES'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Multi-Sites (4)
-          </button>
-          <button
-            onClick={() => setFilterCat('CONNECTIVITE')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterCat === 'CONNECTIVITE'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Connectivité (4)
-          </button>
-          <button
-            onClick={() => setFilterCat('CLOUD_SECURITY')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterCat === 'CLOUD_SECURITY'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Cloud & Sécurité (4)
-          </button>
         </div>
       </div>
 

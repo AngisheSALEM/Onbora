@@ -21,8 +21,7 @@ interface NoActionAccountRow {
 
 export default function NoActionAccountsDetailPage() {
   const router = useRouter();
-  const { searchQuery } = useKamContext();
-  const [filterDelay, setFilterDelay] = useState<'ALL' | 'HIGH' | 'MEDIUM'>('ALL');
+  const { searchQuery, activeFilter, setActiveFilter, setFilterOptions, setFilterCategoryLabel } = useKamContext();
   const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<NoActionAccountRow[] | null>(null);
 
@@ -41,10 +40,25 @@ export default function NoActionAccountsDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setActiveFilter('ALL');
+    setFilterCategoryLabel('DURÉE SANS ENGAGEMENT');
+    const highCount = (apiAccounts ?? []).filter((a) => a.daysWithoutAction > 20).length;
+    const mediumCount = (apiAccounts ?? []).filter((a) => a.daysWithoutAction <= 20).length;
+    setFilterOptions([
+      { id: 'ALL', label: 'Toutes les durées', count: (apiAccounts ?? []).length },
+      { id: 'HIGH', label: 'Plus de 20 jours', count: highCount },
+      { id: 'MEDIUM', label: '14 à 20 jours', count: mediumCount },
+    ]);
+    return () => {
+      setFilterOptions([]);
+    };
+  }, [apiAccounts, setActiveFilter, setFilterCategoryLabel, setFilterOptions]);
+
   const filtered = useMemo(() => {
     let list = apiAccounts ?? [];
-    if (filterDelay === 'HIGH') list = list.filter((a) => a.daysWithoutAction > 20);
-    if (filterDelay === 'MEDIUM') list = list.filter((a) => a.daysWithoutAction <= 20);
+    if (activeFilter === 'HIGH') list = list.filter((a) => a.daysWithoutAction > 20);
+    if (activeFilter === 'MEDIUM') list = list.filter((a) => a.daysWithoutAction <= 20);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -57,51 +71,27 @@ export default function NoActionAccountsDetailPage() {
       );
     }
     return list;
-  }, [apiAccounts, filterDelay, searchQuery]);
+  }, [apiAccounts, activeFilter, searchQuery]);
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
-      {/* Filtres et comptage */}
+      {loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+      {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <Link
+            href="/kam/accounts"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
+          >
+            <Icons.ArrowLeft size={13} />
+            <span>Retour au Portefeuille</span>
+          </Link>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Sans prochaine action
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             {filtered.length} compte{filtered.length > 1 ? 's' : ''} sans engagement planifié depuis plus de 14 jours
           </p>
-        </div>
-
-        {/* Filtres discrets sans bordure */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none">
-          <button
-            onClick={() => setFilterDelay('ALL')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'ALL'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Tous ({apiAccounts?.length ?? 0})
-          </button>
-          <button
-            onClick={() => setFilterDelay('HIGH')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'HIGH'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Plus de 20 jours (3)
-          </button>
-          <button
-            onClick={() => setFilterDelay('MEDIUM')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'MEDIUM'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            14 à 20 jours (4)
-          </button>
         </div>
       </div>
 

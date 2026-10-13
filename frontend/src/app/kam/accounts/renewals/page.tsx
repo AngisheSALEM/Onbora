@@ -21,8 +21,7 @@ interface RenewalAccountRow {
 
 export default function RenewalsDetailPage() {
   const router = useRouter();
-  const { searchQuery } = useKamContext();
-  const [filterDelay, setFilterDelay] = useState<'ALL' | 'URGENT' | 'STANDARD'>('ALL');
+  const { searchQuery, activeFilter, setActiveFilter, setFilterOptions, setFilterCategoryLabel } = useKamContext();
   const [loadError, setLoadError] = useState('');
   const [apiAccounts, setApiAccounts] = useState<RenewalAccountRow[] | null>(null);
 
@@ -41,10 +40,25 @@ export default function RenewalsDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setActiveFilter('ALL');
+    setFilterCategoryLabel('ÉCHÉANCE DU CONTRAT');
+    const urgentCount = (apiAccounts ?? []).filter((a) => a.daysRemaining <= 45).length;
+    const standardCount = (apiAccounts ?? []).filter((a) => a.daysRemaining > 45).length;
+    setFilterOptions([
+      { id: 'ALL', label: 'Toutes les échéances', count: (apiAccounts ?? []).length },
+      { id: 'URGENT', label: 'Moins de 45 jours', count: urgentCount },
+      { id: 'STANDARD', label: '45 à 90 jours', count: standardCount },
+    ]);
+    return () => {
+      setFilterOptions([]);
+    };
+  }, [apiAccounts, setActiveFilter, setFilterCategoryLabel, setFilterOptions]);
+
   const filtered = useMemo(() => {
     let list = apiAccounts ?? [];
-    if (filterDelay === 'URGENT') list = list.filter((a) => a.daysRemaining <= 45);
-    if (filterDelay === 'STANDARD') list = list.filter((a) => a.daysRemaining > 45);
+    if (activeFilter === 'URGENT') list = list.filter((a) => a.daysRemaining <= 45);
+    if (activeFilter === 'STANDARD') list = list.filter((a) => a.daysRemaining > 45);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -56,51 +70,27 @@ export default function RenewalsDetailPage() {
       );
     }
     return list;
-  }, [apiAccounts, filterDelay, searchQuery]);
+  }, [apiAccounts, activeFilter, searchQuery]);
 
   return (
     <div className="flex-1 flex flex-col gap-6 p-6 md:p-8 overflow-y-auto select-none bg-[#ECEAE5] dark:bg-[#242124]">
-{loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
-      {/* Filtres et comptage */}
+      {loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+      {/* En-tête avec navigation de retour */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/5">
         <div>
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <Link
+            href="/kam/accounts"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
+          >
+            <Icons.ArrowLeft size={13} />
+            <span>Retour au Portefeuille</span>
+          </Link>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Renouvellements à surveiller
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             {filtered.length} contrat{filtered.length > 1 ? 's' : ''} arrivant à échéance sous 90 jours
           </p>
-        </div>
-
-        {/* Filtres discrets sans bordure */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border-none">
-          <button
-            onClick={() => setFilterDelay('ALL')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'ALL'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Tous ({apiAccounts?.length ?? 0})
-          </button>
-          <button
-            onClick={() => setFilterDelay('URGENT')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'URGENT'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Moins de 45 jours (2)
-          </button>
-          <button
-            onClick={() => setFilterDelay('STANDARD')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border-none ${
-              filterDelay === 'STANDARD'
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            45 à 90 jours (3)
-          </button>
         </div>
       </div>
 
