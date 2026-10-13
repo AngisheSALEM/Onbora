@@ -97,11 +97,83 @@ class Plaque(models.Model):
             self.kml_data = self.generate_kml()
         super().save(*args, **kwargs)
 
+class CrmAccountRecord(models.Model):
+    """
+    Données maîtresses structurées synchronisées depuis le CRM central (ex: Orange CRM, Kaabu, Salesforce).
+    Remplace la dépendance exclusive à un champ JSON 'existing_crm_data'.
+    """
+    PAYMENT_HEALTH_CHOICES = [
+        ('A_JOUR', 'À jour de paiement'),
+        ('RETARD_30J', 'Retard de paiement < 30j'),
+        ('RETARD_60J', 'Retard de paiement > 60j'),
+        ('CONTENTIEUX', 'En contentieux / Recouvrement'),
+    ]
+
+    CREDIT_RATING_CHOICES = [
+        ('RATING_A', 'Rating A - Risque minimal'),
+        ('RATING_B', 'Rating B - Risque modéré'),
+        ('RATING_C', 'Rating C - Risque élevé'),
+    ]
+
+    external_crm_id = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text="Identifiant unique côté CRM central (ex: CRM-ORANGE-98214)"
+    )
+    source_system = models.CharField(
+        max_length=50,
+        default='ORANGE_CRM',
+        help_text="Système source (ex: ORANGE_CRM, KAABU, SALESFORCE)"
+    )
+    legal_name = models.CharField(max_length=200, help_text="Raison sociale légale enregistrée au CRM")
+    tax_number = models.CharField(max_length=100, blank=True, null=True, help_text="RCCM, NIF ou Numéro SIREN")
+    annual_revenue = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0.00,
+        help_text="Chiffre d'affaires annuel certifié CRM (USD)"
+    )
+    employee_count = models.IntegerField(default=1, help_text="Effectif salarial validé")
+    site_count = models.IntegerField(default=1, help_text="Nombre d'implantations")
+    payment_health = models.CharField(
+        max_length=30,
+        choices=PAYMENT_HEALTH_CHOICES,
+        default='A_JOUR',
+        db_index=True,
+        help_text="Comportement de paiement (signal critique pour le Radar de Churn)"
+    )
+    credit_score = models.CharField(
+        max_length=20,
+        choices=CREDIT_RATING_CHOICES,
+        default='RATING_A',
+        help_text="Notation risque crédit"
+    )
+    crm_account_manager = models.CharField(max_length=150, blank=True, default='', help_text="Chargé de compte CRM")
+    crm_contract_status = models.CharField(max_length=50, blank=True, default='ACTIF', help_text="Statut global du compte dans le CRM")
+    raw_attributes = models.JSONField(default=dict, blank=True, help_text="Attributs additionnels bruts du CRM")
+    last_sync_at = models.DateTimeField(auto_now=True, help_text="Horodatage de la dernière synchronisation CRM")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'sales_crm_account_record'
+        verbose_name = "Enregistrement CRM Entreprise"
+        verbose_name_plural = "Enregistrements CRM Entreprises"
+        ordering = ['-last_sync_at']
+
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        return f"[{self.source_system}] {self.legal_name} ({self.external_crm_id})"
 
 
 class Enterprise(models.Model):
+    crm_record = models.ForeignKey(
+        'sales.CrmAccountRecord',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='enterprises',
+        help_text="Données maîtresses structurées synchronisées depuis le CRM central"
+    )
     plaque_rel = models.ForeignKey(
         Plaque,
         on_delete=models.SET_NULL,
@@ -285,6 +357,105 @@ class Enterprise(models.Model):
 
     def __str__(self):
         return f"{self.name} [{self.get_segment_display()}] - {self.city}"
+
+
+class EnterpriseInstalledOffer(models.Model):
+    """
+    Parc installé des solutions télécoms et cloud chez l'entreprise.
+    Alimente directement le Radar de Churn (échéances, pannes) et le moteur d'Upsell.
+    """
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Service Actif'),
+        ('PENDING_ACTIVATION', 'En cours de déploiement'),
+        ('SUSPENDED', 'Suspendu pour impayé ou incident'),
+        ('TERMINATED', 'Résilié'),
+        ('EXPIRED', 'Arrivé à échéance'),
+    ]
+
+    PROVIDER_CHOICES = [
+        ('ORANGE_BUSINESS', 'Orange Business / MSP'),
+        ('CONCURRENT', 'Opérateur Concurrent'),
+        ('AUTRE', 'Autre prestataire'),
+    ]
+
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name='installed_offers',
+        help_text="Entreprise détenant ce contrat / cet équipement"
+    )
+    service = models.ForeignKey(
+        'catalog.ServiceCatalog',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='installed_instances',
+        help_text="Service Onbora correspondant dans le catalogue MSP (si existant)"
+    )
+    installed_offer_name = models.CharField(
+        max_length=200,
+        help_text="Nom commercial de l'offre (ex: Fibre Pro Dédiée 100M, IPsec VPN, Microsoft 365 E3)"
+    )
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        default='CONNECTIVITY',
+        help_text="Catégorie (CONNECTIVITY, CLOUD, SECURITY, COLLABORATIVE, PAYMENT)"
+    )
+    provider = models.CharField(
+        max_length=30,
+        choices=PROVIDER_CHOICES,
+        default='ORANGE_BUSINESS'
+    )
+    contract_status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default='ACTIVE',
+        db_index=True
+    )
+    installation_date = models.DateField(null=True, blank=True)
+    contract_end_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Date d'échéance contractuelle (déclencheur critique d'alerte Churn)"
+    )
+    monthly_cost_mrr = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+        help_text="Revenu mensuel récurrent généré (MRR en USD)"
+    )
+    bandwidth_mbps = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Débit souscrit en Mbps (pour identifier les besoins d'upgrade débit)"
+    )
+    active_licenses_count = models.IntegerField(
+        default=1,
+        help_text="Nombre de licences ou de postes déployés"
+    )
+    unresolved_tickets_count = models.IntegerField(
+        default=0,
+        help_text="Nombre de tickets d'incident ouverts sur cette offre"
+    )
+    technical_equipment = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text="Équipement terminal (ex: Routeur Cisco ISR 4331, Switch Meraki)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sales_enterprise_installed_offer'
+        verbose_name = "Offre / Équipement Installé"
+        verbose_name_plural = "Parc des Offres Installées"
+        ordering = ['contract_end_date', '-monthly_cost_mrr']
+
+    def __str__(self):
+        return f"{self.enterprise.name} — {self.installed_offer_name} ({self.get_contract_status_display()})"
 
 
 class SegmentationConfig(models.Model):

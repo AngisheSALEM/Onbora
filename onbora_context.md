@@ -45,7 +45,7 @@ Onbora utilise l'IA pour collecter, structurer, résumer et transformer les info
 ---
 
 ## 4. Les Rôles Majeurs d'Onbora
-*   **Qualification Client (Entrant)** : Conversation de découverte -> structuration automatique du besoin -> recommandations préliminaires -> Business Twin (Avant/Après) -> Transmission au KAM.
+*   **Qualification Client (Entrant)** : Conversation de découverte -> structuration automatique du besoin -> recommandations préliminaires -> Audit du parc client -> Transmission au KAM.
 *   **Assistance à la Prospection (Sortant)** :
     *   *Avant la visite* : Brief de préparation (pitch, questions clés, hypothèses).
     *   *Pendant la visite* : Prise de notes assistée, dictaphone vocal, détection de besoins, objections, services.
@@ -54,16 +54,18 @@ Onbora utilise l'IA pour collecter, structurer, résumer et transformer les info
 
 ---
 
-## 5. Le Concept du Business Twin
-Représentation simplifiée et visuelle de la transformation numérique proposée :
+## 5. Gestion du Parc Installé & Synchronisation CRM
+*(Note de cadrage : La fonctionnalité théorique « Business Twin » a été définitivement bannie de l'architecture. Elle est remplacée par la gestion concrète du parc d'offres installées et des enregistrements CRM centralisés).*
+
+La qualification repose sur la réalité contractuelle et technique de l'entreprise :
 ```
-Situation Actuelle (ex: Connexion instable, communication manuelle, cash)
+Table CRM Centralisée (ex: Kaabu / Salesforce / Orange CRM)
+       ↓ (Synchronisation & ForeignKey structurée)
+Compte Entreprise B2B (Données de localisation, segmentation & contact)
        ↓
-Problèmes Identifiés (ex: Perte de temps, coupures de service)
+Parc d'Offres Installées (Services actifs, débits Mbps, licences, échéances, pannes)
        ↓
-Services MSP Recommandés (ex: Fibre Pro, Microsoft 365, Terminal Paiement)
-       ↓
-Situation Future (ex: Connexion fiable, outils collaboratifs, paiements digitaux)
+Moteur Churn Radar & Opportunités d'Upsell (Recommandations précises basées sur les manques du parc)
 ```
 
 ---
@@ -74,9 +76,9 @@ Situation Future (ex: Connexion fiable, outils collaboratifs, paiements digitaux
                                                    ↓
                                            [ API Onbora ]
                                                    ↓
-     [ Agent IA ] ↔ [ Catalogue Services ] ↔ [ Moteurs de Rapport / Business Twin / Formation ]
+     [ Agent IA ] ↔ [ Catalogue Services ] ↔ [ Moteurs de Rapport / Churn Radar & Upsell / Formation ]
                                                    ↓
-                                      [ CRM & Outils Internes MSP ]
+                              [ Table CRM & Parc d'Offres Installées ]
 ```
 
 ---

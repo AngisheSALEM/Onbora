@@ -11,8 +11,27 @@ from .models import (
     AccountProjection,
     AccountPortfolioAssignment,
     SourceObservation,
-    Evidence
+    Evidence,
+    CrmAccountRecord,
+    EnterpriseInstalledOffer,
 )
+
+
+@admin.register(CrmAccountRecord)
+class CrmAccountRecordAdmin(admin.ModelAdmin):
+    list_display = ['external_crm_id', 'source_system', 'legal_name', 'payment_health', 'credit_score', 'annual_revenue', 'last_sync_at']
+    list_filter = ['source_system', 'payment_health', 'credit_score']
+    search_fields = ['external_crm_id', 'legal_name', 'tax_number']
+    ordering = ['-last_sync_at']
+
+
+@admin.register(EnterpriseInstalledOffer)
+class EnterpriseInstalledOfferAdmin(admin.ModelAdmin):
+    list_display = ['installed_offer_name', 'enterprise', 'category', 'provider', 'contract_status', 'contract_end_date', 'monthly_cost_mrr']
+    list_select_related = ['enterprise', 'service']
+    list_filter = ['contract_status', 'provider', 'category']
+    search_fields = ['installed_offer_name', 'enterprise__name']
+    ordering = ['contract_end_date', '-monthly_cost_mrr']
 
 
 @admin.register(Plaque)

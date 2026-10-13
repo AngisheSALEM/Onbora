@@ -57,9 +57,16 @@ class ChurnRadarService:
         is_renewal_imminent = False
         renewal_days: Optional[int] = None
 
-        # 1. RÈGLE : Échéance contractuelle
-        if enterprise.contract_end_date:
-            days_until_end = (enterprise.contract_end_date - today).days
+        # 1. RÈGLE : Échéance contractuelle (vérifie le contrat global et le parc d'offres installées)
+        target_end_date = enterprise.contract_end_date
+        installed_offers = list(getattr(enterprise, 'installed_offers', []).all()) if hasattr(enterprise, 'installed_offers') else []
+        for offer in installed_offers:
+            if offer.contract_status == 'ACTIVE' and offer.contract_end_date:
+                if not target_end_date or offer.contract_end_date < target_end_date:
+                    target_end_date = offer.contract_end_date
+
+        if target_end_date:
+            days_until_end = (target_end_date - today).days
             renewal_days = days_until_end
             if days_until_end <= 30:
                 score -= 25
@@ -70,12 +77,27 @@ class ChurnRadarService:
                 is_renewal_imminent = True
                 reasons.append(f"Contrat arrivant à échéance dans {days_until_end} jours (< 90 jours)")
 
-        # 2. RÈGLE : Incidents non résolus
+        # 2. RÈGLE : Incidents et tickets non résolus
         incidents = int(enterprise.incident_count or 0)
-        if incidents > 0:
-            deduction = min(incidents * 15, 30)
+        offer_tickets = sum(int(o.unresolved_tickets_count or 0) for o in installed_offers)
+        total_incidents = incidents + offer_tickets
+        if total_incidents > 0:
+            deduction = min(total_incidents * 15, 30)
             score -= deduction
-            reasons.append(f"{incidents} incident(s) réseau non résolu(s) signalés")
+            reasons.append(f"{total_incidents} incident(s) / ticket(s) réseau non résolu(s) signalés")
+
+        # 2.bis RÈGLE : Comportement de paiement CRM certifié
+        crm_record = getattr(enterprise, 'crm_record', None)
+        if crm_record and crm_record.payment_health:
+            if crm_record.payment_health == 'CONTENTIEUX':
+                score -= 35
+                reasons.append("Compte en contentieux / recouvrement dans le CRM")
+            elif crm_record.payment_health == 'RETARD_60J':
+                score -= 20
+                reasons.append("Retard de paiement critique (> 60 jours) signalé par le CRM")
+            elif crm_record.payment_health == 'RETARD_30J':
+                score -= 10
+                reasons.append("Retard de paiement (< 30 jours) signalé par le CRM")
 
         # 3. RÈGLE : Insatisfaction client dans les rapports ou niveau de douleur
         pain = getattr(enterprise, 'pain_level', '')
@@ -235,9 +257,12 @@ class ChurnRadarService:
                         notes_list.append(f"Rapport: {r.executive_summary}")
                 notes = "\n".join(notes_list)
 
+                installed_names = [o.installed_offer_name for o in enterprise.installed_offers.filter(contract_status='ACTIVE')] if hasattr(enterprise, 'installed_offers') else []
+                current_services = installed_names if installed_names else ([enterprise.current_connectivity] if enterprise.current_connectivity else ["Fibre Pro standard"])
+
                 inp = ChurnRadarInput(
                     company_name=enterprise.name,
-                    current_services=[enterprise.current_connectivity] if enterprise.current_connectivity else ["Fibre Pro standard"],
+                    current_services=current_services,
                     recent_interactions_notes=notes,
                     unresolved_incidents_count=enterprise.incident_count or 0,
                     contract_end_date=enterprise.contract_end_date.strftime('%Y-%m-%d') if enterprise.contract_end_date else None,
