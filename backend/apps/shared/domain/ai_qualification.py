@@ -15,6 +15,17 @@ class BANTScore:
     total_score: int = 0          # 0 à 100
     status: str = "QUALIFIED"     # 'HOT_LEAD', 'QUALIFIED', 'ATTENTION_BUDGET', 'ATTENTION_DECIDER', 'DISQUALIFIED'
     disqualification_reason: Optional[str] = None
+    # Attributs qualitatifs détaillés BANT
+    decision_maker_contacted: bool = False
+    decision_maker_role: str = ""
+    decision_maker_notes: str = ""
+    discovered_needs: List[str] = field(default_factory=list)
+    signature_timeline: str = ""  # ex: "Sous 15 jours", "Fin du mois", "Non précisé"
+    has_explicit_timeline: bool = False
+    timeline_notes: str = ""
+    budget_discussed: bool = False
+    budget_range: str = ""
+    budget_notes: str = ""
 
     def calculate_total(self) -> None:
         self.total_score = self.budget_score + self.authority_score + self.need_score + self.timeline_score

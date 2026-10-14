@@ -391,6 +391,9 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
         for m in rag_matches
     ]
 
+    contact_label = (appointment.contact_name or "").strip()
+    recipient = contact_label if contact_label else f"la direction de {appointment.enterprise.name if appointment.enterprise else 'l\'entreprise'}"
+
     if not actions_todo:
         is_unqualified = (
             bant_scores.get('status') in ['INSUFFICIENT_DATA', 'DISQUALIFIED']
@@ -398,13 +401,13 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
             or not confirmed_needs
         )
         if is_unqualified:
-            actions_todo = [f"Recontacter {appointment.contact_name} pour planifier un entretien approfondi"]
+            actions_todo = [f"Recontacter {recipient} pour planifier un entretien approfondi"]
         else:
-            actions_todo = [f"Transmettre la synthèse de l'entretien et la proposition à {appointment.contact_name}"]
+            actions_todo = [f"Transmettre la note de cadrage et la synthèse à {recipient}"]
 
     crm_payload = {
         "recommended_packages": recommended_packages,
-        "next_step": actions_todo[0] if actions_todo else f"Suivi avec {appointment.contact_name}",
+        "next_step": actions_todo[0] if actions_todo else f"Suivi avec {recipient}",
         "crm_system": "Microsoft Dynamics 365 Sales / Salesforce",
     }
 
@@ -449,6 +452,13 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
     except Exception as exc:
         logger.warning(f"[BriefingService] Erreur lors de la synchronisation d'offre implantée: {exc}")
 
+    # Synchronisation immédiate de la synthèse et de la fiche d'entreprise avec les besoins réels de la visite
+    try:
+        from apps.kam.commercial_intelligence_service import CommercialIntelligenceService
+        CommercialIntelligenceService.sync_briefing_after_visit(enterprise, report)
+    except Exception as exc:
+        logger.warning(f"[BriefingService] Erreur lors de la synchronisation de la synthèse d'entreprise: {exc}")
+
     try:
         session_id = f"kam_account_{enterprise.id}"
         AISessionService.append_message(
@@ -473,4 +483,132 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
         logger.warning(f"Impossible d'enregistrer session AI pour {enterprise.name}: {exc}")
 
     return report, enterprise
+
+
+def qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
+    """Runs qualification engine and returns (executive_summary, needs, objections, actions_todo, email, bant_scores)."""
+    import logging
+    from shared.infrastructure.ai_providers import is_insufficient_verbatim
+    logger = logging.getLogger(__name__)
+
+    attendee_name = (appointment.contact_name or '').strip()
+    attendee_reference = attendee_name or 'le client'
+    email_salutation = attendee_name or 'Madame, Monsieur'
+
+    # Zéro hallucination si verbatim insuffisant
+    if is_insufficient_verbatim(transcript):
+        executive_summary = (
+            f"Données insuffisantes pour formaliser un compte-rendu pour {appointment.enterprise.name}. "
+            "L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections."
+        )
+        confirmed_needs = []
+        objections_raised = []
+        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
+        follow_up_email = (
+            f"Bonjour {email_salutation},\n\n"
+            f"Suite à notre brève prise de contact au sujet de {appointment.enterprise.name}, je me permets de revenir vers vous afin d'organiser un échange de 20 minutes pour faire le point sur vos enjeux d'infrastructure et de connectivité.\n\n"
+            f"Quelles seraient vos disponibilités dans les prochains jours ?\n\n"
+            f"Bien cordialement,\n{user.get_full_name() or user.username}\nKey Account Manager — Orange Business B2B"
+        )
+        bant_scores = {
+            "budget": 0,
+            "authority": 5,
+            "need": 0,
+            "timeline": 0,
+            "total": 5,
+            "status": "INSUFFICIENT_DATA",
+            "decision_maker_contacted": False,
+            "decision_maker_role": "Non identifié",
+            "decision_maker_notes": "Verbatim insuffisant pour confirmer la présence du décideur.",
+            "discovered_needs": [],
+            "signature_timeline": "Non précisé",
+            "has_explicit_timeline": False,
+            "timeline_notes": "Aucune date de signature mentionnée.",
+            "budget_discussed": False,
+            "budget_range": "Non abordé",
+            "budget_notes": "Aucun budget abordé.",
+        }
+        return executive_summary, confirmed_needs, objections_raised, actions_todo, follow_up_email, bant_scores
+
+    from sales.services.qualification_service import BANTQualificationService
+    qualification_service = BANTQualificationService()
+
+    enterprise_dict = {
+        'name': appointment.enterprise.name,
+        'sector': appointment.enterprise.sector or 'Services',
+        'approximate_size': str(appointment.enterprise.employee_count or 25),
+        'location': appointment.enterprise.location or appointment.enterprise.plaque,
+        'contact_name': attendee_name,
+    }
+
+    try:
+        qual_res = qualification_service.process_visit_transcription(transcript, enterprise_dict)
+        executive_summary = qual_res.executive_summary or (
+            f"Échange avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
+            else f"Échange commercial chez {appointment.enterprise.name}."
+        )
+        confirmed_needs = [n for n in qual_res.detected_needs if n and isinstance(n, str) and n.strip()]
+        objections_raised = [o for o in qual_res.detected_objections if o and isinstance(o, str) and o.strip()]
+        actions_todo = [a for a in getattr(qual_res, 'actions_todo', []) if a and isinstance(a, str) and a.strip()]
+        follow_up_email = qual_res.email_follow_up_j1 or (
+            f"Bonjour {email_salutation},\n\n"
+            f"Je tiens à vous remercier pour notre échange ce jour au sujet de {appointment.enterprise.name}.\n\n"
+            f"Restant à votre entière disposition pour tout complément.\n\n"
+            f"Bien cordialement,\n"
+            f"{user.get_full_name() or user.username}\n"
+            f"Key Account Manager — Orange Business B2B"
+        )
+        bant_scores = {
+            "budget": qual_res.bant.budget_score,
+            "authority": qual_res.bant.authority_score,
+            "need": qual_res.bant.need_score,
+            "timeline": qual_res.bant.timeline_score,
+            "total": qual_res.bant.total_score,
+            "status": qual_res.bant.status,
+            "decision_maker_contacted": getattr(qual_res.bant, 'decision_maker_contacted', False),
+            "decision_maker_role": getattr(qual_res.bant, 'decision_maker_role', '') or (appointment.contact_role or 'Décideur / Signataire' if getattr(qual_res.bant, 'decision_maker_contacted', False) else 'Interlocuteur'),
+            "decision_maker_notes": getattr(qual_res.bant, 'decision_maker_notes', ''),
+            "discovered_needs": getattr(qual_res.bant, 'discovered_needs', None) or confirmed_needs,
+            "signature_timeline": getattr(qual_res.bant, 'signature_timeline', 'Non précisé'),
+            "has_explicit_timeline": getattr(qual_res.bant, 'has_explicit_timeline', False),
+            "timeline_notes": getattr(qual_res.bant, 'timeline_notes', ''),
+            "budget_discussed": getattr(qual_res.bant, 'budget_discussed', False),
+            "budget_range": getattr(qual_res.bant, 'budget_range', 'Non abordé'),
+            "budget_notes": getattr(qual_res.bant, 'budget_notes', ''),
+        }
+    except Exception as exc:
+        logger.warning(f"Erreur qualification vocale ({exc}), utilisation du statut insuffisant.")
+        executive_summary = (
+            f"Compte-rendu de rendez-vous avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
+            else f"Compte-rendu de rendez-vous chez {appointment.enterprise.name}."
+        )
+        confirmed_needs = []
+        objections_raised = []
+        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
+        follow_up_email = (
+            f"Bonjour {email_salutation},\n\n"
+            f"Merci pour notre rendez-vous concernant {appointment.enterprise.name}.\n\n"
+            f"Cordialement,\n{user.get_full_name() or user.username}"
+        )
+        bant_scores = {
+            "budget": 0,
+            "authority": 0,
+            "need": 0,
+            "timeline": 0,
+            "total": 0,
+            "status": "INSUFFICIENT_DATA",
+            "decision_maker_contacted": False,
+            "decision_maker_role": "Non renseigné",
+            "decision_maker_notes": "Qualification automatique indisponible.",
+            "discovered_needs": [],
+            "signature_timeline": "Non précisé",
+            "has_explicit_timeline": False,
+            "timeline_notes": "Aucun délai précisé.",
+            "budget_discussed": False,
+            "budget_range": "Non abordé",
+            "budget_notes": "",
+        }
+
+    return executive_summary, confirmed_needs, objections_raised, actions_todo, follow_up_email, bant_scores
+
 

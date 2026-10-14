@@ -98,9 +98,10 @@ class MockAIQualificationAdapter(IAIQualificationProvider):
         return score
 
     def qualify_visit(self, raw_transcript: str, enterprise_data: Dict[str, Any]) -> AIQualificationResult:
-        ent_name = enterprise_data.get('name', 'Entreprise B2B')
-        sector = enterprise_data.get('sector', 'Services & PME')
-        contact_name = enterprise_data.get('contact_name', 'Le Dirigeant')
+        ent_name = (enterprise_data.get('name') or 'Entreprise B2B').strip()
+        sector = (enterprise_data.get('sector') or 'Services & PME').strip()
+        raw_contact = enterprise_data.get('contact_name')
+        contact_name = raw_contact.strip() if raw_contact and raw_contact.strip() else f"la direction de {ent_name}"
 
         if is_insufficient_verbatim(raw_transcript):
             bant = BANTScore(
@@ -110,7 +111,17 @@ class MockAIQualificationAdapter(IAIQualificationProvider):
                 timeline_score=0,
                 total_score=0,
                 status="INSUFFICIENT_DATA",
-                disqualification_reason="Verbatim insuffisant : aucun échange commercial exploitable consigné."
+                disqualification_reason="Verbatim insuffisant : aucun échange commercial exploitable consigné.",
+                decision_maker_contacted=False,
+                decision_maker_role="Non identifié",
+                decision_maker_notes="Verbatim insuffisant pour qualifier le pouvoir de décision.",
+                discovered_needs=[],
+                signature_timeline="Non précisé",
+                has_explicit_timeline=False,
+                timeline_notes="Aucune échéance de signature mentionnée.",
+                budget_discussed=False,
+                budget_range="Non abordé",
+                budget_notes="Aucun budget abordé."
             )
             coi = COIEstimation(
                 impacted_employees=0,
@@ -170,16 +181,54 @@ class MockAIQualificationAdapter(IAIQualificationProvider):
         if any(w in text_lower for w in ['contrat', 'engag', 'opérateur', 'concurrent']):
             detected_objections.append("Contrat en cours chez un autre opérateur")
 
-        budget = 15 if any(w in text_lower for w in ['budget', 'financ', 'valider']) else 10
-        authority = 20 if any(w in text_lower for w in ['directeur', 'dg', 'dsi', 'décideur', 'responsable']) else 12
+        # Analyse Décideur (Authority) avec délimiteurs de mots stricts (\b) pour éviter les faux-positifs (ex: 'dg' dans 'budget')
+        is_dm = bool(re.search(r'\b(directeur|dg|gérant|gerant|dsi|décideur|decideur|fondateur|pdg|ceo|patron)\b', text_lower)) or bool(re.search(r'\b(directeur|dg|gérant|gerant|dsi|pdg|ceo)\b', contact_name.lower()))
+        dm_role = "Directeur Général / Signataire" if is_dm else "Prescripteur opérationnel"
+        dm_notes = f"{contact_name} dispose du pouvoir de signature final." if is_dm else f"{contact_name} doit solliciter l'arbitrage de sa direction générale."
+
+        # Analyse Échéance de signature (Timeline) : recherche d'un temps concret exprimé par le client
+        sig_timeline = "Non précisé"
+        has_explicit_timeline = False
+        if re.search(r'\b(15 jours|quinze jours)\b', text_lower):
+            sig_timeline = "Sous 15 jours"
+            has_explicit_timeline = True
+        elif re.search(r'\b(fin du mois|fin de mois|cette fin de mois)\b', text_lower):
+            sig_timeline = "Avant la fin du mois"
+            has_explicit_timeline = True
+        elif re.search(r'\b(urgent|immédiat|dès que possible|rapidement|sous 7 jours|cette semaine)\b', text_lower):
+            sig_timeline = "Immédiat / Court terme"
+            has_explicit_timeline = True
+        elif re.search(r'\b(sous 1 à 2 semaines|sous 2 semaines|sous un mois|dans le mois)\b', text_lower):
+            sig_timeline = "Sous 1 à 4 semaines"
+            has_explicit_timeline = True
+        elif re.search(r'\b(q[1-4]|trimestre|fin d\'année|début d\'année)\b', text_lower):
+            sig_timeline = "Échéance trimestrielle"
+            has_explicit_timeline = True
+
+        # Analyse Budget
+        has_budget = bool(re.search(r'\b(budget|usd|dollars|prix|coût|cout|enveloppe|tarif)\b', text_lower))
+        budget_range = "Enveloppe mensuelle discutée" if has_budget else "Non abordé"
+
+        budget = 18 if has_budget else 10
+        authority = 22 if is_dm else 12
         need = 20 if detected_needs else 8
-        timeline = 18 if any(w in text_lower for w in ['urgent', 'immédiat', 'mois', 'semaine', 'rapidement']) else 12
+        timeline = 18 if has_explicit_timeline else 10
 
         bant = BANTScore(
             budget_score=budget,
             authority_score=authority,
             need_score=need,
             timeline_score=timeline,
+            decision_maker_contacted=is_dm,
+            decision_maker_role=dm_role,
+            decision_maker_notes=dm_notes,
+            discovered_needs=detected_needs,
+            signature_timeline=sig_timeline,
+            has_explicit_timeline=has_explicit_timeline,
+            timeline_notes=f"Échéance annoncée : {sig_timeline}" if has_explicit_timeline else "Délai de décision non verrouillé lors du rendez-vous.",
+            budget_discussed=has_budget,
+            budget_range=budget_range,
+            budget_notes="Budget abordé lors de l'entretien." if has_budget else "Budget à formaliser lors de la proposition commerciale."
         )
         bant.calculate_total()
 
@@ -191,10 +240,17 @@ class MockAIQualificationAdapter(IAIQualificationProvider):
         )
         coi.compute()
 
-        exec_summary = (
-            f"Compte-rendu d'échange avec {contact_name} chez {ent_name}. "
-            f"{'Besoins identifiés : ' + ', '.join(detected_needs) + '.' if detected_needs else 'Entretien de cadrage initial.'}"
+        if contact_name and not contact_name.startswith("la direction"):
+            interlocuteur_str = f"avec {contact_name} ({ent_name})"
+        else:
+            interlocuteur_str = f"avec la direction de {ent_name}"
+
+        needs_phrase = (
+            f" Les échanges ont permis d'identifier les besoins prioritaires suivants : {', '.join(detected_needs)}."
+            if detected_needs
+            else " L'échange a porté sur le cadrage initial des opérations et des besoins de l'entreprise."
         )
+        exec_summary = f"Entretien commercial mené {interlocuteur_str}.{needs_phrase}"
 
         actions_todo = [
             f"Transmettre la note de cadrage à {contact_name}"
@@ -341,11 +397,20 @@ TRANSCRIPTION RÉELLE :
 INSTRUCTIONS CRITIQUES :
 1. RÈGLE STRICTE ANTI-HALLUCINATION : N'invente AUCUN besoin non mentionné expressément par le client. Si aucun besoin n'est exprimé, "detected_needs" doit être [].
 2. N'invente AUCUNE objection non exprimée. Si aucune objection n'est soulevée, "detected_objections" doit être [].
-3. Évalue les scores BANT (0 à 25 chacun) STRICTEMENT selon les faits prouvés par la transcription :
-   - budget_score : 0 si le budget n'est pas abordé.
-   - authority_score : selon le rôle décisionnaire attesté du contact (0 à 25).
-   - need_score : 0 si aucun besoin d'infrastructure télécoms n'est mentionné.
-   - timeline_score : 0 si aucune échéance de projet n'est mentionnée.
+3. Évalue les scores BANT (0 à 25 chacun) et renseigne les dimensions qualitatives STRICTEMENT selon les faits prouvés par la transcription :
+   - DÉCIDEUR (Authority) :
+     * "decision_maker_contacted" (bool) : true uniquement si l'échange a eu lieu avec le décideur final / signataire (DG, Gérant, DSI avec délégation, Fondateur, etc.). false si c'est un collaborateur/prescripteur qui doit soumettre l'offre à sa hiérarchie.
+     * "decision_maker_role" (str) : fonction de l'interlocuteur rencontré.
+     * "decision_maker_notes" (str) : analyse claire du pouvoir d'engagement (ex: "M. X est signataire unique", ou "M. X doit faire valider par son DG").
+   - BESOINS DÉCOUVERTS (Need) :
+     * "detected_needs" (list) : besoins télécoms/numériques concrets exprimés suite au rendez-vous.
+   - TEMPS DE SIGNATURE (Timeline) :
+     * "signature_timeline" (str) : temps ou échéance annoncé par le prospect pour signer/décider (ex: "Sous 15 jours", "Avant la fin du mois", "Q4", ou "Non précisé").
+     * "has_explicit_timeline" (bool) : true si une échéance/date de signature a été mentionnée, false sinon.
+     * "timeline_notes" (str) : contexte sur le calendrier et les déclencheurs.
+   - BUDGET :
+     * "budget_discussed" (bool) : true si abordé, false sinon.
+     * "budget_range" (str) : enveloppe mentionnée ou "Non abordé".
 4. Si des besoins télécoms/numériques réels sont confirmés, structure 1 à 3 offres pertinentes ("packages") basées sur le catalogue ci-dessus avec des prix mensuels réalistes en USD, calcul de gain net et ROI face aux pertes COI estimées. Si aucun besoin n'est confirmé, "packages" doit être [].
 5. "actions_todo" doit lister les prochaines actions concrètes et réalistes convenues ou à mener.
 
@@ -355,7 +420,15 @@ Génère un JSON strict :
     "budget_score": 0,
     "authority_score": 0,
     "need_score": 0,
-    "timeline_score": 0
+    "timeline_score": 0,
+    "decision_maker_contacted": false,
+    "decision_maker_role": "Rôle de l'interlocuteur",
+    "decision_maker_notes": "Précisions sur le mandat de signature",
+    "signature_timeline": "Temps de signature annoncé ou 'Non précisé'",
+    "has_explicit_timeline": false,
+    "timeline_notes": "Détails sur l'échéance",
+    "budget_discussed": false,
+    "budget_range": "Non abordé"
   }},
   "coi": {{
     "impacted_employees": 0,
@@ -389,11 +462,21 @@ Génère un JSON strict :
             )
             if ai_res and 'bant' in ai_res:
                 bant_data = ai_res['bant']
+                detected_needs_list = [n for n in ai_res.get('detected_needs', []) if isinstance(n, str) and n.strip()]
                 bant = BANTScore(
                     budget_score=max(0, min(25, int(bant_data.get('budget_score', 0)))),
                     authority_score=max(0, min(25, int(bant_data.get('authority_score', 0)))),
                     need_score=max(0, min(25, int(bant_data.get('need_score', 0)))),
                     timeline_score=max(0, min(25, int(bant_data.get('timeline_score', 0)))),
+                    decision_maker_contacted=bool(bant_data.get('decision_maker_contacted', False)),
+                    decision_maker_role=str(bant_data.get('decision_maker_role', '')),
+                    decision_maker_notes=str(bant_data.get('decision_maker_notes', '')),
+                    discovered_needs=detected_needs_list,
+                    signature_timeline=str(bant_data.get('signature_timeline', 'Non précisé')),
+                    has_explicit_timeline=bool(bant_data.get('has_explicit_timeline', False)),
+                    timeline_notes=str(bant_data.get('timeline_notes', '')),
+                    budget_discussed=bool(bant_data.get('budget_discussed', False)),
+                    budget_range=str(bant_data.get('budget_range', 'Non abordé')),
                 )
                 bant.calculate_total()
 

@@ -547,6 +547,31 @@ def serialize_kam_appointment(app: KamAppointment, previous_kam_visits=None) -> 
 
 
 def serialize_kam_visit_report(rep: KamVisitReport) -> dict:
+    bant_raw = rep.bant_scores or {}
+    contact_role_val = (rep.appointment.contact_role if rep.appointment else rep.enterprise.contact_role) if rep.enterprise else ""
+    contact_name_val = (rep.appointment.contact_name if rep.appointment else rep.enterprise.contact_name) if rep.enterprise else ""
+    is_dm_fallback = any(k in (contact_role_val or '').lower() for k in ['directeur', 'dg', 'gérant', 'dsi', 'pdg', 'ceo', 'fondateur', 'administrateur']) or (bant_raw.get('authority', 0) >= 18)
+
+    # Formatage BANT qualitatif et quantitatif
+    bant_scores = {
+        "budget": bant_raw.get("budget", 0),
+        "authority": bant_raw.get("authority", 0),
+        "need": bant_raw.get("need", 0),
+        "timeline": bant_raw.get("timeline", 0),
+        "total": bant_raw.get("total", 0),
+        "status": bant_raw.get("status", "QUALIFIED"),
+        "decision_maker_contacted": bant_raw.get("decision_maker_contacted", is_dm_fallback),
+        "decision_maker_role": bant_raw.get("decision_maker_role") or contact_role_val or ("Décideur / Signataire" if is_dm_fallback else "Interlocuteur opérationnel"),
+        "decision_maker_notes": bant_raw.get("decision_maker_notes") or (f"{contact_name_val} dispose du pouvoir de signature final." if is_dm_fallback else f"Soumis à arbitrage par la direction générale."),
+        "discovered_needs": bant_raw.get("discovered_needs") or (rep.confirmed_needs or []),
+        "signature_timeline": bant_raw.get("signature_timeline") or ("Sous 15 à 30 jours" if bant_raw.get("timeline", 0) >= 15 else "Non précisé"),
+        "has_explicit_timeline": bant_raw.get("has_explicit_timeline", bant_raw.get("timeline", 0) >= 15),
+        "timeline_notes": bant_raw.get("timeline_notes") or "",
+        "budget_discussed": bant_raw.get("budget_discussed", bant_raw.get("budget", 0) >= 12),
+        "budget_range": bant_raw.get("budget_range") or ("Budget validé" if bant_raw.get("budget", 0) >= 15 else "Non abordé"),
+        "budget_notes": bant_raw.get("budget_notes") or "",
+    }
+
     return {
         "id": rep.id,
         "appointment_id": rep.appointment_id,
@@ -558,15 +583,16 @@ def serialize_kam_visit_report(rep: KamVisitReport) -> dict:
         "meeting_type_label": rep.appointment.get_meeting_type_display() if rep.appointment else "Visite Terrain (Physique)",
         "visit_purpose": rep.appointment.visit_purpose if rep.appointment else None,
         "visit_purpose_label": rep.appointment.get_visit_purpose_display() if rep.appointment and rep.appointment.visit_purpose else "Type non renseigné",
-        "contact_name": (rep.appointment.contact_name if rep.appointment else rep.enterprise.contact_name) if rep.enterprise else "",
-        "contact_role": (rep.appointment.contact_role if rep.appointment else rep.enterprise.contact_role) if rep.enterprise else "",
+        "contact_name": contact_name_val,
+        "contact_role": contact_role_val,
         "raw_transcript": rep.raw_transcript,
         "executive_summary": rep.executive_summary,
         "confirmed_needs": rep.confirmed_needs or [],
         "objections_raised": rep.objections_raised or [],
         "actions_todo": rep.actions_todo or [],
         "follow_up_email_draft": rep.follow_up_email_draft,
-        "bant_scores": rep.bant_scores or {},
+        "bant_scores": bant_scores,
+        "bant_analysis": bant_scores,
         "conversion_status": rep.conversion_status,
         "recommended_packages": (rep.crm_payload.get("recommended_packages") if rep.crm_payload else []) or [],
         "crm_payload": rep.crm_payload or {},
@@ -764,90 +790,9 @@ class KamAppointmentDetailView(APIView):
 
 
 def _qualify_vocal_meeting(appointment, transcript: str, user) -> tuple:
-    """Runs qualification engine and returns (executive_summary, needs, objections, actions_todo, email, bant_scores)."""
-    from shared.infrastructure.ai_providers import is_insufficient_verbatim
-    attendee_name = (appointment.contact_name or '').strip()
-    attendee_reference = attendee_name or 'le client'
-    email_salutation = attendee_name or 'Madame, Monsieur'
-
-    # Zéro hallucination si verbatim insuffisant (ex: juste 'bonjour' ou inaudible)
-    if is_insufficient_verbatim(transcript):
-        executive_summary = (
-            f"Données insuffisantes pour formaliser un compte-rendu pour {appointment.enterprise.name}. "
-            "L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections."
-        )
-        confirmed_needs = []
-        objections_raised = []
-        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
-        follow_up_email = (
-            f"Bonjour {email_salutation},\n\n"
-            f"Suite à notre brève prise de contact au sujet de {appointment.enterprise.name}, je me permets de revenir vers vous afin d'organiser un échange de 20 minutes pour faire le point sur vos enjeux d'infrastructure et de connectivité.\n\n"
-            f"Quelles seraient vos disponibilités dans les prochains jours ?\n\n"
-            f"Bien cordialement,\n{user.get_full_name() or user.username}\nKey Account Manager — Orange Business B2B"
-        )
-        bant_scores = {
-            "budget": 0,
-            "authority": 5,
-            "need": 0,
-            "timeline": 0,
-            "total": 5,
-            "status": "INSUFFICIENT_DATA"
-        }
-        return executive_summary, confirmed_needs, objections_raised, actions_todo, follow_up_email, bant_scores
-
-    from sales.services.qualification_service import BANTQualificationService
-    qualification_service = BANTQualificationService()
-
-    enterprise_dict = {
-        'name': appointment.enterprise.name,
-        'sector': appointment.enterprise.sector or 'Services',
-        'approximate_size': str(appointment.enterprise.employee_count or 25),
-        'location': appointment.enterprise.location or appointment.enterprise.plaque,
-        'contact_name': attendee_name,
-    }
-
-    try:
-        qual_res = qualification_service.process_visit_transcription(transcript, enterprise_dict)
-        executive_summary = qual_res.executive_summary or (
-            f"Échange avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
-            else f"Échange commercial chez {appointment.enterprise.name}."
-        )
-        confirmed_needs = [n for n in qual_res.detected_needs if n and isinstance(n, str) and n.strip()]
-        objections_raised = [o for o in qual_res.detected_objections if o and isinstance(o, str) and o.strip()]
-        actions_todo = [a for a in getattr(qual_res, 'actions_todo', []) if a and isinstance(a, str) and a.strip()]
-        follow_up_email = qual_res.email_follow_up_j1 or (
-            f"Bonjour {email_salutation},\n\n"
-            f"Je tiens à vous remercier pour notre échange ce jour au sujet de {appointment.enterprise.name}.\n\n"
-            f"Restant à votre entière disposition pour tout complément.\n\n"
-            f"Bien cordialement,\n"
-            f"{user.get_full_name() or user.username}\n"
-            f"Key Account Manager — Orange Business B2B"
-        )
-        bant_scores = {
-            "budget": qual_res.bant.budget_score,
-            "authority": qual_res.bant.authority_score,
-            "need": qual_res.bant.need_score,
-            "timeline": qual_res.bant.timeline_score,
-            "total": qual_res.bant.total_score,
-            "status": qual_res.bant.status,
-        }
-    except Exception as exc:
-        logger.warning(f"Erreur qualification vocale ({exc}), utilisation du statut insuffisant.")
-        executive_summary = (
-            f"Compte-rendu de rendez-vous avec {attendee_name} chez {appointment.enterprise.name}." if attendee_name
-            else f"Compte-rendu de rendez-vous chez {appointment.enterprise.name}."
-        )
-        confirmed_needs = []
-        objections_raised = []
-        actions_todo = [f"Recontacter {attendee_reference} pour planifier un entretien approfondi"]
-        follow_up_email = (
-            f"Bonjour {email_salutation},\n\n"
-            f"Merci pour notre rendez-vous concernant {appointment.enterprise.name}.\n\n"
-            f"Cordialement,\n{user.get_full_name() or user.username}"
-        )
-        bant_scores = {"total": 0, "status": "INSUFFICIENT_DATA"}
-
-    return executive_summary, confirmed_needs, objections_raised, actions_todo, follow_up_email, bant_scores
+    """Delegates qualification engine execution to briefing_service."""
+    from apps.kam.services.briefing_service import qualify_vocal_meeting
+    return qualify_vocal_meeting(appointment, transcript, user)
 
 
 def _persist_meeting_report(appointment, user, transcript, audio_file_path, conversion_status_val,

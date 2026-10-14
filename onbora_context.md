@@ -173,6 +173,18 @@ Les fichiers clés disponibles dans le dépôt :
         *   Ajout de la vue [`VisitReportDetailView`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/sales/views.py) sur `GET /api/sales/visit-reports/<int:pk>/` avec contrôle des permissions et sérialisation complète.
         *   Support de filtre par `preparation_id` dans [`VisitReportCreateView`](file:///C:/Users/Salem/Documents/projet/Onbora/backend/apps/sales/views.py) et inclusion des identifiants clés dans la liste des visites.
 
+*   **Optimisation Haute Performance Gemini & Élimination de la Dette de Latence (Octobre 2026)** :
+    *   **Résolution de la Saturation Quota `gemini-3.8-flash`** : Migration vers le modèle `gemini-3.5-flash` (~2-3s de temps de réponse, sans quota restreint de 20 req/j).
+    *   **Encadrement des Délais & Suppression des Retries Bloquants** : Injection de `http_options=types.HttpOptions(timeout=20_000, retry_options=types.HttpRetryOptions(attempts=1))` sur `BaseAIEngine` et `audio_transcription_service.py` pour éliminer le cumul de timeouts qui atteignait ~7 minutes lors des erreurs 503/429.
+    *   **Cascade de Repli Réordonnée** : Priorité donnée à `gemini-3.5-flash` ➔ `gemini-3.5-flash-lite` (1.1s) ➔ `gemini-3.6-flash`, avant bascule automatique sur le fallback in-process déterministe.
+
+*   **Synchronisation Dynamique de la Synthèse d'Entreprise & Double Canal de Besoins (Octobre 2026)** :
+    *   **Mise à Jour Automatique Post-Visite** : Clôture du CR vocal connectée directement à `CommercialIntelligenceService.sync_briefing_after_visit` pour actualiser immédiatement la fiche `Enterprise` et le dossier `PreCallBriefing`.
+    *   **Distinction Étanche Besoins Réels vs Besoins Anticipés** :
+        *   *Besoins réels confirmés (Terrain)* : Extraits des `confirmed_needs` des derniers rapports de visite du KAM (ex. 130 machines en zone rurale, SMS client).
+        *   *Besoins anticipés (Core AI)* : Déduits intelligemment par le moteur Core AI selon le secteur, la taille et le catalogue RAG Orange Business.
+    *   **Restitution Sobre & Minimaliste (Next.js)** : Présentation des besoins sous forme de badges discrets intégrés au document Word-style sans émojis Unicode, conformément à DESIGN.md et à la palette 60-30-10.
+
 ---
 
 ## 10. Passerelle d'Échange de Données (CRM Kaabu & ArrowSphere)

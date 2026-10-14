@@ -33,9 +33,9 @@ class UnifiedCoreAIEngine:
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
         self.api_key = api_key or getattr(settings, 'GEMINI_API_KEY', '')
-        self.model_name = model_name or getattr(settings, 'GEMINI_MODEL', 'gemini-3.6-flash')
+        self.model_name = model_name or getattr(settings, 'GEMINI_MODEL', 'gemini-3.5-flash')
         if 'gemini-2.5' in self.model_name:
-            self.model_name = 'gemini-3.6-flash'
+            self.model_name = 'gemini-3.5-flash'
 
         # Instanciation modulaire propre
         self.base_engine = BaseAIEngine(api_key=self.api_key, model_name=self.model_name)
@@ -58,10 +58,88 @@ class UnifiedCoreAIEngine:
     # -------------------------------------------------------------------------
     # 1. PRE-CALL BRIEFING (ONBORA ANALYSIS PROVISIONING)
     # -------------------------------------------------------------------------
+    def _extract_real_and_predicted_needs(self, enterprise: Any) -> tuple[list, list]:
+        """
+        Extrait :
+        1. real_needs : besoins réels confirmés lors des visites KAM passées (KamVisitReport).
+        2. predicted_needs : besoins potentiels et opportunités anticipés par Core AI.
+        """
+        real_needs = []
+        seen_needs = set()
+
+        if hasattr(enterprise, 'kam_visit_reports'):
+            try:
+                reports = list(enterprise.kam_visit_reports.all().order_by('-created_at')[:5])
+                for rep in reports:
+                    date_str = rep.created_at.strftime('%d/%m/%Y') if rep.created_at else 'Visite récente'
+                    for need in (rep.confirmed_needs or []):
+                        cleaned = str(need).strip()
+                        if cleaned and cleaned.lower() not in seen_needs:
+                            seen_needs.add(cleaned.lower())
+                            real_needs.append({
+                                "need": cleaned,
+                                "source": f"Visite du {date_str}",
+                                "visit_id": rep.id,
+                                "status": "CONFIRMED"
+                            })
+            except Exception:
+                pass
+
+        predicted_needs = []
+        existing_real_lower = {n["need"].lower() for n in real_needs}
+
+        site_cnt = getattr(enterprise, 'site_count', 1) or 1
+        emp_cnt = getattr(enterprise, 'employee_count', 10) or 10
+        curr_op = getattr(enterprise, 'current_operator', '') or ''
+        sector = (getattr(enterprise, 'sector', '') or '').lower()
+
+        if site_cnt > 1 and not any("sd-wan" in n or "interconnexion" in n for n in existing_real_lower):
+            predicted_needs.append({
+                "need": "Interconnexion multi-sites sécurisée (SD-WAN / MPLS)",
+                "reason": f"Périmètre de {site_cnt} implantations à unifier avec routage applicatif chiffré.",
+                "category": "Réseaux & Multi-sites",
+                "priority": "HIGH"
+            })
+
+        if emp_cnt >= 20 and not any("cyber" in n or "sécurité" in n for n in existing_real_lower):
+            predicted_needs.append({
+                "need": "Protection périmétrique et surveillance CyberSOC 24/7",
+                "reason": f"Effectif de {emp_cnt} collaborateurs nécessitant filtrage DNS et pare-feu managé.",
+                "category": "Cybersécurité",
+                "priority": "HIGH"
+            })
+
+        if any(w in sector for w in ["banque", "finance", "commerce", "distribution", "santé", "mine"]):
+            predicted_needs.append({
+                "need": "Garantie de Temps de Rétablissement (GTR 4h contractuelle)",
+                "reason": f"Activité {enterprise.sector or 'critique'} à haute exigence de disponibilité.",
+                "category": "Continuité de Service",
+                "priority": "HIGH"
+            })
+
+        if not any("sauvegarde" in n or "cloud" in n for n in existing_real_lower):
+            predicted_needs.append({
+                "need": "Sauvegarde Cloud souveraine en Datacenter Tier III",
+                "reason": "Résilience des données critiques sans investissement serveur sur site.",
+                "category": "Cloud & Données",
+                "priority": "MEDIUM"
+            })
+
+        if not any("fibre" in n or "haut débit" in n for n in existing_real_lower):
+            predicted_needs.append({
+                "need": "Liaison Fibre Dédiée Pro 100 Mbps symétrique",
+                "reason": f"Débit garanti et SLA 99.9% en remplacement de l'infrastructure {curr_op or 'actuelle'}.",
+                "category": "Connectivité",
+                "priority": "HIGH"
+            })
+
+        return real_needs, predicted_needs
+
     def generate_pre_call_briefing(self, enterprise: Any, kam_user: Any) -> dict:
         """
         Génère le brief de pré-visite selon le nouveau paradigme Onbora Analysis,
-        en interrogeant le service externe sur le port 8001 avec fallback résilient.
+        en interrogeant le service externe sur le port 8001 avec fallback résilient,
+        et en enrichissant la synthèse avec les besoins réels confirmés du terrain et les opportunités Core AI.
         """
         analysis_brief = self.company_analysis_client.get_analysis_for_enterprise(
             company_name=enterprise.name,
@@ -75,8 +153,32 @@ class UnifiedCoreAIEngine:
 
         # Rétro-compatibilité ascendante pour préserver l'intégrité DB et les vues historiques
         ai_sum = res.get("ai_summary", {})
-        overview_text = ai_sum.get("overview", {}).get("text", "")
+        base_overview_text = ai_sum.get("overview", {}).get("text", "")
         challenges = [contra.get("text", "") for contra in ai_sum.get("contradictions", [])] + ai_sum.get("gaps", [])
+
+        # Extraction dynamique des besoins réels (visites) et anticipés (Core AI)
+        real_needs, predicted_needs = self._extract_real_and_predicted_needs(enterprise)
+        res["real_needs"] = real_needs
+        res["predicted_needs"] = predicted_needs
+
+        # Enrichissement contextuel sobre du paragraphe de synthèse exécutive
+        summary_sentences = [base_overview_text] if base_overview_text else [f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'})."]
+
+        if real_needs:
+            real_names = ", ".join([rn["need"] for rn in real_needs[:3]])
+            summary_sentences.append(f"Besoins réels confirmés lors des derniers échanges terrain : {real_names}.")
+
+        if predicted_needs:
+            pred_names = ", ".join([pn["need"] for pn in predicted_needs[:2]])
+            summary_sentences.append(f"Opportunités et besoins d'infrastructure identifiés par Core AI : {pred_names}.")
+
+        enriched_overview = " ".join(summary_sentences).strip()
+
+        if isinstance(ai_sum, dict):
+            ai_sum["real_needs"] = real_needs
+            ai_sum["predicted_needs"] = predicted_needs
+            if "overview" in ai_sum and isinstance(ai_sum["overview"], dict):
+                ai_sum["overview"]["text"] = enriched_overview
 
         journeys = res.get("lead_qualification", {}).get("journeys", [])
         pitch_angles = []
@@ -94,7 +196,7 @@ class UnifiedCoreAIEngine:
         rev = float(getattr(enterprise, 'annual_revenue', 50000.0) or 50000.0)
         res["company_overview"] = {
             "company_name": enterprise.name,
-            "summary": overview_text or f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'}).",
+            "summary": enriched_overview,
             "estimated_employees": "50-200 collaborateurs",
             "digital_maturity": "HIGH" if res.get("identity_status") == "confirmed" else "MEDIUM",
             "annual_revenue_usd": f"{rev:,.0f} USD",

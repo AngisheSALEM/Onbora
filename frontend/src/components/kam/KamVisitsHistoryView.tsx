@@ -6,6 +6,25 @@ import { Icons } from '@/components/shared/Icons';
 import { KamVisitPurpose } from './kamVisitPurpose';
 import { useKamContext } from './KamContext';
 
+export interface BantAnalysisData {
+  budget?: number;
+  authority?: number;
+  need?: number;
+  timeline?: number;
+  total?: number;
+  status?: string;
+  decision_maker_contacted?: boolean;
+  decision_maker_role?: string;
+  decision_maker_notes?: string;
+  discovered_needs?: string[];
+  signature_timeline?: string;
+  has_explicit_timeline?: boolean;
+  timeline_notes?: string;
+  budget_discussed?: boolean;
+  budget_range?: string;
+  budget_notes?: string;
+}
+
 export interface KamVisitRecord {
   id: number;
   appointment_id: number | null;
@@ -26,14 +45,8 @@ export interface KamVisitRecord {
   actions_todo: string[];
   follow_up_email_draft: string;
   conversion_status: string;
-  bant_scores?: {
-    budget?: number;
-    authority?: number;
-    need?: number;
-    timeline?: number;
-    total?: number;
-    status?: string;
-  };
+  bant_scores?: BantAnalysisData;
+  bant_analysis?: BantAnalysisData;
   created_at: string;
 }
 

@@ -88,6 +88,8 @@ class CommercialIntelligenceService:
             "enterprise_id": enterprise.id,
             "enterprise_name": enterprise.name,
             **ai_data,
+            "real_needs": ai_data.get("real_needs", []),
+            "predicted_needs": ai_data.get("predicted_needs", []),
             "company_overview": briefing.company_overview,
             "key_decision_makers": briefing.key_decision_makers,
             "detected_business_challenges": briefing.detected_business_challenges,
@@ -97,6 +99,76 @@ class CommercialIntelligenceService:
             "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
             "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
             "ai_engine": "Onbora Analysis (Port 8001 / AI Core)"
+        }
+
+    @staticmethod
+    def sync_briefing_after_visit(enterprise: Enterprise, report: Any) -> dict:
+        """
+        Synchronise automatiquement la fiche et la synthèse de l'entreprise après la
+        clôture d'une visite pour intégrer les besoins réels confirmés et les opportunités Core AI.
+        """
+        import logging
+        from django.utils import timezone
+        logger = logging.getLogger(__name__)
+
+        # 1. Mise à jour des hypothèses et notes de l'entreprise
+        if report and getattr(report, 'confirmed_needs', None):
+            existing_hypo = enterprise.ai_hypotheses or []
+            new_hypo = [
+                {"hypothesis": need, "evidence": f"Confirmé en visite le {timezone.now().strftime('%d/%m/%Y')}"}
+                for need in report.confirmed_needs
+            ]
+            existing_titles = {h.get("hypothesis") if isinstance(h, dict) else str(h) for h in existing_hypo}
+            for nh in new_hypo:
+                if nh["hypothesis"] not in existing_titles:
+                    existing_hypo.append(nh)
+            enterprise.ai_hypotheses = existing_hypo
+
+        if report and getattr(report, 'executive_summary', None):
+            date_str = timezone.now().strftime('%d/%m/%Y')
+            summary_snippet = report.executive_summary.strip()
+            if not enterprise.conversion_notes:
+                enterprise.conversion_notes = f"Dernière visite ({date_str}) : {summary_snippet}"
+            else:
+                enterprise.conversion_notes = f"{enterprise.conversion_notes}\n\nVisite {date_str} : {summary_snippet}"
+
+        enterprise.save()
+
+        # 2. Régénération immédiate du dossier d'attaque PreCallBriefing
+        engine = get_unified_core_ai()
+        kam_user = getattr(report, 'kam', None) or enterprise.assigned_kam
+        ai_data = engine.generate_pre_call_briefing(enterprise, kam_user)
+
+        golden_rules = ai_data.get("golden_rules") or [
+            f"Ne jamais dénigrer directement {enterprise.current_operator or 'le concurrent'} : valoriser nos engagements SLA 99.99% et notre GTR 4h signée.",
+            "Faire verbaliser la douleur financière avant d'aborder tout chiffre ou prix.",
+            "Identifier dès les 10 premières minutes si le DAF doit être intégré à la réunion de restitution."
+        ]
+
+        user_to_assign = kam_user if kam_user and getattr(kam_user, 'is_authenticated', False) else enterprise.assigned_kam
+
+        briefing, _ = PreCallBriefing.objects.update_or_create(
+            enterprise=enterprise,
+            defaults={
+                "kam": user_to_assign,
+                "company_overview": ai_data.get("company_overview", {}),
+                "key_decision_makers": ai_data.get("key_decision_makers", []),
+                "detected_business_challenges": ai_data.get("detected_business_challenges", []),
+                "custom_pitch_angles": ai_data.get("custom_pitch_angles", []),
+                "critical_discovery_questions": ai_data.get("critical_discovery_questions", []),
+                "golden_rules": golden_rules,
+                "analysis_data": ai_data,
+            }
+        )
+        logger.info(f"[CommercialIntelligenceService] Fiche et synthèse synchronisées pour {enterprise.name} suite au rapport #{getattr(report, 'id', 'N/A')}.")
+        return {
+            "id": briefing.id,
+            "enterprise_id": enterprise.id,
+            "enterprise_name": enterprise.name,
+            **ai_data,
+            "real_needs": ai_data.get("real_needs", []),
+            "predicted_needs": ai_data.get("predicted_needs", []),
+            "company_overview": briefing.company_overview,
         }
 
     @staticmethod

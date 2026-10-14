@@ -104,11 +104,23 @@ export interface OnboraAnalysisBrief {
     business_impact?: string;
     recommended_package?: string;
   }>;
+  real_needs?: NeedItem[];
+  predicted_needs?: NeedItem[];
   evidence?: EvidenceItem[];
   sources?: DiscoveredSource[];
   installed_offers?: InstalledOfferItem[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface NeedItem {
+  need: string;
+  source?: string;
+  visit_id?: number | string;
+  status?: string;
+  category?: string;
+  reason?: string;
+  priority?: string;
 }
 
 export interface InstalledOfferItem {
@@ -783,6 +795,61 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                   <p className="text-sm md:text-[15px] leading-relaxed font-normal whitespace-pre-line text-zinc-800 dark:text-zinc-200">
                     {briefingData.ai_summary?.overview?.text || "Aucune synthèse disponible."}
                   </p>
+                )}
+
+                {/* Discrete Needs Breakdown : Real Client Needs vs Core AI Inferred Needs */}
+                {!isEditing && ((briefingData.real_needs && briefingData.real_needs.length > 0) || (briefingData.predicted_needs && briefingData.predicted_needs.length > 0)) && (
+                  <div className="pt-3 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {briefingData.real_needs && briefingData.real_needs.length > 0 && (
+                      <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                          <Icons.CheckCircle size={13} className="text-zinc-700 dark:text-zinc-300" />
+                          <span>Besoins réels confirmés (Terrain)</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {briefingData.real_needs.map((rn, idx) => (
+                            <div
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-[#282528] border border-black/5 dark:border-white/5 text-xs text-zinc-800 dark:text-zinc-200 shadow-2xs"
+                              title={rn.source}
+                            >
+                              <span className="font-medium">{rn.need}</span>
+                              {rn.source && (
+                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
+                                  • {rn.source}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {briefingData.predicted_needs && briefingData.predicted_needs.length > 0 && (
+                      <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                          <Icons.Sparkles size={13} className="text-zinc-700 dark:text-zinc-300" />
+                          <span>Besoins anticipés (Core AI)</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {briefingData.predicted_needs.map((pn, idx) => (
+                            <div
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-[#282528] border border-black/5 dark:border-white/5 text-xs text-zinc-800 dark:text-zinc-200 shadow-2xs"
+                              title={pn.reason}
+                            >
+                              <span className="font-medium">{pn.need}</span>
+                              {pn.category && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 font-normal">
+                                  {pn.category}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

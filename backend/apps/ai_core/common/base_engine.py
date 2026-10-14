@@ -50,9 +50,9 @@ class BaseAIEngine:
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None) -> None:
         self.api_key = api_key or getattr(settings, "GEMINI_API_KEY", "")
-        self.model_name = model_name or getattr(settings, "GEMINI_MODEL", "gemini-3.6-flash")
+        self.model_name = model_name or getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash")
         if "gemini-2.5" in self.model_name:
-            self.model_name = "gemini-3.6-flash"
+            self.model_name = "gemini-3.5-flash"
         self._client = None
         self._init_client()
 
@@ -60,7 +60,14 @@ class BaseAIEngine:
         if self.api_key:
             try:
                 from google import genai
-                self._client = genai.Client(api_key=self.api_key)
+                from google.genai import types
+                self._client = genai.Client(
+                    api_key=self.api_key,
+                    http_options=types.HttpOptions(
+                        timeout=20_000,
+                        retry_options=types.HttpRetryOptions(attempts=1),
+                    ),
+                )
                 logger.info("[BaseAIEngine] Client Gemini initialise avec le modele %s", self.model_name)
             except Exception as exc:
                 logger.warning("[BaseAIEngine] Erreur initialisation Gemini (%s), fallback actif.", exc)
@@ -79,7 +86,7 @@ class BaseAIEngine:
                 config_kwargs["system_instruction"] = system_instruction
 
             models_to_try = [self.model_name]
-            for fallback in ("gemini-3.8-flash", "gemini-3.6-flash"):
+            for fallback in ("gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"):
                 if fallback not in models_to_try:
                     models_to_try.append(fallback)
 

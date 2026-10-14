@@ -269,3 +269,73 @@ class KamAppointmentPurposeTests(APITestCase):
         self.client.force_authenticate(user=self.other_kam)
         self.assertEqual(self.suggest().status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(self.client.get(reverse('kam-appointment-preparation', kwargs={'pk': appointment.id})).status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_vocal_meeting_bant_qualification_with_decision_maker_and_timeline(self):
+        from unittest.mock import patch
+        from shared.infrastructure.ai_providers import MockAIQualificationAdapter
+        from kam.views import _qualify_vocal_meeting, serialize_kam_visit_report
+
+        appointment = KamAppointment.objects.create(
+            kam=self.kam,
+            enterprise=self.enterprise,
+            title='RDV Stratégique DG',
+            contact_name='M. Kabasele',
+            contact_role='Directeur Général',
+            scheduled_at=timezone.now()
+        )
+        transcript = (
+            "Bonjour, je suis le Directeur Général de l'entreprise. "
+            "Nous subissons des coupures fréquentes et avons un besoin critique d'une Fibre très haut débit sécurisée "
+            "avec un secours automatique. Nous avons le budget validé et voulons signer sous 15 jours pour démarrer."
+        )
+        with patch('sales.services.qualification_service.get_ai_qualification_provider', return_value=MockAIQualificationAdapter()):
+            exec_sum, needs, objections, actions, email, bant = _qualify_vocal_meeting(appointment, transcript, self.kam)
+
+        self.assertTrue(bant['decision_maker_contacted'])
+        self.assertIn("Directeur Général", bant['decision_maker_role'])
+        self.assertTrue(any("Fibre" in n or "Connectivité" in n or "continuité" in n for n in bant['discovered_needs']))
+        self.assertEqual(bant['signature_timeline'], "Sous 15 jours")
+        self.assertTrue(bant['has_explicit_timeline'])
+        self.assertTrue(bant['budget_discussed'])
+        self.assertGreater(bant['total'], 50)
+
+        # Vérifier la sérialisation
+        report = KamVisitReport.objects.create(
+            appointment=appointment,
+            kam=self.kam,
+            enterprise=self.enterprise,
+            raw_transcript=transcript,
+            executive_summary=exec_sum,
+            confirmed_needs=needs,
+            bant_scores=bant
+        )
+        serialized = serialize_kam_visit_report(report)
+        self.assertIn('bant_scores', serialized)
+        self.assertIn('bant_analysis', serialized)
+        self.assertTrue(serialized['bant_scores']['decision_maker_contacted'])
+        self.assertEqual(serialized['bant_scores']['signature_timeline'], "Sous 15 jours")
+        self.assertTrue(len(serialized['bant_scores']['discovered_needs']) > 0)
+
+    def test_vocal_meeting_bant_qualification_without_decision_maker_or_timeline(self):
+        from unittest.mock import patch
+        from shared.infrastructure.ai_providers import MockAIQualificationAdapter
+        from kam.views import _qualify_vocal_meeting
+
+        appointment = KamAppointment.objects.create(
+            kam=self.kam,
+            enterprise=self.enterprise,
+            title='Prise de contact',
+            contact_name='Jean',
+            contact_role='Stagiaire',
+            scheduled_at=timezone.now()
+        )
+        transcript = (
+            "Bonjour, je suis stagiaire au service informatique. Nous regardons les options de fibre et cloud "
+            "mais je ne peux rien décider moi-même. Aucun budget ni calendrier de signature n'est fixé pour le moment."
+        )
+        with patch('sales.services.qualification_service.get_ai_qualification_provider', return_value=MockAIQualificationAdapter()):
+            exec_sum, needs, objections, actions, email, bant = _qualify_vocal_meeting(appointment, transcript, self.kam)
+
+        self.assertFalse(bant['decision_maker_contacted'])
+        self.assertEqual(bant['signature_timeline'], "Non précisé")
+        self.assertFalse(bant['has_explicit_timeline'])

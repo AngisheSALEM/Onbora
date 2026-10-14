@@ -35,6 +35,8 @@ class PreCallBriefingDetailView(APIView):
                 "enterprise_id": enterprise.id,
                 "enterprise_name": enterprise.name,
                 **briefing.analysis_data,
+                "real_needs": briefing.analysis_data.get("real_needs", []),
+                "predicted_needs": briefing.analysis_data.get("predicted_needs", []),
                 "company_overview": briefing.company_overview,
                 "key_decision_makers": briefing.key_decision_makers,
                 "detected_business_challenges": briefing.detected_business_challenges,

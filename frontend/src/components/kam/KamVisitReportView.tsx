@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
-import type { KamVisitRecord } from './KamVisitsHistoryView';
+import type { KamVisitRecord, BantAnalysisData } from './KamVisitsHistoryView';
 
 export type VisitReportData = Pick<KamVisitRecord,
   'id' | 'enterprise_name' | 'created_at' | 'executive_summary' | 'confirmed_needs' |
   'objections_raised' | 'actions_todo' | 'follow_up_email_draft' | 'bant_scores'
-> & Partial<Pick<KamVisitRecord, 'visit_purpose_label' | 'conversion_status'>> & {
+> & Partial<Pick<KamVisitRecord, 'visit_purpose_label' | 'conversion_status' | 'contact_name' | 'contact_role' | 'bant_analysis'>> & {
   raw_transcript?: string;
   source_label?: string;
   salesperson_name?: string;
@@ -164,6 +164,11 @@ export default function KamVisitReportView({
     }
   };
 
+  const bant = report?.bant_analysis || report?.bant_scores;
+  const discoveredNeeds = (bant?.discovered_needs && bant.discovered_needs.length > 0)
+    ? bant.discovered_needs
+    : (report?.confirmed_needs || []);
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-[#ECEAE5] dark:bg-[#242124] p-6 md:p-8 select-text transition-colors duration-300">
       
@@ -306,6 +311,69 @@ export default function KamVisitReportView({
               {/* Seamless Divider */}
               <div className="border-t border-black/5 dark:border-white/5" />
 
+              {/* ========================================================================= */}
+              {/* CADRAGE COMMERCIAL DU RENDEZ-VOUS (SOBRE, STYLE RAPPORT ÉPURÉ)             */}
+              {/* ========================================================================= */}
+              {bant && (
+                <div className="space-y-6 pt-1">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6 border-b border-black/5 dark:border-white/5">
+                    
+                    {/* 1. DÉCIDEUR RENCONTRÉ */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                          Décideur rencontré
+                        </span>
+                        <span className={`text-[11px] font-bold ${
+                          bant.decision_maker_contacted
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-zinc-600 dark:text-zinc-400'
+                        }`}>
+                          {bant.decision_maker_contacted ? 'Oui' : 'Non'}
+                        </span>
+                      </div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-white">
+                        {bant.decision_maker_role || report.contact_role || (bant.decision_maker_contacted ? "Décideur / Signataire" : "Prescripteur opérationnel")}
+                      </div>
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {bant.decision_maker_notes || (bant.decision_maker_contacted ? "Mandat de décision financière confirmé lors du rendez-vous." : "Prescripteur opérationnel : validation hiérarchique requise pour signer.")}
+                      </p>
+                    </div>
+
+                    {/* 2. TEMPS DE SIGNATURE */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                          Temps de signature
+                        </span>
+                      </div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-white">
+                        {bant.signature_timeline || (bant.has_explicit_timeline ? "Court terme" : "Non précisé")}
+                      </div>
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {bant.timeline_notes || (bant.has_explicit_timeline ? "Échéance annoncée par le client lors du rendez-vous." : "Aucun calendrier de signature arrêté par le prospect.")}
+                      </p>
+                    </div>
+
+                    {/* 3. BUDGET */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                          Budget
+                        </span>
+                      </div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-white">
+                        {bant.budget_range || (bant.budget_discussed ? "Enveloppe abordée" : "Non abordé")}
+                      </div>
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {bant.budget_notes || (bant.budget_discussed ? "Capacité d'investissement mensuelle évoquée." : "Budget à formaliser lors de la proposition commerciale.")}
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
               {/* Besoins Clients Confirmés */}
               <div className="space-y-3">
                 <h3 className="text-base font-bold text-zinc-900 dark:text-white">
@@ -357,14 +425,17 @@ export default function KamVisitReportView({
                 </h3>
                 {report.actions_todo && report.actions_todo.length > 0 ? (
                   <div className="space-y-2.5">
-                    {report.actions_todo.map((action, idx) => (
-                      <div key={idx} className="flex items-start gap-3 text-xs md:text-sm text-zinc-800 dark:text-zinc-200">
-                        <span className="w-5 h-5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                          {idx + 1}
-                        </span>
-                        <span>{action}</span>
-                      </div>
-                    ))}
+                    {report.actions_todo.map((action, idx) => {
+                      const cleanAction = action ? action.trim().replace(/\s+à\s*$/i, ' au client / à l\'entreprise') : '';
+                      return (
+                        <div key={idx} className="flex items-start gap-3 text-xs md:text-sm text-zinc-800 dark:text-zinc-200">
+                          <span className="w-5 h-5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span>{cleanAction}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-xs text-zinc-400 italic">Aucune action consignée pour le moment.</p>
@@ -419,37 +490,69 @@ export default function KamVisitReportView({
               <div className="border-t border-black/5 dark:border-white/5" />
 
               {/* BANT Qualification Score */}
-              {report.bant_scores && <div className="space-y-3">
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                  Qualification BANT & Statut commercial
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E]">
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Score Total</span>
-                    <span className="text-lg font-bold font-mono text-[#4F6CE8]">
-                      {report.bant_scores?.total ?? 0} / 100
-                    </span>
+              {bant && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                      Grille d&apos;Évaluation BANT & Cadrage Décisionnel
+                    </h3>
+                    {bant.status && (
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] border border-[#4F6CE8]/20">
+                        {bant.status}
+                      </span>
+                    )}
                   </div>
-                  <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E]">
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Statut BANT</span>
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mt-1">
-                      {report.bant_scores?.status || 'QUALIFIED'}
-                    </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Score Global</span>
+                      <span className="text-lg font-bold font-mono text-[#4F6CE8]">
+                        {bant.total ?? 0} / 100
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Budget (B)</span>
+                      <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
+                        {bant.budget ?? 0} / 25
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Autorité (A)</span>
+                      <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
+                        {bant.authority ?? 0} / 25
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Besoin (N)</span>
+                      <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
+                        {bant.need ?? 0} / 25
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Délai (T)</span>
+                      <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
+                        {bant.timeline ?? 0} / 25
+                      </span>
+                    </div>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E]">
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Budget</span>
-                    <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
-                      {report.bant_scores?.budget ?? 0} / 25
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E]">
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Décision / Need</span>
-                    <span className="text-lg font-bold font-mono text-zinc-800 dark:text-zinc-200">
-                      {(report.bant_scores?.authority ?? 0) + (report.bant_scores?.need ?? 0)} / 50
-                    </span>
+                  <div className="p-4 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="font-semibold text-zinc-500 text-[11px] block">Décideur :</span>
+                      <span className="font-bold text-zinc-900 dark:text-white">
+                        {bant.decision_maker_contacted ? "OUI — " : "NON — "}
+                        {bant.decision_maker_role || "Interlocuteur"}
+                      </span>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">{bant.decision_maker_notes || "Pouvoir de signature à confirmer."}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-500 text-[11px] block">Échéance de signature :</span>
+                      <span className="font-bold text-zinc-900 dark:text-white">
+                        {bant.signature_timeline || "Non précisé"}
+                      </span>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">{bant.timeline_notes || "Aucun calendrier ferme arrêté."}</p>
+                    </div>
                   </div>
                 </div>
-              </div>}
+              )}
 
               {report.qualification_score !== undefined && (
                 <div className="space-y-2">

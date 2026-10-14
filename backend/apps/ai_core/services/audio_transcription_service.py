@@ -98,8 +98,8 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
         client = genai.Client(
             api_key=api_key,
             http_options=types.HttpOptions(
-                timeout=60_000,
-                retry_options=types.HttpRetryOptions(attempts=2),
+                timeout=25_000,
+                retry_options=types.HttpRetryOptions(attempts=1),
             ),
         )
 
@@ -114,12 +114,12 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
             "Transcris cet enregistrement audio professionnel."
         )
 
-        model_name = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+        model_name = os.getenv("GEMINI_MODEL", "gemini-3.5-flash").strip()
         # Normalisation automatique en cas de coquille dans la configuration
         if "3.6" in model_name and "lite" in model_name:
-            model_name = "gemini-3.6-flash"
+            model_name = "gemini-3.5-flash"
         elif "2.5" in model_name:
-            model_name = "gemini-3.8-flash"
+            model_name = "gemini-3.5-flash"
 
         content_config = types.GenerateContentConfig(
             system_instruction=_SYSTEM_PROMPT,
@@ -128,7 +128,7 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
         )
 
         candidate_models = [model_name]
-        for fallback in ("gemini-3.8-flash", "gemini-3.6-flash"):
+        for fallback in ("gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"):
             if fallback not in candidate_models:
                 candidate_models.append(fallback)
 
@@ -145,10 +145,11 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
             except Exception as exc:
                 last_error = exc
                 err_msg = str(exc)
-                if "404" in err_msg or "NOT_FOUND" in err_msg:
+                if any(k in err_msg for k in ("404", "NOT_FOUND", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
                     logger.warning(
-                        "[AudioTranscription] Modele '%s' non disponible (404), tentative avec repli...",
+                        "[AudioTranscription] Modele '%s' temporairement indisponible (%s), tentative avec repli...",
                         current_model,
+                        err_msg[:80],
                     )
                     continue
                 raise exc

@@ -92,13 +92,13 @@ export default function KamOfficeReportDetailModal({
 
         {/* BANT Evaluation Pills */}
         {report.bant_scores && (
-          <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-2">
+          <div className="bg-white dark:bg-[#363336] p-3.5 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-semibold text-[#6E6C67] dark:text-[#A1A1AA] uppercase tracking-wider">
                 Grille d&apos;Évaluation BANT
               </span>
               {report.bant_scores.total !== undefined && (
-                <span className="text-xs font-mono font-bold text-[#787570]">
+                <span className="text-xs font-mono font-bold text-[#787570] dark:text-zinc-300">
                   Score Global : {report.bant_scores.total}/100
                 </span>
               )}
@@ -119,6 +119,24 @@ export default function KamOfficeReportDetailModal({
               <div className="p-2 rounded-xl bg-black/2 dark:bg-white/2">
                 <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] block">Timeline</span>
                 <strong className="font-mono text-zinc-900 dark:text-white">{report.bant_scores.timeline ?? 'N/A'}/25</strong>
+              </div>
+            </div>
+            {/* Qualification Rapide Décideur & Signature */}
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-black/5 dark:border-white/5 text-[11px]">
+              <div className="flex items-center gap-1.5">
+                <span className="text-zinc-500">Décideur :</span>
+                {report.bant_scores.decision_maker_contacted ? (
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">OUI</span>
+                ) : (
+                  <span className="font-bold text-amber-600 dark:text-amber-400">NON</span>
+                )}
+                <span className="text-zinc-400 truncate">({report.bant_scores.decision_maker_role || 'Rôle non précisé'})</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-zinc-500">Signature :</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 truncate">
+                  {report.bant_scores.signature_timeline || (report.bant_scores.has_explicit_timeline ? 'Court terme' : 'Non précisé')}
+                </span>
               </div>
             </div>
           </div>
