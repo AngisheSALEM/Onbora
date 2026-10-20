@@ -102,6 +102,37 @@ class CommercialIntelligenceService:
         }
 
     @staticmethod
+    def get_or_generate_technical_sheet(enterprise: Enterprise, kam_user: Any, force_refresh: bool = False, solutions: list = None) -> dict:
+        """
+        Récupère ou génère via Unified Core AI la Fiche Technique d'Installation / Spécifications Réseau
+        pour le compte client donné. Persiste les spécifications dans le PreCallBriefing du compte.
+        """
+        briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
+        if not force_refresh and briefing and briefing.analysis_data and briefing.analysis_data.get("technical_specs"):
+            return briefing.analysis_data["technical_specs"]
+
+        engine = get_unified_core_ai()
+        specs = engine.generate_technical_sheet(
+            enterprise=enterprise,
+            solutions=solutions,
+            kam_user=kam_user
+        )
+
+        if briefing:
+            if not isinstance(briefing.analysis_data, dict):
+                briefing.analysis_data = {}
+            briefing.analysis_data["technical_specs"] = specs
+            briefing.save(update_fields=["analysis_data", "updated_at"])
+        elif kam_user:
+            PreCallBriefing.objects.create(
+                enterprise=enterprise,
+                kam=kam_user,
+                analysis_data={"technical_specs": specs}
+            )
+
+        return specs
+
+    @staticmethod
     def sync_briefing_after_visit(enterprise: Enterprise, report: Any) -> dict:
         """
         Synchronise automatiquement la fiche et la synthèse de l'entreprise après la

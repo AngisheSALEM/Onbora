@@ -317,3 +317,30 @@ class CompanyAnalysisTestCase(TestCase):
         self.assertIn("ai_summary", brief)
         self.assertIn("evidence", brief)
         self.assertIn("sources", brief)
+
+
+class SectorRulesCompilerTestCase(TestCase):
+    """Tests du compilateur Core AI de règles sectorielles et du moteur Python."""
+
+    def test_compile_sector_rules(self):
+        from apps.ai_core.services.sector_rules_compiler import SectorRulesCompiler
+        rules = SectorRulesCompiler.compile()
+        self.assertIn("meta", rules)
+        self.assertIn("taxonomy_mapping", rules)
+        self.assertIn("sectors", rules)
+        self.assertIn("finance", rules["sectors"])
+        self.assertIn("energy", rules["sectors"])
+        self.assertIn("retail", rules["sectors"])
+
+        fin = rules["sectors"]["finance"]
+        self.assertIn("ideal_basket", fin)
+        self.assertIn("sizing_rules", fin)
+        self.assertIn("radar_weights", fin)
+        self.assertGreaterEqual(len(fin["ideal_basket"]), 3)
+
+    def test_management_command_compile_sector_rules(self):
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command("compile_sector_rules", stdout=out)
+        self.assertIn("SUCC", out.getvalue())

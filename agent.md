@@ -92,7 +92,7 @@ L'interface d'Onbora se distingue par une rigueur visuelle premium et profession
 *   **Règle Chromatique 60 - 30 - 10** ([`DESIGN.md`](file:///C:/Users/Salem/Documents/projet/Onbora/DESIGN.md)) :
     *   *60% Fond dominant* : Noir chaud `#242124` / Blanc craie `#F6F5F2` (ou fond blanc pur / `#050508`).
     *   *30% Structure & surfaces* : Cartes `#2F2C30`, containers neutres, typographie hiérarchisée.
-    *   *10% Accent unique* : Bleu Cobalt `#4F6CE8` / Orange Onbora `#F97316` (exclusivement pour CTAs d'action clé et pastilles de notification).
+    *   *10% Accent unique* : Bleu Cobalt `#4F6CE8` (exclusivement pour CTAs d'action clé, boutons primaires et pastilles de notification actives). L'orange est formellement interdit dans la charte.
 *   **Zéro Bordure 1px Brute (Mobile)** : Bannir `Border.all(color: Colors.grey, width: 1)` ; le relief s'obtient par le contraste de fond et l'espace négatif.
 *   **Zéro Ligne de Séparation Inutile sur les Fonds & En-têtes (Strictement Réservées aux Tableaux)** :
     *   Interdiction formelle d'ajouter des lignes de séparation horizontales ou verticales (`border-b`, `border-t`, `border-l`, `<hr />`, etc.) sur les toiles de fond, sous les en-têtes (headers), sous les titres de pages (ex: *Portefeuille*, *Rendez-vous*) ou dans la barre de recherche.

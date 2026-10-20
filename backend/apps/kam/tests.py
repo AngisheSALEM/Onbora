@@ -339,3 +339,110 @@ class KamAppointmentPurposeTests(APITestCase):
         self.assertFalse(bant['decision_maker_contacted'])
         self.assertEqual(bant['signature_timeline'], "Non précisé")
         self.assertFalse(bant['has_explicit_timeline'])
+
+    def test_technical_specs_detail_and_pdf_views(self):
+        self.client.force_authenticate(user=self.kam)
+
+        # 1. Test GET Technical Specs JSON
+        response = self.client.get(f'/api/kam/pre-call/{self.enterprise.id}/technical-specs/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('reference', data)
+        self.assertIn('deployment_overview', data)
+        self.assertIn('solutions', data)
+        self.assertIn('equipment_list', data)
+        self.assertIn('network_configuration', data)
+        self.assertIn('acceptance_checklist', data)
+        self.assertTrue(len(data['equipment_list']) > 0)
+        self.assertTrue(len(data['acceptance_checklist']) > 0)
+
+        # 2. Test POST Technical Specs Regeneration
+        custom_solutions = [
+            {
+                "name": "Fibre Dédiée Pro 500 Mbps",
+                "category": "CONNECTIVITY",
+                "speed": "500 Mbps symétrique",
+                "sla": "SLA 99.99% · GTR 2h"
+            }
+        ]
+        post_response = self.client.post(
+            f'/api/kam/pre-call/{self.enterprise.id}/technical-specs/',
+            data={"solutions": custom_solutions},
+            format='json'
+        )
+        self.assertEqual(post_response.status_code, 200)
+        post_data = post_response.json()
+        self.assertEqual(post_data['enterprise']['id'], self.enterprise.id)
+
+        # 3. Test GET Technical Specs PDF Download
+        pdf_response = self.client.get(f'/api/kam/pre-call/{self.enterprise.id}/technical-specs/pdf/')
+        self.assertEqual(pdf_response.status_code, 200)
+        self.assertEqual(pdf_response['Content-Type'], 'application/pdf')
+        self.assertTrue(pdf_response.content.startswith(b'%PDF-'))
+
+    def test_enterprise_comparison_feature(self):
+        self.client.force_authenticate(user=self.kam)
+
+        # Créer une seconde entreprise dans le même secteur pour le comparatif
+        peer_enterprise = Enterprise.objects.create(
+            name="Banque B - Peer Test",
+            sector="Banque & Services Financiers",
+            segment="GRAND_COMPTE",
+            annual_revenue=1500000.00,
+            employee_count=120,
+            site_count=5,
+            current_connectivity="Fibre Dédiée 200M",
+            incident_count=0,
+            assigned_kam=self.kam
+        )
+
+        # 1. Test Sectors Overview endpoint
+        sectors_res = self.client.get('/api/kam/comparisons/sectors/')
+        self.assertEqual(sectors_res.status_code, 200)
+        sectors_data = sectors_res.json()
+        self.assertIn('sectors', sectors_data)
+        self.assertTrue(len(sectors_data['sectors']) > 0)
+        banking_sector = next((s for s in sectors_data['sectors'] if 'Banque' in s['sector']), None)
+        self.assertIsNotNone(banking_sector)
+        self.assertIn('enterprises', banking_sector)
+
+        # 2. Test Compare Two Enterprises
+        comp_res = self.client.get(f'/api/kam/comparisons/?enterprise_a={self.enterprise.id}&enterprise_b={peer_enterprise.id}')
+        self.assertEqual(comp_res.status_code, 200)
+        comp_data = comp_res.json()
+        self.assertIn('headline', comp_data)
+        self.assertIn('radar', comp_data)
+        self.assertEqual(len(comp_data['radar']), 6)
+        self.assertIn('advantages_a', comp_data)
+        self.assertIn('gaps_a', comp_data)
+        self.assertIn('criteria_breakdown', comp_data)
+        self.assertIn('kam_recommendations', comp_data)
+        self.assertFalse(comp_data['is_benchmark_comparison'])
+
+        # 3. Test Compare Enterprise with Sector Benchmark (single enterprise)
+        bench_res = self.client.get(f'/api/kam/comparisons/?enterprise_a={self.enterprise.id}')
+        self.assertEqual(bench_res.status_code, 200)
+        bench_data = bench_res.json()
+        self.assertTrue(bench_data['is_benchmark_comparison'])
+        self.assertIn('Moyenne du secteur', bench_data['meta_b']['name'])
+
+        # 4. Test Missing enterprise_a query param
+        err_res = self.client.get('/api/kam/comparisons/')
+        self.assertEqual(err_res.status_code, 400)
+
+
+
+    def test_core_ai_scoring_rules_integration(self):
+        from apps.kam.services.enterprise_comparison_service import EnterpriseComparisonService
+        policy = EnterpriseComparisonService.get_sector_policy("Banque & Services Financiers")
+        self.assertIn("ideal_basket", policy)
+        self.assertIn("sizing_rules", policy)
+        self.assertIn("radar_weights", policy)
+        
+        scores = EnterpriseComparisonService._compute_enterprise_scores(self.enterprise)
+        self.assertIn("overall_score", scores)
+        self.assertIn("dimensions", scores)
+        self.assertIn("gaps", scores)
+        self.assertIn("bandwidth_ratio", scores)
+        self.assertLessEqual(scores["overall_score"], 100)
+        self.assertGreaterEqual(scores["overall_score"], 10)

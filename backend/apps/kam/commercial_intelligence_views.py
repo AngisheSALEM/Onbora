@@ -128,6 +128,66 @@ class PreCallBriefingDetailView(APIView):
         return self.patch(request, account_id)
 
 
+class TechnicalSpecsDetailView(APIView):
+    """
+    GET: Récupère la Fiche Technique d'Installation / Spécifications Réseau générée par Core AI pour le compte.
+    POST: Force la régénération de la fiche technique avec les dernières données terrain et solutions.
+    """
+    permission_classes = [IsKAMOrAdmin]
+
+    def get(self, request, account_id):
+        clean_id = str(account_id).replace('account-', '')
+        try:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
+            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        specs = CommercialIntelligenceService.get_or_generate_technical_sheet(
+            enterprise=enterprise,
+            kam_user=request.user,
+            force_refresh=False
+        )
+        return Response(specs, status=status.HTTP_200_OK)
+
+    def post(self, request, account_id):
+        clean_id = str(account_id).replace('account-', '')
+        try:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
+            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        solutions = request.data.get("solutions") if isinstance(request.data, dict) else None
+        specs = CommercialIntelligenceService.get_or_generate_technical_sheet(
+            enterprise=enterprise,
+            kam_user=request.user,
+            force_refresh=True,
+            solutions=solutions
+        )
+        return Response(specs, status=status.HTTP_200_OK)
+
+
+class TechnicalSpecsPdfView(APIView):
+    """
+    GET: Génère et télécharge le flux binaire PDF ReportLab officiel de la Fiche Technique d'Installation.
+    """
+    permission_classes = [IsKAMOrAdmin]
+
+    def get(self, request, account_id):
+        from onbora.exports import generate_fiche_technique_pdf_response
+        clean_id = str(account_id).replace('account-', '')
+        try:
+            enterprise = Enterprise.objects.get(id=clean_id)
+        except (Enterprise.DoesNotExist, ValueError):
+            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
+
+        specs = CommercialIntelligenceService.get_or_generate_technical_sheet(
+            enterprise=enterprise,
+            kam_user=request.user,
+            force_refresh=False
+        )
+        return generate_fiche_technique_pdf_response(enterprise, specs)
+
+
 class PreCallBriefingListView(APIView):
     """
     GET: Liste tous les briefings pre-call préparés pour le KAM connecté.

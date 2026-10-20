@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
-import { fetchAPI } from '@/lib/api';
+import { fetchAPI, downloadBlobAPI } from '@/lib/api';
 import KamAccountSignalsSheet, { AccountRadarDetail } from './KamAccountSignalsSheet';
+import { KamTechnicalSheetModal, TechnicalSpecsData } from './KamTechnicalSheetModal';
+import KamAccountComparisonSection from './KamAccountComparisonSection';
 
 // ============================================================================
 // DATA TYPES
@@ -60,6 +62,7 @@ export interface OnboraAnalysisBrief {
   id?: number;
   enterprise_id: number | string;
   enterprise_name: string;
+  enterprise_sector?: string;
   identity_status?: string;
   coverage?: string;
   company?: {
@@ -209,6 +212,7 @@ const ORANGE_CATALOG_PRESETS = [
 interface KamPreCallViewProps {
   assignedAccounts: StrategicVisit[];
   initialAccountId?: string | number;
+  initialTab?: string;
   onLaunchMeetingForAccount?: (accountId: number | string) => void;
   onBackToAccounts?: () => void;
 }
@@ -216,6 +220,7 @@ interface KamPreCallViewProps {
 export default function KamPreCallView({
   assignedAccounts,
   initialAccountId,
+  initialTab,
   onLaunchMeetingForAccount,
   onBackToAccounts,
 }: KamPreCallViewProps) {
@@ -227,8 +232,10 @@ export default function KamPreCallView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance)
-  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'churn' | 'upsell'>('brief');
+  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance) | 'compare' (Comparatif sectoriel)
+  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'churn' | 'upsell' | 'compare'>(
+    initialTab === 'compare' ? 'compare' : 'brief'
+  );
   const [radarResult, setRadarResult] = useState<{ accountId: string; data: AccountRadarDetail | null; error?: string } | null>(null);
   const radarData = radarResult?.accountId === selectedAccountId ? radarResult.data : null;
   const hasChurnRisk = !!radarData && ['MEDIUM', 'HIGH', 'CRITICAL'].includes(radarData.risk_level);
@@ -306,6 +313,12 @@ export default function KamPreCallView({
   // Sources Accordion Drawer State
   const [showSourcesDrawer, setShowSourcesDrawer] = useState(false);
 
+  // Technical Sheet (Fiche Technique) Modal & Specs States
+  const [showTechnicalModal, setShowTechnicalModal] = useState(false);
+  const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsData | null>(null);
+  const [loadingTechnicalSpecs, setLoadingTechnicalSpecs] = useState(false);
+  const [regeneratingTechnicalSpecs, setRegeneratingTechnicalSpecs] = useState(false);
+
   // Synchroniser initialAccountId
   useEffect(() => {
     if (initialAccountId && String(initialAccountId) !== selectedAccountId) {
@@ -316,9 +329,55 @@ export default function KamPreCallView({
   // Charger le briefing et les solutions implantées dès que le compte change
   useEffect(() => {
     if (!selectedAccountId) return;
+    setTechnicalSpecs(null);
     fetchBriefing(selectedAccountId);
     fetchInstalledOffers(selectedAccountId);
   }, [selectedAccountId]);
+
+  const fetchTechnicalSpecs = async (forceRegenerate = false) => {
+    if (!selectedAccountId) return;
+    const cleanId = String(selectedAccountId).replace('account-', '');
+    if (forceRegenerate) {
+      setRegeneratingTechnicalSpecs(true);
+    } else {
+      setLoadingTechnicalSpecs(true);
+    }
+    try {
+      const method = forceRegenerate ? 'POST' : 'GET';
+      const body = forceRegenerate && editSolutions.length > 0 ? JSON.stringify({ solutions: editSolutions }) : undefined;
+      const data: TechnicalSpecsData = await fetchAPI(`/api/kam/pre-call/${cleanId}/technical-specs/`, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body
+      });
+      setTechnicalSpecs(data);
+    } catch (err) {
+      console.error('Erreur chargement fiche technique:', err);
+    } finally {
+      setLoadingTechnicalSpecs(false);
+      setRegeneratingTechnicalSpecs(false);
+    }
+  };
+
+  const handleOpenTechnicalModal = () => {
+    setShowTechnicalModal(true);
+    if (!technicalSpecs) {
+      fetchTechnicalSpecs(false);
+    }
+  };
+
+  const handleDownloadTechnicalPdf = async () => {
+    if (!selectedAccountId) return;
+    const cleanId = String(selectedAccountId).replace('account-', '');
+    const companyName = briefingData?.enterprise_name || 'Entreprise';
+    const safeName = companyName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const ref = technicalSpecs?.reference || `FT-2026-${cleanId}`;
+    try {
+      await downloadBlobAPI(`/api/kam/pre-call/${cleanId}/technical-specs/pdf/`, `Fiche_Technique_${safeName}_${ref}.pdf`);
+    } catch (err) {
+      console.error('Erreur téléchargement PDF fiche technique:', err);
+    }
+  };
 
   // Extraire les solutions recommandées
   const extractRecommendedSolutions = (data: OnboraAnalysisBrief): RecommendedSolutionItem[] => {
@@ -745,6 +804,18 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           {hasUpsell && (
             <button type="button" onClick={() => { setActiveTab('upsell'); setIsEditing(false); }} aria-current={visibleTab === 'upsell' ? 'page' : undefined} className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${visibleTab === 'upsell' ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}>Opportunités d’upsell</button>
           )}
+          <button
+            type="button"
+            onClick={() => { setActiveTab('compare'); setIsEditing(false); }}
+            aria-current={visibleTab === 'compare' ? 'page' : undefined}
+            className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${
+              visibleTab === 'compare'
+                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            }`}
+          >
+            Comparatif sectoriel
+          </button>
         </nav>
       )}
       {radarResult?.accountId === selectedAccountId && radarResult.error && <p role="alert" className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">Les risques et opportunités ne sont pas disponibles : {radarResult.error}</p>}
@@ -793,60 +864,56 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                   </div>
                 ) : (
                   <p className="text-sm md:text-[15px] leading-relaxed font-normal whitespace-pre-line text-zinc-800 dark:text-zinc-200">
-                    {briefingData.ai_summary?.overview?.text || "Aucune synthèse disponible."}
+                    {(briefingData.ai_summary?.overview?.text || "Aucune synthèse disponible.")
+                      .replace(/\s*Opportunités et besoins d'infrastructure identifiés par Core AI\s*:[^.]*\.?/gi, '')
+                      .replace(/\s*Besoins réels confirmés lors des derniers échanges terrain\s*:[^.]*\.?/gi, '')
+                      .replace(/\s*identifiés par Core AI\s*:[^.]*\.?/gi, '')
+                      .trim()}
                   </p>
                 )}
 
-                {/* Discrete Needs Breakdown : Real Client Needs vs Core AI Inferred Needs */}
+                {/* Points du rapport : Besoins & Besoins anticipés (présentation sobre) */}
                 {!isEditing && ((briefingData.real_needs && briefingData.real_needs.length > 0) || (briefingData.predicted_needs && briefingData.predicted_needs.length > 0)) && (
-                  <div className="pt-3 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="pt-2 pb-1 space-y-3.5 text-sm">
                     {briefingData.real_needs && briefingData.real_needs.length > 0 && (
-                      <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 space-y-2">
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                          <Icons.CheckCircle size={13} className="text-zinc-700 dark:text-zinc-300" />
-                          <span>Besoins réels confirmés (Terrain)</span>
+                      <div className="space-y-1">
+                        <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                          <span>Besoins</span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
+                        <ul className="pl-5 space-y-1 text-[13px] text-zinc-700 dark:text-zinc-300">
                           {briefingData.real_needs.map((rn, idx) => (
-                            <div
-                              key={idx}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-[#282528] border border-black/5 dark:border-white/5 text-xs text-zinc-800 dark:text-zinc-200 shadow-2xs"
-                              title={rn.source}
-                            >
-                              <span className="font-medium">{rn.need}</span>
+                            <li key={idx} className="list-disc leading-relaxed">
+                              <span>{rn.need}</span>
                               {rn.source && (
-                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
-                                  • {rn.source}
+                                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-normal ml-1.5">
+                                  ({rn.source})
                                 </span>
                               )}
-                            </div>
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
                     )}
 
                     {briefingData.predicted_needs && briefingData.predicted_needs.length > 0 && (
-                      <div className="p-3.5 rounded-xl bg-[#F6F5F2] dark:bg-[#1E1B1E] border border-black/5 dark:border-white/5 space-y-2">
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                          <Icons.Sparkles size={13} className="text-zinc-700 dark:text-zinc-300" />
-                          <span>Besoins anticipés (Core AI)</span>
+                      <div className="space-y-1">
+                        <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                          <span>Besoins anticipés</span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
+                        <ul className="pl-5 space-y-1 text-[13px] text-zinc-700 dark:text-zinc-300">
                           {briefingData.predicted_needs.map((pn, idx) => (
-                            <div
-                              key={idx}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-[#282528] border border-black/5 dark:border-white/5 text-xs text-zinc-800 dark:text-zinc-200 shadow-2xs"
-                              title={pn.reason}
-                            >
-                              <span className="font-medium">{pn.need}</span>
-                              {pn.category && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 font-normal">
-                                  {pn.category}
+                            <li key={idx} className="list-disc leading-relaxed">
+                              <span>{pn.need}</span>
+                              {pn.reason && (
+                                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-normal ml-1.5">
+                                  — {pn.reason}
                                 </span>
                               )}
-                            </div>
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
                     )}
                   </div>
@@ -895,15 +962,36 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
 
                   <div className="flex items-center gap-2 self-end sm:self-auto">
                     {solutionsTab === 'recommended' && !isEditing && (
-                      <button
-                        type="button"
-                        onClick={() => handleSaveBrief(true)}
-                        disabled={isSaving}
-                        className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
-                        <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
-                      </button>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => handleSaveBrief(true)}
+                          disabled={isSaving}
+                          className="text-xs text-[#787570] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <Icons.RefreshCw size={11} className={isSaving ? "animate-spin" : ""} />
+                          <span>{isSaving ? "Réactualisation..." : "Réactualiser"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleOpenTechnicalModal}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                          title="Générer et consulter la fiche technique pour le technicien"
+                        >
+                          <Icons.FileText size={12} className="text-[#4F6CE8]" />
+                          <span>Fiche technique</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => { setActiveTab('compare'); setIsEditing(false); }}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
+                          title="Comparer ce compte avec les pairs du même secteur"
+                        >
+                          <span>Comparer</span>
+                        </button>
+                      </div>
                     )}
 
                     {solutionsTab === 'installed' && (
@@ -1429,6 +1517,14 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             </div>
           )}
 
+          {visibleTab === 'compare' && (
+            <KamAccountComparisonSection
+              enterpriseId={selectedAccountId}
+              enterpriseName={briefingData?.enterprise_name || currentAccount?.account_name}
+              sector={briefingData?.company?.activity_arsp || currentAccount?.briefing?.industry || ''}
+            />
+          )}
+
         </div>
       ) : null}
 
@@ -1733,6 +1829,18 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           </div>
         </div>
       )}
+
+      {/* Modal Fiche Technique Télécom pour Déploiement Terrain */}
+      <KamTechnicalSheetModal
+        isOpen={showTechnicalModal}
+        onClose={() => setShowTechnicalModal(false)}
+        specs={technicalSpecs}
+        isLoading={loadingTechnicalSpecs}
+        isRegenerating={regeneratingTechnicalSpecs}
+        onRegenerate={() => fetchTechnicalSpecs(true)}
+        onDownloadPdf={handleDownloadTechnicalPdf}
+        enterpriseName={briefingData?.enterprise_name || 'Entreprise'}
+      />
 
     </div>
   );

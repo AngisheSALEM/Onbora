@@ -908,3 +908,203 @@ def generate_reportlab_pdf_response(doc_type, obj):
     response = HttpResponse(pdf_val, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{doc_type}_{obj.id if hasattr(obj, "id") else "export"}.pdf"'
     return response
+
+
+def generate_fiche_technique_pdf_response(enterprise, specs: dict):
+    """
+    Génère un PDF ReportLab haute fidélité pour la Fiche Technique d'Installation Télécom
+    destinée aux techniciens déployeurs de terrain et ingénieurs réseau Orange Business.
+    """
+    from django.utils import timezone
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=45,
+        bottomMargin=45
+    )
+    title_style, subtitle_style, h1_style, body_style, bold_body_style, code_style = get_styles()
+    story = []
+
+    ent_data = specs.get("enterprise", {})
+    company_name = ent_data.get("name") or getattr(enterprise, 'name', 'Entreprise')
+    ref = specs.get("reference", f"FT-2026-{getattr(enterprise, 'id', 1):04d}")
+    gen_date = specs.get("generated_at", timezone.now().strftime("%d/%m/%Y %H:%M"))
+    kam_data = specs.get("kam", {})
+
+    # 1. Header avec logo et titre
+    story.append(draw_logo_header())
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("FICHE TECHNIQUE D'INSTALLATION & DE RECETTE", title_style))
+    story.append(Paragraph(f"<b>Réf. Dossier :</b> {ref} &nbsp;·&nbsp; <b>Émise le :</b> {gen_date} &nbsp;·&nbsp; <b>Compte Client :</b> {company_name}", subtitle_style))
+
+    # 2. Coordonnées Client & Référents Site
+    story.append(Paragraph("1. Coordonnées Client & Référents Chantier", h1_style))
+    site_info = [
+        Paragraph(f"<b>Entreprise :</b> {company_name} ({ent_data.get('sector', 'Services')})", body_style),
+        Paragraph(f"<b>Adresse du Site :</b> {ent_data.get('site_address', ent_data.get('city', 'Kinshasa'))}", body_style),
+        Paragraph(f"<b>Contact Référent Site :</b> {ent_data.get('contact_name', 'Responsable')} — {ent_data.get('contact_role', 'DSI')}", body_style),
+        Paragraph(f"<b>Téléphone d'Urgence :</b> {ent_data.get('contact_phone', 'Non renseigné')} &nbsp;|&nbsp; <b>Email :</b> {ent_data.get('contact_email', 'Non renseigné')}", body_style),
+        Paragraph(f"<b>KAM Référent Onbora / Orange :</b> {kam_data.get('name', 'Key Account Manager')} ({kam_data.get('email', 'kam@orange-business.cd')})", body_style),
+    ]
+    story.append(make_card_table("Fiche Chantier Client", site_info, bg_color="#F8FAFC", border_color="#CBD5E1"))
+    story.append(Spacer(1, 8))
+
+    # 3. Synthèse Technique d'Intervention & Contraintes
+    overview = specs.get("deployment_overview", {})
+    story.append(Paragraph("2. Synthèse d'Intervention & Contraintes de Déploiement", h1_style))
+    overview_items = [
+        Paragraph(f"<b>Objectif Technique :</b> {overview.get('objective', 'Raccordement et mise en service réseau.')}", body_style),
+        Paragraph(f"<b>Contraintes d'Accès :</b> {overview.get('access_constraints', 'Accès salle serveur sécurisé.')}", body_style),
+        Paragraph(f"<b>Opérateur Sortant / Contexte :</b> {overview.get('current_operator', 'Migration en cours')}", body_style),
+    ]
+    story.append(make_card_table("Directives Générales", overview_items, bg_color="#F8FAFC", border_color="#E2E8F0"))
+    story.append(Spacer(1, 8))
+
+    # 4. Solutions Validées & Spécifications de Service
+    story.append(Paragraph("3. Solutions & Capacités Validées", h1_style))
+    sol_rows = [["Solution", "Catégorie", "Débit souscrit", "Engagement SLA / GTR"]]
+    for s in specs.get("solutions", []):
+        sol_rows.append([
+            Paragraph(f"<b>{s.get('name', '')}</b>", body_style),
+            s.get("category", "CONNECTIVITY"),
+            s.get("speed", "Débit garanti"),
+            s.get("sla", "SLA 99.9% · GTR 4h"),
+        ])
+    t_sol = Table(sol_rows, colWidths=[180, 100, 120, 140])
+    t_sol.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F1F5F9")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E1")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
+    story.append(t_sol)
+    story.append(Spacer(1, 8))
+
+    # 5. Nomenclature Matérielle & Équipements à Déployer (BOM)
+    story.append(Paragraph("4. Nomenclature Matérielle & Équipements (BOM)", h1_style))
+    equip_rows = [["Désignation Équipement", "Catégorie", "Qté", "Spécifications & Emplacement"]]
+    for eq in specs.get("equipment_list", []):
+        equip_rows.append([
+            Paragraph(f"<b>{eq.get('item', '')}</b>", body_style),
+            eq.get("category", "Matériel"),
+            str(eq.get("quantity", 1)),
+            Paragraph(f"{eq.get('specs', '')}<br/><font color='#64748B'><i>Emplacement: {eq.get('location', 'Baie')}</i></font>", body_style),
+        ])
+    t_eq = Table(equip_rows, colWidths=[160, 95, 35, 250])
+    t_eq.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F8FAFC")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+    ]))
+    story.append(t_eq)
+    story.append(Spacer(1, 8))
+
+    # 6. Plan d'Adressage Réseau (WAN & LAN / VLANs)
+    story.append(Paragraph("5. Plan d'Adressage Réseau & Paramétrage IP", h1_style))
+    net_cfg = specs.get("network_configuration", {})
+    wan = net_cfg.get("wan", {})
+    wan_rows = [
+        ["Paramètre WAN (Liaison Fibre Orange)", "Valeur assignée"],
+        ["Adresse IP WAN", wan.get("ip_address", "Non assignée")],
+        ["Passerelle WAN (Gateway)", wan.get("gateway", "Non assignée")],
+        ["Masque de sous-réseau", wan.get("netmask", "255.255.255.252")],
+        ["Serveurs DNS Orange RDC", f"{wan.get('dns_primary', '80.10.246.2')} / {wan.get('dns_secondary', '80.10.246.129')}"],
+    ]
+    t_wan = Table(wan_rows, colWidths=[200, 340])
+    t_wan.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F1F5F9")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E1")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('PADDING', (0,0), (-1,-1), 5),
+    ]))
+    story.append(t_wan)
+    story.append(Spacer(1, 6))
+
+    vlans = net_cfg.get("lan_vlans", [])
+    if vlans:
+        vlan_rows = [["VLAN", "Nom", "Plage / Sous-réseau", "Passerelle", "Plage DHCP"]]
+        for v in vlans:
+            vlan_rows.append([
+                v.get("vlan_id", "VLAN"),
+                v.get("name", "LAN"),
+                v.get("subnet", ""),
+                v.get("gateway", ""),
+                v.get("dhcp_range", "Statique"),
+            ])
+        t_vlan = Table(vlan_rows, colWidths=[65, 95, 120, 110, 150])
+        t_vlan.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F1F5F9")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E1")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 8),
+            ('PADDING', (0,0), (-1,-1), 5),
+        ]))
+        story.append(t_vlan)
+        story.append(Spacer(1, 8))
+
+    # 7. Protocole de Recette Terrain
+    story.append(Paragraph("6. Protocole de Recette & Validation Terrain", h1_style))
+    check_rows = [["Étape de contrôle", "Résultat attendu", "Méthode de validation", "Conforme"]]
+    for chk in specs.get("acceptance_checklist", []):
+        check_rows.append([
+            Paragraph(f"<b>{chk.get('step', '')}</b>", body_style),
+            Paragraph(chk.get("expected", ""), body_style),
+            Paragraph(chk.get("validation", ""), body_style),
+            "[  ] OUI   [  ] NON"
+        ])
+    t_chk = Table(check_rows, colWidths=[130, 160, 160, 90])
+    t_chk.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F8FAFC")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (3,0), (3,-1), 'CENTER'),
+    ]))
+    story.append(t_chk)
+    story.append(Spacer(1, 10))
+
+    # 8. Notes de câblage & Signatures
+    if specs.get("technician_notes"):
+        story.append(Paragraph("7. Consignes Techniques Particulières", h1_style))
+        notes_p = [Paragraph(specs["technician_notes"].replace('\n', '<br/>'), body_style)]
+        story.append(make_card_table("Consignes de câblage & sécurité", notes_p, bg_color="#EFF6FF", border_color="#BFDBFE"))
+        story.append(Spacer(1, 10))
+
+    sig_data = [
+        [
+            Paragraph("<b>Pour le Technicien Déployeur Orange :</b><br/><br/>Nom : _______________________<br/>Date : ____ / ____ / 2026<br/><br/>Signature & Mention \"Installation Conforme\" :<br/><br/><br/>", body_style),
+            Paragraph(f"<b>Pour le Client ({company_name}) :</b><br/><br/>Nom & Fonction : _______________________<br/>Date : ____ / ____ / 2026<br/><br/>Signature & Cachet de l'Entreprise :<br/><br/><br/>", body_style)
+        ]
+    ]
+    t_sig = Table(sig_data, colWidths=[265, 275])
+    t_sig.setStyle(TableStyle([
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#94A3B8")),
+        ('INNERGRID', (0,0), (-1,-1), 1, colors.HexColor("#94A3B8")),
+        ('PADDING', (0,0), (-1,-1), 8),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+    ]))
+    story.append(KeepTogether([
+        Paragraph("8. Procès-Verbal de Recette & Clôture d'Intervention", h1_style),
+        t_sig
+    ]))
+
+    doc.build(story, canvasmaker=NumberedCanvas)
+    pdf_val = buffer.getvalue()
+    buffer.close()
+
+    safe_name = "".join([c if c.isalnum() or c in ['-', '_'] else '_' for c in company_name])
+    clean_filename = f"Fiche_Technique_{safe_name}_{ref}.pdf"
+    response = HttpResponse(pdf_val, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{clean_filename}"'
+    return response

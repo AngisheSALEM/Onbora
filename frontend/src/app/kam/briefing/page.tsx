@@ -12,6 +12,7 @@ function KamBriefingContent() {
   const { visits, selectedVisitId, setSelectedVisitId } = useKamContext();
 
   const accountIdParam = searchParams.get('id') || searchParams.get('accountId') || selectedVisitId;
+  const initialTab = searchParams.get('tab') || undefined;
   const from = searchParams.get('from');
   const appointmentId = searchParams.get('appointmentId');
 
@@ -25,9 +26,10 @@ function KamBriefingContent() {
 
   return (
     <KamPreCallView
-      key={accountIdParam}
+      key={`${accountIdParam}-${initialTab || 'default'}`}
       assignedAccounts={visits}
       initialAccountId={accountIdParam}
+      initialTab={initialTab}
       onBackToAccounts={handleBack}
       onLaunchMeetingForAccount={(accId) => {
         setSelectedVisitId(String(accId));

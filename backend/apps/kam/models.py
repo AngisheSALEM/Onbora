@@ -555,5 +555,84 @@ class ChurnRadarSnapshot(models.Model):
         return f"Snapshot {self.enterprise.name} @ {self.calculated_at.strftime('%Y-%m-%d')} ({self.health_score}/100)"
 
 
+class B2BNewsFeedItem(models.Model):
+    """
+    Fil d'actualité et de veille stratégique B2B pour les Key Account Managers (KAM).
+    Consigne deux types de signaux majeurs :
+    1. Nouvelles économiques, opérationnelles et organisationnelles sur les comptes B2B en portefeuille.
+    2. Nouveaux comptes et opportunités B2B découverts sur le net (Web Sourcing, réseaux pro, annonces).
+    """
+    CATEGORY_CHOICES = [
+        ('EXPANSION', 'Croissance & Expansion'),
+        ('MANAGEMENT', 'Gouvernance & DSI'),
+        ('TECH_PROJECT', 'Projet Tech & Télécoms'),
+        ('INCIDENT', 'Incident & Insatisfaction Concurrent'),
+        ('FINANCE', 'Financement & Levée de Fonds'),
+        ('NEW_ACCOUNT', 'Nouveau Compte Détecté'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('HIGH', 'Haute priorité (Action sous 24h)'),
+        ('MEDIUM', 'Moyenne priorité (Opportunité active)'),
+        ('NORMAL', 'Veille normale (Information continue)'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.ForeignKey(
+        'sales.Enterprise',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='b2b_news_items',
+        help_text="Entreprise B2B en portefeuille (optionnel si nouveau compte détecté sur le net)"
+    )
+    is_web_discovery = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="True si nouveau compte détecté sur le web, False si compte portefeuille B2B"
+    )
+
+    # Métadonnées de sourcing pour les nouveaux comptes trouvés sur le net
+    discovered_company_name = models.CharField(max_length=150, blank=True, default='', help_text="Nom de la nouvelle entreprise détectée sur le web")
+    discovered_website = models.URLField(blank=True, default='', help_text="Site web ou domaine de l'entreprise")
+    discovered_sector = models.CharField(max_length=100, blank=True, default='', help_text="Secteur d'activité identifié")
+    discovered_location = models.CharField(max_length=150, blank=True, default='', help_text="Ville / Région détectée (ex: Kinshasa - Gombe, Lubumbashi)")
+    discovered_size = models.CharField(max_length=50, blank=True, default='', help_text="Taille estimée (ex: 20-50 salariés, PME)")
+    discovered_signals = models.JSONField(default=list, blank=True, help_text="Signaux web détectés (stack tech, recrutement, etc.)")
+
+    # Contenu de l'actualité
+    title = models.CharField(max_length=255, help_text="Titre accrocheur du signal d'actualité")
+    summary = models.TextField(help_text="Synthèse factuelle de l'actualité")
+    source_name = models.CharField(max_length=100, default='Presse Économique', help_text="Origine de l'information (ex: Presse Économique, LinkedIn Pro, Registre RCCM)")
+    source_url = models.URLField(blank=True, default='', help_text="Lien direct vers la publication ou l'article")
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='EXPANSION', db_index=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='MEDIUM', db_index=True)
+
+    # Analyse d'impact commercial & Recommandation Onbora Core AI
+    commercial_angle = models.TextField(blank=True, default='', help_text="Opportunité commerciale et raison de contacter le compte")
+    recommended_action = models.CharField(max_length=255, blank=True, default='', help_text="Action recommandée pour le KAM (ex: Proposer une liaison SD-WAN inter-sites)")
+    recommended_offer = models.CharField(max_length=150, blank=True, default='', help_text="Offre Orange Business B2B recommandée")
+
+    # Statuts de lecture et d'action du KAM
+    is_read = models.BooleanField(default=False, db_index=True)
+    is_saved = models.BooleanField(default=False, db_index=True)
+    is_converted_to_portfolio = models.BooleanField(default=False, db_index=True, help_text="True si le nouveau compte a été ajouté au portefeuille du KAM")
+
+    published_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-published_at', '-created_at']
+        verbose_name = "Actualité B2B & Veille Web"
+        verbose_name_plural = "Actualités B2B & Veille Web"
+
+    def __str__(self):
+        target = self.enterprise.name if self.enterprise else self.discovered_company_name
+        tag = "Web" if self.is_web_discovery else "Portefeuille"
+        return f"[{tag}] {target} : {self.title}"
+
+
+
 
 

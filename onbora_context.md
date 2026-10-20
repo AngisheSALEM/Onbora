@@ -224,3 +224,46 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
     *   Hook 1 (Conformité Charte Graphique & Zéro Émoji) : 100% conforme.
     *   Hook 2 (Architecture & Zéro Dette Technique) : 100% conforme sur l'intégralité du code.
     *   Règle Clean Canvas & Form Inputs (DESIGN.md §9 & agent.md Règle 7) : Zéro ligne de séparation sur les fonds/en-têtes (réservées aux tableaux `<thead>`/`<tbody>`), zéro double bordure sur les inputs et barres de recherche.
+
+---
+
+## 12. Fiche Technique Télécom & Synchronisation Dynamique Post-Visite (Octobre 2026)
+
+*   **Synchronisation Automatique de la Synthèse d'Entreprise** :
+    *   À l'issue de chaque visite KAM (`KamVisitReport`), la synthèse exécutive et les notes stratégiques de l'entreprise sont automatiquement synchronisées via `CommercialIntelligenceService.sync_briefing_after_visit`.
+    *   Distinction sobre dans l'UI (`KamPreCallView`) entre les **Besoins réels confirmés (Terrain)** issus des comptes-rendus et les **Besoins anticipés (Core AI)** calculés selon le secteur et la maturité client.
+*   **Système de Fiche Technique d'Installation pour Technicien Terrain** :
+    *   **Analyse Core AI & Spécifications Structurées** : `UnifiedCoreAIEngine.generate_technical_sheet` analyse le contexte complet du compte (solutions recommandées, offres implantées, débits souscrits, besoins confirmés) et génère un dossier technique pour le déploiement sur site (référence, directives chantier, BOM matériel, plan d'adressage WAN/VLANs, protocole de recette). Repli déterministe résilient en cas d'indisponibilité LLM.
+    *   **Endpoints API REST** :
+        *   `GET /api/kam/pre-call/<account_id>/technical-specs/` : Consultation des spécifications techniques au format JSON.
+        *   `POST /api/kam/pre-call/<account_id>/technical-specs/` : Régénération dynamique sur mesure via Core AI.
+        *   `GET /api/kam/pre-call/<account_id>/technical-specs/pdf/` : Téléchargement du PDF haute fidélité ReportLab avec cadre de Procès-Verbal et émargement.
+    *   **Expérience Utilisateur (Frontend Next.js)** :
+        *   Bouton sobre et accessible **Fiche technique** intégré directement à côté de « Réactualiser » dans la section *Solutions recommandées*.
+        *   Modal dédié [`KamTechnicalSheetModal.tsx`](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/kam/KamTechnicalSheetModal.tsx) permettant la consultation par onglets (Chantier, BOM matériel, Adressage IP, Checklist) et le téléchargement direct du PDF via `downloadBlobAPI`.
+    *   **Assurance Qualité & Conformité** :
+        *   1051 tests automatisés Django réussis (dont tests d'intégration complets de l'endpoint et du flux binaire PDF).
+        *   Hook 1 (Design & Zéro Émoji) et Hook 2 (Dette Technique & Architecture) validés à 100%.
+        *   Compilation TypeScript (`npx tsc --noEmit`) avec zéro anomalie.
+
+
+---
+
+## 13. Fil d'Actualite B2B & Veille Web Sourcing KAM (Octobre 2026)
+
+*   **Double Canal de Veille & Detection Proactive** :
+    *   *Comptes B2B en portefeuille* (is_web_discovery=False) : Intelligence continue sur les comptes assignes au KAM (nominations DSI, ouvertures d'agences, incidents operateurs concurrents, migrations Cloud).
+    *   *Nouveaux comptes detectes sur le net* (is_web_discovery=True) : Sourcing automatique de nouvelles entreprises B2B reperees sur le web (RCCM, presse eco, reseaux pro, offres d'emploi, levees de fonds).
+    *   *Analyse d'impact commercial IA* : Declencheur de contact motive et recommandation d'offres ciblees Orange Business (Fibre Dediee, SD-WAN, Cyber SOC, IoT Telematique).
+*   **Architecture Backend & Endpoints DRF (Clean SoC & Zero N+1)** :
+    *   Modele B2BNewsFeedItem avec migration idempotente 0017_b2bnewsfeeditem.py.
+    *   Service metier B2BNewsFeedService avec conversion atomique en portefeuille (convert_to_portfolio_account), gestion des favoris et requetes optimisees select_related('enterprise').
+    *   Endpoints unifies exposes sous /api/kam/feed/ (consultation, rafraichissement, lecture, favori, conversion).
+*   **Interface Next.js Conforme a DESIGN.md & Regle 60-30-10** :
+    *   Vue interactive KamNewsFeedView.tsx accessible sur /kam/feed et integree au KamSidebar.tsx via Icons.Rss.
+    *   Eradication totale des couleurs interdites (vert/emerald, jaune/amber, rouge) au profit des tokens stricts : Noir chaud #242124, Blanc craie #F6F5F2, Neutres zinc, et Accent Cobalt #4F6CE8.
+    *   Specification complete des schemas d'echanges JSON consignee dans b2b_news_feed_formats.md.
+*   **Assurance Qualite & Conformite** :
+    *   6/6 tests unitaires et d'API reussis dans test_news_feed.py.
+    *   Hook 1 (Charte Graphique, Zero Couleur Interdite & Zero Emoji) et Hook 2 (Dette Technique & Architecture) valides a 100%.
+    *   Compilation TypeScript (npx tsc --noEmit) avec zero erreur.

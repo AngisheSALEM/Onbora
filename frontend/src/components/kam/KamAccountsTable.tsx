@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { StrategicVisit } from './kamTypes';
 
+
 interface Props {
   accounts: StrategicVisit[];
   loading: boolean;
@@ -19,15 +20,16 @@ export default function KamAccountsTable({ accounts, loading, error, onSelectAcc
             {['Compte', 'Secteur', 'Contact principal', 'Fin du contrat'].map((label) => (
               <th key={label} scope="col" className="pb-4 pr-4 font-semibold">{label}</th>
             ))}
+            <th scope="col" className="pb-4 font-semibold text-right">Action</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
-            <tr><td colSpan={4} className="py-10 text-center text-sm text-zinc-500" role="status">Chargement des comptes…</td></tr>
+            <tr><td colSpan={5} className="py-10 text-center text-sm text-zinc-500" role="status">Chargement des comptes…</td></tr>
           ) : error ? (
-            <tr><td colSpan={4} className="py-8 text-center text-sm text-zinc-600 dark:text-zinc-300" role="alert">{error}</td></tr>
+            <tr><td colSpan={5} className="py-8 text-center text-sm text-zinc-600 dark:text-zinc-300" role="alert">{error}</td></tr>
           ) : accounts.length === 0 ? (
-            <tr><td colSpan={4} className="py-10 text-center text-sm text-zinc-500">Aucun compte à afficher. Vérifiez votre recherche ou les comptes attribués à votre portefeuille.</td></tr>
+            <tr><td colSpan={5} className="py-10 text-center text-sm text-zinc-500">Aucun compte à afficher. Vérifiez votre recherche ou les comptes attribués à votre portefeuille.</td></tr>
           ) : accounts.map((account) => (
             <tr key={account.id} className="hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
               <td className="py-4 pr-4 text-xs font-semibold text-zinc-900 dark:text-white">
@@ -39,7 +41,16 @@ export default function KamAccountsTable({ accounts, loading, error, onSelectAcc
               </td>
               <td className="py-4 pr-4 text-xs text-zinc-700 dark:text-zinc-300">{account.briefing?.industry || 'Non renseigné'}</td>
               <td className="py-4 pr-4 text-xs text-zinc-700 dark:text-zinc-300">{account.contact_name || 'Non renseigné'}</td>
-              <td className="py-4 text-xs text-zinc-500 dark:text-zinc-400">{account.orange_contract_end_date || 'Non renseignée'}</td>
+              <td className="py-4 pr-4 text-xs text-zinc-500 dark:text-zinc-400">{account.orange_contract_end_date || 'Non renseignée'}</td>
+              <td className="py-4 text-xs text-right">
+                <Link
+                  href={`/kam/briefing?id=${encodeURIComponent(account.id)}&tab=compare`}
+                  className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-[#4F6CE8] hover:text-white text-zinc-700 dark:text-zinc-300 text-[11px] font-semibold transition-all"
+                  title="Comparer avec les pairs du secteur"
+                >
+                  <span>Comparer</span>
+                </Link>
+              </td>
             </tr>
           ))}
         </tbody>

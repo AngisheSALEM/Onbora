@@ -43,6 +43,9 @@ Thumbs.db
 !backend/apps/ai_core/TESTING_GUIDE.md
 !backend/resources/prompts/**
 !backend/resources/**/*.md
+!b2b_news_feed_formats.md
+!COMPARATIF_SECTORIEL_ENTREPRISES.md
+
 
 # Documentation local files
 doc_backend.md

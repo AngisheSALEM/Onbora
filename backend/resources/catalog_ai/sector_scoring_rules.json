@@ -1,0 +1,1156 @@
+{
+  "meta": {
+    "generated_at": "2026-10-20T14:47:34.801133+00:00",
+    "catalog_version": "orange-business-rdc-global-2026-07-28",
+    "compiler_version": "2.0-core-ai",
+    "total_catalog_services": 41,
+    "author": "Onbora AI Core Policy Engine"
+  },
+  "taxonomy_mapping": {
+    "banque & services financiers": "finance",
+    "banque": "finance",
+    "finance": "finance",
+    "fintech": "fintech",
+    "fintech & proximité": "fintech",
+    "microfinance": "finance",
+    "assurance": "finance",
+    "mines & énergie": "energy",
+    "mines": "energy",
+    "énergie & pétrole": "energy",
+    "énergie & eau": "energy",
+    "industrie & agroalimentaire": "industry",
+    "industrie & btp": "industry",
+    "industrie & brasserie": "industry",
+    "industrie": "industry",
+    "btp & génie civil": "industry",
+    "distribution & retail": "retail",
+    "commerce de gros": "commerce",
+    "commerce de détail": "retail",
+    "commerce & bureautique": "commerce",
+    "commerce alimentaire": "retail",
+    "commerce électronique & mobile": "retail",
+    "boissons & distribution": "commerce",
+    "télécoms & it b2b": "technology",
+    "technologie": "technology",
+    "télécommunications": "telecommunications",
+    "bureautique & connectivité": "technology",
+    "ingénierie & consulting": "technology",
+    "transport & logistique": "logistics",
+    "transport & aviation": "transport",
+    "logistique & fret": "logistics",
+    "transport": "transport",
+    "santé & hôpitaux": "healthcare",
+    "santé & diagnostics": "healthcare",
+    "santé de proximité": "healthcare",
+    "pharmacie & santé": "healthcare",
+    "éducation supérieure": "education",
+    "éducation & enseignement": "education",
+    "hôtellerie & tourisme": "services",
+    "tourisme & billetterie": "services",
+    "sécurité privée": "services",
+    "audit & fiscalité": "services",
+    "services juridiques & conseils": "services",
+    "services véhicules": "services",
+    "services personnels": "services",
+    "médias & graphisme": "services",
+    "médias & télévision": "services"
+  },
+  "sectors": {
+    "finance": {
+      "sector_key": "finance",
+      "radar_weights": {
+        "security": 0.25,
+        "sla": 0.25,
+        "connectivity": 0.2,
+        "cloud": 0.15,
+        "equipment": 0.1,
+        "budget": 0.05
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.3,
+        "min_mbps_penalty_max": 20,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Dédiée Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "procezo",
+            "symétrique"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Débit garanti symétrique avec engagement de service GTR 4h obligatoire pour les flux financiers."
+        },
+        {
+          "category": "SLA",
+          "label": "Lien de Secours Automatique (Dual Homing)",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "backup",
+            "dual",
+            "redondance",
+            "4g pro"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Bascule instantanée sans coupure en cas de section de fibre, évitant l'arrêt des opérations bancaires."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Pare-feu Managé & Filtrage Avancé",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "fortinet",
+            "utm",
+            "périmétrique"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Conformité réglementaire bancaire et protection contre les cyberattaques et fuites de données financières."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "Interconnexion Multi-Agences SD-WAN",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "vpn ipsec"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Routage applicatif intelligent et supervision centralisée en temps réel de toutes les agences."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Sauvegarde Externalisée Cloud Souverain RDC",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "sauvegarde",
+            "cloud",
+            "backup",
+            "datacenter"
+          ],
+          "recommended_offer": "Microsoft 365",
+          "recommended_offer_id": "microsoft_365",
+          "pitch": "Réplication externalisée en datacenter local garantissant la souveraineté des données financières."
+        }
+      ]
+    },
+    "fintech": {
+      "sector_key": "fintech",
+      "radar_weights": {
+        "security": 0.25,
+        "sla": 0.25,
+        "connectivity": 0.2,
+        "cloud": 0.15,
+        "equipment": 0.1,
+        "budget": 0.05
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.3,
+        "min_mbps_penalty_max": 20,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Dédiée Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "procezo",
+            "symétrique"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Débit garanti symétrique avec engagement de service GTR 4h obligatoire pour les flux financiers."
+        },
+        {
+          "category": "SLA",
+          "label": "Lien de Secours Automatique (Dual Homing)",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "backup",
+            "dual",
+            "redondance",
+            "4g pro"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Bascule instantanée sans coupure en cas de section de fibre, évitant l'arrêt des opérations bancaires."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Pare-feu Managé & Filtrage Avancé",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "fortinet",
+            "utm",
+            "périmétrique"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Conformité réglementaire bancaire et protection contre les cyberattaques et fuites de données financières."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "Interconnexion Multi-Agences SD-WAN",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "vpn ipsec"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Routage applicatif intelligent et supervision centralisée en temps réel de toutes les agences."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Sauvegarde Externalisée Cloud Souverain RDC",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "sauvegarde",
+            "cloud",
+            "backup",
+            "datacenter"
+          ],
+          "recommended_offer": "Microsoft 365",
+          "recommended_offer_id": "microsoft_365",
+          "pitch": "Réplication externalisée en datacenter local garantissant la souveraineté des données financières."
+        }
+      ]
+    },
+    "energy": {
+      "sector_key": "energy",
+      "radar_weights": {
+        "equipment": 0.25,
+        "sla": 0.25,
+        "connectivity": 0.2,
+        "security": 0.15,
+        "cloud": 0.1,
+        "budget": 0.05
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Liaison Résiliente Hybride (Fibre / VSAT)",
+          "criticality": "CRITICAL",
+          "penalty": 30,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "vsat",
+            "satellite",
+            "procezo",
+            "hybride"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Continuité de transmission pour les sites miniers et industriels isolés même en zone blanche."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "Réseau Industriel & Interconnexion Sites Distants",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "ot"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Liaison sécurisée entre le siège de direction et les sites d'extraction ou usines de production."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Cybersécurité Industrielle (OT/IT)",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Isolation et protection des automates industriels et des flux SCADA contre les ransomwares."
+        },
+        {
+          "category": "SLA",
+          "label": "Supervision & Garantie de Temps de Rétablissement",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "sla",
+            "gtr",
+            "supervision"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des expéditions 24/7."
+        }
+      ]
+    },
+    "industry": {
+      "sector_key": "industry",
+      "radar_weights": {
+        "equipment": 0.25,
+        "sla": 0.25,
+        "connectivity": 0.2,
+        "security": 0.15,
+        "cloud": 0.1,
+        "budget": 0.05
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Liaison Résiliente Hybride (Fibre / VSAT)",
+          "criticality": "CRITICAL",
+          "penalty": 30,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "vsat",
+            "satellite",
+            "procezo",
+            "hybride"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Continuité de transmission pour les sites miniers et industriels isolés même en zone blanche."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "Réseau Industriel & Interconnexion Sites Distants",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "ot"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Liaison sécurisée entre le siège de direction et les sites d'extraction ou usines de production."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Cybersécurité Industrielle (OT/IT)",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Isolation et protection des automates industriels et des flux SCADA contre les ransomwares."
+        },
+        {
+          "category": "SLA",
+          "label": "Supervision & Garantie de Temps de Rétablissement",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "sla",
+            "gtr",
+            "supervision"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des expéditions 24/7."
+        }
+      ]
+    },
+    "retail": {
+      "sector_key": "retail",
+      "radar_weights": {
+        "connectivity": 0.25,
+        "equipment": 0.2,
+        "cloud": 0.2,
+        "security": 0.15,
+        "sla": 0.1,
+        "budget": 0.1
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.15,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Pro Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "SD-WAN Points de Vente & Entrepôts",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection des Postes & Filtrage Caisses",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+        }
+      ]
+    },
+    "commerce": {
+      "sector_key": "commerce",
+      "radar_weights": {
+        "connectivity": 0.25,
+        "equipment": 0.2,
+        "cloud": 0.2,
+        "security": 0.15,
+        "sla": 0.1,
+        "budget": 0.1
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.15,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Pro Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "SD-WAN Points de Vente & Entrepôts",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection des Postes & Filtrage Caisses",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+        }
+      ]
+    },
+    "technology": {
+      "sector_key": "technology",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet pro"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection Cyber & Antivirus Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+        }
+      ]
+    },
+    "telecommunications": {
+      "sector_key": "telecommunications",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet pro"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection Cyber & Antivirus Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+        }
+      ]
+    },
+    "logistics": {
+      "sector_key": "logistics",
+      "radar_weights": {
+        "connectivity": 0.25,
+        "equipment": 0.2,
+        "cloud": 0.2,
+        "security": 0.15,
+        "sla": 0.1,
+        "budget": 0.1
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.15,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Pro Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "SD-WAN Points de Vente & Entrepôts",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection des Postes & Filtrage Caisses",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+        }
+      ]
+    },
+    "transport": {
+      "sector_key": "transport",
+      "radar_weights": {
+        "connectivity": 0.25,
+        "equipment": 0.2,
+        "cloud": 0.2,
+        "security": 0.15,
+        "sla": 0.1,
+        "budget": 0.1
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.15,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Fibre Pro Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "category": "EQUIPMENT",
+          "label": "SD-WAN Points de Vente & Entrepôts",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection des Postes & Filtrage Caisses",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+        }
+      ]
+    },
+    "healthcare": {
+      "sector_key": "healthcare",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet pro"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection Cyber & Antivirus Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+        }
+      ]
+    },
+    "education": {
+      "sector_key": "education",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet pro"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection Cyber & Antivirus Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+        }
+      ]
+    },
+    "services": {
+      "sector_key": "services",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Très Haut Débit",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet pro"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Protection Cyber & Antivirus Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+        }
+      ]
+    },
+    "default": {
+      "sector_key": "default",
+      "radar_weights": {
+        "connectivity": 0.2,
+        "security": 0.2,
+        "cloud": 0.15,
+        "sla": 0.15,
+        "equipment": 0.15,
+        "budget": 0.15
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "CONNECTIVITY",
+          "label": "Accès Internet Professionnel",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante garantie pour soutenir les activités numériques du compte."
+        },
+        {
+          "category": "SECURITY",
+          "label": "Sécurité Réseau & Pare-feu",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection périmétrique essentielle contre les cybermenaces."
+        },
+        {
+          "category": "SLA",
+          "label": "Continuité de Service & Secours",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "backup",
+            "4g"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Garantie de maintien d'activité lors d'incidents sur l'accès principal."
+        },
+        {
+          "category": "CLOUD",
+          "label": "Sauvegarde & Outils Collaboratifs",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "sauvegarde",
+            "365"
+          ],
+          "recommended_offer": "Microsoft 365",
+          "recommended_offer_id": "microsoft_365",
+          "pitch": "Préservation des données sensibles en datacenter sécurisé."
+        }
+      ]
+    }
+  }
+}

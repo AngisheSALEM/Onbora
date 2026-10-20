@@ -13,6 +13,7 @@ from .views import (
 )
 from .commercial_intelligence_views import (
     PreCallBriefingDetailView, PreCallBriefingListView,
+    TechnicalSpecsDetailView, TechnicalSpecsPdfView,
     PostCallExecutionDetailView, PostCallSyncCrmView,
     LeadScoringListView, ChurnRadarView
 )
@@ -25,8 +26,24 @@ from .churn_views import (
     AccountRadarDetailView,
     ChurnRadarRecalculateView
 )
+from .comparison_views import (
+    KamSectorOverviewView,
+    KamEnterpriseComparisonView,
+)
+from .services.news_feed_views import (
+    B2BNewsFeedListView,
+    B2BNewsFeedReadToggleView,
+    B2BNewsFeedSaveToggleView,
+    B2BNewsFeedConvertView,
+    B2BNewsFeedRefreshView,
+)
+
 
 urlpatterns = [
+    # Comparateur Sectoriel & Benchmarking B2B ("Versus" style)
+    path('comparisons/sectors/', KamSectorOverviewView.as_view(), name='kam-comparisons-sectors'),
+    path('comparisons/', KamEnterpriseComparisonView.as_view(), name='kam-comparisons-detail'),
+
     # Radar Churn & Pilotage Portefeuille (Architecture Décisionnelle Déterministe + Core AI)
     path('portfolio-summary/', PortfolioSummaryView.as_view(), name='kam-portfolio-summary'),
     path('churn-radar/risk/', ChurnRadarRiskAccountsView.as_view(), name='kam-churn-radar-risk'),
@@ -36,8 +53,10 @@ urlpatterns = [
     path('churn-radar/recalculate/', ChurnRadarRecalculateView.as_view(), name='kam-churn-radar-recalculate'),
     path('accounts/<int:enterprise_id>/radar/', AccountRadarDetailView.as_view(), name='kam-account-radar-detail'),
 
-    # 1. Pre-Call Intelligence (Briefing pré-RDV en 2 minutes)
+    # 1. Pre-Call Intelligence (Briefing pré-RDV en 2 minutes) & Fiche Technique
     path('pre-call/<int:account_id>/', PreCallBriefingDetailView.as_view(), name='kam-pre-call-detail'),
+    path('pre-call/<int:account_id>/technical-specs/', TechnicalSpecsDetailView.as_view(), name='kam-technical-specs-detail'),
+    path('pre-call/<int:account_id>/technical-specs/pdf/', TechnicalSpecsPdfView.as_view(), name='kam-technical-specs-pdf'),
     path('pre-call/list/', PreCallBriefingListView.as_view(), name='kam-pre-call-list'),
 
     # 2. Post-Call Execution (Email prêt à envoyer & Synchronisation CRM Dynamics)
@@ -86,7 +105,15 @@ urlpatterns = [
     path('accounts/<int:enterprise_id>/memory/', AccountMemoryEventListCreateView.as_view(), name='account-memory-list-create'),
     path('accounts/<int:enterprise_id>/handover-pack/', AccountHandoverPackView.as_view(), name='account-handover-pack'),
     path('accounts/<int:enterprise_id>/risk-signals/', AccountRiskSignalsView.as_view(), name='account-risk-signals'),
+
+    # 7. Fil d'actualité B2B & Veille Web Sourcing
+    path('feed/', B2BNewsFeedListView.as_view(), name='kam-feed-list'),
+    path('feed/refresh/', B2BNewsFeedRefreshView.as_view(), name='kam-feed-refresh'),
+    path('feed/<uuid:pk>/read/', B2BNewsFeedReadToggleView.as_view(), name='kam-feed-read-toggle'),
+    path('feed/<uuid:pk>/save/', B2BNewsFeedSaveToggleView.as_view(), name='kam-feed-save-toggle'),
+    path('feed/<uuid:pk>/convert/', B2BNewsFeedConvertView.as_view(), name='kam-feed-convert'),
 ]
+
 
 
 

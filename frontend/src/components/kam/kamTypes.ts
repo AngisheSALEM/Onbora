@@ -159,3 +159,37 @@ export interface MeetingDebrief {
   risk_level: 'LOW' | 'MEDIUM' | 'HIGH';
   next_step_recommendation: string;
 }
+
+export interface B2BNewsItem {
+  id: string;
+  enterprise?: number | null;
+  enterprise_name?: string;
+  enterprise_sector?: string;
+  enterprise_location?: string;
+  enterprise_assigned_kam?: string;
+  is_web_discovery: boolean;
+  discovered_company_name: string;
+  discovered_website: string;
+  discovered_sector: string;
+  discovered_location: string;
+  discovered_size: string;
+  discovered_signals: string[];
+  title: string;
+  summary: string;
+  source_name: string;
+  source_url: string;
+  category: 'EXPANSION' | 'MANAGEMENT' | 'TECH_PROJECT' | 'INCIDENT' | 'FINANCE' | 'NEW_ACCOUNT';
+  category_display: string;
+  priority: 'HIGH' | 'MEDIUM' | 'NORMAL';
+  priority_display: string;
+  commercial_angle: string;
+  recommended_action: string;
+  recommended_offer: string;
+  is_read: boolean;
+  is_saved: boolean;
+  is_converted_to_portfolio: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+}
+

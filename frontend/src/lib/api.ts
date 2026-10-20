@@ -90,5 +90,37 @@ export async function uploadAudioAPI(endpoint: string, formData: FormData) {
     throw new Error(errorMsg);
   }
 
-  return response.json();
+    return response.json();
 }
+
+export async function downloadBlobAPI(endpoint: string, filename: string): Promise<void> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers = new Headers();
+  if (token) {
+    headers.set('Authorization', `Token ${token}`);
+  }
+
+  const targetUrl = `${API_URL}${endpoint}`;
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, { method: 'GET', headers });
+  } catch (err) {
+    console.error(`[API Network Error] Impossible de joindre ${targetUrl}:`, err);
+    throw new Error('Impossible de joindre le serveur pour le téléchargement.');
+  }
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors du téléchargement (HTTP ${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+

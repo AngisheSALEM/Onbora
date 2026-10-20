@@ -147,6 +147,14 @@ function KamAppointmentPreparationContent() {
 
   const enterpriseName = appointment?.enterprise_name || data.enterprise_name;
 
+  // Split visit facts for clean executive presentation
+  const narrativeFactLabels = ['Synthèse précédente', 'Besoins confirmés', 'Prochaine action convenue', 'Objections précédentes'];
+  const metaFacts = (data.visit_facts || []).filter(f => !narrativeFactLabels.includes(f.label));
+  const summaryFact = (data.visit_facts || []).find(f => f.label === 'Synthèse précédente');
+  const needsFact = (data.visit_facts || []).find(f => f.label === 'Besoins confirmés');
+  const actionFact = (data.visit_facts || []).find(f => f.label === 'Prochaine action convenue');
+  const objectionsFact = (data.visit_facts || []).find(f => f.label === 'Objections précédentes');
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto px-6 md:px-10 py-6 select-none bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans">
       
@@ -200,67 +208,61 @@ function KamAppointmentPreparationContent() {
         </div>
       </div>
 
-      {/* 2. DOCUMENT DE PRÉPARATION (Simple, épuré et propre comme la fiche de synthèse 360) */}
+      {/* 2. DOCUMENT DE PRÉPARATION (Simple, sobre et lisible comme la fiche 360) */}
       <div className="max-w-4xl mx-auto w-full py-4 pb-16">
-        <div className="bg-white dark:bg-[#282528] rounded-[32px] p-8 md:p-10 shadow-xs border border-black/5 dark:border-white/5 text-zinc-800 dark:text-zinc-200 space-y-8">
+        <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 text-zinc-800 dark:text-zinc-200 space-y-8 animate-in fade-in duration-150">
           
-          {/* SECTION 1: Cadrage & Objectif (Texte pur et fluide comme dans l'image 2) */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Cadrage du rendez-vous
-              </span>
+          {/* SECTION 1: Cadrage & Objectif */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8]" />
+                <span>Cadrage du rendez-vous</span>
+              </h2>
               {data.visit_purpose_label && (
-                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/5 text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                   {data.visit_purpose_label}
                 </span>
               )}
             </div>
 
-            <p className="text-sm md:text-[15px] font-semibold text-zinc-900 dark:text-white leading-relaxed">
+            <p className="text-sm md:text-[15px] text-zinc-800 dark:text-zinc-200 leading-relaxed font-normal">
+              <span className="font-medium text-zinc-900 dark:text-white">Objectif : </span>
               {data.objective || "Découvrir et aligner les priorités de connectivité et de services de l'entreprise."}
             </p>
 
             {data.purpose_reason && (
-              <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal">
                 {data.purpose_reason}
               </p>
             )}
           </div>
 
           {/* SECTION 2: Compte et participants */}
-          <div className="space-y-4">
-            <h3 className="text-sm md:text-base font-bold text-zinc-900 dark:text-white">
-              Compte et participants
-            </h3>
+          <div className="space-y-3.5">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8]" />
+              <span>Compte et participants</span>
+            </h2>
 
             {data.account_facts && data.account_facts.length > 0 ? (
-              <div className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5 pt-1">
                 {data.account_facts.map((fact, idx) => (
                   <div
                     key={`${fact.label}-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5"
+                    className="flex items-baseline justify-between gap-3 py-0.5"
                   >
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 shrink-0">
-                          {fact.label}
-                        </span>
-                        <span className="text-xs md:text-sm font-semibold text-zinc-900 dark:text-white">
-                          {fact.value}
-                        </span>
-                      </div>
-                    </div>
-                    {fact.source && (
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 sm:ml-4">
-                        Source : {fact.source}
-                      </span>
-                    )}
+                    <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 shrink-0">
+                      {fact.label}
+                    </span>
+                    <span className="text-sm font-normal text-zinc-800 dark:text-zinc-200 text-right">
+                      {fact.value}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-zinc-500 font-normal">
                 Aucun fait spécifique consigné. Consultez la fiche Pré-call 360 pour les informations d&apos;entreprise.
               </p>
             )}
@@ -268,63 +270,126 @@ function KamAppointmentPreparationContent() {
 
           {/* SECTION 3: À retenir pour cet échange */}
           <div className="space-y-4">
-            <h3 className="text-sm md:text-base font-bold text-zinc-900 dark:text-white">
-              À retenir pour cet échange
-            </h3>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8]" />
+              <span>À retenir pour cet échange</span>
+            </h2>
 
             {data.visit_facts && data.visit_facts.length > 0 ? (
-              <div className="space-y-3.5">
-                {data.visit_facts.map((fact, idx) => (
-                  <div
-                    key={`${fact.label}-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5"
-                  >
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 shrink-0">
+              <div className="space-y-4 pt-1">
+                {/* Métadonnées clés (Dernier échange, opérateur, budget, etc.) */}
+                {metaFacts.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5 pb-1">
+                    {metaFacts.map((fact, idx) => (
+                      <div
+                        key={`${fact.label}-${idx}`}
+                        className="flex items-baseline justify-between gap-3 py-0.5"
+                      >
+                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 shrink-0">
                           {fact.label}
                         </span>
-                        <span className="text-xs md:text-sm font-semibold text-zinc-900 dark:text-white">
+                        <span className="text-sm font-normal text-zinc-800 dark:text-zinc-200 text-right">
                           {fact.value}
                         </span>
                       </div>
-                    </div>
-                    {fact.source && (
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 sm:ml-4">
-                        Source : {fact.source}
-                      </span>
-                    )}
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {/* Synthèse précédente */}
+                {summaryFact && (
+                  <div className="space-y-1">
+                    <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                      <span>Synthèse du dernier échange</span>
+                    </div>
+                    <p className="pl-5 text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 font-normal whitespace-pre-line">
+                      {summaryFact.value}
+                    </p>
+                  </div>
+                )}
+
+                {/* Besoins confirmés */}
+                {needsFact && (
+                  <div className="space-y-1">
+                    <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                      <span>Besoins</span>
+                    </div>
+                    <ul className="pl-5 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                      {needsFact.value.split(/,\s*/).map((need, idx) => (
+                        <li key={idx} className="list-disc leading-relaxed font-normal">
+                          <span>{need.trim()}</span>
+                          {needsFact.source && (
+                            <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-normal ml-1.5">
+                              ({needsFact.source})
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Prochaine action convenue */}
+                {actionFact && (
+                  <div className="space-y-1">
+                    <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                      <span>Prochaine action</span>
+                    </div>
+                    <p className="pl-5 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">
+                      {actionFact.value}
+                    </p>
+                  </div>
+                )}
+
+                {/* Points de vigilance / Objections */}
+                {objectionsFact && (
+                  <div className="space-y-1">
+                    <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 dark:bg-zinc-200" />
+                      <span>Points de vigilance et objections</span>
+                    </div>
+                    <ul className="pl-5 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                      {objectionsFact.value.split(/,\s*/).map((obj, idx) => (
+                        <li key={idx} className="list-disc leading-relaxed font-normal">
+                          <span>{obj.trim()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : (
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                 Aucune information supplémentaire confirmée. Utilisez la grille de questionnement ci-dessous pour qualifier les besoins et le budget.
               </p>
             )}
           </div>
 
           {/* SECTION 4: Questions stratégiques à confirmer avec le client */}
-          <div className="space-y-4">
-            <h3 className="text-sm md:text-base font-bold text-zinc-900 dark:text-white">
-              Questions stratégiques à confirmer avec le client
-            </h3>
+          <div className="space-y-3.5">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4F6CE8]" />
+              <span>Questions stratégiques à confirmer</span>
+            </h2>
 
             {data.questions_to_confirm && data.questions_to_confirm.length > 0 ? (
-              <div className="space-y-3">
+              <ol className="space-y-2.5 pt-1">
                 {data.questions_to_confirm.map((question, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <span className="text-xs font-bold text-zinc-400 shrink-0 mt-0.5">
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 shrink-0 mt-0.5">
                       {index + 1}.
                     </span>
-                    <p className="text-xs md:text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed">
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">
                       {question}
                     </p>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
             ) : (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-zinc-500 font-normal">
                 Aucune question spécifique générée pour ce profil d&apos;entretien.
               </p>
             )}

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 from django.conf import settings
+from django.utils import timezone
 
 from .common.base_engine import BaseAIEngine
 from .pre_call.service import PreCallIntelligenceEngine
@@ -161,18 +162,11 @@ class UnifiedCoreAIEngine:
         res["real_needs"] = real_needs
         res["predicted_needs"] = predicted_needs
 
-        # Enrichissement contextuel sobre du paragraphe de synthèse exécutive
-        summary_sentences = [base_overview_text] if base_overview_text else [f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'})."]
-
-        if real_needs:
-            real_names = ", ".join([rn["need"] for rn in real_needs[:3]])
-            summary_sentences.append(f"Besoins réels confirmés lors des derniers échanges terrain : {real_names}.")
-
-        if predicted_needs:
-            pred_names = ", ".join([pn["need"] for pn in predicted_needs[:2]])
-            summary_sentences.append(f"Opportunités et besoins d'infrastructure identifiés par Core AI : {pred_names}.")
-
-        enriched_overview = " ".join(summary_sentences).strip()
+        # Synthèse exécutive sobre et professionnelle (sans mentions techniques internes)
+        clean_overview = (base_overview_text or f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'}).").strip()
+        clean_overview = clean_overview.replace("Opportunités et besoins d'infrastructure identifiés par Core AI :", "")
+        clean_overview = clean_overview.replace("Besoins réels confirmés lors des derniers échanges terrain :", "")
+        enriched_overview = " ".join(clean_overview.split()).strip()
 
         if isinstance(ai_sum, dict):
             ai_sum["real_needs"] = real_needs
@@ -365,6 +359,365 @@ class UnifiedCoreAIEngine:
         return {
             "overview": overview.strip(),
             "recommended_solutions": solutions
+        }
+
+    # -------------------------------------------------------------------------
+    # 1.B TECHNICAL SPECIFICATIONS & FIELD INSTALLATION SHEET
+    # -------------------------------------------------------------------------
+    def generate_technical_sheet(
+        self,
+        enterprise: Any,
+        solutions: list = None,
+        confirmed_needs: list = None,
+        installed_offers: list = None,
+        kam_user: Any = None
+    ) -> dict:
+        """
+        Analyse l'ensemble du contexte entreprise (solutions recommandées, besoins réels
+        confirmés, offres déjà implantées, contraintes de site) et génère une fiche technique
+        d'installation complète et structurée destinée aux techniciens télécoms déployeurs.
+        """
+        if not solutions:
+            if hasattr(enterprise, 'pre_call_briefings'):
+                briefing = enterprise.pre_call_briefings.first()
+                if briefing and briefing.analysis_data:
+                    solutions = briefing.analysis_data.get("recommended_solutions", [])
+            if not solutions:
+                solutions = [
+                    {
+                        "name": "Fibre Sécurisée Dédiée Pro 100 Mbps",
+                        "category": "CONNECTIVITY",
+                        "speed": "100 Mbps symétrique garanti",
+                        "sla": "99.99% · GTR 4h contractuelle",
+                        "role": "Liaison principale haute disponibilité raccordée au PoP Orange"
+                    },
+                    {
+                        "name": "SD-WAN Managé & Secours Hybride",
+                        "category": "NETWORK",
+                        "speed": "Agrégation dynamique & Failover < 1s",
+                        "sla": "Supervision proactive 24/7",
+                        "role": "Routage intelligent et bascule sans rupture de session"
+                    }
+                ]
+
+        if confirmed_needs is None:
+            real_needs_objs, _ = self._extract_real_and_predicted_needs(enterprise)
+            confirmed_needs = [n["need"] for n in real_needs_objs]
+
+        ent_name = getattr(enterprise, 'name', 'Entreprise')
+        sector = getattr(enterprise, 'sector', 'Services & B2B') or 'Services & B2B'
+        city = getattr(enterprise, 'city', 'Kinshasa') or 'Kinshasa'
+        current_op = getattr(enterprise, 'current_operator', 'Opérateur tiers') or 'Opérateur tiers'
+
+        solutions_desc = "\n".join([f"- {s.get('name')}: {s.get('category', '')} ({s.get('speed', s.get('sla', ''))}) - {s.get('description', '')}" for s in solutions])
+        needs_desc = "\n".join([f"- {need}" for need in confirmed_needs]) if confirmed_needs else "Continuité de service et performance réseau."
+
+        system_instruction = (
+            "Tu es le Lead Architect Réseau Télécom d'Orange Business RDC. Tu rédiges une FICHE TECHNIQUE "
+            "D'INSTALLATION & DE RECETTE officielle destinée aux techniciens télécoms de terrain chargés de déployer "
+            "l'infrastructure sur le site du client. Ta réponse doit être rigoureuse, professionnelle, conforme aux standards "
+            "télécoms (GPON, SD-WAN, VLAN 802.1Q, IPsec) et structurée UNIQUEMENT en JSON valide."
+        )
+
+        prompt = (
+            f"Client : {ent_name}\n"
+            f"Secteur d'activité : {sector}\n"
+            f"Localisation : {city}, RDC\n"
+            f"Opérateur sortant / actuel : {current_op}\n\n"
+            f"Solutions retenues à déployer :\n{solutions_desc}\n\n"
+            f"Besoins réels confirmés lors des visites KAM :\n{needs_desc}\n\n"
+            "Génère la fiche technique complète au format JSON avec EXACTEMENT cette structure :\n"
+            "{\n"
+            '  "reference": "FT-2026-XXXX",\n'
+            '  "deployment_overview": {\n'
+            '    "title": "Titre précis du déploiement",\n'
+            '    "objective": "Objectif technique d\'intervention détaillé",\n'
+            '    "access_constraints": "Contraintes d\'accès salle serveur et consignes de sécurité",\n'
+            '    "current_operator": "Nom opérateur sortant et modalité de migration"\n'
+            '  },\n'
+            '  "solutions": [\n'
+            '    {\n'
+            '      "name": "Nom solution",\n'
+            '      "category": "CONNECTIVITY / NETWORK / SECURITY / VOIP",\n'
+            '      "speed": "Débit garanti",\n'
+            '      "sla": "SLA & GTR",\n'
+            '      "role": "Rôle dans l\'architecture client"\n'
+            '    }\n'
+            '  ],\n'
+            '  "confirmed_needs": ["Besoin 1", "Besoin 2"],\n'
+            '  "equipment_list": [\n'
+            '    {\n'
+            '      "item": "Désignation équipement",\n'
+            '      "category": "Catégorie matériel",\n'
+            '      "quantity": 1,\n'
+            '      "specs": "Spécifications techniques",\n'
+            '      "location": "Emplacement dans la baie"\n'
+            '    }\n'
+            '  ],\n'
+            '  "network_configuration": {\n'
+            '    "wan": {\n'
+            '      "ip_address": "197.234.X.X /30",\n'
+            '      "gateway": "197.234.X.X",\n'
+            '      "netmask": "255.255.255.252",\n'
+            '      "dns_primary": "80.10.246.2",\n'
+            '      "dns_secondary": "80.10.246.129"\n'
+            '    },\n'
+            '    "lan_vlans": [\n'
+            '      {\n'
+            '        "vlan_id": "VLAN 10",\n'
+            '        "name": "DATA_PRO",\n'
+            '        "subnet": "192.168.10.0 /24",\n'
+            '        "gateway": "192.168.10.254",\n'
+            '        "dhcp_range": "192.168.10.10 - 192.168.10.200"\n'
+            '      }\n'
+            '    ]\n'
+            '  },\n'
+            '  "acceptance_checklist": [\n'
+            '    {\n'
+            '      "step": "Nom du test",\n'
+            '      "expected": "Résultat attendu",\n'
+            '      "validation": "Méthode de vérification"\n'
+            '    }\n'
+            '  ],\n'
+            '  "technician_notes": "Consignes de câblage, repérage et sécurité pour le technicien"\n'
+            "}"
+        )
+
+        try:
+            ai_res = self._call_gemini_json(prompt, system_instruction=system_instruction)
+            if ai_res and isinstance(ai_res, dict) and ai_res.get("deployment_overview"):
+                ai_res["reference"] = ai_res.get("reference") or f"FT-2026-{enterprise.id:04d}"
+                ai_res["generated_at"] = timezone.now().strftime("%d/%m/%Y %H:%M")
+                ai_res["enterprise"] = {
+                    "id": enterprise.id,
+                    "name": enterprise.name,
+                    "sector": enterprise.sector or "Services & Entreprise",
+                    "rccm": getattr(enterprise, 'rccm', '') or "Non renseigné",
+                    "city": enterprise.city or "Kinshasa",
+                    "site_address": getattr(enterprise, 'site_address', None) or f"{enterprise.city or 'Kinshasa'}, RDC",
+                    "contact_name": enterprise.contact_name or "Responsable Technique",
+                    "contact_role": getattr(enterprise, 'contact_role', '') or "DSI / Responsable Informatique",
+                    "contact_phone": getattr(enterprise, 'phone', '') or getattr(enterprise, 'contact_phone', '') or "+243 81 000 0000",
+                    "contact_email": getattr(enterprise, 'contact_email', '') or getattr(enterprise, 'email', '') or "contact@orange-business.cd"
+                }
+                ai_res["kam"] = {
+                    "name": kam_user.get_full_name() or kam_user.username if kam_user else "Key Account Manager",
+                    "email": kam_user.email if kam_user and hasattr(kam_user, 'email') else "kam@orange-business.cd"
+                }
+                return ai_res
+        except Exception:
+            pass
+
+        return self._fallback_technical_sheet(
+            enterprise=enterprise,
+            solutions=solutions,
+            confirmed_needs=confirmed_needs,
+            installed_offers=installed_offers,
+            kam_user=kam_user
+        )
+
+    def _fallback_technical_sheet(
+        self,
+        enterprise: Any,
+        solutions: list,
+        confirmed_needs: list,
+        installed_offers: list = None,
+        kam_user: Any = None
+    ) -> dict:
+        """Génération déterministe d'expertise télécom Orange Business pour la fiche technique."""
+        ent_id = getattr(enterprise, 'id', 1)
+        ent_name = getattr(enterprise, 'name', 'Entreprise B2B')
+        sector = getattr(enterprise, 'sector', 'Services') or 'Services'
+        city = getattr(enterprise, 'city', 'Kinshasa') or 'Kinshasa'
+        curr_op = getattr(enterprise, 'current_operator', 'Opérateur tiers') or 'Opérateur tiers'
+
+        # Solutions formatées
+        clean_solutions = []
+        has_sdwan = False
+        has_cyber = False
+        for s in solutions:
+            name = s.get("name", "Fibre Dédiée Pro")
+            category = s.get("category", "CONNECTIVITY")
+            speed = s.get("speed", "100 Mbps symétrique garanti")
+            sla = s.get("sla", "SLA 99.99% · GTR 4h")
+            if any(w in name.lower() for w in ["sd-wan", "hybride", "multi-sites"]):
+                has_sdwan = True
+            if any(w in name.lower() for w in ["cyber", "firewall", "soc", "sécurité"]):
+                has_cyber = True
+            clean_solutions.append({
+                "name": name,
+                "category": category,
+                "speed": speed,
+                "sla": sla,
+                "role": f"Raccordement et sécurisation des opérations critiques ({sector})"
+            })
+
+        # Bill of Materials (BOM)
+        equipment_list = [
+            {
+                "item": "ONT Huawei OptiXstar HG8240H",
+                "category": "Terminaison Optique",
+                "quantity": 1,
+                "specs": "1x Port GPON SC/APC, 4x GE RJ45, alimentation 220V secourue",
+                "location": "Baie de brassage - U1"
+            },
+            {
+                "item": "Switch Cisco CBS250 24 Ports Gigabit PoE+",
+                "category": "Distribution LAN",
+                "quantity": 1,
+                "specs": "24x 10/100/1000 Mbps PoE+ (195W), 4x Gigabit SFP, VLAN 802.1Q",
+                "location": "Baie de brassage - U2"
+            },
+            {
+                "item": "Module SFP 1000Base-LX monomode & Jarretière LC-SC 3m",
+                "category": "Optique & Câblage",
+                "quantity": 2,
+                "specs": "Longueur d'onde 1310 nm, portée jusqu'à 10 km, connecteur SC/APC",
+                "location": "Tiroir optique"
+            }
+        ]
+
+        if has_sdwan:
+            equipment_list.append({
+                "item": "Routeur SD-WAN Teltonika RUTX12 / Cisco ISR",
+                "category": "Routage & Redondance",
+                "quantity": 1,
+                "specs": "Dual SIM LTE Cat 6 (300 Mbps), 5x Gigabit LAN/WAN, bascule dynamique < 1s",
+                "location": "Baie de brassage - U3"
+            })
+            equipment_list.append({
+                "item": "Carte SIM Orange Business Data M2M (Backup)",
+                "category": "Secours 4G/LTE",
+                "quantity": 1,
+                "specs": "IP fixe privée sur APN dédié Orange Business, data illimitée secours",
+                "location": "Slot SIM 1 Routeur"
+            })
+
+        if has_cyber:
+            equipment_list.append({
+                "item": "Firewall Next-Gen Fortinet FortiGate 60F",
+                "category": "Sécurité Périmétrique",
+                "quantity": 1,
+                "specs": "Débit firewall 10 Gbps, VPN IPsec 6.5 Gbps, inspection SSL, UTP 1 an",
+                "location": "Baie de brassage - U4"
+            })
+
+        equipment_list.append({
+            "item": "Bandeau de prises PDU 19'' avec protection surtension",
+            "category": "Alimentation",
+            "quantity": 1,
+            "specs": "8 prises standard C13, disjoncteur différentiel intégré, cordon 2m",
+            "location": "Fond de baie"
+        })
+
+        # Adressage WAN & LAN
+        ip_wan = f"197.234.{100 + (ent_id % 150)}.{2 + (ent_id % 60) * 4}"
+        ip_gw = f"197.234.{100 + (ent_id % 150)}.{1 + (ent_id % 60) * 4}"
+
+        return {
+            "reference": f"FT-2026-{ent_id:04d}",
+            "generated_at": timezone.now().strftime("%d/%m/%Y %H:%M"),
+            "enterprise": {
+                "id": ent_id,
+                "name": ent_name,
+                "sector": sector,
+                "rccm": getattr(enterprise, 'rccm', '') or "Non renseigné",
+                "city": city,
+                "site_address": getattr(enterprise, 'site_address', None) or f"{city}, RDC",
+                "contact_name": getattr(enterprise, 'contact_name', '') or "Responsable Informatique",
+                "contact_role": getattr(enterprise, 'contact_role', '') or "DSI / Responsable Technique",
+                "contact_phone": getattr(enterprise, 'phone', '') or getattr(enterprise, 'contact_phone', '') or "+243 81 000 0000",
+                "contact_email": getattr(enterprise, 'contact_email', '') or getattr(enterprise, 'email', '') or "client@orange-business.cd"
+            },
+            "kam": {
+                "name": kam_user.get_full_name() or kam_user.username if kam_user else "Key Account Manager",
+                "email": kam_user.email if kam_user and hasattr(kam_user, 'email') else "kam@orange-business.cd"
+            },
+            "deployment_overview": {
+                "title": f"Raccordement Fibre Dédiée & Architecture Réseau — {ent_name}",
+                "objective": f"Mise en service de l'infrastructure de connectivité Orange Business en remplacement ou complément de l'opérateur {curr_op}. Raccordement au Point de Présence (PoP) Orange et sécurisation des échanges inter-sites.",
+                "access_constraints": "Contrôle d'accès à l'accueil du bâtiment (présentation de la carte d'accréditation Orange requise). Intervention recommandée de 08h à 18h ou en fenêtre de nuit sur demande.",
+                "current_operator": f"{curr_op} (migration planifiée sans coupure de service)"
+            },
+            "solutions": clean_solutions,
+            "confirmed_needs": confirmed_needs or [
+                "Disponibilité garantie avec engagement SLA 99.99% et GTR 4h contractuelle",
+                "Secours automatique transparent en cas de coupure du lien principal",
+                "Supervision proactive avec notification temps réel"
+            ],
+            "equipment_list": equipment_list,
+            "network_configuration": {
+                "wan": {
+                    "ip_address": f"{ip_wan} /30",
+                    "gateway": ip_gw,
+                    "netmask": "255.255.255.252",
+                    "dns_primary": "80.10.246.2 (Orange RDC)",
+                    "dns_secondary": "80.10.246.129 (Orange RDC)"
+                },
+                "lan_vlans": [
+                    {
+                        "vlan_id": "VLAN 10",
+                        "name": "DATA_CORP",
+                        "subnet": "192.168.10.0 /24",
+                        "gateway": "192.168.10.254",
+                        "dhcp_range": "192.168.10.10 - 192.168.10.200"
+                    },
+                    {
+                        "vlan_id": "VLAN 20",
+                        "name": "VOIP_TEAMS",
+                        "subnet": "192.168.20.0 /24",
+                        "gateway": "192.168.20.254",
+                        "dhcp_range": "192.168.20.10 - 192.168.20.100"
+                    },
+                    {
+                        "vlan_id": "VLAN 30",
+                        "name": "GUEST_WIFI",
+                        "subnet": "192.168.30.0 /24",
+                        "gateway": "192.168.30.254",
+                        "dhcp_range": "192.168.30.10 - 192.168.30.250"
+                    },
+                    {
+                        "vlan_id": "VLAN 99",
+                        "name": "MANAGEMENT_OOB",
+                        "subnet": "192.168.99.0 /24",
+                        "gateway": "192.168.99.254",
+                        "dhcp_range": "Attribution statique uniquement"
+                    }
+                ]
+            },
+            "acceptance_checklist": [
+                {
+                    "step": "Contrôle de puissance optique",
+                    "expected": "Signal GPON mesuré compris entre -18 dBm et -24 dBm",
+                    "validation": "Mesure au photomètre optique calibré sur jarretière d'arrivée"
+                },
+                {
+                    "step": "Test de débit symétrique contractuel",
+                    "expected": "Débit mesuré >= 98% du débit souscrit avec latence stable",
+                    "validation": "Test iPerf3 vers le serveur de test Orange Business"
+                },
+                {
+                    "step": "Test de bascule secours automatique",
+                    "expected": "Bascule automatique vers le lien de backup en moins de 2 secondes",
+                    "validation": "Déconnexion physique du lien principal et maintien de session ping"
+                },
+                {
+                    "step": "Contrôle de latence et gigue",
+                    "expected": "Latence < 15ms vers la passerelle Orange et gigue < 2ms",
+                    "validation": "Ping 100 paquets ICMP vers 80.10.246.2"
+                },
+                {
+                    "step": "Validation de supervision & Signature PV",
+                    "expected": "Liaison déclarée UP sur le dashboard NOC Orange et PV émargé",
+                    "validation": "PV de recette contradictoire signé avec cachet du client"
+                }
+            ],
+            "technician_notes": (
+                "1. Respecter scrupuleusement le code couleur des jarretières et étiqueter chaque extrémité.\n"
+                "2. Vérifier la terre de la baie informatique avant tout branchement électrique des équipements.\n"
+                "3. Prendre 3 photos nettes : face avant de la baie, voyants de synchronisation ONT/Routeur, et étiquetage.\n"
+                "4. En cas de puissance optique anormale (> -25 dBm), contacter immédiatement le Centre de Supervision NOC."
+            )
         }
 
     # -------------------------------------------------------------------------

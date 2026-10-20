@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { StrategicVisit } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
 import { fetchAPI } from '@/lib/api';
@@ -22,6 +23,7 @@ export default function KamBriefingView({
   onBackToAccounts,
   onAccountUpdated
 }: KamBriefingViewProps) {
+  const router = useRouter();
   const selectedVisit = visits.find((v) => v.id === selectedVisitId) || visits[0];
   const briefing = selectedVisit.briefing;
 
@@ -263,7 +265,7 @@ export default function KamBriefingView({
           </div>
         </div>
 
-        {/* Action Buttons : Modifier Fiche & Lancer Débriefing */}
+        {/* Action Buttons : Modifier Fiche, Comparer & Lancer Débriefing */}
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <button
             onClick={() => setIsEditModalOpen(true)}
@@ -271,6 +273,13 @@ export default function KamBriefingView({
           >
             <Icons.Edit size={14} />
             <span>Modifier Fiche & Décideurs</span>
+          </button>
+          <button
+            onClick={() => router.push(`/kam/briefing?id=${encodeURIComponent(selectedVisit.id)}&tab=compare`)}
+            className="flex items-center px-4 py-2.5 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-white dark:hover:bg-[#403C40] text-zinc-900 dark:text-white text-xs font-semibold rounded-full transition-all cursor-pointer shadow-2xs"
+            title="Comparer ce compte avec les pairs du même secteur"
+          >
+            <span>Comparer ce compte</span>
           </button>
           <button
             onClick={() => onLaunchDebrief(selectedVisit)}

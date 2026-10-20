@@ -120,3 +120,30 @@ class AccountMemoryEventSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
+from .models import B2BNewsFeedItem
+
+class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
+    enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
+    enterprise_sector = serializers.ReadOnlyField(source='enterprise.sector')
+    enterprise_location = serializers.ReadOnlyField(source='enterprise.location')
+    enterprise_assigned_kam = serializers.ReadOnlyField(source='enterprise.assigned_kam.username')
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+
+    class Meta:
+        model = B2BNewsFeedItem
+        fields = [
+            'id', 'enterprise', 'enterprise_name', 'enterprise_sector', 'enterprise_location',
+            'enterprise_assigned_kam', 'is_web_discovery',
+            'discovered_company_name', 'discovered_website', 'discovered_sector',
+            'discovered_location', 'discovered_size', 'discovered_signals',
+            'title', 'summary', 'source_name', 'source_url',
+            'category', 'category_display', 'priority', 'priority_display',
+            'commercial_angle', 'recommended_action', 'recommended_offer',
+            'is_read', 'is_saved', 'is_converted_to_portfolio',
+            'published_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+

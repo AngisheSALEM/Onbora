@@ -8,7 +8,7 @@ import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit' | 'compare' | 'feed';
 
 interface KamSidebarProps {
   activeView?: KamView;
@@ -60,6 +60,13 @@ export default function KamSidebar({
       badge: null,
     },
     {
+      id: 'feed' as KamView,
+      href: '/kam/feed',
+      label: 'Fil d\'actualité',
+      icon: Icons.Rss,
+      badge: null,
+    },
+    {
       id: 'agenda' as KamView,
       href: '/kam/agenda',
       label: 'Rendez-vous',
@@ -89,6 +96,9 @@ export default function KamSidebar({
     if (item.id === 'accounts') {
       return pathname === '/kam' || pathname === '/kam/' || pathname.startsWith('/kam/accounts') || pathname.startsWith('/kam/briefing');
     }
+    if (item.id === 'feed') {
+      return pathname.startsWith('/kam/feed');
+    }
     if (item.id === 'agenda') {
       return pathname.startsWith('/kam/agenda') || pathname.startsWith('/kam/prepare-visit') || pathname.startsWith('/kam/vocal-visit');
     }
@@ -100,6 +110,7 @@ export default function KamSidebar({
     }
     return pathname === item.href;
   };
+
 
   return (
     <aside

@@ -64,6 +64,7 @@ export default function KamHeader({
     if (pathname.startsWith('/kam/accounts') || pathname === '/kam' || pathname === '/kam/') {
       return 'Rechercher un compte, un secteur, un contact dans ONBORA...';
     }
+    if (pathname.startsWith('/kam/feed')) return 'Rechercher une actualité B2B, un nouveau compte du net...';
     if (pathname.startsWith('/kam/agenda')) return 'Rechercher un rendez-vous, un contact...';
     if (pathname.startsWith('/kam/visits')) return 'Rechercher une visite, un compte-rendu...';
     if (pathname.startsWith('/kam/briefing') || pathname.startsWith('/kam/prepare-visit')) return 'Rechercher dans le briefing...';

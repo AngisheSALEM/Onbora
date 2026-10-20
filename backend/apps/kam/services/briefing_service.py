@@ -454,7 +454,7 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
 
     # Synchronisation immédiate de la synthèse et de la fiche d'entreprise avec les besoins réels de la visite
     try:
-        from apps.kam.commercial_intelligence_service import CommercialIntelligenceService
+        from kam.commercial_intelligence_service import CommercialIntelligenceService
         CommercialIntelligenceService.sync_briefing_after_visit(enterprise, report)
     except Exception as exc:
         logger.warning(f"[BriefingService] Erreur lors de la synchronisation de la synthèse d'entreprise: {exc}")
