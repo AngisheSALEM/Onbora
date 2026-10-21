@@ -1,0 +1,392 @@
+[
+  {
+    "id": "b2b_news_a980e2b70a4d4d09af07da86a6d5b4c5",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba",
+    "content_to_vectorize": "Actualite B2B : Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba\nCategorie : EXPANSION (Priorite : HIGH)\nSource : Presse Économique RDC (2026-10-19 14:41:35.473393)\nResume des faits : Le groupe bancaire accélère son extension dans la ceinture minière de Kolwezi avec l'inauguration de 4 agences modernes nécessitant une redondance télécoms et une connexion temps réel vers le Datacenter central de Kinshasa.\nAngle commercial identifie : Besoin immédiat en liaisons louées Fibre Dédiée 100 Mbps avec bascule automatique SD-WAN 4G/Satellite sur les 4 nouveaux sites de Kolwezi.\nAction recommandee : Contacter la Direction des Opérations Réseau pour proposer une offre groupée Fibre Pro + SD-WAN Managé.\nOffre a pousser : Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+      "published_at": "2026-10-19 14:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_b7ebef52498242a7b68afee7b82e76c0",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité",
+    "content_to_vectorize": "Actualite B2B : Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité\nCategorie : MANAGEMENT (Priorite : HIGH)\nSource : LinkedIn Pro / Mining News (2026-10-19 11:41:35.473393)\nResume des faits : M. Alain Kanza a été nommé DSI groupe. Sa feuille de route prioritaire inclut la modernisation du réseau industriel SCADA et le renforcement de la protection contre les ransomwares suite aux recommandations internationales.\nAngle commercial identifie : Changement de gouvernance IT : le nouveau DSI réévalue systématiquement les contrats de connectivité et de sécurité managée (SOC).\nAction recommandee : Planifier un rendez-vous institutionnel de courtoisie pour présenter notre offre Cyber Défense et Audit Télécoms.\nOffre a pousser : Cyber SOC Managé & Pare-feu Nouvelle Génération",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "MANAGEMENT",
+      "priority": "HIGH",
+      "recommended_offer": "Cyber SOC Managé & Pare-feu Nouvelle Génération",
+      "published_at": "2026-10-19 11:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_40ccf93e52a746fd96d44cb313902ef0",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete",
+    "content_to_vectorize": "Actualite B2B : Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete\nCategorie : INCIDENT (Priorite : HIGH)\nSource : Veille Télécoms & Réseaux Sociaux (2026-10-19 07:41:35.473393)\nResume des faits : Plusieurs interruptions de liaison ont été constatées chez l'opérateur historique cette semaine, ralentissant la chaîne de logistique et la synchronisation SAP de l'usine.\nAngle commercial identifie : Forte insatisfaction opérationnelle client. Opportunité stratégique de positionner une liaison Fibre de secours Orange avec garantie de temps de rétablissement (GTR 2h).\nAction recommandee : Appeler le Directeur Technique pour lui proposer une démonstration de bascule instantanée sans coupure.\nOffre a pousser : Liaison de Secours Haute Disponibilité GTR 2h",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "INCIDENT",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison de Secours Haute Disponibilité GTR 2h",
+      "published_at": "2026-10-19 07:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_f0a7f356a21147dab5e3e0c319e42ca4",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Migration Cloud hybride et centralisation des flux bancaires régionaux",
+    "content_to_vectorize": "Actualite B2B : Migration Cloud hybride et centralisation des flux bancaires régionaux\nCategorie : TECH_PROJECT (Priorite : MEDIUM)\nSource : Africa Tech Review (2026-10-18 16:41:35.473393)\nResume des faits : Equity BCDC prépare la migration de son infrastructure applicative vers un cloud privé interconnecté avec ses filiales en Afrique Centrale. Le projet requiert un backbone très haut débit.\nAngle commercial identifie : Le passage au Cloud hybride nécessite une interconnexion directe (Direct Connect) à faible latence vers les datacenters neutres.\nAction recommandee : Transmettre une proposition de valeur Cloud Connect Orange Business.\nOffre a pousser : Cloud Direct Connect & Hébergement Datacenter",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "TECH_PROJECT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Cloud Direct Connect & Hébergement Datacenter",
+      "published_at": "2026-10-18 16:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_c41d778904364fde8dde75092a7b03ae",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Extension de la plateforme logistique multimodale au terminal portuaire de Matadi",
+    "content_to_vectorize": "Actualite B2B : Extension de la plateforme logistique multimodale au terminal portuaire de Matadi\nCategorie : EXPANSION (Priorite : MEDIUM)\nSource : Journal Maritime & Transport (2026-10-18 04:41:35.473393)\nResume des faits : Mise en service d'une nouvelle zone de dépotage sous douane de 15 000 m². Les terminaux mobiles de manutention et les caméras de vidéosurveillance nécessitent une couverture Wi-Fi Pro outdoor et fibre optique.\nAngle commercial identifie : Demande en réseau sans fil haute densité industriel et liaison Fibre 200 Mbps vers le siège de Kinshasa.\nAction recommandee : Proposer une étude de couverture Wi-Fi Pro Outdoor avec visite terrain conjointe.\nOffre a pousser : Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "MEDIUM",
+      "recommended_offer": "Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+      "published_at": "2026-10-18 04:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_119d4022d3f14857843b1b9f60f29b59",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions",
+    "content_to_vectorize": "Actualite B2B : Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions\nCategorie : NEW_ACCOUNT (Priorite : HIGH)\nSource : Veille Registre RCCM & Web Sourcing (2026-10-19 15:41:35.473393)\nResume des faits : Détection d'une nouvelle entité logistique spécialisée dans le transport de concentrés de cuivre et cobalt entre Kolwezi et le corridor de Durban. La société vient de publier son portail d'appels d'offres en ligne.\nAngle commercial identifie : Nouveau compte B2B à fort potentiel non encore prospecté. Flotte connectée par télématique GPS et besoin critique de connectivité internet par satellite/4G sur les routes de transit.\nAction recommandee : Prendre contact immédiatement avec le Directeur Général pour proposer notre pack Flotte Connectée IoT + Fibre Bureau.\nOffre a pousser : Pack IoT Télématique Flotte & Fibre Pro",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "HIGH",
+      "recommended_offer": "Pack IoT Télématique Flotte & Fibre Pro",
+      "published_at": "2026-10-19 15:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_16ab3d12b8c94d139b631e668f796f19",
+    "doc_type": "b2b_news_intelligence",
+    "title": "La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs",
+    "content_to_vectorize": "Actualite B2B : La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs\nCategorie : FINANCE (Priorite : HIGH)\nSource : TechCabal / Presse Économique (2026-10-19 12:41:35.473393)\nResume des faits : La start-up kinoise spécialisée dans l'encaissement marchand pour le e-commerce vient de boucler son premier tour de table pour installer son hub technique à la Gombe et recruter son équipe de développeurs.\nAngle commercial identifie : Agrégateur de paiement : besoin impératif d'interconnexion directe aux API USSD/SMS Orange Money et de liens télécoms redondés haute sécurité.\nAction recommandee : Positionner Onbora comme partenaire télécoms & passerelle de paiement auprès des fondateurs.\nOffre a pousser : Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "FINANCE",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+      "published_at": "2026-10-19 12:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_76d8f9df79a94568a018293bc7165b0b",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema",
+    "content_to_vectorize": "Actualite B2B : Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema\nCategorie : EXPANSION (Priorite : HIGH)\nSource : LinkedIn / Annonces Légales (2026-10-19 09:41:35.473393)\nResume des faits : Le groupe médical CIF finalise les travaux d'un complexe hospitalier haut de gamme avec service d'urgences, imagerie par résonance magnétique (IRM) et télémédecine.\nAngle commercial identifie : L'imagerie médicale dématérialisée (PACS) et la télémédecine requièrent une bande passante garantie et une continuité de service 24/7.\nAction recommandee : Contacter le Médecin Directeur pour présenter notre offre Santé Numérique & Fibre Symétrique.\nOffre a pousser : Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+      "published_at": "2026-10-19 09:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_07f54a19d1dd4826b9424ca15badf0e1",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs",
+    "content_to_vectorize": "Actualite B2B : Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Presse Régionale Katanga (2026-10-18 22:41:35.473393)\nResume des faits : Un consortium d'investisseurs régionaux démarre la construction d'une usine moderne de transformation de céréales d'une capacité de 200 tonnes par jour en périphérie de Lubumbashi.\nAngle commercial identifie : Site situé hors du coeur urbain : opportunité idéale de raccordement par faisceau hertzien ou fibre optique avec interphonie de site.\nAction recommandee : Effectuer une étude d'éligibilité radio/fibre pour formuler une offre préemptive avant la fin du chantier.\nOffre a pousser : Faisceau Hertzien Haute Capacité & PABX IP",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Faisceau Hertzien Haute Capacité & PABX IP",
+      "published_at": "2026-10-18 22:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_39794f2ab1014e3a815fb768f257390b",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma",
+    "content_to_vectorize": "Actualite B2B : Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Veille Web Tech Afrique (2026-10-18 10:41:35.473393)\nResume des faits : Une société d'ingénierie vient d'ouvrir ses bureaux à Goma pour fournir des services d'analyse cartographique et de gestion de données de secours aux organisations humanitaires.\nAngle commercial identifie : Forte consommation de données cartographiques et échanges volumineux avec les sièges des ONG en Europe et aux États-Unis.\nAction recommandee : Proposer notre offre Satellite Très Haut Débit et VPN International sécurisé.\nOffre a pousser : Fibre Optique Goma & VPN International Sécurisé",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Fibre Optique Goma & VPN International Sécurisé",
+      "published_at": "2026-10-18 10:41:35.473393"
+    }
+  },
+  {
+    "id": "b2b_news_7e470397bd254a0bb46711108d737b4b",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba",
+    "content_to_vectorize": "Actualite B2B : Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba\nCategorie : EXPANSION (Priorite : HIGH)\nSource : Presse Économique RDC (2026-10-19 15:09:22.325973)\nResume des faits : Le groupe bancaire accélère son extension dans la ceinture minière de Kolwezi avec l'inauguration de 4 agences modernes nécessitant une redondance télécoms et une connexion temps réel vers le Datacenter central de Kinshasa.\nAngle commercial identifie : Besoin immédiat en liaisons louées Fibre Dédiée 100 Mbps avec bascule automatique SD-WAN 4G/Satellite sur les 4 nouveaux sites de Kolwezi.\nAction recommandee : Contacter la Direction des Opérations Réseau pour proposer une offre groupée Fibre Pro + SD-WAN Managé.\nOffre a pousser : Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+      "published_at": "2026-10-19 15:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_29e3c7c0eb044922a093b9a0e459b139",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité",
+    "content_to_vectorize": "Actualite B2B : Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité\nCategorie : MANAGEMENT (Priorite : HIGH)\nSource : LinkedIn Pro / Mining News (2026-10-19 12:09:22.325973)\nResume des faits : M. Alain Kanza a été nommé DSI groupe. Sa feuille de route prioritaire inclut la modernisation du réseau industriel SCADA et le renforcement de la protection contre les ransomwares suite aux recommandations internationales.\nAngle commercial identifie : Changement de gouvernance IT : le nouveau DSI réévalue systématiquement les contrats de connectivité et de sécurité managée (SOC).\nAction recommandee : Planifier un rendez-vous institutionnel de courtoisie pour présenter notre offre Cyber Défense et Audit Télécoms.\nOffre a pousser : Cyber SOC Managé & Pare-feu Nouvelle Génération",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "MANAGEMENT",
+      "priority": "HIGH",
+      "recommended_offer": "Cyber SOC Managé & Pare-feu Nouvelle Génération",
+      "published_at": "2026-10-19 12:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_cbb8026ea40c4ada8073fec52f672d70",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete",
+    "content_to_vectorize": "Actualite B2B : Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete\nCategorie : INCIDENT (Priorite : HIGH)\nSource : Veille Télécoms & Réseaux Sociaux (2026-10-19 08:09:22.325973)\nResume des faits : Plusieurs interruptions de liaison ont été constatées chez l'opérateur historique cette semaine, ralentissant la chaîne de logistique et la synchronisation SAP de l'usine.\nAngle commercial identifie : Forte insatisfaction opérationnelle client. Opportunité stratégique de positionner une liaison Fibre de secours Orange avec garantie de temps de rétablissement (GTR 2h).\nAction recommandee : Appeler le Directeur Technique pour lui proposer une démonstration de bascule instantanée sans coupure.\nOffre a pousser : Liaison de Secours Haute Disponibilité GTR 2h",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "INCIDENT",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison de Secours Haute Disponibilité GTR 2h",
+      "published_at": "2026-10-19 08:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_b6a0fd5f177b471e9369a4e35ab891b7",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Migration Cloud hybride et centralisation des flux bancaires régionaux",
+    "content_to_vectorize": "Actualite B2B : Migration Cloud hybride et centralisation des flux bancaires régionaux\nCategorie : TECH_PROJECT (Priorite : MEDIUM)\nSource : Africa Tech Review (2026-10-18 17:09:22.325973)\nResume des faits : Equity BCDC prépare la migration de son infrastructure applicative vers un cloud privé interconnecté avec ses filiales en Afrique Centrale. Le projet requiert un backbone très haut débit.\nAngle commercial identifie : Le passage au Cloud hybride nécessite une interconnexion directe (Direct Connect) à faible latence vers les datacenters neutres.\nAction recommandee : Transmettre une proposition de valeur Cloud Connect Orange Business.\nOffre a pousser : Cloud Direct Connect & Hébergement Datacenter",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "TECH_PROJECT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Cloud Direct Connect & Hébergement Datacenter",
+      "published_at": "2026-10-18 17:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_67311bc95a5d4e5c8090476fd4ace576",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Extension de la plateforme logistique multimodale au terminal portuaire de Matadi",
+    "content_to_vectorize": "Actualite B2B : Extension de la plateforme logistique multimodale au terminal portuaire de Matadi\nCategorie : EXPANSION (Priorite : MEDIUM)\nSource : Journal Maritime & Transport (2026-10-18 05:09:22.325973)\nResume des faits : Mise en service d'une nouvelle zone de dépotage sous douane de 15 000 m². Les terminaux mobiles de manutention et les caméras de vidéosurveillance nécessitent une couverture Wi-Fi Pro outdoor et fibre optique.\nAngle commercial identifie : Demande en réseau sans fil haute densité industriel et liaison Fibre 200 Mbps vers le siège de Kinshasa.\nAction recommandee : Proposer une étude de couverture Wi-Fi Pro Outdoor avec visite terrain conjointe.\nOffre a pousser : Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "MEDIUM",
+      "recommended_offer": "Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+      "published_at": "2026-10-18 05:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_d24402729f6d4c7bbd97439e4b3a1165",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions",
+    "content_to_vectorize": "Actualite B2B : Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions\nCategorie : NEW_ACCOUNT (Priorite : HIGH)\nSource : Veille Registre RCCM & Web Sourcing (2026-10-19 16:09:22.325973)\nResume des faits : Détection d'une nouvelle entité logistique spécialisée dans le transport de concentrés de cuivre et cobalt entre Kolwezi et le corridor de Durban. La société vient de publier son portail d'appels d'offres en ligne.\nAngle commercial identifie : Nouveau compte B2B à fort potentiel non encore prospecté. Flotte connectée par télématique GPS et besoin critique de connectivité internet par satellite/4G sur les routes de transit.\nAction recommandee : Prendre contact immédiatement avec le Directeur Général pour proposer notre pack Flotte Connectée IoT + Fibre Bureau.\nOffre a pousser : Pack IoT Télématique Flotte & Fibre Pro",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "HIGH",
+      "recommended_offer": "Pack IoT Télématique Flotte & Fibre Pro",
+      "published_at": "2026-10-19 16:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_2b978ca16d2f458bbbf593ed0a0571c5",
+    "doc_type": "b2b_news_intelligence",
+    "title": "La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs",
+    "content_to_vectorize": "Actualite B2B : La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs\nCategorie : FINANCE (Priorite : HIGH)\nSource : TechCabal / Presse Économique (2026-10-19 13:09:22.325973)\nResume des faits : La start-up kinoise spécialisée dans l'encaissement marchand pour le e-commerce vient de boucler son premier tour de table pour installer son hub technique à la Gombe et recruter son équipe de développeurs.\nAngle commercial identifie : Agrégateur de paiement : besoin impératif d'interconnexion directe aux API USSD/SMS Orange Money et de liens télécoms redondés haute sécurité.\nAction recommandee : Positionner Onbora comme partenaire télécoms & passerelle de paiement auprès des fondateurs.\nOffre a pousser : Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "FINANCE",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+      "published_at": "2026-10-19 13:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_608657abad88408f80b8aab315611159",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema",
+    "content_to_vectorize": "Actualite B2B : Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema\nCategorie : EXPANSION (Priorite : HIGH)\nSource : LinkedIn / Annonces Légales (2026-10-19 10:09:22.325973)\nResume des faits : Le groupe médical CIF finalise les travaux d'un complexe hospitalier haut de gamme avec service d'urgences, imagerie par résonance magnétique (IRM) et télémédecine.\nAngle commercial identifie : L'imagerie médicale dématérialisée (PACS) et la télémédecine requièrent une bande passante garantie et une continuité de service 24/7.\nAction recommandee : Contacter le Médecin Directeur pour présenter notre offre Santé Numérique & Fibre Symétrique.\nOffre a pousser : Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+      "published_at": "2026-10-19 10:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_da2b42eb5dfc421f9daa076615049a9e",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs",
+    "content_to_vectorize": "Actualite B2B : Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Presse Régionale Katanga (2026-10-18 23:09:22.325973)\nResume des faits : Un consortium d'investisseurs régionaux démarre la construction d'une usine moderne de transformation de céréales d'une capacité de 200 tonnes par jour en périphérie de Lubumbashi.\nAngle commercial identifie : Site situé hors du coeur urbain : opportunité idéale de raccordement par faisceau hertzien ou fibre optique avec interphonie de site.\nAction recommandee : Effectuer une étude d'éligibilité radio/fibre pour formuler une offre préemptive avant la fin du chantier.\nOffre a pousser : Faisceau Hertzien Haute Capacité & PABX IP",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Faisceau Hertzien Haute Capacité & PABX IP",
+      "published_at": "2026-10-18 23:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_e2e6ae77391c46efa1b3b7146a6204b7",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma",
+    "content_to_vectorize": "Actualite B2B : Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Veille Web Tech Afrique (2026-10-18 11:09:22.325973)\nResume des faits : Une société d'ingénierie vient d'ouvrir ses bureaux à Goma pour fournir des services d'analyse cartographique et de gestion de données de secours aux organisations humanitaires.\nAngle commercial identifie : Forte consommation de données cartographiques et échanges volumineux avec les sièges des ONG en Europe et aux États-Unis.\nAction recommandee : Proposer notre offre Satellite Très Haut Débit et VPN International sécurisé.\nOffre a pousser : Fibre Optique Goma & VPN International Sécurisé",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Fibre Optique Goma & VPN International Sécurisé",
+      "published_at": "2026-10-18 11:09:22.325973"
+    }
+  },
+  {
+    "id": "b2b_news_96c8c71e30454b658a4001865231e514",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba",
+    "content_to_vectorize": "Actualite B2B : Ouverture de 4 nouvelles agences et déploiement de guichets intelligents au Lualaba\nCategorie : EXPANSION (Priorite : HIGH)\nSource : Presse Économique RDC (2026-10-20 15:55:14.862397)\nResume des faits : Le groupe bancaire accélère son extension dans la ceinture minière de Kolwezi avec l'inauguration de 4 agences modernes nécessitant une redondance télécoms et une connexion temps réel vers le Datacenter central de Kinshasa.\nAngle commercial identifie : Besoin immédiat en liaisons louées Fibre Dédiée 100 Mbps avec bascule automatique SD-WAN 4G/Satellite sur les 4 nouveaux sites de Kolwezi.\nAction recommandee : Contacter la Direction des Opérations Réseau pour proposer une offre groupée Fibre Pro + SD-WAN Managé.\nOffre a pousser : Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Dédiée Sécurisée & SD-WAN Inter-sites",
+      "published_at": "2026-10-20 15:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_5312efe074e44ce98deba82bb56c209a",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité",
+    "content_to_vectorize": "Actualite B2B : Nomination d'un nouveau Directeur des Systèmes d'Information (DSI) et audit cybersécurité\nCategorie : MANAGEMENT (Priorite : HIGH)\nSource : LinkedIn Pro / Mining News (2026-10-20 12:55:14.862397)\nResume des faits : M. Alain Kanza a été nommé DSI groupe. Sa feuille de route prioritaire inclut la modernisation du réseau industriel SCADA et le renforcement de la protection contre les ransomwares suite aux recommandations internationales.\nAngle commercial identifie : Changement de gouvernance IT : le nouveau DSI réévalue systématiquement les contrats de connectivité et de sécurité managée (SOC).\nAction recommandee : Planifier un rendez-vous institutionnel de courtoisie pour présenter notre offre Cyber Défense et Audit Télécoms.\nOffre a pousser : Cyber SOC Managé & Pare-feu Nouvelle Génération",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "MANAGEMENT",
+      "priority": "HIGH",
+      "recommended_offer": "Cyber SOC Managé & Pare-feu Nouvelle Génération",
+      "published_at": "2026-10-20 12:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_4e478ff9775349f08ca5a8753557af4e",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete",
+    "content_to_vectorize": "Actualite B2B : Incident majeur sur la boucle réseau concurrente signalée sur les sites d'embouteillage de Limete\nCategorie : INCIDENT (Priorite : HIGH)\nSource : Veille Télécoms & Réseaux Sociaux (2026-10-20 08:55:14.862397)\nResume des faits : Plusieurs interruptions de liaison ont été constatées chez l'opérateur historique cette semaine, ralentissant la chaîne de logistique et la synchronisation SAP de l'usine.\nAngle commercial identifie : Forte insatisfaction opérationnelle client. Opportunité stratégique de positionner une liaison Fibre de secours Orange avec garantie de temps de rétablissement (GTR 2h).\nAction recommandee : Appeler le Directeur Technique pour lui proposer une démonstration de bascule instantanée sans coupure.\nOffre a pousser : Liaison de Secours Haute Disponibilité GTR 2h",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "INCIDENT",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison de Secours Haute Disponibilité GTR 2h",
+      "published_at": "2026-10-20 08:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_a597bd27834c450190456cb1aa00383c",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Migration Cloud hybride et centralisation des flux bancaires régionaux",
+    "content_to_vectorize": "Actualite B2B : Migration Cloud hybride et centralisation des flux bancaires régionaux\nCategorie : TECH_PROJECT (Priorite : MEDIUM)\nSource : Africa Tech Review (2026-10-19 17:55:14.862397)\nResume des faits : Equity BCDC prépare la migration de son infrastructure applicative vers un cloud privé interconnecté avec ses filiales en Afrique Centrale. Le projet requiert un backbone très haut débit.\nAngle commercial identifie : Le passage au Cloud hybride nécessite une interconnexion directe (Direct Connect) à faible latence vers les datacenters neutres.\nAction recommandee : Transmettre une proposition de valeur Cloud Connect Orange Business.\nOffre a pousser : Cloud Direct Connect & Hébergement Datacenter",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "TECH_PROJECT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Cloud Direct Connect & Hébergement Datacenter",
+      "published_at": "2026-10-19 17:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_198e6afde95e4a66aa74d06008eaf611",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Extension de la plateforme logistique multimodale au terminal portuaire de Matadi",
+    "content_to_vectorize": "Actualite B2B : Extension de la plateforme logistique multimodale au terminal portuaire de Matadi\nCategorie : EXPANSION (Priorite : MEDIUM)\nSource : Journal Maritime & Transport (2026-10-19 05:55:14.862397)\nResume des faits : Mise en service d'une nouvelle zone de dépotage sous douane de 15 000 m². Les terminaux mobiles de manutention et les caméras de vidéosurveillance nécessitent une couverture Wi-Fi Pro outdoor et fibre optique.\nAngle commercial identifie : Demande en réseau sans fil haute densité industriel et liaison Fibre 200 Mbps vers le siège de Kinshasa.\nAction recommandee : Proposer une étude de couverture Wi-Fi Pro Outdoor avec visite terrain conjointe.\nOffre a pousser : Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "MEDIUM",
+      "recommended_offer": "Wi-Fi Pro Industriel & Fibre Optique Dédiée",
+      "published_at": "2026-10-19 05:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_6e3ac3cacf9f425d9119912f282ff3a8",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions",
+    "content_to_vectorize": "Actualite B2B : Nouveau prestataire logistique minier immatriculé à Kolwezi avec flotte de 40 camions\nCategorie : NEW_ACCOUNT (Priorite : HIGH)\nSource : Veille Registre RCCM & Web Sourcing (2026-10-20 16:55:14.862397)\nResume des faits : Détection d'une nouvelle entité logistique spécialisée dans le transport de concentrés de cuivre et cobalt entre Kolwezi et le corridor de Durban. La société vient de publier son portail d'appels d'offres en ligne.\nAngle commercial identifie : Nouveau compte B2B à fort potentiel non encore prospecté. Flotte connectée par télématique GPS et besoin critique de connectivité internet par satellite/4G sur les routes de transit.\nAction recommandee : Prendre contact immédiatement avec le Directeur Général pour proposer notre pack Flotte Connectée IoT + Fibre Bureau.\nOffre a pousser : Pack IoT Télématique Flotte & Fibre Pro",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "HIGH",
+      "recommended_offer": "Pack IoT Télématique Flotte & Fibre Pro",
+      "published_at": "2026-10-20 16:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_bdadd22041c64756abec586808165378",
+    "doc_type": "b2b_news_intelligence",
+    "title": "La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs",
+    "content_to_vectorize": "Actualite B2B : La fintech CongoPay lève 1,8 million USD pour son agrégateur de paiement multi-opérateurs\nCategorie : FINANCE (Priorite : HIGH)\nSource : TechCabal / Presse Économique (2026-10-20 13:55:14.862397)\nResume des faits : La start-up kinoise spécialisée dans l'encaissement marchand pour le e-commerce vient de boucler son premier tour de table pour installer son hub technique à la Gombe et recruter son équipe de développeurs.\nAngle commercial identifie : Agrégateur de paiement : besoin impératif d'interconnexion directe aux API USSD/SMS Orange Money et de liens télécoms redondés haute sécurité.\nAction recommandee : Positionner Onbora comme partenaire télécoms & passerelle de paiement auprès des fondateurs.\nOffre a pousser : Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "FINANCE",
+      "priority": "HIGH",
+      "recommended_offer": "Liaison Bancaire Dédiée & Passerelle SMS/USSD",
+      "published_at": "2026-10-20 13:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_426ff369a90d48d29e344a4e99fdbb8b",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema",
+    "content_to_vectorize": "Actualite B2B : Ouverture imminente d'un centre hospitalier privé de 60 lits à Ngaliema\nCategorie : EXPANSION (Priorite : HIGH)\nSource : LinkedIn / Annonces Légales (2026-10-20 10:55:14.862397)\nResume des faits : Le groupe médical CIF finalise les travaux d'un complexe hospitalier haut de gamme avec service d'urgences, imagerie par résonance magnétique (IRM) et télémédecine.\nAngle commercial identifie : L'imagerie médicale dématérialisée (PACS) et la télémédecine requièrent une bande passante garantie et une continuité de service 24/7.\nAction recommandee : Contacter le Médecin Directeur pour présenter notre offre Santé Numérique & Fibre Symétrique.\nOffre a pousser : Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "EXPANSION",
+      "priority": "HIGH",
+      "recommended_offer": "Fibre Pro Symétrique 100 Mbps & Téléphonie IP Centrex",
+      "published_at": "2026-10-20 10:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_39bff10dbc3e4e6ba75edbe773563387",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs",
+    "content_to_vectorize": "Actualite B2B : Implantation d'une nouvelle unité industrielle de minoterie et de stockage de maïs\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Presse Régionale Katanga (2026-10-19 23:55:14.862397)\nResume des faits : Un consortium d'investisseurs régionaux démarre la construction d'une usine moderne de transformation de céréales d'une capacité de 200 tonnes par jour en périphérie de Lubumbashi.\nAngle commercial identifie : Site situé hors du coeur urbain : opportunité idéale de raccordement par faisceau hertzien ou fibre optique avec interphonie de site.\nAction recommandee : Effectuer une étude d'éligibilité radio/fibre pour formuler une offre préemptive avant la fin du chantier.\nOffre a pousser : Faisceau Hertzien Haute Capacité & PABX IP",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Faisceau Hertzien Haute Capacité & PABX IP",
+      "published_at": "2026-10-19 23:55:14.862397"
+    }
+  },
+  {
+    "id": "b2b_news_8ddb82ec1387498482838ce43eac7697",
+    "doc_type": "b2b_news_intelligence",
+    "title": "Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma",
+    "content_to_vectorize": "Actualite B2B : Création d'un centre d'ingénierie logicielle et d'analyse de données humanitaires à Goma\nCategorie : NEW_ACCOUNT (Priorite : MEDIUM)\nSource : Veille Web Tech Afrique (2026-10-19 11:55:14.862397)\nResume des faits : Une société d'ingénierie vient d'ouvrir ses bureaux à Goma pour fournir des services d'analyse cartographique et de gestion de données de secours aux organisations humanitaires.\nAngle commercial identifie : Forte consommation de données cartographiques et échanges volumineux avec les sièges des ONG en Europe et aux États-Unis.\nAction recommandee : Proposer notre offre Satellite Très Haut Débit et VPN International sécurisé.\nOffre a pousser : Fibre Optique Goma & VPN International Sécurisé",
+    "metadata": {
+      "source_table": "kam_b2bnewsfeeditem",
+      "category": "NEW_ACCOUNT",
+      "priority": "MEDIUM",
+      "recommended_offer": "Fibre Optique Goma & VPN International Sécurisé",
+      "published_at": "2026-10-19 11:55:14.862397"
+    }
+  }
+]

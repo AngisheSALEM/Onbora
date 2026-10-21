@@ -9,12 +9,12 @@ interface PeerOption {
   name: string;
   city: string;
   overall_score: number;
-}
-
-interface SectorData {
-  sector: string;
-  count: number;
-  enterprises: PeerOption[];
+  employee_count?: number;
+  site_count?: number;
+  similarity_percentage?: number;
+  is_twin?: boolean;
+  sizing_tier?: string;
+  is_closest_twin?: boolean;
 }
 
 interface RadarItem {
@@ -42,6 +42,8 @@ interface Gap {
   description: string;
   solution_recommended: string;
   dimension: string;
+  pitch?: string;
+  impact_score?: number;
 }
 
 interface CriterionRow {
@@ -59,6 +61,16 @@ interface KamRecommendation {
   solution_title: string;
   target_need: string;
   pitch_argument: string;
+}
+
+interface SizingComparison {
+  similarity_percentage: number;
+  is_twin: boolean;
+  tier_a: string;
+  tier_b: string;
+  employee_diff: number;
+  site_diff: number;
+  topology_match?: string;
 }
 
 interface ComparisonData {
@@ -79,6 +91,8 @@ interface ComparisonData {
     annual_revenue: number;
     current_connectivity: string;
     incident_count: number;
+    bandwidth_total?: number;
+    sizing_tier?: string;
   };
   meta_b: {
     id: number | null;
@@ -90,8 +104,13 @@ interface ComparisonData {
     annual_revenue: number;
     current_connectivity: string;
     incident_count: number;
+    bandwidth_total?: number;
+    sizing_tier?: string;
+    similarity_percentage?: number;
   };
   radar: RadarItem[];
+  sizing_comparison?: SizingComparison;
+  sector_peers?: PeerOption[];
   advantages_a: Advantage[];
   advantages_b: Advantage[];
   gaps_a: Gap[];
@@ -116,61 +135,49 @@ export default function KamAccountComparisonSection({
 
   // States
   const [peers, setPeers] = useState<PeerOption[]>([]);
-  const [selectedPeerId, setSelectedPeerId] = useState<number | null>(null); // null = Moyenne du secteur
+  const [selectedPeerId, setSelectedPeerId] = useState<number | null>(null); // null = auto closest sizing twin
   const [comparison, setComparison] = useState<ComparisonData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedPitchIndex, setCopiedPitchIndex] = useState<number | null>(null);
   const [activeDimension, setActiveDimension] = useState<string | null>(null);
 
-  // 1. Charger la liste des pairs du même secteur
-  useEffect(() => {
-    let isMounted = true;
-    fetchAPI('/api/kam/comparisons/sectors/')
-      .then((data) => {
-        if (!isMounted) return;
-        const allSectors: SectorData[] = data.sectors || [];
-        const currentSectorName = sector || '';
-        let matchedSector = allSectors.find(
-          (s) => s.sector.toLowerCase() === currentSectorName.toLowerCase()
-        );
+  // Priorité absolue sur "Ce qui lui manque"
+  const [rightCardTab, setRightCardTab] = useState<'gaps' | 'advantages'>('gaps');
 
-        if (!matchedSector) {
-          matchedSector = allSectors.find((s) =>
-            s.enterprises.some((e) => e.id === numericId)
-          );
-        }
+  // Gaps en accordéon : COLLAPSED PAR DÉFAUT DANS TOUS LES CAS (Set vide)
+  const [expandedGapIndices, setExpandedGapIndices] = useState<Set<number>>(new Set());
 
-        if (matchedSector) {
-          const eligiblePeers = matchedSector.enterprises.filter((e) => e.id !== numericId);
-          setPeers(eligiblePeers);
-          if (eligiblePeers.length > 0) {
-            setSelectedPeerId(eligiblePeers[0].id);
-          } else {
-            setSelectedPeerId(null);
-          }
-        }
-      })
-      .catch((err) => {
-        console.warn('Erreur chargement des pairs du secteur:', err);
-      });
+  const toggleGapExpand = (idx: number) => {
+    setExpandedGapIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+      return next;
+    });
+  };
 
-    return () => {
-      isMounted = false;
-    };
-  }, [sector, numericId]);
-
-  // 2. Charger les données de comparaison
+  // 1. Charger les données de comparaison
   const loadComparison = useCallback(async (aId: number, bId: number | null) => {
     setLoading(true);
     setError(null);
     try {
       let url = `/api/kam/comparisons/?enterprise_a=${aId}`;
-      if (bId) {
+      if (bId !== null) {
         url += `&enterprise_b=${bId}`;
       }
       const data: ComparisonData = await fetchAPI(url);
       setComparison(data);
+
+      if (data.sector_peers && data.sector_peers.length > 0) {
+        setPeers(data.sector_peers);
+        if (bId === null && data.meta_b && data.meta_b.id) {
+          setSelectedPeerId(data.meta_b.id);
+        }
+      }
     } catch (err: any) {
       console.error('Erreur chargement comparatif:', err);
       setError(err?.message || 'Impossible de charger la comparaison.');
@@ -229,21 +236,24 @@ export default function KamAccountComparisonSection({
   }, [radarDimensions]);
 
   return (
-    <div className="space-y-6 select-none">
-      {/* 1. Barre de Contrôle Minimaliste : Choix du Pair à Comparer */}
-      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-5 border border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-        <div>
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-            Benchmark & Analyse Sectorielle
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Secteur : {sector || comparison?.sector || 'Général'}
-          </p>
+    <div className="space-y-4 select-none">
+      {/* 1. Barre d'action Épurée : Synthèse versus et Choix du Pair */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
+          <span className="text-zinc-900 dark:text-white flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#4F6CE8]"></span>
+            {comparison ? `${comparison.meta_a.name} (${comparison.overall_score_a} pts)` : 'Compte'}
+          </span>
+          <span className="text-zinc-400">vs</span>
+          <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500"></span>
+            {comparison ? `${comparison.meta_b.name} (${comparison.overall_score_b} pts)` : 'Pair'}
+          </span>
         </div>
 
-        {/* Sélecteur du Pair */}
-        <div className="flex items-center gap-2 bg-[#ECEAE5] dark:bg-[#242124] rounded-full px-3 py-1.5 border-none">
-          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+        {/* Sélecteur du Pair épuré */}
+        <div className="flex items-center gap-2 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-full px-3 py-1.5 border border-black/5 dark:border-white/5">
+          <span className="text-xs font-medium text-zinc-500 shrink-0">
             Comparer avec :
           </span>
           <select
@@ -256,16 +266,16 @@ export default function KamAccountComparisonSection({
               }
             }}
             disabled={loading}
-            className="bg-transparent border-none text-xs font-bold text-zinc-900 dark:text-white outline-none cursor-pointer pr-2"
+            className="bg-transparent border-none text-xs font-bold text-zinc-900 dark:text-white outline-none cursor-pointer max-w-[280px] truncate pr-2"
           >
-            <option value="BENCHMARK" className="bg-white dark:bg-[#2D2A2D]">
-              Moyenne du secteur ({comparison?.sector || 'Benchmark'})
-            </option>
             {peers.map((p) => (
               <option key={p.id} value={p.id} className="bg-white dark:bg-[#2D2A2D]">
-                {p.name} ({p.overall_score} pts)
+                {p.name}
               </option>
             ))}
+            <option value="BENCHMARK" className="bg-white dark:bg-[#2D2A2D]">
+              Moyenne du secteur
+            </option>
           </select>
         </div>
       </div>
@@ -275,7 +285,7 @@ export default function KamAccountComparisonSection({
         <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-12 text-center flex flex-col items-center justify-center gap-3">
           <Icons.RefreshCw size={24} className="animate-spin text-[#4F6CE8]" />
           <span className="text-xs font-semibold text-zinc-500">
-            Calcul de l'analyse comparative sectorielle...
+            Chargement de la comparaison...
           </span>
         </div>
       ) : error ? (
@@ -284,25 +294,9 @@ export default function KamAccountComparisonSection({
         </div>
       ) : comparison ? (
         <>
-          {/* 3. Titre Dynamique & Légende Minimaliste */}
-          <div className="text-center py-1 space-y-2">
-            <h4 className="text-lg md:text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
-              {comparison.headline}
-            </h4>
-
-            <div className="flex items-center justify-center gap-6 text-xs font-semibold">
-              <span className="text-zinc-900 dark:text-white">
-                {comparison.meta_a.name} ({comparison.overall_score_a} pts)
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {comparison.meta_b.name} ({comparison.overall_score_b} pts)
-              </span>
-            </div>
-          </div>
-
-          {/* 4. Radar des 6 Piliers + Où il se démarque */}
+          {/* 3. Radar des 6 Piliers (Gauche) + "CE QUI LUI MANQUE" Collapsible (Droite) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Radar Chart Minimaliste */}
+            {/* Colonne Gauche : Radar Chart */}
             <div className="lg:col-span-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col items-center justify-between shadow-sm">
               <div className="w-full flex items-center justify-between mb-1">
                 <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -423,109 +417,164 @@ export default function KamAccountComparisonSection({
               </div>
             </div>
 
-            {/* Où il se démarque (Forces) */}
+            {/* Colonne Droite : Priorité "CE QUI LUI MANQUE" - Format Accordéon Dépliable (Collapse par défaut) */}
             <div className="lg:col-span-7 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col justify-between shadow-sm">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white">
-                    Où il se démarque ({comparison.advantages_a.length} atout{comparison.advantages_a.length > 1 ? 's' : ''})
-                  </span>
+                {/* Switcher d'Onglets Segmenté Épuré (Défaut : Ce qui lui manque) */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <div className="inline-flex p-1 rounded-full bg-[#ECEAE5] dark:bg-[#242124]">
+                    <button
+                      onClick={() => setRightCardTab('gaps')}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        rightCardTab === 'gaps'
+                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
+                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>Ce qui lui manque ({comparison.gaps_a.length})</span>
+                    </button>
+                    <button
+                      onClick={() => setRightCardTab('advantages')}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        rightCardTab === 'advantages'
+                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
+                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>Où il se démarque ({comparison.advantages_a.length})</span>
+                    </button>
+                  </div>
+
                   <span className="text-[11px] text-zinc-500">
                     Face à {comparison.meta_b.name}
                   </span>
                 </div>
 
-                {comparison.advantages_a.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-zinc-500">
-                    Ce compte est au même niveau ou en retrait sur les critères actuels.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {comparison.advantages_a.map((adv, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col gap-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                            {adv.criterion}
-                          </span>
-                          <span className="text-xs font-bold text-[#4F6CE8]">
-                            {adv.value_main}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-[#4F6CE8] rounded-full"
-                              style={{ width: `${adv.lead_percentage}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-[10px] font-bold text-zinc-500 shrink-0">
-                            devance {adv.lead_percentage}%
-                          </span>
-                        </div>
-
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                          {adv.summary}
-                        </p>
+                {/* VUE 1 : CE QUI LUI MANQUE (Accordéon Dropdown, Collapse par défaut) */}
+                {rightCardTab === 'gaps' && (
+                  <div className="space-y-2.5">
+                    {comparison.gaps_a.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-zinc-500">
+                        Aucun déficit majeur détecté pour ce dimensionnement.
                       </div>
-                    ))}
+                    ) : (
+                      comparison.gaps_a.map((gap, idx) => {
+                        const isExpanded = expandedGapIndices.has(idx);
+                        return (
+                          <div
+                            key={idx}
+                            className="rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] overflow-hidden transition-all border border-transparent hover:border-black/5 dark:hover:border-white/5"
+                          >
+                            {/* En-tête Compact & Dépliable */}
+                            <button
+                              type="button"
+                              onClick={() => toggleGapExpand(idx)}
+                              className="w-full p-3.5 flex items-center justify-between gap-3 text-left cursor-pointer transition-colors"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                  gap.severity === 'CRITICAL' ? 'bg-[#4F6CE8]' : 'bg-zinc-400 dark:bg-zinc-500'
+                                }`} />
+                                <span className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                                  {gap.issue}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {gap.impact_score && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] dark:text-[#6885FF]">
+                                    -{gap.impact_score} pts
+                                  </span>
+                                )}
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-400">
+                                  {gap.severity === 'CRITICAL' ? 'Critique' : gap.severity === 'HIGH' ? 'Priorité 2' : 'Priorité 3'}
+                                </span>
+                                <Icons.ChevronDown
+                                  size={14}
+                                  className={`text-zinc-400 transition-transform duration-200 ${
+                                    isExpanded ? 'rotate-180 text-zinc-700 dark:text-zinc-200' : ''
+                                  }`}
+                                />
+                              </div>
+                            </button>
+
+                            {/* Contenu Déplié (Collapse par défaut dans tous les cas) */}
+                            {isExpanded && (
+                              <div className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-black/5 dark:border-white/5 animate-fade-in">
+                                <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                  {gap.description}
+                                </p>
+
+                                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <span className="text-[11px] font-bold text-[#4F6CE8] dark:text-[#6885FF]">
+                                    Orange Business : {gap.solution_recommended}
+                                  </span>
+                                  {gap.pitch && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyPitch(gap.pitch || '', idx + 100)}
+                                      className="text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors shrink-0"
+                                    >
+                                      {copiedPitchIndex === idx + 100 ? 'Pitch copié !' : 'Copier argumentaire'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                {/* VUE 2 : OÙ IL SE DÉMARQUE */}
+                {rightCardTab === 'advantages' && (
+                  <div className="space-y-3">
+                    {comparison.advantages_a.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-zinc-500">
+                        Ce compte est au même niveau ou en retrait sur les critères actuels.
+                      </div>
+                    ) : (
+                      comparison.advantages_a.map((adv, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col gap-1.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                              {adv.criterion}
+                            </span>
+                            <span className="text-xs font-bold text-[#4F6CE8]">
+                              {adv.value_main}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-[#4F6CE8] rounded-full"
+                                style={{ width: `${adv.lead_percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-[10px] font-bold text-zinc-500 shrink-0">
+                              devance {adv.lead_percentage}%
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                            {adv.summary}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* 5. Ce qui lui manque (Lacunes & Vulnérabilités) */}
-          <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
-                  Ce qui manque à {comparison.meta_a.name} ({comparison.gaps_a.length} point{comparison.gaps_a.length > 1 ? 's' : ''} à équiper)
-                </h4>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Points de vulnérabilité identifiés à transformer en propositions Orange Business.
-                </p>
-              </div>
-            </div>
-
-            {comparison.gaps_a.length === 0 ? (
-              <div className="p-6 text-center text-xs text-zinc-500">
-                Ce compte dispose déjà d'un équipement complet sans vulnérabilité majeure.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {comparison.gaps_a.map((gap, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] space-y-2 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                          {gap.issue}
-                        </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-400">
-                          {gap.severity === 'CRITICAL' ? 'Priorité 1' : gap.severity === 'HIGH' ? 'Priorité 2' : 'Priorité 3'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        {gap.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-2 border-t border-black/5 dark:border-white/5 text-[11px] font-semibold text-[#4F6CE8] dark:text-[#6885FF]">
-                      <span>Offre Orange Business : {gap.solution_recommended}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* 6. Pitch & Recommandations KAM */}
+          {/* 4. Pitch & Recommandations KAM */}
           {comparison.kam_recommendations.length > 0 && (
             <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-sm space-y-4">
               <div>
@@ -574,7 +623,7 @@ export default function KamAccountComparisonSection({
             </section>
           )}
 
-          {/* 7. Tableau Comparatif Détaillé */}
+          {/* 5. Tableau Comparatif Détaillé */}
           <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-sm">
             <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">
               Détail des caractéristiques comparées

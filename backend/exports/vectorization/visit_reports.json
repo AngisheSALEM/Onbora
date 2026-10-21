@@ -1,0 +1,1432 @@
+[
+  {
+    "id": "visit_report_2",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - PPC Barnet RDC - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - PPC Barnet RDC - Division Régionale N°2 (Secteur : Industrie & BTP)\nStatut : IN_NEGOTIATION\nSynthese : Diagnostic réalisé auprès de Bijou Mwamba pour PPC Barnet RDC (Division Régionale N°2). L'entretien a permis de qualifier les besoins réseau et de présenter la valeur ajoutée des solutions Onbora d'Orange Business pour optimiser la continuité opérationnelle dans le secteur Industrie & BTP.\nBesoins confirmes : [\"Qualification et fiabilisation du r\\u00e9seau de la division r\\u00e9gionale\", \"D\\u00e9ploiement et pr\\u00e9sentation des solutions cloud et connectivit\\u00e9 Onbora\"]\nObjections soulevees : [\"Besoin de validation budg\\u00e9taire interne pour les nouvelles solutions\"]\nActions convenues : [\"Transmettre le devis technique personnalis\\u00e9 \\u00e0 Bijou Mwamba\", \"\\u00c9tude d'\\u00e9ligibilit\\u00e9 optique du dernier kilom\\u00e8tre avec le service ing\\u00e9nierie\", \"Relance t\\u00e9l\\u00e9phonique de suivi sous 4 jours ouvr\\u00e9s\"]\nTranscription de l'echange : Entretien commercial avec Bijou Mwamba chez PPC Barnet RDC - Division Régionale N°2. Qualification des besoins réseau et présentation des solutions Onbora.",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 2,
+      "enterprise_sector": "Industrie & BTP",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-11 14:52:22.027047"
+    }
+  },
+  {
+    "id": "visit_report_3",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : LOST\nSynthese : La Société Minière de Bisunzu (SMB) - Division Régionale N°3, représentée par Jean-Pierre Kapinga, fait face à des problèmes majeurs de latence de réseau et à des pannes de connexion répétées qui impactent ses activités.\nBesoins confirmes : [\"R\\u00e9solution des probl\\u00e8mes de latence de r\\u00e9seau\", \"Correction des pannes de connexion r\\u00e9currentes\"]\nObjections soulevees : []\nActions convenues : [\"Contacter Jean-Pierre Kapinga pour qualifier plus pr\\u00e9cis\\u00e9ment les incidents de r\\u00e9seau et de latence\", \"Proposer un audit technique de la connectivit\\u00e9 actuelle sur le site de la Division R\\u00e9gionale N\\u00b03\"]\nTranscription de l'echange : le client a plusieur probleme , de latence de resaux et il n'arrete pas de se plaindre des pannes de connexion",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 3,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "LOST",
+      "created_at": "2026-09-11 16:09:19.637596"
+    }
+  },
+  {
+    "id": "visit_report_4",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : LOST\nSynthese : Entretien commercial de qualification et de présentation des solutions Onbora mené avec Jean-Pierre Kapinga pour la Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Mines & Énergie). La transcription ne détaille pas l'expression de besoins techniques spécifiques ou d'objections à ce stade.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Planifier un nouvel \\u00e9change avec Jean-Pierre Kapinga pour qualifier plus pr\\u00e9cis\\u00e9ment les besoins r\\u00e9seau et infrastructure de la Division R\\u00e9gionale N\\u00b03 de la SMB.\"]\nTranscription de l'echange : Entretien commercial avec Jean-Pierre Kapinga chez Société Minière de Bisunzu (SMB) - Division Régionale N°3. Qualification des besoins réseau et présentation des solutions Onbora.",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 4,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "LOST",
+      "created_at": "2026-09-16 14:29:04.859997"
+    }
+  },
+  {
+    "id": "visit_report_5",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Entretien de qualification initiale mené avec Jean-Pierre Kapinga pour la Société Minière de Bisunzu (SMB) - Division Régionale N°3, portant sur l'évaluation des besoins réseau et la présentation des solutions Onbora, sans qu'aucun besoin technique spécifique ou élément budgétaire n'ait été détaillé dans cette transcription.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Planifier un entretien approfondi avec Jean-Pierre Kapinga pour qualifier pr\\u00e9cis\\u00e9ment les besoins r\\u00e9seau et infrastructure de la Division R\\u00e9gionale N\\u00b03 de la SMB.\"]\nTranscription de l'echange : Entretien commercial avec Jean-Pierre Kapinga chez Société Minière de Bisunzu (SMB) - Division Régionale N°3. Qualification des besoins réseau et présentation des solutions Onbora.",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 5,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-16 14:31:26.269187"
+    }
+  },
+  {
+    "id": "visit_report_6",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Entretien commercial réalisé avec salem angishe pour la Société Minière de Bisunzu (SMB) - Division Régionale N°3, axé sur la qualification des besoins réseau et la présentation des solutions Onbora. Aucun budget, délai précis ou objection n'ont été formulés durant cet échange.\nBesoins confirmes : [\"Qualification des besoins r\\u00e9seau\"]\nObjections soulevees : []\nActions convenues : [\"Approfondir la qualification des besoins r\\u00e9seau et infrastructure avec salem angishe\", \"Pr\\u00e9senter les solutions Orange Business adapt\\u00e9es aux activit\\u00e9s mini\\u00e8res\"]\nTranscription de l'echange : Entretien commercial avec salem angishe chez Société Minière de Bisunzu (SMB) - Division Régionale N°3. Qualification des besoins réseau et présentation des solutions Onbora.",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 6,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-16 15:19:45.377623"
+    }
+  },
+  {
+    "id": "visit_report_7",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Perenco RDC Exploration & Production - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Perenco RDC Exploration & Production - Division Régionale N°2 (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour qualifier Perenco RDC Exploration & Production - Division Régionale N°2. L'enregistrement audio (« rien n'as été enregistré ») ne contient pas d'éléments exploitables pour identifier des besoins ou évaluer le budget.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Rodrigue Kasongo pour planifier un entretien approfondi\"]\nTranscription de l'echange : rien n'as été enregistré",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 7,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-16 15:53:24.169496"
+    }
+  },
+  {
+    "id": "visit_report_8",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour qualifier Kamoto Copper Company (KCC - Glencore) - Division Régionale N°3. L'enregistrement audio (« probleme de transcription ») ne contient pas d'éléments exploitables pour identifier des besoins ou évaluer le budget.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Georges Lokondo pour planifier un entretien approfondi\"]\nTranscription de l'echange : probleme de transcription",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 8,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-16 15:55:56.136567"
+    }
+  },
+  {
+    "id": "visit_report_9",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Perenco RDC Exploration & Production - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Perenco RDC Exploration & Production - Division Régionale N°2 (Secteur : Énergie & Pétrole)\nStatut : PROSPECT\nSynthese : Compte-rendu d'échange avec Rodrigue Kasongo chez Perenco RDC Exploration & Production - Division Régionale N°2. Entretien de cadrage initial.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Transmettre la note de cadrage \\u00e0 Rodrigue Kasongo\"]\nTranscription de l'echange : le directeur generale de la perneco n'etait pas present dui coup il  nous a fallu reporter la reunion",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 9,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "PROSPECT",
+      "created_at": "2026-09-16 17:18:55.505613"
+    }
+  },
+  {
+    "id": "visit_report_10",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Ecobank RDC Siège - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Ecobank RDC Siège - Division Régionale N°3 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : La discussion avec Jeanne Nzuzi de Ecobank RDC Siège - Division Régionale N°3 s'est limitée à la mention d'un problème de fibre optique, sans autre précision sur les budgets, les délais ou les volumes.\nBesoins confirmes : [\"probl\\u00e8me de fibre optique\"]\nObjections soulevees : []\nActions convenues : [\"Contacter Jeanne Nzuzi pour qualifier la nature exacte du probl\\u00e8me de fibre optique rencontr\\u00e9 par Vodacom Congo Direction G\\u00e9n\\u00e9rale - Division R\\u00e9gionale N\\u00b03\", \"Proposer un diagnostic technique de la liaison actuelle\"]\nTranscription de l'echange : probleme de fibre optique",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 10,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:59:40.571660"
+    }
+  },
+  {
+    "id": "visit_report_11",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Ecobank RDC Siège - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Ecobank RDC Siège - Division Régionale N°3 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour Ecobank RDC Siège - Division Régionale N°3. L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Jeanne Nzuzi pour planifier un entretien approfondi\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 11,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-23 14:44:38.710826"
+    }
+  },
+  {
+    "id": "visit_report_12",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour Société Minière de Bisunzu (SMB) - Division Régionale N°3. L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Jean-Pierre Kapinga pour planifier un entretien approfondi\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 12,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-28 12:36:36.565521"
+    }
+  },
+  {
+    "id": "visit_report_13",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour Société Minière de Bisunzu (SMB) - Division Régionale N°3. L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Jean-Pierre Kapinga pour planifier un entretien approfondi\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 13,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-28 14:00:03.248944"
+    }
+  },
+  {
+    "id": "visit_report_14",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Perenco RDC Exploration & Production - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Perenco RDC Exploration & Production - Division Régionale N°2 (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour Perenco RDC Exploration & Production - Division Régionale N°2. L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter le client pour planifier un entretien approfondi\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 14,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-09 13:17:55.453547"
+    }
+  },
+  {
+    "id": "visit_report_15",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Supermarché d'Alimentation Boketshu (Bandalungwa)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Supermarché d'Alimentation Boketshu (Bandalungwa) (Secteur : Distribution & Retail)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 15,
+      "enterprise_sector": "Distribution & Retail",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_16",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Concessionnaire & Garage Pro Mpoyi (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Concessionnaire & Garage Pro Mpoyi (Limete) (Secteur : Automobile & Entretien)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 16,
+      "enterprise_sector": "Automobile & Entretien",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_17",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société de Transit & Douane Kalala (Matadi)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société de Transit & Douane Kalala (Matadi) (Secteur : Logistique & Fret)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 17,
+      "enterprise_sector": "Logistique & Fret",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_18",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Entreprise de Construction & BTP Mavungu (Dilala)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Entreprise de Construction & BTP Mavungu (Dilala) (Secteur : BTP & Génie Civil)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 18,
+      "enterprise_sector": "BTP & Génie Civil",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_19",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Agence de Voyage & Tourisme Ngalula (Gombe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Agence de Voyage & Tourisme Ngalula (Gombe) (Secteur : Tourisme & Billetterie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 19,
+      "enterprise_sector": "Tourisme & Billetterie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_20",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société de Gardiennage & Sécurité Mutombo (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société de Gardiennage & Sécurité Mutombo (Limete) (Secteur : Sécurité Privée)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 20,
+      "enterprise_sector": "Sécurité Privée",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_21",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cabinet d'Audit & Expertise Comptable Mwamba (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cabinet d'Audit & Expertise Comptable Mwamba (Limete) (Secteur : Audit & Fiscalité)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 21,
+      "enterprise_sector": "Audit & Fiscalité",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_22",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cabinet d'Avocats & Conseil Kabeya (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cabinet d'Avocats & Conseil Kabeya (Centre) (Secteur : Services Juridiques & Conseils)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 22,
+      "enterprise_sector": "Services Juridiques & Conseils",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_23",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Université Privée Kapinga (Ruashi)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Université Privée Kapinga (Ruashi) (Secteur : Éducation Supérieure)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 23,
+      "enterprise_sector": "Éducation Supérieure",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_24",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Institut Supérieur Privé Kalala (Lemba)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Institut Supérieur Privé Kalala (Lemba) (Secteur : Éducation & Enseignement)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 24,
+      "enterprise_sector": "Éducation & Enseignement",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_25",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Collège Privé Kiese (Gombe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Collège Privé Kiese (Gombe) (Secteur : Éducation & Enseignement)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 25,
+      "enterprise_sector": "Éducation & Enseignement",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_26",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Laboratoire d'Analyses Médicales Kapinga (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Laboratoire d'Analyses Médicales Kapinga (Centre) (Secteur : Santé & Diagnostics)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 26,
+      "enterprise_sector": "Santé & Diagnostics",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_27",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Hôpital Privé Mavungu (Matete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Hôpital Privé Mavungu (Matete) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 27,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_28",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Centre Médical Mavungu (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Centre Médical Mavungu (Limete) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 28,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_29",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Clinique Kabasele (Ngaliema)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Clinique Kabasele (Ngaliema) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 29,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_30",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Bureau d'Études & Ingénierie Muteba (Ngaliema)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Bureau d'Études & Ingénierie Muteba (Ngaliema) (Secteur : Ingénierie & Consulting)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 30,
+      "enterprise_sector": "Ingénierie & Consulting",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_31",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Pharmacie de Référence Kasongo (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Pharmacie de Référence Kasongo (Limete) (Secteur : Pharmacie & Santé)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 31,
+      "enterprise_sector": "Pharmacie & Santé",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_32",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Fournisseur Matériel Informatique Yoka (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Fournisseur Matériel Informatique Yoka (Centre) (Secteur : Télécoms & IT B2B)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 32,
+      "enterprise_sector": "Télécoms & IT B2B",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_33",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Imprimerie Numérique & Presse Mbuyi (Lingwala)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Imprimerie Numérique & Presse Mbuyi (Lingwala) (Secteur : Médias & Graphisme)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 33,
+      "enterprise_sector": "Médias & Graphisme",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_34",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Distributeur Boissons & Vivres Kabasele (Ruashi)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Distributeur Boissons & Vivres Kabasele (Ruashi) (Secteur : Commerce de Gros)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 34,
+      "enterprise_sector": "Commerce de Gros",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_35",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Supermarché d'Alimentation Mbala (Bandalungwa)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Supermarché d'Alimentation Mbala (Bandalungwa) (Secteur : Distribution & Retail)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 35,
+      "enterprise_sector": "Distribution & Retail",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_36",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Concessionnaire & Garage Pro Ilunga (Gombe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Concessionnaire & Garage Pro Ilunga (Gombe) (Secteur : Automobile & Entretien)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 36,
+      "enterprise_sector": "Automobile & Entretien",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_37",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société de Transit & Douane Mavungu (Matadi)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société de Transit & Douane Mavungu (Matadi) (Secteur : Logistique & Fret)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 37,
+      "enterprise_sector": "Logistique & Fret",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_38",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Entreprise de Construction & BTP Lokondo (Dilala)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Entreprise de Construction & BTP Lokondo (Dilala) (Secteur : BTP & Génie Civil)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 38,
+      "enterprise_sector": "BTP & Génie Civil",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_39",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Agence de Voyage & Tourisme Boketshu (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Agence de Voyage & Tourisme Boketshu (Centre) (Secteur : Tourisme & Billetterie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 39,
+      "enterprise_sector": "Tourisme & Billetterie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_40",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société de Gardiennage & Sécurité Lwamba (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société de Gardiennage & Sécurité Lwamba (Limete) (Secteur : Sécurité Privée)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 40,
+      "enterprise_sector": "Sécurité Privée",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_41",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cabinet d'Audit & Expertise Comptable Ngalula (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cabinet d'Audit & Expertise Comptable Ngalula (Centre) (Secteur : Audit & Fiscalité)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 41,
+      "enterprise_sector": "Audit & Fiscalité",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_42",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cabinet d'Avocats & Conseil Kanyinda (Centre)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cabinet d'Avocats & Conseil Kanyinda (Centre) (Secteur : Services Juridiques & Conseils)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 42,
+      "enterprise_sector": "Services Juridiques & Conseils",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_43",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Université Privée Lwamba (Lingwala)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Université Privée Lwamba (Lingwala) (Secteur : Éducation Supérieure)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 43,
+      "enterprise_sector": "Éducation Supérieure",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_44",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Institut Supérieur Privé Lokondo (Kasa-Vubu)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Institut Supérieur Privé Lokondo (Kasa-Vubu) (Secteur : Éducation & Enseignement)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 44,
+      "enterprise_sector": "Éducation & Enseignement",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_45",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Collège Privé Yoka (Gombe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Collège Privé Yoka (Gombe) (Secteur : Éducation & Enseignement)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 45,
+      "enterprise_sector": "Éducation & Enseignement",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_46",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Laboratoire d'Analyses Médicales Katende (Gombe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Laboratoire d'Analyses Médicales Katende (Gombe) (Secteur : Santé & Diagnostics)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 46,
+      "enterprise_sector": "Santé & Diagnostics",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_47",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Hôpital Privé Katende (Matete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Hôpital Privé Katende (Matete) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 47,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_48",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Centre Médical Mavinga (Limete)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Centre Médical Mavinga (Limete) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 48,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_49",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Clinique Badibanga (Ngaliema)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Clinique Badibanga (Ngaliema) (Secteur : Santé & Hôpitaux)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 49,
+      "enterprise_sector": "Santé & Hôpitaux",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_50",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Ecobank RDC Siège - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Ecobank RDC Siège - Division Régionale N°3 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 50,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_51",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 51,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_52",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°3",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°3 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 52,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_53",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - PPC Barnet RDC - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - PPC Barnet RDC - Division Régionale N°2 (Secteur : Industrie & BTP)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 53,
+      "enterprise_sector": "Industrie & BTP",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_54",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Perenco RDC Exploration & Production - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Perenco RDC Exploration & Production - Division Régionale N°2 (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 54,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_55",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoa-Kakula Mining Complex (Ivanhoe) - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoa-Kakula Mining Complex (Ivanhoe) - Division Régionale N°2 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 55,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_56",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) - Division Régionale N°2 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 56,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_57",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Tenke Fungurume Mining (TFM) - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Tenke Fungurume Mining (TFM) - Division Régionale N°2 (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 57,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_58",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - FBNBank RDC Siège - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - FBNBank RDC Siège - Division Régionale N°2 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 58,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_59",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Sofibanque Siège - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Sofibanque Siège - Division Régionale N°2 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 59,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_60",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Trust Merchant Bank (TMB) Siège - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Trust Merchant Bank (TMB) Siège - Division Régionale N°2 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 60,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_61",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - EquityBCDC Direction Générale - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - EquityBCDC Direction Générale - Division Régionale N°2 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 61,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_62",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Rawbank RDC Siège - Division Régionale N°2",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Rawbank RDC Siège - Division Régionale N°2 (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 62,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_63",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Hôtel Memling Kinshasa",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Hôtel Memling Kinshasa (Secteur : Hôtellerie & Tourisme)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 63,
+      "enterprise_sector": "Hôtellerie & Tourisme",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_64",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Grand Karavia Hotel Lubumbashi",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Grand Karavia Hotel Lubumbashi (Secteur : Hôtellerie & Tourisme)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 64,
+      "enterprise_sector": "Hôtellerie & Tourisme",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_65",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Fleuve Congo Hotel by Blazon",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Fleuve Congo Hotel by Blazon (Secteur : Hôtellerie & Tourisme)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 65,
+      "enterprise_sector": "Hôtellerie & Tourisme",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_66",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Pullman Grand Hôtel Kinshasa",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Pullman Grand Hôtel Kinshasa (Secteur : Hôtellerie & Tourisme)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 66,
+      "enterprise_sector": "Hôtellerie & Tourisme",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_67",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Transco Siège Social",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Transco Siège Social (Secteur : Transport & Logistique)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 67,
+      "enterprise_sector": "Transport & Logistique",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_68",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Compagnie Africaine d'Aviation (FlyCAA)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Compagnie Africaine d'Aviation (FlyCAA) (Secteur : Transport & Aviation)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 68,
+      "enterprise_sector": "Transport & Aviation",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_69",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Congo Airways Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Congo Airways Siège (Secteur : Transport & Aviation)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 69,
+      "enterprise_sector": "Transport & Aviation",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_70",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Onatra SA Direction Générale",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Onatra SA Direction Générale (Secteur : Transport & Logistique)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 70,
+      "enterprise_sector": "Transport & Logistique",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_71",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Lignes Maritimes Congolaises (LMC)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Lignes Maritimes Congolaises (LMC) (Secteur : Transport & Logistique)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 71,
+      "enterprise_sector": "Transport & Logistique",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_72",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Africa Global Logistics RDC (AGL / Bolloré)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Africa Global Logistics RDC (AGL / Bolloré) (Secteur : Transport & Logistique)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 72,
+      "enterprise_sector": "Transport & Logistique",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_73",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Minoterie de Matadi (MIDEMA)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Minoterie de Matadi (MIDEMA) (Secteur : Industrie & Agroalimentaire)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 73,
+      "enterprise_sector": "Industrie & Agroalimentaire",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_74",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - PPC Barnet RDC",
+    "content_to_vectorize": "Compte rendu de visite commerciale - PPC Barnet RDC (Secteur : Industrie & BTP)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 74,
+      "enterprise_sector": "Industrie & BTP",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_75",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cimenterie de Lukala (CILU)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cimenterie de Lukala (CILU) (Secteur : Industrie & BTP)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 75,
+      "enterprise_sector": "Industrie & BTP",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_76",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Marsavco SA Siège Industriel",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Marsavco SA Siège Industriel (Secteur : Industrie & Agroalimentaire)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 76,
+      "enterprise_sector": "Industrie & Agroalimentaire",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_77",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Bracongo SA (Castel RDC)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Bracongo SA (Castel RDC) (Secteur : Industrie & Brasserie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 77,
+      "enterprise_sector": "Industrie & Brasserie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_78",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Bralima SAS (Heineken RDC)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Bralima SAS (Heineken RDC) (Secteur : Industrie & Brasserie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 78,
+      "enterprise_sector": "Industrie & Brasserie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_79",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Cobil SA Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Cobil SA Siège (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 79,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_80",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - TotalEnergies Marketing RDC",
+    "content_to_vectorize": "Compte rendu de visite commerciale - TotalEnergies Marketing RDC (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 80,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_81",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - SEP Congo (Services Pétroliers)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - SEP Congo (Services Pétroliers) (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 81,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_82",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Perenco RDC Exploration & Production",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Perenco RDC Exploration & Production (Secteur : Énergie & Pétrole)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 82,
+      "enterprise_sector": "Énergie & Pétrole",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_83",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Regideso Direction Générale",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Regideso Direction Générale (Secteur : Énergie & Eau)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 83,
+      "enterprise_sector": "Énergie & Eau",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_84",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - SNEL Siège National",
+    "content_to_vectorize": "Compte rendu de visite commerciale - SNEL Siège National (Secteur : Énergie & Eau)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 84,
+      "enterprise_sector": "Énergie & Eau",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_85",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - UBA RDC (United Bank for Africa)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - UBA RDC (United Bank for Africa) (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 85,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_86",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Canal+ RDC Direction Générale",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Canal+ RDC Direction Générale (Secteur : Médias & Télévision)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 86,
+      "enterprise_sector": "Médias & Télévision",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_87",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Ecobank RDC Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Ecobank RDC Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 87,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_88",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Ruashi Mining SAS",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Ruashi Mining SAS (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 88,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_89",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Chemaf SAS Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Chemaf SAS Siège (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 89,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_90",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Société Minière de Bisunzu (SMB)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Société Minière de Bisunzu (SMB) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 90,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_91",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kibali Gold Mines (Barrick Gold)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kibali Gold Mines (Barrick Gold) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 91,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_92",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Mutanda Mining (MUMI)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Mutanda Mining (MUMI) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 92,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_93",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoa-Kakula Mining Complex (Ivanhoe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoa-Kakula Mining Complex (Ivanhoe) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 93,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_94",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 94,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_95",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Tenke Fungurume Mining (TFM)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Tenke Fungurume Mining (TFM) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 95,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_96",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - FBNBank RDC Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - FBNBank RDC Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 96,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-04 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_97",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Sofibanque Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Sofibanque Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Services globalement satisfaisants. Projets d'expansion en cours de cadrage.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 97,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-09-17 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_98",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Trust Merchant Bank (TMB) Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Trust Merchant Bank (TMB) Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 98,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_99",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - EquityBCDC Direction Générale",
+    "content_to_vectorize": "Compte rendu de visite commerciale - EquityBCDC Direction Générale (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 99,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_100",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Rawbank RDC Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Rawbank RDC Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Insatisfaction liée à des coupures réseau et instabilité des débits.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : []\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 100,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-08-25 14:05:25.864580"
+    }
+  },
+  {
+    "id": "visit_report_101",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) (Secteur : Mines & Énergie)\nStatut : SIGNED\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour Kamoto Copper Company (KCC - Glencore). L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter Mark Davis pour planifier un entretien approfondi\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 101,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "SIGNED",
+      "created_at": "2026-10-09 14:47:17.283661"
+    }
+  },
+  {
+    "id": "visit_report_102",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - SNEL Siège National",
+    "content_to_vectorize": "Compte rendu de visite commerciale - SNEL Siège National (Secteur : Énergie & Eau)\nStatut : IN_NEGOTIATION\nSynthese : Données insuffisantes pour formaliser un compte-rendu pour SNEL Siège National. L'enregistrement audio ne contient pas d'échange commercial exploitable pour qualifier des besoins ou objections.\nBesoins confirmes : [\"Connectivit\\u00e9 Internet fixe avec un bon d\\u00e9bit\", \"Solutions Cloud\", \"Pack Microsoft (Microsoft 365)\"]\nObjections soulevees : []\nActions convenues : [\"Qualifier le nombre exact de postes informatiques \\u00e0 \\u00e9quiper en connectivit\\u00e9 et en licences Microsoft 365\"]\nTranscription de l'echange :",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 102,
+      "enterprise_sector": "Énergie & Eau",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-09 15:17:15.419604"
+    }
+  },
+  {
+    "id": "visit_report_103",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Mutanda Mining (MUMI)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Mutanda Mining (MUMI) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Lors de cet échange, le client Mutanda Mining (MUMI) a exprimé un besoin clair concernant deux sujets : l'obtention d'une connectivité internet à haut débit pour tous ses postes informatiques et la fourniture d'un pack Microsoft 365 (mentionné sous l'appellation 'Microsoft 360'). Aucun détail n'a été apporté à ce stade sur le volume d'utilisateurs, l'enveloppe budgétaire, le calendrier ou le rôle de l'interlocuteur. Aucune objection n'a été formulée.\nBesoins confirmes : [\"Connectivit\\u00e9 internet haut d\\u00e9bit pour l'ensemble des postes informatiques\", \"Souscription \\u00e0 un pack Microsoft 365 / Microsoft 360\"]\nObjections soulevees : []\nActions convenues : [\"Qualifier le nombre exact de postes informatiques \\u00e0 \\u00e9quiper en connectivit\\u00e9 et en licences Microsoft 365\", \"Identifier le responsable d\\u00e9cisionnel et valider le processus de validation interne chez Mutanda Mining\", \"Clarifier le budget disponible et l'\\u00e9ch\\u00e9ance souhait\\u00e9e pour le d\\u00e9ploiement\", \"Planifier un rendez-vous technique pour dimensionner le d\\u00e9bit requis (Fibre mutualis\\u00e9e vs Liaison Sp\\u00e9cialis\\u00e9e D\\u00e9di\\u00e9e)\"]\nTranscription de l'echange : bonjour nous souhaitons de la connectivité impact Microsoft pour le 60 360 et  une connectivité  une connectivité à haut débit pour tous nos postes informatiques\nBonjour\nNous faisons\nde la connectivité\nun pack Microsoft 360\n360\net\nune connectivité à haut débit pour tous nos postes informatiques.\nUne connectivité à haut débit pour tous nos postes informatiques.\nVoilà.",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 103,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-09 15:47:20.782354"
+    }
+  },
+  {
+    "id": "visit_report_104",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - FBNBank RDC Siège",
+    "content_to_vectorize": "Compte rendu de visite commerciale - FBNBank RDC Siège (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Compte-rendu d'échange avec  chez FBNBank RDC Siège. Entretien de cadrage initial.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Transmettre la note de cadrage \\u00e0 \"]\nTranscription de l'echange : bonjour bonjour comment allez-vous nous souhaitons prendre une solution une solution de connectivité et de fille 365",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 104,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-13 16:37:52.111565"
+    }
+  },
+  {
+    "id": "visit_report_105",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Canal+ RDC Direction Générale",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Canal+ RDC Direction Générale (Secteur : Médias & Télévision)\nStatut : IN_NEGOTIATION\nSynthese : Compte-rendu d'échange avec  chez Canal+ RDC Direction Générale. Besoins identifiés : Connectivité Très Haut Débit sécurisée, Outils collaboratifs et Cloud d'entreprise.\nBesoins confirmes : [\"Connectivit\\u00e9 Tr\\u00e8s Haut D\\u00e9bit s\\u00e9curis\\u00e9e\", \"Outils collaboratifs et Cloud d'entreprise\"]\nObjections soulevees : []\nActions convenues : [\"Transmettre la note de cadrage \\u00e0 \"]\nTranscription de l'echange : comment allez-vous  je vais bien  votre solution nous intéresse nous souhaitons prendre une offre déconnectivité à haut débit et un parc Microsoft 365  et aussi nous voulons un peu du Cloud",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 105,
+      "enterprise_sector": "Médias & Télévision",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 11:36:48.814623"
+    }
+  },
+  {
+    "id": "visit_report_106",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - UBA RDC (United Bank for Africa)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - UBA RDC (United Bank for Africa) (Secteur : Banque & Services Financiers)\nStatut : IN_NEGOTIATION\nSynthese : Compte-rendu d'échange avec  chez UBA RDC (United Bank for Africa). Besoins identifiés : Connectivité Très Haut Débit sécurisée, Outils collaboratifs et Cloud d'entreprise.\nBesoins confirmes : [\"Connectivit\\u00e9 Tr\\u00e8s Haut D\\u00e9bit s\\u00e9curis\\u00e9e\", \"Outils collaboratifs et Cloud d'entreprise\"]\nObjections soulevees : []\nActions convenues : [\"Transmettre la note de cadrage \\u00e0 \"]\nTranscription de l'echange : bonjour monsieur du Béart bonjour Chantal comment allez-vous je vais très bien je voulais vous présenter nos nouveaux offres vous avez dit que vous avez des problèmes vous avez des problèmes  je vous souhaitez avoir un autre service du coup j'aimerais savoir quels sont les problèmes que vous avez merci beaucoup Chantal pour cette pour cette question et en fait nous avons des problèmes de connectivité nous souhaitons quitter RTL pour passer à Orange j'attends une petite au début de façon à ce que on puisse qu'on peut se connecter une autre connexion peut s'être améliorer surtout notre site et aussi intéressant pour nous et nous permettrait aussi de  pouvoir avoir une meilleure collaboration en interne et aussi j'aimerais que vous nous donner aussi une solution de Cloud  application de Cloud",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 106,
+      "enterprise_sector": "Banque & Services Financiers",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 11:51:35.084990"
+    }
+  },
+  {
+    "id": "visit_report_107",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoa-Kakula Mining Complex (Ivanhoe)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoa-Kakula Mining Complex (Ivanhoe) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : L'interlocuteur de Kamoa-Kakula Mining Complex a sollicité Orange Business pour résoudre des déconnexions chroniques subies avec leur connexion Airtel. Le besoin exprimé porte explicitement sur une liaison fibre optique fiable à haute connectivité, complétée par une solution Cloud et un pack Microsoft pour améliorer la collaboration interne. Le budget n'a pas été abordé et l'échéance d'achat reste à définir. Une seconde réunion de travail a été demandée pour examiner les solutions proposées.\nBesoins confirmes : [\"R\\u00e9solution des pannes et instabilit\\u00e9s de connectivit\\u00e9 rencontr\\u00e9es avec l'op\\u00e9rateur Airtel\", \"Mise en place d'une liaison Internet Fibre optique \\u00e0 haute connectivit\\u00e9\", \"D\\u00e9ploiement d'une solution Cloud pour la collaboration interne\", \"Int\\u00e9gration d'un pack Microsoft (Microsoft 365) pour optimiser les m\\u00e9thodes de travail\"]\nObjections soulevees : []\nActions convenues : [\"Qualifier le profil et le niveau d\\u00e9cisionnel de l'interlocuteur\", \"R\\u00e9aliser l'audit d'\\u00e9ligibilit\\u00e9 fibre du site minier de Kamoa-Kakula\", \"Dimensionner le nombre exact d'utilisateurs pour les licences Microsoft 365 et les besoins de stockage cloud\", \"Pr\\u00e9parer et animer la deuxi\\u00e8me r\\u00e9union de pr\\u00e9sentation de l'architecture technique\"]\nTranscription de l'echange : bonjour comment allez-vous je vais bien et vous j'aimerais qu'on parle de  d'un problème nous avons des problèmes de connectivité nous souhaitons avoir une offre une fibre optique à haute collectivité et aussi une solution Cloud pour nous  c'est cela permettra pour voir à pouvoir mieux collaborer l'entraînement en interne  donc je pense ça serait très intéressant que vous provisionner cette solution qu'en pensez-vous je souhaite que nous puissions avoir  une deuxième réunion pour pouvoir essayer de planifier voir un peu de souci que vous avez pensé pour nous mais voilà après pendant que nous avons de vous répondre déconnexion avec une connexion Artel qui marchait pas m'a dit que vous pouvez mieux faire connexion et aussi je pense que ça serait très intéressant que nous avons un pas Microsoft parce que ça pourrait améliorer notre travail en interne",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 107,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 12:42:49.314099"
+    }
+  },
+  {
+    "id": "visit_report_108",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Le client souhaite quitter son offre Canal+ pour passer chez Orange, exprimant le besoin d'une connexion internet pour 130 machines en zone rurale ainsi que d'une solution de SMS pour la gestion des retours clients. Il souhaite s'assurer du sérieux d'Orange et demande une deuxième réunion pour examiner les propositions techniques.\nBesoins confirmes : [\"Connexion internet pour 130 machines situ\\u00e9es dans des zones rurales\", \"Solution de SMS pour permettre aux clients de r\\u00e9pondre\"]\nObjections soulevees : [\"Doute sur le s\\u00e9rieux d'Orange et besoin d'\\u00eatre rassur\\u00e9 sur la fiabilit\\u00e9\"]\nActions convenues : [\"Appeler l'\\u00e9quipe technique pour valider la faisabilit\\u00e9 d'une solution fibre optique pour les 130 machines en zone rurale\", \"Pr\\u00e9parer une proposition pour la solution de SMS\", \"Planifier une deuxi\\u00e8me r\\u00e9union avec le client pour pr\\u00e9senter les solutions\"]\nTranscription de l'echange : bonjour monsieur comment allez-vous je vais bien et vous je voulais vous dire que nous souhaitons  nous avons dû prendre des connexions notre pack Canal+  du coup nous souhaitons passer à Orange  donc passer à Orange et nous voulons une connaissance pour nos 130 machines qui se trouve dans les zones rurales du coup je voulais vous demander si vous avez pensé à ça et quelles sont les solutions que vous souhaitez me proposer je pense qu'on est une deuxième réunion pour pouvoir voir les solutions qu'on veut en venir de façon c'est que  ça c'est que vous puissiez exactement à ce que sont exactement savoir si vous êtes sérieux monsieur  si on pouvait faire confiance à Orange oui merci nous allons je vais appeler mon équipe technique et une balancer de voir signe pour moi ça me proposer une solution de fibre optique  afin que vous soyez un message pour voir  être connecté et aussi une session de sms je pense à ça oui oui je pense à ça parce que on a besoin des solutions pour remettre à nos clients de pouvoir répondre à nos clients donc un système pour le laisser très intéressant",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 108,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 13:05:43.130736"
+    }
+  },
+  {
+    "id": "visit_report_109",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Le client (Kamoto Copper Company / Glencore, contact Mark Davis) souhaite modifier sa déclaration suite au passage de 230 à 260 machines et demande une connexion avec un prix au début. Il exprime également le besoin d'une solution interne pour suivre ses agents. L'interlocuteur confirme être le décideur principal avec un chiffre d'affaires de 25 000 dollars et une capacité de paiement de 5 000 dollars. Une signature est envisagée d'ici 2 mois.\nBesoins confirmes : [\"Augmentation de la connexion pour passer de 230 \\u00e0 260 machines\", \"Solution interne pour mieux suivre les agents\"]\nObjections soulevees : []\nActions convenues : [\"Discuter de la proposition avec le technicien du client\", \"Pr\\u00e9parer une proposition commerciale adapt\\u00e9e pour une signature d'ici 2 mois\"]\nTranscription de l'echange : bonjour comment allez-vous je vais bien et vous je souhaiterais bien merci je souhaiterais changer ma déclaration nous allons nous sommes passés 230 machines à 260 machine c'est ça nous fournir une connexion avec un prix au début et aussi  pour nous avons décidé de créer une solution en interne pour nos agents cette solution nous permettra de pouvoir  ne pouvoir mieux les suivre du coup nous avons besoin je pense à très très intéressant que vous pensez à nous apporter aussi je pense que nous sommes capables de pouvoir payer ça en tant que Tata général principal décideur  5000 dollars  nous avons un chiffre d'affaires de 25000 dollars donc ça nous sommes capable de pouvoir payer ça et aussi nous sommes à mesure je pense que les contrats pour être signés d'ici 2 mois de façon à ce qu'avant que de l'argent soit débuté mais je suis très intéressé par votre solution et je souhaiterais mieux penser à ce que vous allez pouvoir me proposer je vais en parler avec mon technicien et nous serons capables pour pouvoir",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 109,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 14:51:33.804630"
+    }
+  },
+  {
+    "id": "visit_report_110",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Bralima SAS (Heineken RDC)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Bralima SAS (Heineken RDC) (Secteur : Industrie & Brasserie)\nStatut : IN_NEGOTIATION\nSynthese : Le client Bralima SAS a demandé à reporter le rendez-vous prévu, sans formuler de besoin spécifique, de contrainte budgétaire ou d'échéance lors de cet échange.\nBesoins confirmes : []\nObjections soulevees : []\nActions convenues : [\"Recontacter le client pour planifier une nouvelle date de rendez-vous.\"]\nTranscription de l'echange : bonjour nous souhaitons reporter  le rendez-vous",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 110,
+      "enterprise_sector": "Industrie & Brasserie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 14:56:42.947037"
+    }
+  },
+  {
+    "id": "visit_report_111",
+    "doc_type": "visit_report",
+    "title": "Rapport de visite - Kamoto Copper Company (KCC - Glencore)",
+    "content_to_vectorize": "Compte rendu de visite commerciale - Kamoto Copper Company (KCC - Glencore) (Secteur : Mines & Énergie)\nStatut : IN_NEGOTIATION\nSynthese : Mark Davis pour Kamoto Copper Company (KCC) a contacté Orange Business pour modifier les volumes prévus (passant de 260 à 400 machines) et faire part de problèmes de connexion récurrents sur plusieurs sites. Le client exprime un besoin urgent de solutions réseau robustes ainsi qu'une solution de cloud pour héberger de nouvelles applications internes. Le budget n'est pas un frein puisque le client confirme pouvoir investir les fonds nécessaires. Un prochain rendez-vous doit être planifié pour présenter les propositions techniques.\nBesoins confirmes : [\"R\\u00e9solution des probl\\u00e8mes de connexion sur plusieurs sites\", \"Augmentation de la capacit\\u00e9 pour 400 machines (au lieu de 260 initialement)\", \"Solution de Cloud international pour h\\u00e9berger et d\\u00e9ployer de nouvelles solutions pour les agents en interne\"]\nObjections soulevees : []\nActions convenues : [\"Planifier un prochain rendez-vous avec l'\\u00e9quipe technique d'Orange Business\", \"Pr\\u00e9parer une pr\\u00e9sentation des solutions r\\u00e9seau et cloud adapt\\u00e9es aux besoins exprim\\u00e9s\"]\nTranscription de l'echange : bonjour  comment allez-vous  bonjour monsieur Chantal je souhaiterais je souhaiterais changer ce que nous avons dit la dernière fois lors de notre rendez-vous pour vous dire que finalement nous n'allons pas avoir 260 machine mais nous aurons 400 machine et nous avons aussi sur plusieurs sites des problèmes de connexion des problèmes de connexion et nous souhaitons que Orange puisse nous proposer  des nouvelles solutions sur base de ce que nous avons des problèmes que nous avons du coup je pense très très important c'est très important que nous irons un prochain rendez-vous où vous allez nous présenter les solutions que vous avez avec lequel que vous avez  que vous avez décidé vous et votre équipe technique et nous nous allons et nous nous allons pouvoir décider si nous les prenons ou pas nous sommes en mesure de pouvoir payer nous pouvons mettre l'argent qu'il faut si jamais la solution réseau notre problème notre problème déconnectivité et au-delà de cela au-delà de cela nous nous souhaitons aussi avoir une une solution de Cloud qui pourra nous dit que nous avons idée de pouvoir déployer nouvelle solution pour nos agents en interne nous aurez besoin d'un Claude pour pouvoir héberger cela est très intéressant pour nous  donc voilà",
+    "metadata": {
+      "source_table": "kam_kamvisitreport",
+      "report_id": 111,
+      "enterprise_sector": "Mines & Énergie",
+      "conversion_status": "IN_NEGOTIATION",
+      "created_at": "2026-10-14 15:28:02.186907"
+    }
+  }
+]

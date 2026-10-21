@@ -49,6 +49,8 @@ interface Gap {
   description: string;
   solution_recommended: string;
   dimension: string;
+  pitch?: string;
+  impact_score?: number;
 }
 
 interface CriterionRow {
@@ -66,6 +68,15 @@ interface KamRecommendation {
   solution_title: string;
   target_need: string;
   pitch_argument: string;
+}
+
+interface SizingComparison {
+  similarity_percentage: number;
+  is_twin: boolean;
+  tier_a: string;
+  tier_b: string;
+  employee_diff: number;
+  site_diff: number;
 }
 
 interface ComparisonData {
@@ -87,8 +98,13 @@ interface ComparisonData {
     annual_revenue: number;
     current_connectivity: string;
     incident_count: number;
+    bandwidth_total?: number;
+    sizing_tier?: string;
+    similarity_percentage?: number;
   };
   radar: RadarItem[];
+  sizing_comparison?: SizingComparison;
+  sector_peers?: SectorEnterprise[];
   advantages_a: Advantage[];
   advantages_b: Advantage[];
   gaps_a: Gap[];
@@ -115,6 +131,20 @@ export default function KamEnterpriseComparisonView() {
   const [activeDimension, setActiveDimension] = useState<string | null>(null);
   const [copiedPitchIndex, setCopiedPitchIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'gaps' | 'criteria'>('overview');
+  const [rightCardTab, setRightCardTab] = useState<'gaps' | 'advantages'>('gaps');
+  const [expandedGapIndices, setExpandedGapIndices] = useState<Set<number>>(new Set());
+
+  const toggleGapExpand = (idx: number) => {
+    setExpandedGapIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+      return next;
+    });
+  };
 
   // 1. Charger la liste des secteurs & entreprises
   useEffect(() => {
@@ -568,61 +598,159 @@ export default function KamEnterpriseComparisonView() {
               </div>
             </div>
 
-            {/* Colonne Droite : Où il se démarque (Style Versus) */}
+            {/* Colonne Droite : Priorité sur "CE QUI LUI MANQUE" avec Switcher vers "Où il se démarque" */}
             <div className="lg:col-span-7 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col justify-between shadow-sm">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white">
-                      Où il se démarque
-                    </span>
-                    <span className="text-[10px] bg-[#4F6CE8]/10 text-[#4F6CE8] dark:text-[#6885FF] font-bold px-2 py-0.5 rounded-full">
-                      {comparison.advantages_a.length} atout{comparison.advantages_a.length > 1 ? 's' : ''} clé{comparison.advantages_a.length > 1 ? 's' : ''}
-                    </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <div className="inline-flex p-1 rounded-full bg-[#ECEAE5] dark:bg-[#242124]">
+                    <button
+                      onClick={() => setRightCardTab('gaps')}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        rightCardTab === 'gaps'
+                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
+                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>Ce qui lui manque ({comparison.gaps_a.length})</span>
+                    </button>
+                    <button
+                      onClick={() => setRightCardTab('advantages')}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        rightCardTab === 'advantages'
+                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
+                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>Où il se démarque ({comparison.advantages_a.length})</span>
+                    </button>
                   </div>
                   <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                     Face à {comparison.meta_b.name}
                   </span>
                 </div>
 
-                {comparison.advantages_a.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-zinc-500">
-                    Aucun écart majeur détecté en faveur de cette entreprise sur les critères actuels.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {comparison.advantages_a.map((adv, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col gap-2 transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                            {adv.criterion}
-                          </span>
-                          <span className="text-xs font-bold text-[#4F6CE8] dark:text-[#6885FF]">
-                            {adv.value_main}
-                          </span>
-                        </div>
-
-                        {/* Barre de progression & Pourcentage d'avance */}
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-[#4F6CE8] rounded-full transition-all duration-500"
-                              style={{ width: `${adv.lead_percentage}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0">
-                            devance {adv.lead_percentage}%
-                          </span>
-                        </div>
-
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                          {adv.summary}
-                        </p>
+                {/* VUE 1 : CE QUI LUI MANQUE (Accordéon Dropdown, Collapse par défaut) */}
+                {rightCardTab === 'gaps' && (
+                  <div className="space-y-2.5">
+                    {comparison.gaps_a.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-zinc-500">
+                        Aucun déficit majeur détecté pour ce dimensionnement.
                       </div>
-                    ))}
+                    ) : (
+                      comparison.gaps_a.map((gap, idx) => {
+                        const isExpanded = expandedGapIndices.has(idx);
+                        return (
+                          <div
+                            key={idx}
+                            className="rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] overflow-hidden transition-all border border-transparent hover:border-black/5 dark:hover:border-white/5"
+                          >
+                            {/* En-tête Compact & Dépliable */}
+                            <button
+                              type="button"
+                              onClick={() => toggleGapExpand(idx)}
+                              className="w-full p-3.5 flex items-center justify-between gap-3 text-left cursor-pointer transition-colors"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                  gap.severity === 'CRITICAL' ? 'bg-[#4F6CE8]' : 'bg-zinc-400 dark:bg-zinc-500'
+                                }`} />
+                                <span className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                                  {gap.issue}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {gap.impact_score && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] dark:text-[#6885FF]">
+                                    -{gap.impact_score} pts
+                                  </span>
+                                )}
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-400">
+                                  {gap.severity === 'CRITICAL' ? 'Critique' : gap.severity === 'HIGH' ? 'Priorité 2' : 'Priorité 3'}
+                                </span>
+                                <Icons.ChevronDown
+                                  size={14}
+                                  className={`text-zinc-400 transition-transform duration-200 ${
+                                    isExpanded ? 'rotate-180 text-zinc-700 dark:text-zinc-200' : ''
+                                  }`}
+                                />
+                              </div>
+                            </button>
+
+                            {/* Contenu Déplié (Collapse par défaut dans tous les cas) */}
+                            {isExpanded && (
+                              <div className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-black/5 dark:border-white/5 animate-fade-in">
+                                <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                  {gap.description}
+                                </p>
+
+                                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <span className="text-[11px] font-bold text-[#4F6CE8] dark:text-[#6885FF]">
+                                    Orange Business : {gap.solution_recommended}
+                                  </span>
+                                  {gap.pitch && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(gap.pitch || '');
+                                        setCopiedPitchIndex(idx + 500);
+                                        setTimeout(() => setCopiedPitchIndex(null), 2500);
+                                      }}
+                                      className="text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors shrink-0"
+                                    >
+                                      {copiedPitchIndex === idx + 500 ? 'Pitch copié !' : 'Copier argumentaire'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                {/* VUE 2 : OÙ IL SE DÉMARQUE */}
+                {rightCardTab === 'advantages' && (
+                  <div className="space-y-4">
+                    {comparison.advantages_a.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-zinc-500">
+                        Aucun écart majeur détecté en faveur de cette entreprise sur les critères actuels.
+                      </div>
+                    ) : (
+                      comparison.advantages_a.map((adv, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col gap-2 transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                              {adv.criterion}
+                            </span>
+                            <span className="text-xs font-bold text-[#4F6CE8] dark:text-[#6885FF]">
+                              {adv.value_main}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-[#4F6CE8] rounded-full transition-all duration-500"
+                                style={{ width: `${adv.lead_percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0">
+                              devance {adv.lead_percentage}%
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                            {adv.summary}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
@@ -636,7 +764,7 @@ export default function KamEnterpriseComparisonView() {
                   onClick={() => setActiveTab('gaps')}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F6CE8] hover:underline cursor-pointer"
                 >
-                  <span>Voir ce qui lui manque</span>
+                  <span>Voir toutes les lacunes</span>
                   <Icons.ArrowRight size={13} />
                 </button>
               </div>

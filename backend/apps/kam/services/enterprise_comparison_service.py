@@ -85,6 +85,204 @@ class EnterpriseComparisonService:
         return policy or sectors.get("default", {})
 
     @classmethod
+    def _extract_bandwidth_mbps(
+        cls, ent: Enterprise, active_offers: List[EnterpriseInstalledOffer]
+    ) -> int:
+        """
+        Détermine la bande passante réelle (en Mbps) à partir des offres installées
+        ou par analyse de la connectivité déclarée (regex & standards sectoriels).
+        """
+        total_offers = sum(o.bandwidth_mbps or 0 for o in active_offers if o.bandwidth_mbps)
+        if total_offers > 0:
+            return total_offers
+
+        conn = (ent.current_connectivity or "").strip().lower()
+        if not conn:
+            return 30
+
+        import re
+        # Gbps explicite (ex: "1 Gbps", "2.5 Gbps", "1 Giga")
+        giga_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:gbps|giga|gb)", conn)
+        if giga_match:
+            try:
+                return int(float(giga_match.group(1)) * 1000)
+            except ValueError:
+                pass
+
+        # Mbps explicite (ex: "100 Mbps", "50 Mbps", "500 Mega")
+        mega_match = re.search(r"(\d+)\s*(?:mbps|mega|mb)", conn)
+        if mega_match:
+            try:
+                return int(mega_match.group(1))
+            except ValueError:
+                pass
+
+        # Heuristiques technologiques déterministes
+        if "très haut débit" in conn or "10g" in conn:
+            return 500
+        if "fibre optique dédiée" in conn or "fibre dédiée" in conn or "lsi" in conn:
+            return 200
+        if "fibre" in conn:
+            return 100
+        if "faisceau" in conn or "hertzien" in conn:
+            return 50
+        if "moyen débit" in conn:
+            return 30
+        if "4g" in conn or "lte" in conn:
+            return 20
+        if "vsat" in conn or "satellite" in conn or "faible débit" in conn:
+            return 10
+
+        return 30
+
+    @classmethod
+    def _get_sizing_tier_label(cls, employees: Optional[int], sites: Optional[int]) -> str:
+        """
+        Retourne le libellé du segment de dimensionnement selon les machines et sites.
+        """
+        emp = max(employees or 1, 1)
+        s = max(sites or 1, 1)
+        if emp >= 1000:
+            return f"Grand Compte ({emp:,} postes • {s} site{'s' if s > 1 else ''})".replace(",", " ")
+        elif emp >= 250:
+            return f"ETI ({emp:,} postes • {s} site{'s' if s > 1 else ''})".replace(",", " ")
+        elif emp >= 20:
+            return f"PME ({emp:,} postes • {s} site{'s' if s > 1 else ''})".replace(",", " ")
+        else:
+            return f"TPE ({emp:,} postes • {s} site{'s' if s > 1 else ''})".replace(",", " ")
+
+    @classmethod
+    def _compute_sizing_similarity(
+        cls, ent_a: Enterprise, ent_b: Enterprise
+    ) -> Dict[str, Any]:
+        """
+        Calcule la proximité de dimensionnement multi-dimensionnelle et non-linéaire :
+        - Volume de machines / postes informatiques (échelle logarithmique)
+        - Dispersion géographique & sites distants (échelle topologique)
+        - Densité opérationnelle par site (machines par site)
+        - Échelle économique (chiffre d'affaires)
+        """
+        import math
+
+        e_a = max(ent_a.employee_count or 1, 1)
+        e_b = max(ent_b.employee_count or 1, 1)
+        s_a = max(ent_a.site_count or 1, 1)
+        s_b = max(ent_b.site_count or 1, 1)
+        r_a = max(float(ent_a.annual_revenue or 0), 1000.0)
+        r_b = max(float(ent_b.annual_revenue or 0), 1000.0)
+
+        # Densité de postes par site (Architecture : campus dense vs agences distribuées)
+        density_a = e_a / s_a
+        density_b = e_b / s_b
+
+        # 1. Distance logarithmique sur le volume de machines
+        log_e_a = math.log(1 + e_a)
+        log_e_b = math.log(1 + e_b)
+        d_emp = abs(log_e_a - log_e_b) / max(log_e_a, log_e_b, 1.0)
+
+        # 2. Distance logarithmique sur le nombre de sites distants
+        log_s_a = math.log(1 + s_a)
+        log_s_b = math.log(1 + s_b)
+        d_sites = abs(log_s_a - log_s_b) / max(log_s_a, log_s_b, 1.0)
+
+        # 3. Distance sur la densité opérationnelle par site
+        log_d_a = math.log(1 + density_a)
+        log_d_b = math.log(1 + density_b)
+        d_density = abs(log_d_a - log_d_b) / max(log_d_a, log_d_b, 1.0)
+
+        # 4. Distance sur l'échelle économique
+        log_r_a = math.log(1 + r_a)
+        log_r_b = math.log(1 + r_b)
+        d_rev = abs(log_r_a - log_r_b) / max(log_r_a, log_r_b, 1.0)
+
+        # Pondération multi-dimensionnelle non-linéaire :
+        # 35% Volume Postes, 30% Dispersion Sites, 20% Densité/Topologie, 15% Envergure CA
+        composite_distance = (
+            0.35 * d_emp +
+            0.30 * d_sites +
+            0.20 * d_density +
+            0.15 * d_rev
+        )
+
+        similarity = max(5, min(99, round((1.0 - composite_distance) * 100)))
+
+        # Typologie topologique
+        def get_topology_type(sites: int, density: float) -> str:
+            if sites == 1:
+                return "Mono-site (Campus Centralisé)"
+            elif sites >= 4 and density < 200:
+                return f"Multi-sites Distribué ({sites} agences • Réseau Maillé)"
+            elif sites >= 2 and density >= 200:
+                return f"Multi-sites Haute Densité ({sites} hubs régionaux)"
+            else:
+                return f"Multi-sites ({sites} implantations)"
+
+        topology_a = get_topology_type(s_a, density_a)
+        topology_b = get_topology_type(s_b, density_b)
+
+        return {
+            "similarity_percentage": similarity,
+            "is_twin": similarity >= 80,
+            "tier_a": cls._get_sizing_tier_label(e_a, s_a),
+            "tier_b": cls._get_sizing_tier_label(e_b, s_b),
+            "topology_a": topology_a,
+            "topology_b": topology_b,
+            "employee_diff": e_a - e_b,
+            "site_diff": s_a - s_b,
+        }
+
+    @classmethod
+    def get_sector_peers_by_sizing(
+        cls, ent_a: Enterprise
+    ) -> List[Dict[str, Any]]:
+        """
+        Retourne la liste des entreprises du même secteur classées par proximité
+        de dimensionnement (les pairs aux tailles les plus proches en premier).
+        """
+        sector = ent_a.sector
+        if not sector:
+            return []
+
+        qs = (
+            Enterprise.objects.filter(sector=sector)
+            .exclude(id=ent_a.id)
+            .select_related("crm_record")
+            .prefetch_related(
+                Prefetch(
+                    "installed_offers",
+                    queryset=EnterpriseInstalledOffer.objects.filter(contract_status="ACTIVE"),
+                )
+            )
+        )
+
+        peers_with_sim = []
+        for ent_b in qs:
+            sim_data = cls._compute_sizing_similarity(ent_a, ent_b)
+            score_b = cls._compute_enterprise_scores(ent_b)
+            peers_with_sim.append({
+                "id": ent_b.id,
+                "name": ent_b.name,
+                "city": ent_b.city or "Kinshasa",
+                "segment": ent_b.segment,
+                "employee_count": ent_b.employee_count,
+                "site_count": ent_b.site_count or 1,
+                "annual_revenue": float(ent_b.annual_revenue or 0),
+                "current_connectivity": ent_b.current_connectivity or "4G LTE",
+                "overall_score": score_b["overall_score"],
+                "similarity_percentage": sim_data["similarity_percentage"],
+                "is_twin": sim_data["is_twin"],
+                "sizing_tier": sim_data["tier_b"],
+                "is_closest_twin": False,
+            })
+
+        # Trier par pourcentage de similarité décroissant
+        peers_with_sim.sort(key=lambda x: x["similarity_percentage"], reverse=True)
+        if peers_with_sim:
+            peers_with_sim[0]["is_closest_twin"] = True
+
+        return peers_with_sim
+
+    @classmethod
     def get_sectors_overview(cls) -> List[Dict[str, Any]]:
         """
         Retourne la liste des secteurs d'activité avec leurs entreprises éligibles
@@ -144,10 +342,12 @@ class EnterpriseComparisonService:
 
     @classmethod
     def compare(
-        cls, enterprise_a_id: int, enterprise_b_id: Optional[int] = None
+        cls, enterprise_a_id: int, enterprise_b_id: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
         Compare deux entreprises ou une entreprise vis-à-vis du benchmark sectoriel.
+        Par défaut (enterprise_b_id non renseigné), compare automatiquement avec le pair
+        du même secteur ayant le dimensionnement le plus proche (nombre de postes/machines et sites).
         """
         try:
             ent_a = (
@@ -158,25 +358,48 @@ class EnterpriseComparisonService:
         except Enterprise.DoesNotExist:
             raise ValueError(f"Entreprise A (ID: {enterprise_a_id}) introuvable.")
 
+        # Récupérer l'ensemble des pairs du secteur classés par dimensionnement similaire
+        sector_peers = cls.get_sector_peers_by_sizing(ent_a)
+
         ent_b = None
         is_benchmark_comparison = False
-        if enterprise_b_id and enterprise_b_id != enterprise_a_id:
-            try:
-                ent_b = (
-                    Enterprise.objects.select_related("crm_record")
-                    .prefetch_related("installed_offers")
-                    .get(pk=enterprise_b_id)
-                )
-            except Enterprise.DoesNotExist:
-                raise ValueError(f"Entreprise B (ID: {enterprise_b_id}) introuvable.")
-        else:
+
+        if enterprise_b_id in ("benchmark", "0", 0):
             is_benchmark_comparison = True
+        elif enterprise_b_id is not None:
+            try:
+                b_id_int = int(enterprise_b_id)
+                if b_id_int != ent_a.id:
+                    ent_b = (
+                        Enterprise.objects.select_related("crm_record")
+                        .prefetch_related("installed_offers")
+                        .get(pk=b_id_int)
+                    )
+                else:
+                    is_benchmark_comparison = True
+            except (Enterprise.DoesNotExist, ValueError):
+                is_benchmark_comparison = True
+        else:
+            # PAR DÉFAUT : Choisir le pair du même secteur au dimensionnement le plus proche
+            if sector_peers:
+                closest_id = sector_peers[0]["id"]
+                try:
+                    ent_b = (
+                        Enterprise.objects.select_related("crm_record")
+                        .prefetch_related("installed_offers")
+                        .get(pk=closest_id)
+                    )
+                except Enterprise.DoesNotExist:
+                    is_benchmark_comparison = True
+            else:
+                is_benchmark_comparison = True
 
         scores_a = cls._compute_enterprise_scores(ent_a)
 
         if ent_b:
             scores_b = cls._compute_enterprise_scores(ent_b)
             name_b = ent_b.name
+            sizing_data = cls._compute_sizing_similarity(ent_a, ent_b)
             meta_b = {
                 "id": ent_b.id,
                 "name": ent_b.name,
@@ -187,11 +410,22 @@ class EnterpriseComparisonService:
                 "annual_revenue": float(ent_b.annual_revenue or 0),
                 "current_connectivity": ent_b.current_connectivity or "4G LTE",
                 "incident_count": ent_b.incident_count,
+                "bandwidth_total": scores_b.get("bandwidth_total", 0),
+                "sizing_tier": sizing_data["tier_b"],
+                "similarity_percentage": sizing_data["similarity_percentage"],
             }
         else:
             # Calcul de la moyenne sectorielle réelle
             scores_b = cls._compute_sector_benchmark(ent_a.sector, exclude_id=ent_a.id)
             name_b = f"Moyenne du secteur ({ent_a.sector or 'Global'})"
+            sizing_data = {
+                "similarity_percentage": 50,
+                "is_twin": False,
+                "tier_a": cls._get_sizing_tier_label(ent_a.employee_count, ent_a.site_count),
+                "tier_b": "Moyenne Sectorielle",
+                "employee_diff": 0,
+                "site_diff": 0,
+            }
             meta_b = {
                 "id": None,
                 "name": name_b,
@@ -202,6 +436,9 @@ class EnterpriseComparisonService:
                 "annual_revenue": float(scores_b.get("avg_revenue", 250000)),
                 "current_connectivity": scores_b.get("typical_connectivity", "Fibre Pro / 4G"),
                 "incident_count": int(scores_b.get("avg_incidents", 1)),
+                "bandwidth_total": 50,
+                "sizing_tier": "Moyenne Sectorielle",
+                "similarity_percentage": 50,
             }
 
         overall_a = scores_a["overall_score"]
@@ -218,7 +455,6 @@ class EnterpriseComparisonService:
             headline = f"{ent_a.name} et {name_b} au coude-à-coude sur leur secteur"
 
         # Comparaison dimension par dimension pour le Radar Chart
-        policy_a = cls.get_sector_policy(ent_a.sector)
         radar_data = []
         dimensions_meta = [
             ("connectivity", "Connectivité & Débit"),
@@ -249,15 +485,34 @@ class EnterpriseComparisonService:
             else []
         )
 
-        # Lacunes & Vulnérabilités ("Ce qui lui manque")
-        gaps_a = scores_a.get("gaps", [])
-        gaps_b = scores_b.get("gaps", []) if ent_b else []
+        # Lacunes & Vulnérabilités ("Ce qui lui manque" - Priorité commerciale absolue)
+        comp_gaps_a = cls._extract_comparative_gaps(ent_a, scores_a, ent_b, scores_b, name_b)
+        existing_issues_a = {g.get("issue") for g in scores_a.get("gaps", [])}
+        all_gaps_a = list(scores_a.get("gaps", []))
+        for cg in comp_gaps_a:
+            if cg.get("issue") not in existing_issues_a:
+                all_gaps_a.append(cg)
+                existing_issues_a.add(cg.get("issue"))
+
+        # Tri strict : CRITICAL en premier, puis HIGH, puis MEDIUM
+        severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}
+        all_gaps_a.sort(key=lambda g: severity_order.get(g.get("severity", "MEDIUM"), 3))
+
+        all_gaps_b = list(scores_b.get("gaps", []))
+        if ent_b:
+            comp_gaps_b = cls._extract_comparative_gaps(ent_b, scores_b, ent_a, scores_a, ent_a.name)
+            existing_issues_b = {g.get("issue") for g in all_gaps_b}
+            for cg in comp_gaps_b:
+                if cg.get("issue") not in existing_issues_b:
+                    all_gaps_b.append(cg)
+                    existing_issues_b.add(cg.get("issue"))
+            all_gaps_b.sort(key=lambda g: severity_order.get(g.get("severity", "MEDIUM"), 3))
 
         # Tableau détaillé des critères
         criteria_breakdown = cls._build_criteria_breakdown(ent_a, scores_a, ent_b, scores_b)
 
         # Recommandations stratégiques & Pitch KAM
-        kam_recommendations = cls._generate_kam_recommendations(ent_a, gaps_a, ent_b, gaps_b)
+        kam_recommendations = cls._generate_kam_recommendations(ent_a, all_gaps_a, ent_b, all_gaps_b)
 
         return {
             "headline": headline,
@@ -277,13 +532,17 @@ class EnterpriseComparisonService:
                 "annual_revenue": float(ent_a.annual_revenue or 0),
                 "current_connectivity": ent_a.current_connectivity or "4G LTE",
                 "incident_count": ent_a.incident_count,
+                "bandwidth_total": scores_a.get("bandwidth_total", 0),
+                "sizing_tier": sizing_data["tier_a"],
             },
             "meta_b": meta_b,
             "radar": radar_data,
+            "sizing_comparison": sizing_data,
+            "sector_peers": sector_peers,
             "advantages_a": advantages_a,
             "advantages_b": advantages_b,
-            "gaps_a": gaps_a,
-            "gaps_b": gaps_b,
+            "gaps_a": all_gaps_a,
+            "gaps_b": all_gaps_b,
             "criteria_breakdown": criteria_breakdown,
             "kam_recommendations": kam_recommendations,
         }
@@ -315,12 +574,12 @@ class EnterpriseComparisonService:
         conn_text = (ent.current_connectivity or "").lower()
         combined_text = f"{offers_text} {conn_text}"
 
-        bandwidth_total = sum(o.bandwidth_mbps or 0 for o in active_offers)
+        bandwidth_total = cls._extract_bandwidth_mbps(ent, active_offers)
         sites = ent.site_count or 1
         employees = ent.employee_count or 10
 
         # Drapeaux de présence
-        has_fiber = "fibre" in combined_text or "procezo" in combined_text
+        has_fiber = "fibre" in combined_text or "lsi" in combined_text
         has_dedicated = "dédi" in combined_text or "symétri" in combined_text
         has_backup_link = (
             len(active_offers) >= 2
@@ -370,31 +629,54 @@ class EnterpriseComparisonService:
                     "solution_recommended": item.get("recommended_offer", "Offre Orange Business"),
                     "dimension": dim,
                     "pitch": item.get("pitch", ""),
+                    "impact_score": int(penalty),
                 })
 
         # 2. ADÉQUATION DU DIMENSIONNEMENT (Ratio Mbps par poste / machine)
         min_mbps = float(sizing_rules.get("min_mbps_per_workstation", 0.20))
-        max_sizing_penalty = float(sizing_rules.get("min_mbps_penalty_max", 15))
+        max_sizing_penalty = float(sizing_rules.get("min_mbps_penalty_max", 25))
         actual_ratio = bandwidth_total / max(employees, 1)
 
         if actual_ratio < min_mbps:
             # Pénalité proportionnelle au déficit de bande passante
             deficiency = (min_mbps - actual_ratio) / min_mbps
-            sizing_pen = round(min(max_sizing_penalty, deficiency * max_sizing_penalty))
+            sizing_pen = round(min(max_sizing_penalty, max(6.0, deficiency * max_sizing_penalty)))
             current_score -= sizing_pen
             dim_penalties["connectivity"] += sizing_pen
 
+            recommended_offer = (
+                "Fibre Dédiée Entreprise 1 Gbps (LSI)"
+                if employees >= 1000
+                else (
+                    "Fibre Dédiée Entreprise 500 Mbps"
+                    if employees >= 300
+                    else "Fibre Pro Entreprise 100 Mbps"
+                )
+            )
+
+            min_bw_needed = round(employees * min_mbps)
+
+            site_detail_str = (
+                f" (soit seulement ~{round(bandwidth_total / sites)} Mbps pour chacun de vos {sites} sites hébergeant ~{round(employees / sites)} machines)"
+                if sites > 1 else ""
+            )
+
             gaps.append({
                 "category": "Dimensionnement",
-                "severity": "HIGH" if deficiency > 0.5 else "MEDIUM",
-                "issue": f"Débit sous-dimensionné ({bandwidth_total} Mbps pour {employees} postes)",
+                "severity": "CRITICAL" if deficiency > 0.6 else "HIGH",
+                "issue": f"Débit critique sous-dimensionné ({bandwidth_total} Mbps pour {employees} machines/postes)",
                 "description": (
-                    f"Ratio actuel de {actual_ratio:.2f} Mbps/poste contre {min_mbps:.2f} Mbps/poste "
-                    f"recommandé pour le secteur {ent.sector}."
+                    f"Ratio actuel de {actual_ratio:.2f} Mbps/machine contre {min_mbps:.2f} Mbps/machine "
+                    f"requis pour le secteur {ent.sector}{site_detail_str}. "
+                    f"Déficit capacitaire de {round(deficiency * 100)}% provoquant saturation et lenteurs applicatives."
                 ),
-                "solution_recommended": "Montée en débit Fibre Dédiée Orange Business Procezo",
+                "solution_recommended": f"Montée en débit {recommended_offer}",
                 "dimension": "connectivity",
-                "pitch": "Une augmentation de la bande passante éliminera les ralentissements applicatifs des collaborateurs.",
+                "pitch": (
+                    f"« Avec {employees} machines actives réparties sur vos {sites} sites, votre bande passante de {bandwidth_total} Mbps est saturée. "
+                    f"Orange Business vous propose {recommended_offer} avec débit garanti et SLA Pro pour absorber votre croissance. »"
+                ),
+                "impact_score": sizing_pen,
             })
 
         # 3. MULTI-SITES & SD-WAN
@@ -403,6 +685,24 @@ class EnterpriseComparisonService:
         if sites >= sdwan_threshold and not has_sdwan:
             current_score -= multi_pen
             dim_penalties["equipment"] += multi_pen
+
+            if not any("sd-wan" in g.get("issue", "").lower() or "interconnexion" in g.get("issue", "").lower() for g in gaps):
+                gaps.append({
+                    "category": "Architecture Réseau",
+                    "severity": "CRITICAL" if sites >= 4 else "HIGH",
+                    "issue": f"Absence d'interconnexion SD-WAN ({sites} sites distants)",
+                    "description": (
+                        f"L'entreprise opère {sites} sites distants sans pilotage centralisé du trafic réseau. "
+                        f"Chaque site fonctionne en silo sans bascule automatique ni priorisation des flux critiques métier."
+                    ),
+                    "solution_recommended": "Solution Business SD-WAN Managé Orange",
+                    "dimension": "equipment",
+                    "pitch": (
+                        f"« Avec {sites} implantations distantes, le SD-WAN Orange Business vous permet d'unifier vos liaisons, "
+                        f"d'optimiser vos coûts d'exploitation et de prioriser vos flux ERP sans rupture. »"
+                    ),
+                    "impact_score": int(multi_pen),
+                })
 
         # 4. RÉSILIENCE OPÉRATIONNELLE & SLA
         incidents = ent.incident_count or 0
@@ -515,6 +815,104 @@ class EnterpriseComparisonService:
             "active_offers_count": 1,
             "gaps": [],
         }
+
+    @classmethod
+    def _extract_comparative_gaps(
+        cls,
+        ent_main: Enterprise,
+        scores_main: Dict[str, Any],
+        ent_peer: Optional[Enterprise],
+        scores_peer: Dict[str, Any],
+        peer_name: str,
+    ) -> List[Dict[str, Any]]:
+        """
+        Extrait les lacunes comparatives où le pair surclasse nettement l'entreprise cible.
+        Transforme les atouts du pair en propositions concrètes Orange Business pour le client.
+        """
+        comp_gaps: List[Dict[str, Any]] = []
+        if not ent_peer:
+            return comp_gaps
+
+        # 1. Liens de secours (Redondance / SPOF)
+        if scores_peer.get("has_backup_link") and not scores_main.get("has_backup_link"):
+            comp_gaps.append({
+                "category": "Résilience Réseau",
+                "severity": "CRITICAL",
+                "issue": f"Absence de lien de secours (Actif chez {peer_name})",
+                "description": (
+                    f"{peer_name} sécurise ses flux critiques avec une double adduction "
+                    f"alors que {ent_main.name} dépend d'un lien unique (SPOF)."
+                ),
+                "solution_recommended": "Lien de Secours 4G LTE Pro / VSAT Backup Managé",
+                "dimension": "sla",
+                "pitch": (
+                    f"« Votre pair {peer_name} a éliminé le risque de coupure avec un lien de secours. "
+                    f"Orange Business déploie une liaison secondaire en bascule automatique sous 7 jours. »"
+                ),
+                "impact_score": 15,
+            })
+
+        # 2. Cybersécurité périmétrique
+        if scores_peer.get("has_firewall") and not scores_main.get("has_firewall"):
+            comp_gaps.append({
+                "category": "Cybersécurité",
+                "severity": "CRITICAL",
+                "issue": f"Pare-feu managé non déployé (Déployé chez {peer_name})",
+                "description": (
+                    f"Contrairement à {peer_name}, les accès Internet de {ent_main.name} "
+                    f"ne disposent pas de pare-feu nouvelle génération ni de filtrage d'intrusion."
+                ),
+                "solution_recommended": "Firewall Next-Gen Managé Fortinet Orange Business",
+                "dimension": "security",
+                "pitch": (
+                    f"« Dans votre secteur d'activité, la protection périmétrique est devenue incontournable. "
+                    f"{peer_name} est déjà équipé. Orange Business sécurise l'ensemble de vos flux. »"
+                ),
+                "impact_score": 15,
+            })
+
+        # 3. Écart de bande passante relatif
+        bw_main = scores_main.get("bandwidth_total", 0)
+        bw_peer = scores_peer.get("bandwidth_total", 0)
+        if bw_peer >= bw_main * 2 and bw_peer >= 50:
+            comp_gaps.append({
+                "category": "Connectivité",
+                "severity": "HIGH",
+                "issue": f"Bande passante 2x inférieure à son pair ({bw_main} Mbps vs {bw_peer} Mbps)",
+                "description": (
+                    f"{peer_name} dispose de {bw_peer} Mbps contre seulement {bw_main} Mbps pour {ent_main.name}, "
+                    f"offrant une bien meilleure vélocité applicative."
+                ),
+                "solution_recommended": "Upgrade Débit Fibre Dédiée Entreprise (LSI)",
+                "dimension": "connectivity",
+                "pitch": (
+                    f"« Votre pair direct {peer_name} opère avec {bw_peer} Mbps. "
+                    f"Pour maintenir votre niveau de service, nous recommandons d'aligner votre bande passante. »"
+                ),
+                "impact_score": 10,
+            })
+
+        # 4. SD-WAN multi-sites
+        sites_main = ent_main.site_count or 1
+        if sites_main >= 2 and scores_peer.get("has_sdwan") and not scores_main.get("has_sdwan"):
+            comp_gaps.append({
+                "category": "Équipements & Réseau",
+                "severity": "HIGH",
+                "issue": f"Interconnexion SD-WAN absente (Active chez {peer_name})",
+                "description": (
+                    f"{peer_name} pilote ses liaisons inter-sites avec SD-WAN. "
+                    f"{ent_main.name} gère ses {sites_main} sites sans priorisation dynamique."
+                ),
+                "solution_recommended": "Solution SD-WAN Managé Orange Business",
+                "dimension": "equipment",
+                "pitch": (
+                    f"« Pour vos {sites_main} sites, le SD-WAN optimise la répartition de charge "
+                    f"et réduit vos coûts d'exploitation comme chez {peer_name}. »"
+                ),
+                "impact_score": 10,
+            })
+
+        return comp_gaps
 
     @classmethod
     def _extract_advantages(

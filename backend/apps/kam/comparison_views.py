@@ -42,12 +42,25 @@ class KamEnterpriseComparisonView(APIView):
 
         try:
             a_id = int(ent_a_id)
-            b_id = int(ent_b_id) if ent_b_id and ent_b_id.strip() else None
         except ValueError:
             return Response(
-                {"error": "Les identifiants d'entreprise doivent être des entiers valides."},
+                {"error": "L'identifiant enterprise_a doit être un entier valide."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        b_id = None
+        if ent_b_id and ent_b_id.strip():
+            raw_b = ent_b_id.strip().lower()
+            if raw_b in ("benchmark", "0", "moyenne"):
+                b_id = "benchmark"
+            else:
+                try:
+                    b_id = int(raw_b)
+                except ValueError:
+                    return Response(
+                        {"error": "L'identifiant enterprise_b doit être un entier valide ou 'benchmark'."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         try:
             comparison_data = EnterpriseComparisonService.compare(

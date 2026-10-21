@@ -1,0 +1,596 @@
+[
+  {
+    "id": "service_37",
+    "doc_type": "service_catalog",
+    "title": "Ligne de Secours 4G/5G",
+    "content_to_vectorize": "Offre : Ligne de Secours 4G/5G\nCategorie : CONNECTIVITY\nDescription : Bascule automatique (failover) sur le réseau mobile Orange en cas de coupure de la fibre.\nBenefices client : Continuité de service garantie sans coupure.\nPrerequis techniques : {\"Routeur\": \"Double WAN\", \"SIM\": \"Orange Pro\"}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 37,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_38",
+    "doc_type": "service_catalog",
+    "title": "Onbora Wifi Guest",
+    "content_to_vectorize": "Offre : Onbora Wifi Guest\nCategorie : CONNECTIVITY\nDescription : Portail captif personnalisable pour offrir un accès internet sécurisé à vos visiteurs.\nBenefices client : Conformité légale avec conservation des logs de connexion.\nPrerequis techniques : {\"SSID\": \"Guest-Wifi\", \"Isolation\": \"Client-to-Client\"}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 38,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_57",
+    "doc_type": "service_catalog",
+    "title": "Offre Mobile Postpayé (Business Flex)",
+    "content_to_vectorize": "Offre : Offre Mobile Postpayé (Business Flex)\nCategorie : CONNECTIVITY\nDescription : Offre mobile postpayée pour centraliser les communications des collaborateurs sur une facture entreprise, avec paiement selon la consommation et activation possible de forfaits data.\nBenefices client : Centraliser la facturation mobile de l’entreprise\nÉviter les rechargements individuels récurrents\nSuivre la consommation mensuelle par USSD\nPrerequis techniques : {\"prerequisites\": [\"Pr\\u00e9ciser le nombre de lignes\", \"Estimer les consommations voix et data\", \"Fournir les documents administratifs de l\\u2019entreprise\"], \"commercial_terms\": [\"Tarification et caution \\u00e0 confirmer avec Orange\", \"Offre postpay\\u00e9e soumise \\u00e0 souscription entreprise\"], \"variants\": [], \"match\": {\"need_keywords\": [\"postpay\\u00e9\", \"postpaid\", \"facture mobile\", \"lignes mobiles\", \"flotte mobile\", \"cr\\u00e9dit t\\u00e9l\\u00e9phone\", \"communication mobile\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 57,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_58",
+    "doc_type": "service_catalog",
+    "title": "Flotte Mobile (Business GFU)",
+    "content_to_vectorize": "Offre : Flotte Mobile (Business GFU)\nCategorie : CONNECTIVITY\nDescription : Groupe fermé d’utilisateurs pour partager un pool d’heures d’appels entre salariés, avec SMS intra-flotte gratuits et forfaits adaptables aux usages.\nBenefices client : Réduire les coûts de communication entre collaborateurs\nPartager les heures d’appels dans la flotte\nMaintenir les communications internes même sans crédit individuel\nPrerequis techniques : {\"prerequisites\": [\"Identifier les membres de la flotte\", \"Mesurer le volume d\\u2019appels intra-flotte\"], \"commercial_terms\": [\"Tarifs et volume du pool sur devis\", \"Souscription aupr\\u00e8s d\\u2019Orange Business RDC\"], \"variants\": [], \"match\": {\"need_keywords\": [\"gfu\", \"groupe ferm\\u00e9\", \"intra-flotte\", \"flotte mobile\", \"appels internes\", \"communications collaborateurs\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 58,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_59",
+    "doc_type": "service_catalog",
+    "title": "Forfaits Koza Voix Tous Réseaux",
+    "content_to_vectorize": "Offre : Forfaits Koza Voix Tous Réseaux\nCategorie : CONNECTIVITY\nDescription : Forfaits prépayés centrés sur les appels vers tous les réseaux, disponibles en validité hebdomadaire ou mensuelle avec plusieurs volumes de minutes.\nBenefices client : Maîtriser un budget voix prépayé\nAppeler les contacts de différents réseaux\nChoisir une validité hebdomadaire ou mensuelle\nPrerequis techniques : {\"prerequisites\": [\"Estimer les minutes mensuelles vers Orange et les autres r\\u00e9seaux\"], \"commercial_terms\": [\"Sans engagement selon les fiches publiques\", \"Volumes et tarifs \\u00e0 reconfirmer avant souscription\"], \"variants\": [{\"name\": \"Koza Tous R\\u00e9seaux Hebdo\", \"details\": [\"Formules 150u, 250u et 400u\", \"Validit\\u00e9 7 jours\"]}, {\"name\": \"Koza Tous R\\u00e9seaux Mensuel\", \"details\": [\"Formules 500u, 1000u, 2500u et 5000u\", \"Validit\\u00e9 30 jours\"]}], \"match\": {\"need_keywords\": [\"forfait voix\", \"appels tous r\\u00e9seaux\", \"minutes d'appel\", \"koza voix\", \"appeler clients\", \"appels professionnels\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 59,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_60",
+    "doc_type": "service_catalog",
+    "title": "Forfaits KozaMix",
+    "content_to_vectorize": "Offre : Forfaits KozaMix\nCategorie : CONNECTIVITY\nDescription : Forfaits prépayés combinant appels, SMS et internet mobile, en formules hebdomadaires ou mensuelles.\nBenefices client : Regrouper voix, SMS et data dans un forfait\nMaîtriser la dépense mobile\nAdapter la durée et le volume aux usages\nPrerequis techniques : {\"prerequisites\": [\"Estimer l\\u2019usage mensuel en voix, SMS et data\"], \"commercial_terms\": [\"Sans engagement selon les fiches publiques\", \"Volumes et tarifs \\u00e0 reconfirmer avant souscription\"], \"variants\": [{\"name\": \"KozaMix Hebdo\", \"details\": [\"150u: 22 min, 225 SMS, 225 Mo et 150 min nuit\", \"250u: 40 min, 375 SMS, 375 Mo et 250 min nuit\", \"400u: 60 min, 400 SMS, 400 Mo et nuit illimit\\u00e9e\", \"Validit\\u00e9 7 jours\"]}, {\"name\": \"KozaMix Mensuel\", \"details\": [\"500u: 75 min, 250 SMS et 500 Mo\", \"1000u: 150 min, 500 SMS et 1,5 Go\", \"2500u: 400 min, 500 SMS et 4 Go\", \"5000u: 820 min, 500 SMS et 15 Go\", \"Validit\\u00e9 30 jours\"]}], \"match\": {\"need_keywords\": [\"forfait mix\", \"koza mix\", \"kozamix\", \"voix sms data\", \"appels sms internet\", \"forfait mobile\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 60,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_61",
+    "doc_type": "service_catalog",
+    "title": "Business Mix Pro",
+    "content_to_vectorize": "Offre : Business Mix Pro\nCategorie : CONNECTIVITY\nDescription : Gamme mobile prépayée pour professionnels et entreprises combinant voix tous réseaux, SMS et internet, avec suivi de consommation et avantages intra-flotte.\nBenefices client : Combiner voix, data et SMS pour les collaborateurs\nMaîtriser la consommation avec des forfaits prépayés\nBénéficier de tarifs intra-flotte et du support entreprise\nPrerequis techniques : {\"prerequisites\": [\"Pr\\u00e9ciser le nombre d\\u2019utilisateurs\", \"Choisir le volume voix, SMS et data par profil\"], \"commercial_terms\": [\"La page indique une offre sans engagement mais mentionne aussi un contrat minimal d\\u2019un an: condition \\u00e0 clarifier avec Orange\", \"Souscription en agence avec justificatifs ou via *390*# selon la fiche\"], \"variants\": [{\"name\": \"Business Mix Pro 500u\", \"details\": [\"50 min tous r\\u00e9seaux\", \"15 SMS\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Mix Pro 1000u\", \"details\": [\"2 Go\", \"100 min\", \"20 SMS\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Mix Pro 2000u\", \"details\": [\"5 Go\", \"200 min\", \"30 SMS\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Mix Pro 3500u\", \"details\": [\"8 Go\", \"300 min\", \"40 SMS\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Mix Pro 5500u\", \"details\": [\"15 Go\", \"500 min\", \"60 SMS\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Mix Pro 10 000u\", \"details\": [\"25 Go\", \"1000 min\", \"100 SMS\", \"Validit\\u00e9 30 jours\"]}], \"match\": {\"need_keywords\": [\"business mix\", \"mix pro\", \"forfait professionnel\", \"voix data sms\", \"forfait pr\\u00e9pay\\u00e9 entreprise\", \"consommation mobile\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 61,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_62",
+    "doc_type": "service_catalog",
+    "title": "Internet Essentiel",
+    "content_to_vectorize": "Offre : Internet Essentiel\nCategorie : CONNECTIVITY\nDescription : Gamme de forfaits data mobile utilisables sur smartphone, tablette, ordinateur ou AirBox 4G+, avec des volumes et validités variés.\nBenefices client : Donner un accès internet mobile aux collaborateurs\nChoisir un volume adapté à un besoin ponctuel ou mensuel\nUtiliser la data sur plusieurs types d’appareils\nPrerequis techniques : {\"prerequisites\": [\"V\\u00e9rifier la couverture mobile Orange\", \"Estimer le volume mensuel de data\"], \"commercial_terms\": [\"Sans engagement selon le catalogue public\", \"Volumes et tarifs \\u00e0 reconfirmer avant achat\"], \"variants\": [{\"name\": \"Pass courte dur\\u00e9e\", \"details\": [\"100u: 600 Mo / 48 h\", \"125u: 1,25 Go / 7 jours\", \"200u: 3 Go / 7 jours\", \"400u: 2,5 Go / 7 jours\"]}, {\"name\": \"Pass mensuels\", \"details\": [\"1000u: 13 Go\", \"2000u: 35 Go\", \"3000u: 65 Go\", \"5000u: 110 Go\", \"10 000u: 250 Go\", \"Validit\\u00e9 30 jours sauf indication diff\\u00e9rente\"]}], \"match\": {\"need_keywords\": [\"internet mobile\", \"forfait data\", \"data mobile\", \"connexion nomade\", \"smartphone internet\", \"tablette internet\", \"pass internet\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 62,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_63",
+    "doc_type": "service_catalog",
+    "title": "Business Box",
+    "content_to_vectorize": "Offre : Business Box\nCategorie : CONNECTIVITY\nDescription : Solution internet entreprise 4G+ TDD très haut débit, clé en main, avec des formules de 50 Go à 1 To avec FUP et des options de couverture, IP publique et sécurité.\nBenefices client : Déployer rapidement un accès internet d’entreprise\nChoisir une capacité adaptée jusqu’à 1 To avec FUP\nAjouter une IP publique ou un firewall Secure Access\nPrerequis techniques : {\"prerequisites\": [\"V\\u00e9rifier la couverture 4G+ TDD \\u00e0 l\\u2019adresse\", \"Dimensionner le volume et le nombre d\\u2019utilisateurs\"], \"commercial_terms\": [\"La fiche FAQ mentionne un engagement minimal d\\u2019un an, alors que certaines formules sont affich\\u00e9es sans engagement: \\u00e0 confirmer\", \"Adresse IP publique affich\\u00e9e \\u00e0 50 USD par adresse, mise en service gratuite, \\u00e0 reconfirmer\"], \"variants\": [{\"name\": \"Business Box 3000u\", \"details\": [\"50 Go\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Business Box 5000u\", \"details\": [\"100 Go\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Business Box Pro 10 000u\", \"details\": [\"500 Go + FUP\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Business Box Silver 15 000u\", \"details\": [\"700 Go + FUP\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Business Box Master 20 000u\", \"details\": [\"800 Go + FUP\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Business Box Gold 35 000u\", \"details\": [\"1 To + FUP\", \"Validit\\u00e9 30 jours\"]}], \"match\": {\"need_keywords\": [\"business box\", \"box 4g\", \"4g tdd\", \"internet bureau\", \"internet rapide\", \"connexion sans fibre\", \"installation rapide\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 63,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_64",
+    "doc_type": "service_catalog",
+    "title": "Office Box",
+    "content_to_vectorize": "Offre : Office Box\nCategorie : CONNECTIVITY\nDescription : Offre Box 4G TDD pour bureau, avec des recharges de 50 Go ou 100 Go sur 30 jours et des options CPE Outdoor, IP publique et Secure Access.\nBenefices client : Connecter rapidement un petit bureau\nMaîtriser le budget avec des recharges mensuelles\nAméliorer la couverture avec un CPE Outdoor en option\nPrerequis techniques : {\"prerequisites\": [\"V\\u00e9rifier la couverture 4G TDD\", \"Estimer le volume mensuel\"], \"commercial_terms\": [\"Le catalogue indique que l\\u2019\\u00e9quipement est offert avec un engagement de 12 mois\", \"Tarifs et disponibilit\\u00e9 \\u00e0 reconfirmer\"], \"variants\": [{\"name\": \"Office Box 3000u\", \"details\": [\"50 Go\", \"Validit\\u00e9 30 jours\"]}, {\"name\": \"Office Box 5000u\", \"details\": [\"100 Go\", \"Validit\\u00e9 30 jours\"]}], \"match\": {\"need_keywords\": [\"office box\", \"petit bureau internet\", \"box bureau\", \"internet tpe\", \"50 go bureau\", \"100 go bureau\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 64,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_65",
+    "doc_type": "service_catalog",
+    "title": "AirBox 4G",
+    "content_to_vectorize": "Offre : AirBox 4G\nCategorie : CONNECTIVITY\nDescription : Routeur mobile 4G avec forfaits data mensuels pour partager une connexion entre plusieurs appareils.\nBenefices client : Partager une connexion 4G entre plusieurs appareils\nÉquiper une équipe mobile ou un site temporaire\nChoisir un volume mensuel de 15 Go à 250 Go\nPrerequis techniques : {\"prerequisites\": [\"V\\u00e9rifier la couverture 4G\", \"Estimer le nombre d\\u2019appareils et le volume data\"], \"commercial_terms\": [\"Sans engagement selon le catalogue public\", \"\\u00c9quipement et tarifs \\u00e0 confirmer\"], \"variants\": [{\"name\": \"AirBox 4G 1000u\", \"details\": [\"15 Go\", \"30 jours\"]}, {\"name\": \"AirBox 4G 2000u\", \"details\": [\"40 Go\", \"30 jours\"]}, {\"name\": \"AirBox 4G 3000u\", \"details\": [\"65 Go\", \"30 jours\"]}, {\"name\": \"AirBox 4G 5000u\", \"details\": [\"110 Go\", \"30 jours\"]}, {\"name\": \"AirBox 4G 10 000u\", \"details\": [\"250 Go\", \"30 jours\"]}], \"match\": {\"need_keywords\": [\"airbox\", \"routeur mobile\", \"wifi mobile\", \"partager 4g\", \"site temporaire\", \"internet nomade\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 65,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_66",
+    "doc_type": "service_catalog",
+    "title": "Internet illimité Fibre",
+    "content_to_vectorize": "Offre : Internet illimité Fibre\nCategorie : CONNECTIVITY\nDescription : Accès fibre asymétrique partagé et illimité jusqu’à 500 Mbps, avec installation, routeur selon la formule et licences Microsoft Teams ou Microsoft 365 associées.\nBenefices client : Bénéficier d’un accès fibre illimité\nDisposer d’un débit jusqu’à 500 Mbps selon la formule\nAssocier connectivité et outils Microsoft\nPrerequis techniques : {\"prerequisites\": [\"V\\u00e9rifier l\\u2019\\u00e9ligibilit\\u00e9 fibre de chaque site\", \"Dimensionner le d\\u00e9bit montant et descendant\"], \"commercial_terms\": [\"\\u00c0 partir de 90 USD/mois selon la page d\\u2019accueil Orange Business RDC\", \"Engagement annonc\\u00e9 sur 12, 24 ou 36 mois\", \"Facturation mensuelle; trimestrielle, semestrielle ou annuelle en option\"], \"variants\": [{\"name\": \"Fibre Pro 90\", \"details\": [\"100/20 Mbps\", \"1 licence MS Teams\", \"Installation gratuite\"]}, {\"name\": \"Fibre Pro 120\", \"details\": [\"200/30 Mbps\", \"2 licences MS Teams\", \"Installation et routeur gratuits\"]}, {\"name\": \"Fibre Intense 350\", \"details\": [\"500/50 Mbps\", \"5 licences MS Teams\", \"Installation et routeur gratuits\"]}], \"match\": {\"need_keywords\": [\"fibre\", \"fibre optique\", \"internet\", \"connexion internet\", \"connectivit\\u00e9\", \"r\\u00e9seau internet\", \"internet illimit\\u00e9\", \"haut d\\u00e9bit\", \"visioconf\\u00e9rence\", \"connexion bureau\", \"500 mbps\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 66,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_67",
+    "doc_type": "service_catalog",
+    "title": "Liaison Spécialisée Internet",
+    "content_to_vectorize": "Offre : Liaison Spécialisée Internet\nCategorie : CONNECTIVITY\nDescription : Liaison internet dédiée en fibre ou faisceau hertzien avec débit garanti et symétrique, routeur managé, supervision Orange et secours 4G+ TDD natif annoncé.\nBenefices client : Obtenir un débit internet garanti et symétrique\nSuperviser la bande passante\nRenforcer la continuité avec un secours 4G+ ou une seconde liaison\nPrerequis techniques : {\"prerequisites\": [\"\\u00c9tude de couverture fibre ou faisceau hertzien\", \"Pr\\u00e9ciser d\\u00e9bit, SLA, IP publiques et besoin de secours\"], \"commercial_terms\": [\"D\\u00e9bits catalogue annonc\\u00e9s de 2 \\u00e0 200 Mbps, jusqu\\u2019\\u00e0 1 Gbps sur mesure\", \"SLA annonc\\u00e9 jusqu\\u2019\\u00e0 99,8% et GTR selon horaires\", \"Engagement minimal annonc\\u00e9 d\\u2019un an; 2, 3 ou 5 ans possibles\", \"Tarification sur devis selon d\\u00e9bit et site\"], \"variants\": [], \"match\": {\"need_keywords\": [\"liaison d\\u00e9di\\u00e9e\", \"internet d\\u00e9di\\u00e9\", \"d\\u00e9bit garanti\", \"d\\u00e9bit sym\\u00e9trique\", \"sla internet\", \"ip publique\", \"continuit\\u00e9 internet\", \"faisceau hertzien\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 67,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_68",
+    "doc_type": "service_catalog",
+    "title": "Liaison Spécialisée VPN",
+    "content_to_vectorize": "Offre : Liaison Spécialisée VPN\nCategorie : CONNECTIVITY\nDescription : Réseau privé IP/MPLS pour interconnecter des sites en point à point ou multipoint sur fibre ou faisceau hertzien, avec débits symétriques, routeur managé et supervision.\nBenefices client : Interconnecter plusieurs sites sur un réseau privé\nTransporter données, voix et images\nAjouter un secours 4G+ avec APN privé\nPrerequis techniques : {\"prerequisites\": [\"Lister les sites \\u00e0 relier\", \"Cartographier les flux, d\\u00e9bits et contraintes de disponibilit\\u00e9\"], \"commercial_terms\": [\"D\\u00e9bits annonc\\u00e9s de 2 Mbps \\u00e0 1 Gbps\", \"SLA annonc\\u00e9 jusqu\\u2019\\u00e0 99,8% selon conditions\", \"Engagement minimal annonc\\u00e9 d\\u2019un an\", \"Tarification sur devis\"], \"variants\": [], \"match\": {\"need_keywords\": [\"vpn\", \"mpls\", \"interconnecter sites\", \"r\\u00e9seau multisite\", \"liaison intersite\", \"apn priv\\u00e9\", \"extranet\", \"sites distants\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 68,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_69",
+    "doc_type": "service_catalog",
+    "title": "Business SD-WAN",
+    "content_to_vectorize": "Offre : Business SD-WAN\nCategorie : CONNECTIVITY\nDescription : Solution d’interconnexion multisite pilotée de façon centralisée, combinant MPLS, internet et 4G avec routage applicatif dynamique et sécurité embarquée.\nBenefices client : Optimiser le chemin réseau par application\nCentraliser la gestion des sites\nAméliorer disponibilité, performance et sécurité des accès\nPrerequis techniques : {\"prerequisites\": [\"Inventorier les sites, liens et applications critiques\", \"D\\u00e9finir les politiques de routage et de s\\u00e9curit\\u00e9\"], \"commercial_terms\": [\"Tarification et architecture sur devis\"], \"variants\": [], \"match\": {\"need_keywords\": [\"sd-wan\", \"sdwan\", \"r\\u00e9seau multisite\", \"routage intelligent\", \"performance r\\u00e9seau\", \"bande passante multisite\", \"gestion centralis\\u00e9e r\\u00e9seau\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 69,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_70",
+    "doc_type": "service_catalog",
+    "title": "Microsoft 365",
+    "content_to_vectorize": "Offre : Microsoft 365\nCategorie : CONNECTIVITY\nDescription : Suite cloud de messagerie, stockage, réunion, chat et applications Office pour les entreprises jusqu’à 300 employés, avec plusieurs niveaux de fonctionnalités et de sécurité.\nBenefices client : Faciliter le travail collaboratif et à distance\nCentraliser messagerie et fichiers dans le cloud\nRenforcer la protection avec la formule Premium\nPrerequis techniques : {\"prerequisites\": [\"Identifier le nombre d\\u2019utilisateurs\", \"Choisir les besoins en applications, messagerie, stockage, s\\u00e9curit\\u00e9 et gestion des appareils\"], \"commercial_terms\": [\"Licences et accompagnement sur devis\", \"Une offre Essentiel M365 est affich\\u00e9e \\u00e0 85 USD pour 360 jours sur la page d\\u2019accueil; \\u00e9ligibilit\\u00e9 \\u00e0 confirmer\"], \"variants\": [{\"name\": \"Business Basic\", \"details\": [\"Messagerie, stockage cloud, r\\u00e9unions et chat\", \"Applications Office de bureau non incluses\", \"Jusqu\\u2019\\u00e0 300 employ\\u00e9s\"]}, {\"name\": \"Apps for business\", \"details\": [\"Applications Office et stockage cloud\", \"Messagerie et Teams non inclus\", \"Jusqu\\u2019\\u00e0 300 employ\\u00e9s\"]}, {\"name\": \"Business Standard\", \"details\": [\"Applications Office, messagerie, stockage, r\\u00e9unions et chat\", \"Jusqu\\u2019\\u00e0 300 employ\\u00e9s\"]}, {\"name\": \"Business Premium\", \"details\": [\"Contenu Standard\", \"Protection avanc\\u00e9e contre les cybermenaces\", \"Gestion des appareils\"]}], \"match\": {\"need_keywords\": [\"microsoft 365\", \"office 365\", \"teams\", \"messagerie professionnelle\", \"collaboration\", \"t\\u00e9l\\u00e9travail\", \"bureautique\", \"stockage cloud\", \"email entreprise\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 70,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_71",
+    "doc_type": "service_catalog",
+    "title": "Microsoft 365 Entreprise",
+    "content_to_vectorize": "Offre : Microsoft 365 Entreprise\nCategorie : CONNECTIVITY\nDescription : Gamme Microsoft 365 destinée aux grandes organisations, avec applications Office, messagerie, visioconférence, stockage et niveaux croissants de collaboration, analyse et sécurité.\nBenefices client : Équiper une grande organisation en outils collaboratifs\nFournir jusqu’à 1 To de stockage selon la formule\nAjouter des fonctions avancées de sécurité et d’analyse\nPrerequis techniques : {\"prerequisites\": [\"Identifier le nombre d\\u2019utilisateurs et les profils de licence\", \"\\u00c9valuer la migration et la s\\u00e9curit\\u00e9\"], \"commercial_terms\": [\"Licences et accompagnement sur devis\"], \"variants\": [{\"name\": \"Apps for Enterprise\", \"details\": [\"Suite Office premium\", \"Stockage et partage cloud\"]}, {\"name\": \"Office 365 E1\", \"details\": [\"Messagerie, chat, visioconf\\u00e9rence HD et 1 To\", \"Suite Office PC/Mac non incluse\"]}, {\"name\": \"Office 365 E3\", \"details\": [\"Fonctions E1\", \"Applications mobiles\", \"S\\u00e9curit\\u00e9 standard et collaboration\"]}, {\"name\": \"Office 365 E5\", \"details\": [\"Fonctions E3\", \"Suite Office PC/Mac\", \"Analyse et s\\u00e9curit\\u00e9 avanc\\u00e9es\"]}], \"match\": {\"need_keywords\": [\"microsoft 365 entreprise\", \"office e1\", \"office e3\", \"office e5\", \"grande entreprise collaboration\", \"suite office entreprise\", \"s\\u00e9curit\\u00e9 microsoft\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 71,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_72",
+    "doc_type": "service_catalog",
+    "title": "Cyber Diagnostic",
+    "content_to_vectorize": "Offre : Cyber Diagnostic\nCategorie : SECURITY\nDescription : Audit organisationnel et technique visant à mesurer l’exposition du système d’information, identifier les vulnérabilités et produire un plan d’actions priorisé.\nBenefices client : Mesurer la maturité et l’exposition cyber\nIdentifier les vulnérabilités internes ou externes\nObtenir un plan d’actions priorisé\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir le p\\u00e9rim\\u00e8tre du diagnostic\", \"Identifier les contacts et actifs concern\\u00e9s\", \"Obtenir les autorisations de test\"], \"commercial_terms\": [\"Tarification sur devis\"], \"variants\": [{\"name\": \"Cyber Diagnostic Externe\", \"details\": [\"Diagnostic organisationnel\", \"Diagnostic technique d\\u2019une IP externe\", \"Plan d\\u2019actions\"]}, {\"name\": \"Cyber Diagnostic Interne\", \"details\": [\"Diagnostic organisationnel\", \"Diagnostic du SI interne\", \"Tests d\\u2019intrusion infrastructure\", \"Plan d\\u2019actions\"]}, {\"name\": \"Cyber Diagnostic Premium\", \"details\": [\"Diagnostics organisationnel, externe et interne\", \"Plan d\\u2019actions\"]}], \"match\": {\"need_keywords\": [\"cybers\\u00e9curit\\u00e9\", \"s\\u00e9curit\\u00e9 num\\u00e9rique\", \"protection num\\u00e9rique\", \"piratage\", \"incident de s\\u00e9curit\\u00e9\", \"diagnostic cybers\\u00e9curit\\u00e9\", \"audit s\\u00e9curit\\u00e9\", \"maturit\\u00e9 s\\u00e9curit\\u00e9\", \"vuln\\u00e9rabilit\\u00e9s\", \"risques cyber\", \"\\u00e9tat des lieux s\\u00e9curit\\u00e9\", \"plan d'action cyber\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 72,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_73",
+    "doc_type": "service_catalog",
+    "title": "PenTest",
+    "content_to_vectorize": "Offre : PenTest\nCategorie : SECURITY\nDescription : Tests d’intrusion ciblés réalisés avec Orange Cyberdefense pour identifier les vulnérabilités d’un site, d’une application mobile ou d’un environnement de télétravail et fournir un plan d’actions.\nBenefices client : Tester concrètement la résistance d’un périmètre\nIdentifier et prioriser les vulnérabilités exploitables\nÉvaluer la sécurité d’un site, d’une application ou du télétravail\nPrerequis techniques : {\"prerequisites\": [\"Autorisation \\u00e9crite du propri\\u00e9taire du syst\\u00e8me\", \"D\\u00e9finition pr\\u00e9cise du p\\u00e9rim\\u00e8tre et de la fen\\u00eatre de test\"], \"commercial_terms\": [\"Tarification sur devis\", \"Cibles suppl\\u00e9mentaires et analyses de configuration disponibles en option\"], \"variants\": [{\"name\": \"Site institutionnel\", \"details\": [\"Test d\\u2019un site statique\", \"Vuln\\u00e9rabilit\\u00e9s et plan d\\u2019actions\"]}, {\"name\": \"Site transactionnel\", \"details\": [\"Test avec et sans authentifiant\", \"Vuln\\u00e9rabilit\\u00e9s et plan d\\u2019actions\"]}, {\"name\": \"Mobile APP\", \"details\": [\"Revue APK ou IPA\", \"Vuln\\u00e9rabilit\\u00e9s et plan d\\u2019actions\"]}, {\"name\": \"T\\u00e9l\\u00e9travail\", \"details\": [\"Tests messagerie et VPN\", \"Vuln\\u00e9rabilit\\u00e9s et plan d\\u2019actions\"]}], \"match\": {\"need_keywords\": [\"pentest\", \"test d'intrusion\", \"test intrusion\", \"s\\u00e9curit\\u00e9 site web\", \"s\\u00e9curit\\u00e9 application mobile\", \"apk s\\u00e9curit\\u00e9\", \"vpn s\\u00e9curit\\u00e9\", \"vuln\\u00e9rabilit\\u00e9 application\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 73,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_74",
+    "doc_type": "service_catalog",
+    "title": "Micro-SOC",
+    "content_to_vectorize": "Offre : Micro-SOC\nCategorie : SECURITY\nDescription : Solution managée de protection des postes et serveurs qui supervise les événements, détecte et bloque les attaques, puis accompagne l’investigation et le retour à la normale.\nBenefices client : Surveiller en continu postes et serveurs\nDétecter et confiner rapidement les attaques\nBénéficier de l’expertise Orange Cyberdefense et du CSIRT selon le cas\nPrerequis techniques : {\"prerequisites\": [\"Inventorier les postes et serveurs\", \"V\\u00e9rifier la compatibilit\\u00e9 technique et les r\\u00e8gles de traitement des journaux\"], \"commercial_terms\": [\"Licences, p\\u00e9rim\\u00e8tre et service manag\\u00e9 sur devis\"], \"variants\": [], \"match\": {\"need_keywords\": [\"micro-soc\", \"microsoc\", \"centre op\\u00e9rationnel de s\\u00e9curit\\u00e9\", \"surveillance s\\u00e9curit\\u00e9\", \"d\\u00e9tection attaques\", \"protection postes\", \"protection serveurs\", \"r\\u00e9ponse incident\", \"cyberattaque\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\", \"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 74,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_75",
+    "doc_type": "service_catalog",
+    "title": "Hébergement Datacenter",
+    "content_to_vectorize": "Offre : Hébergement Datacenter\nCategorie : CLOUD\nDescription : Hébergement d’équipements informatiques dans le datacenter Orange RDC avec espace rack, alimentation AC ou DC protégée et liaison optionnelle vers le site client.\nBenefices client : Externaliser les équipements dans un environnement datacenter\nBénéficier d’une alimentation protégée et d’un support 24/7/365\nSe connecter au backbone fibre Orange avec une liaison optionnelle\nPrerequis techniques : {\"prerequisites\": [\"Inventorier \\u00e9quipements, unit\\u00e9s rack, puissance et connectivit\\u00e9\", \"Planifier l\\u2019acc\\u00e8s physique et la migration\"], \"commercial_terms\": [\"Espace, puissance et connectivit\\u00e9 sur devis\", \"SLA annonc\\u00e9 \\u00e0 99,999% si l\\u2019option liaison est souscrite, \\u00e0 contractualiser\"], \"variants\": [], \"match\": {\"need_keywords\": [\"datacenter\", \"data center\", \"h\\u00e9bergement serveurs\", \"colocation\", \"rack\", \"externaliser infrastructure\", \"serveur entreprise\", \"salle informatique\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 75,
+      "category": "CLOUD"
+    }
+  },
+  {
+    "id": "service_76",
+    "doc_type": "service_catalog",
+    "title": "Bulk SMS (Messaging Pro)",
+    "content_to_vectorize": "Offre : Bulk SMS (Messaging Pro)\nCategorie : CONNECTIVITY\nDescription : Plateforme web clé en main pour envoyer des SMS groupés à plusieurs milliers de destinataires, collecter des retours et personnaliser l’expéditeur.\nBenefices client : Diffuser rapidement des campagnes SMS en volume\nPersonnaliser le nom d’expéditeur\nCollecter informations et avis clients\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir le volume, les destinataires et le nom d\\u2019exp\\u00e9diteur\", \"S\\u2019assurer du consentement et de la conformit\\u00e9 des campagnes\"], \"commercial_terms\": [\"Facturation selon le pack et les destinations\", \"Packs Orange et autres op\\u00e9rateurs; tarifs \\u00e0 confirmer\"], \"variants\": [], \"match\": {\"need_keywords\": [\"bulk sms\", \"sms en masse\", \"campagne sms\", \"messaging pro\", \"sms clients\", \"notification sms\", \"marketing sms\"], \"sectors\": [\"commerce\", \"retail\", \"education\", \"services\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 76,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_77",
+    "doc_type": "service_catalog",
+    "title": "Numéro vert (Green Number)",
+    "content_to_vectorize": "Offre : Numéro vert (Green Number)\nCategorie : CONNECTIVITY\nDescription : Service permettant aux abonnés Orange de joindre gratuitement l’entreprise 24h/24 et 7j/7, notamment via un centre d’appels et selon des règles d’appels entrants ou sortants.\nBenefices client : Réduire la barrière de coût pour les appels clients\nFaciliter la remontée d’informations\nSoutenir un service client ou un centre d’appels\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir le centre d\\u2019appels, les horaires et les volumes attendus\"], \"commercial_terms\": [\"Tarification et capacit\\u00e9 sur devis\"], \"variants\": [], \"match\": {\"need_keywords\": [\"num\\u00e9ro vert\", \"green number\", \"appel gratuit client\", \"hotline\", \"centre d'appel\", \"service client t\\u00e9l\\u00e9phone\", \"remont\\u00e9e information\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 77,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_78",
+    "doc_type": "service_catalog",
+    "title": "Essentiel M2M",
+    "content_to_vectorize": "Offre : Essentiel M2M\nCategorie : CONNECTIVITY\nDescription : Connectivité machine-to-machine sur le réseau GSM Orange pour faire communiquer à distance des véhicules, équipements, distributeurs ou chaînes de production avec un serveur central.\nBenefices client : Superviser des équipements à distance et en temps réel\nAutomatiser les échanges sans intervention humaine\nUtiliser des APN dédiés selon le besoin\nPrerequis techniques : {\"prerequisites\": [\"Identifier les objets, volumes de donn\\u00e9es et zones d\\u2019usage\", \"D\\u00e9finir le serveur central et le besoin d\\u2019APN d\\u00e9di\\u00e9\"], \"commercial_terms\": [\"Prix d\\u2019entr\\u00e9e public annonc\\u00e9 \\u00e0 partir de 2,5 USD par carte SIM\", \"Facturation selon le choix du client; devis \\u00e0 confirmer\"], \"variants\": [], \"match\": {\"need_keywords\": [\"m2m\", \"iot\", \"objets connect\\u00e9s\", \"machines \\u00e0 distance\", \"t\\u00e9l\\u00e9m\\u00e9trie\", \"suivi v\\u00e9hicules\", \"distributeurs connect\\u00e9s\", \"apn d\\u00e9di\\u00e9\", \"\\u00e9quipements connect\\u00e9s\"], \"sectors\": [\"transport\", \"logistics\", \"industry\", \"energy\", \"agriculture\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 78,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_79",
+    "doc_type": "service_catalog",
+    "title": "API SMS",
+    "content_to_vectorize": "Offre : API SMS\nCategorie : CONNECTIVITY\nDescription : Interface Orange permettant aux développeurs d’intégrer l’envoi automatique de SMS dans un service numérique, avec facturation prépayée ou postpayée selon volume.\nBenefices client : Automatiser les SMS transactionnels\nIntégrer les notifications dans une application\nExpérimenter avec un parcours de souscription simple\nPrerequis techniques : {\"prerequisites\": [\"Disposer d\\u2019une \\u00e9quipe ou d\\u2019un prestataire technique\", \"D\\u00e9finir les volumes, cas d\\u2019usage et r\\u00e8gles de consentement\"], \"commercial_terms\": [\"Facturation pr\\u00e9pay\\u00e9e ou postpay\\u00e9e selon volume\", \"Tarifs et acc\\u00e8s API \\u00e0 confirmer\"], \"variants\": [], \"match\": {\"need_keywords\": [\"api sms\", \"sms automatique\", \"sms transactionnel\", \"int\\u00e9grer sms\", \"notification application\", \"otp sms\", \"d\\u00e9veloppeur sms\"], \"sectors\": [\"technology\", \"fintech\", \"commerce\", \"education\", \"services\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 79,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_80",
+    "doc_type": "service_catalog",
+    "title": "USSD Shop",
+    "content_to_vectorize": "Offre : USSD Shop\nCategorie : CONNECTIVITY\nDescription : Kiosque USSD permettant à des fournisseurs de services de proposer des contenus non web accessibles aux clients Orange via le portail #303#.\nBenefices client : Rendre un service accessible sans smartphone ni web\nSimplifier le parcours client par USSD\nBénéficier de la visibilité du portail Orange\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir les menus, contenus et transactions\", \"Pr\\u00e9voir l\\u2019int\\u00e9gration technique et la conformit\\u00e9 du service\"], \"commercial_terms\": [\"Facturation postpay\\u00e9e selon le volume de transactions\", \"\\u00c9ligibilit\\u00e9 et int\\u00e9gration \\u00e0 confirmer avec Orange\"], \"variants\": [], \"match\": {\"need_keywords\": [\"ussd\", \"menu ussd\", \"service sans internet\", \"contenu non web\", \"#303#\", \"kiosque mobile\", \"canal ussd\"], \"sectors\": [\"technology\", \"fintech\", \"education\", \"services\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 80,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_81",
+    "doc_type": "service_catalog",
+    "title": "Bulk Payment Orange Money",
+    "content_to_vectorize": "Offre : Bulk Payment Orange Money\nCategorie : PAYMENT\nDescription : Service listé par Orange Business RDC pour effectuer des paiements ponctuels ou en masse vers des stagiaires, fournisseurs ou autres bénéficiaires Orange Money.\nBenefices client : Effectuer plusieurs paiements depuis un processus centralisé\nRéduire la manipulation d’espèces\nTracer les paiements vers les bénéficiaires\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir les b\\u00e9n\\u00e9ficiaires, volumes et fr\\u00e9quence\", \"Effectuer l\\u2019onboarding entreprise et les contr\\u00f4les r\\u00e9glementaires\"], \"commercial_terms\": [\"Tarifs, seuils, frais et modalit\\u00e9s d\\u2019onboarding \\u00e0 confirmer avec Orange Money RDC\"], \"variants\": [], \"match\": {\"need_keywords\": [\"bulk payment\", \"paiement en masse\", \"paiement salaire\", \"payer fournisseurs\", \"payer stagiaires\", \"d\\u00e9caissement mobile money\", \"paiement b\\u00e9n\\u00e9ficiaires\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"sector\", \"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 81,
+      "category": "PAYMENT"
+    }
+  },
+  {
+    "id": "service_82",
+    "doc_type": "service_catalog",
+    "title": "API Orange Money",
+    "content_to_vectorize": "Offre : API Orange Money\nCategorie : PAYMENT\nDescription : API de paiement permettant aux marchands d’accepter Orange Money sur un site web ou une application mobile; la RDC figure parmi les pays annoncés comme disponibles par Orange Developer.\nBenefices client : Accepter des paiements Orange Money en ligne\nIntégrer le paiement dans une application ou un site\nProposer un parcours de paiement mobile aux clients\nPrerequis techniques : {\"prerequisites\": [\"Disposer d\\u2019un compte marchand et des documents d\\u2019entreprise\", \"Pr\\u00e9voir l\\u2019int\\u00e9gration technique, les tests et la gestion des confirmations de paiement\"], \"commercial_terms\": [\"Souscription marchand, int\\u00e9gration et conditions tarifaires \\u00e0 confirmer avec Orange Money RDC\", \"Documentation et acc\\u00e8s soumis \\u00e0 l\\u2019onboarding Orange\"], \"variants\": [], \"match\": {\"need_keywords\": [\"api orange money\", \"mobile money\", \"paiement orange money\", \"paiement mobile money\", \"paiement mobile\", \"encaissement num\\u00e9rique\", \"paiement num\\u00e9rique\", \"paiement en ligne\", \"paiement application\", \"paiement site web\", \"encaissement orange money\", \"encaissement mobile money\", \"e-commerce mobile money\", \"int\\u00e9grer paiement\"], \"sectors\": [\"commerce\", \"retail\", \"education\", \"technology\", \"fintech\", \"services\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"sector\", \"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 82,
+      "category": "PAYMENT"
+    }
+  },
+  {
+    "id": "service_83",
+    "doc_type": "service_catalog",
+    "title": "Share Voice",
+    "content_to_vectorize": "Offre : Share Voice\nCategorie : CONNECTIVITY\nDescription : Forfaits prépayés combinant minutes d’appels et bonus data, avec des validités de 5 à 30 jours.\nBenefices client : Combiner voix et data dans un petit forfait\nChoisir une validité courte ou mensuelle\nMaîtriser la dépense mobile\nPrerequis techniques : {\"prerequisites\": [\"Estimer les minutes et la data n\\u00e9cessaires\"], \"commercial_terms\": [\"Sans engagement selon le catalogue public\", \"Volume de la formule 150u \\u00e0 confirmer en raison d\\u2019une anomalie d\\u2019affichage\"], \"variants\": [{\"name\": \"Share Voice 100u\", \"details\": [\"16 min + 200 Mo\", \"5 jours\"]}, {\"name\": \"Share Voice 150u\", \"details\": [\"24 min + volume data affich\\u00e9 de mani\\u00e8re ambigu\\u00eb sur le site\", \"10 jours\"]}, {\"name\": \"Share Voice 250u\", \"details\": [\"40 min + 500 Mo\", \"15 jours\"]}, {\"name\": \"Share Voice 500u\", \"details\": [\"80 min + 1 Go\", \"30 jours\"]}], \"match\": {\"need_keywords\": [\"share voice\", \"petit forfait voix data\", \"minutes et data\", \"forfait court\", \"appel et internet pr\\u00e9pay\\u00e9\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 83,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_84",
+    "doc_type": "service_catalog",
+    "title": "SMS Zralala",
+    "content_to_vectorize": "Offre : SMS Zralala\nCategorie : CONNECTIVITY\nDescription : Forfaits prépayés de SMS vers tous les réseaux avec un volume supplémentaire important vers Orange.\nBenefices client : Envoyer des SMS à coût maîtrisé\nBénéficier d’un volume élevé vers Orange\nChoisir une validité hebdomadaire ou mensuelle\nPrerequis techniques : {\"prerequisites\": [\"Estimer la part des destinataires Orange et autres r\\u00e9seaux\"], \"commercial_terms\": [\"Sans engagement selon le catalogue public\", \"Tarifs et volumes \\u00e0 reconfirmer\"], \"variants\": [{\"name\": \"SMS Zralala 100u\", \"details\": [\"100 SMS tous r\\u00e9seaux + 800 SMS vers Orange\", \"7 jours\"]}, {\"name\": \"SMS Zralala 500u\", \"details\": [\"500 SMS tous r\\u00e9seaux + 4500 SMS vers Orange\", \"30 jours\"]}], \"match\": {\"need_keywords\": [\"sms zralala\", \"forfait sms\", \"beaucoup de sms\", \"sms orange\", \"sms tous r\\u00e9seaux\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 84,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_85",
+    "doc_type": "service_catalog",
+    "title": "Cloud international Orange Business",
+    "content_to_vectorize": "Offre : Cloud international Orange Business\nCategorie : CLOUD\nDescription : Famille mondiale de services cloud couvrant le conseil, la migration et l’exploitation de clouds publics, privés, hybrides et multicloud, ainsi que la connectivité cloud, la continuité d’activité et les services managés.\nBenefices client : Concevoir une stratégie cloud adaptée\nMigrer et exploiter des charges dans plusieurs clouds\nAméliorer l’agilité, la résilience et la maîtrise des coûts\nRelier les sites et clouds de manière sécurisée\nPrerequis techniques : {\"prerequisites\": [\"Inventorier les applications, donn\\u00e9es et d\\u00e9pendances\", \"D\\u00e9finir les exigences de s\\u00e9curit\\u00e9, souverainet\\u00e9, disponibilit\\u00e9 et reprise\", \"Valider la connectivit\\u00e9 et la disponibilit\\u00e9 commerciale pour la RDC\"], \"commercial_terms\": [\"Architecture, localisation des donn\\u00e9es, niveau de service et prix \\u00e9tablis sur devis\", \"Les plateformes et pays disponibles d\\u00e9pendent du projet\"], \"variants\": [{\"name\": \"Cloud Infrastructures\", \"details\": [\"Infrastructure, r\\u00e9seau, services manag\\u00e9s et reprise apr\\u00e8s sinistre\"]}, {\"name\": \"Private and Hybrid Cloud\", \"details\": [\"Architectures priv\\u00e9es, d\\u00e9di\\u00e9es ou hybrides et continuit\\u00e9 d\\u2019activit\\u00e9\"]}, {\"name\": \"Cloud Avenue\", \"details\": [\"Cloud priv\\u00e9 ou partag\\u00e9 fond\\u00e9 sur VMware et migration Lift and Shift\"]}, {\"name\": \"Flexible Engine\", \"details\": [\"IaaS OpenStack op\\u00e9r\\u00e9 par Orange et s\\u00e9curis\\u00e9 avec Orange Cyberdefense\"]}, {\"name\": \"Colocation Services / Flexible Housing\", \"details\": [\"H\\u00e9bergement d\\u2019\\u00e9quipements dans les datacenters Orange\"]}, {\"name\": \"Flexible Storage\", \"details\": [\"Services de stockage cloud pour les donn\\u00e9es et applications\"]}, {\"name\": \"Flexible Recovery\", \"details\": [\"Continuit\\u00e9 et reprise des services apr\\u00e8s sinistre\"]}, {\"name\": \"Managed Applications / OneMS\", \"details\": [\"Exploitation manag\\u00e9e des syst\\u00e8mes et applications d\\u2019entreprise\"]}, {\"name\": \"Galerie\", \"details\": [\"Acc\\u00e8s s\\u00e9curis\\u00e9 aux services IaaS, PaaS et SaaS depuis VPN ou SD-WAN\"]}, {\"name\": \"On demand Cloud Connect\", \"details\": [\"Cr\\u00e9ation autonome de connexions haute disponibilit\\u00e9 vers les grands clouds\"]}, {\"name\": \"Multi-Cloud Managed Services\", \"details\": [\"Conception, gestion et optimisation d\\u2019environnements multicloud\"]}, {\"name\": \"Cloud Services / Professional Services\", \"details\": [\"Audit, strat\\u00e9gie, migration, cloud-native, DevOps et exploitation continue\"]}], \"match\": {\"need_keywords\": [\"migration cloud\", \"cloud hybride\", \"cloud priv\\u00e9\", \"cloud public\", \"multicloud\", \"multi-cloud\", \"cloud avenue\", \"flexible engine\", \"cloud connect\", \"infrastructure cloud\", \"sauvegarde cloud\", \"stockage cloud\", \"reprise apr\\u00e8s sinistre\", \"disaster recovery\", \"services cloud manag\\u00e9s\", \"application manag\\u00e9e\", \"colocation internationale\", \"devops\", \"application cloud native\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"locations\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 85,
+      "category": "CLOUD"
+    }
+  },
+  {
+    "id": "service_86",
+    "doc_type": "service_catalog",
+    "title": "Sécurité internationale Orange Business",
+    "content_to_vectorize": "Offre : Sécurité internationale Orange Business\nCategorie : SECURITY\nDescription : Portefeuille mondial de sécurité intégrée pour anticiper les menaces, protéger les identités, terminaux, échanges, réseaux et données, puis détecter les incidents et y répondre avec Orange Cyberdefense.\nBenefices client : Déployer une protection cohérente à l’échelle internationale\nSécuriser les accès, identités, e-mails, web et réseaux\nAnticiper les vulnérabilités et menaces\nDétecter et contenir les cyberattaques\nPrerequis techniques : {\"prerequisites\": [\"Cartographier les actifs, utilisateurs, sites et flux critiques\", \"Pr\\u00e9ciser les obligations r\\u00e9glementaires et le niveau de risque\", \"Confirmer les capacit\\u00e9s de livraison et de support en RDC\"], \"commercial_terms\": [\"P\\u00e9rim\\u00e8tre, technologies, SLA et exploitation d\\u00e9finis sur devis\", \"Des services peuvent \\u00eatre op\\u00e9r\\u00e9s conjointement par Orange Business et Orange Cyberdefense\"], \"variants\": [{\"name\": \"Anticipate\", \"details\": [\"Veille proactive, renseignement et recommandations sur les menaces\"]}, {\"name\": \"Managed Vulnerability Intelligence\", \"details\": [\"Surveillance, scan de vuln\\u00e9rabilit\\u00e9s et tests de s\\u00e9curit\\u00e9\"]}, {\"name\": \"Protect\", \"details\": [\"Protection des endpoints, r\\u00e9seaux, donn\\u00e9es, cloud et environnements OT\"]}, {\"name\": \"Secure Gateway\", \"details\": [\"Protection des \\u00e9changes et des donn\\u00e9es de l\\u2019entreprise\"]}, {\"name\": \"Mobile Threat Protection\", \"details\": [\"Protection transparente des terminaux mobiles\"]}, {\"name\": \"Live Identity\", \"details\": [\"Identit\\u00e9 num\\u00e9rique, d\\u00e9tection de fraude et s\\u00e9curisation des parcours\"]}, {\"name\": \"Live Identity Wallet\", \"details\": [\"Portefeuille d\\u2019identit\\u00e9 num\\u00e9rique interop\\u00e9rable\"]}, {\"name\": \"Orange Quantum Defender\", \"details\": [\"Pr\\u00e9paration et protection face aux menaces quantiques\"]}, {\"name\": \"Managed Secure Access\", \"details\": [\"Contr\\u00f4le des acc\\u00e8s distants, Internet, SaaS et cloud\"]}, {\"name\": \"Flexible Applications Access\", \"details\": [\"Acc\\u00e8s distant s\\u00e9curis\\u00e9 au syst\\u00e8me d\\u2019information\"]}, {\"name\": \"Flexible Security Platform\", \"details\": [\"Pare-feu nouvelle g\\u00e9n\\u00e9ration modulaire et manag\\u00e9\"]}, {\"name\": \"Email Protection Suite\", \"details\": [\"Protection de la messagerie contre malware et ran\\u00e7ongiciel\"]}, {\"name\": \"Web Protection Suite\", \"details\": [\"S\\u00e9curit\\u00e9 cloud de la navigation et des acc\\u00e8s distants\"]}, {\"name\": \"Managed DDoS Protection\", \"details\": [\"Protection 24/7 contre les attaques par d\\u00e9ni de service\"]}, {\"name\": \"Flexible Identity Authentication\", \"details\": [\"Authentification forte et contr\\u00f4le d\\u2019acc\\u00e8s adaptatif\"]}, {\"name\": \"Incident Response\", \"details\": [\"Investigation, confinement et rem\\u00e9diation des cyberattaques\"]}, {\"name\": \"Threat Detection (Bespoke)\", \"details\": [\"D\\u00e9tection personnalis\\u00e9e et accompagnement SOC\"]}, {\"name\": \"Web Content Protection\", \"details\": [\"Protection web manag\\u00e9e int\\u00e9gr\\u00e9e \\u00e0 Business VPN\"]}, {\"name\": \"Detect and Respond\", \"details\": [\"Surveillance continue et r\\u00e9ponse rapide aux incidents\"]}], \"match\": {\"need_keywords\": [\"cybers\\u00e9curit\\u00e9 internationale\", \"s\\u00e9curit\\u00e9 mondiale\", \"ddos\", \"anti-ddos\", \"s\\u00e9curit\\u00e9 email\", \"protection web\", \"acc\\u00e8s s\\u00e9curis\\u00e9\", \"zero trust\", \"identit\\u00e9 num\\u00e9rique\", \"authentification forte\", \"quantique\", \"pare-feu manag\\u00e9\", \"d\\u00e9tection menace\", \"r\\u00e9ponse incident\", \"ran\\u00e7ongiciel\", \"ransomware\"], \"sectors\": [\"finance\", \"healthcare\", \"industry\", \"energy\", \"technology\", \"government\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"locations\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 86,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_87",
+    "doc_type": "service_catalog",
+    "title": "Collaboration et travail hybride international",
+    "content_to_vectorize": "Offre : Collaboration et travail hybride international\nCategorie : COLLABORATIVE\nDescription : Solutions mondiales de communications unifiées, visioconférence et espaces de travail hybrides, opérées avec des plateformes Cisco et Microsoft et un accompagnement de bout en bout.\nBenefices client : Collaborer depuis plusieurs pays et appareils\nUnifier voix, messagerie et visioconférence\nStandardiser et administrer l’environnement collaboratif\nAccompagner la migration vers le cloud\nPrerequis techniques : {\"prerequisites\": [\"Recenser utilisateurs, pays, \\u00e9quipements et outils existants\", \"D\\u00e9finir les besoins voix, r\\u00e9union, s\\u00e9curit\\u00e9 et adoption\"], \"commercial_terms\": [\"Licences, int\\u00e9gration, migration et support dimensionn\\u00e9s sur devis\", \"Disponibilit\\u00e9 fonctionnelle variable selon les pays et partenaires\"], \"variants\": [{\"name\": \"Open Videopresence\", \"details\": [\"Salles de visioconf\\u00e9rence interactives avec support de bout en bout\"]}, {\"name\": \"Business Together Cisco\", \"details\": [\"Communications unifi\\u00e9es mondiales pour grandes entreprises\"]}, {\"name\": \"Workplace Together [Webex]\", \"details\": [\"T\\u00e9l\\u00e9phonie et collaboration Cisco g\\u00e9r\\u00e9es par Orange\"]}, {\"name\": \"Business Together with Microsoft\", \"details\": [\"Microsoft Teams, voix et collaboration en mode service\"]}, {\"name\": \"Cisco Webex\", \"details\": [\"Messagerie, voix, r\\u00e9unions web et vid\\u00e9o depuis tout appareil\"]}], \"match\": {\"need_keywords\": [\"collaboration internationale\", \"travail hybride\", \"communications unifi\\u00e9es\", \"webex\", \"business together\", \"visioconf\\u00e9rence mondiale\", \"t\\u00e9l\\u00e9travail international\", \"microsoft teams voix\", \"t\\u00e9l\\u00e9phonie collaborative\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\", \"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 87,
+      "category": "COLLABORATIVE"
+    }
+  },
+  {
+    "id": "service_88",
+    "doc_type": "service_catalog",
+    "title": "Data, IA et IoT international",
+    "content_to_vectorize": "Offre : Data, IA et IoT international\nCategorie : CONNECTIVITY\nDescription : Portefeuille mondial pour valoriser les données, déployer l’intelligence artificielle et connecter des objets à l’échelle internationale, de la stratégie et la gouvernance jusqu’aux plateformes et services managés.\nBenefices client : Transformer les données en décisions et automatisations\nDéployer une IA générative sécurisée\nConnecter et superviser des objets mondialement\nStructurer la gouvernance et l’architecture des données\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir les cas d\\u2019usage et indicateurs de valeur\", \"Identifier les donn\\u00e9es, capteurs, pays et syst\\u00e8mes \\u00e0 int\\u00e9grer\", \"\\u00c9valuer gouvernance, s\\u00e9curit\\u00e9 et r\\u00e9glementation\"], \"commercial_terms\": [\"Projet, licences, consommation, int\\u00e9gration et exploitation sur devis\", \"La conformit\\u00e9 et la r\\u00e9sidence des donn\\u00e9es sont d\\u00e9finies selon les pays\"], \"variants\": [{\"name\": \"Live Intelligence\", \"details\": [\"Plateforme d\\u2019IA g\\u00e9n\\u00e9rative pour la connaissance, le contenu et les t\\u00e2ches\"]}, {\"name\": \"Data Intelligence\", \"details\": [\"BI, EPM, tableaux de bord et aide \\u00e0 la d\\u00e9cision\"]}, {\"name\": \"Data Architecture\", \"details\": [\"Conception et d\\u00e9ploiement de plateformes de donn\\u00e9es\"]}, {\"name\": \"Data Management\", \"details\": [\"Qualit\\u00e9, accessibilit\\u00e9, gouvernance et conformit\\u00e9 des donn\\u00e9es\"]}, {\"name\": \"AI, Generative AI and Intelligent Agents\", \"details\": [\"Strat\\u00e9gie, cas d\\u2019usage, int\\u00e9gration et adoption de l\\u2019IA\"]}, {\"name\": \"Flux Vision\", \"details\": [\"Analyse anonymis\\u00e9e des flux de mobilit\\u00e9 issus du r\\u00e9seau mobile\"]}, {\"name\": \"Live Objects\", \"details\": [\"Plateforme cloud de gestion et int\\u00e9gration des objets connect\\u00e9s\"]}, {\"name\": \"IoT Managed Global Connectivity\", \"details\": [\"Connectivit\\u00e9 cellulaire mondiale et s\\u00e9curis\\u00e9e pour objets connect\\u00e9s\"]}], \"match\": {\"need_keywords\": [\"intelligence artificielle\", \"ia g\\u00e9n\\u00e9rative\", \"live intelligence\", \"agent ia\", \"business intelligence\", \"architecture data\", \"gouvernance des donn\\u00e9es\", \"data management\", \"flux vision\", \"live objects\", \"iot mondial\", \"connectivit\\u00e9 iot internationale\", \"analyse de donn\\u00e9es\"], \"sectors\": [\"technology\", \"industry\", \"transport\", \"retail\", \"energy\", \"finance\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 88,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_89",
+    "doc_type": "service_catalog",
+    "title": "Expérience client internationale",
+    "content_to_vectorize": "Offre : Expérience client internationale\nCategorie : CONNECTIVITY\nDescription : Solutions omnicanales de centre de contact, automatisation conversationnelle, analyse des interactions, gestion des équipes et identité numérique pour orchestrer un parcours client mondial cohérent.\nBenefices client : Unifier les interactions clients sur plusieurs canaux\nAutomatiser les demandes simples avec l’IA\nAnalyser la voix du client et la qualité\nOptimiser les effectifs et les parcours\nPrerequis techniques : {\"prerequisites\": [\"Cartographier canaux, volumes, langues et parcours\", \"Pr\\u00e9ciser CRM, centre de contact et outils existants\", \"D\\u00e9finir les contraintes de donn\\u00e9es et de conformit\\u00e9\"], \"commercial_terms\": [\"Canaux, pays, licences, minutes, int\\u00e9gration CRM et services manag\\u00e9s sur devis\", \"Num\\u00e9ros et routage soumis aux r\\u00e8gles locales\"], \"variants\": [{\"name\": \"Quality Monitoring\", \"details\": [\"Analyse des conversations et accompagnement cibl\\u00e9 des agents\"]}, {\"name\": \"Voice of the Customer\", \"details\": [\"Analyse temps r\\u00e9el des retours et signaux de churn\"]}, {\"name\": \"Managed Voice Portal\", \"details\": [\"Portail vocal nouvelle g\\u00e9n\\u00e9ration avec IA et self-service\"]}, {\"name\": \"Unified Engagement Suite - Genesys\", \"details\": [\"Plateforme omnicanale Genesys int\\u00e9gr\\u00e9e et manag\\u00e9e\"]}, {\"name\": \"Unified Engagement Suite - NICE\", \"details\": [\"CCaaS omnicanal, analytics et automatisation NICE\"]}, {\"name\": \"Contact Center Access\", \"details\": [\"Acc\\u00e8s vocal international, routage, num\\u00e9ros et pilotage\"]}, {\"name\": \"Callbot\", \"details\": [\"Agent vocal conversationnel automatis\\u00e9 avec escalade humaine\"]}, {\"name\": \"Live Identity Wallet - Authentication Web\", \"details\": [\"Authentification sans mot de passe et r\\u00e9duction de la fraude\"]}, {\"name\": \"Intelligent Together\", \"details\": [\"Plateforme multi-LLM et multicloud pour agents conversationnels\"]}, {\"name\": \"Workforce Management\", \"details\": [\"Pr\\u00e9vision de charge et planification des agents\"]}], \"match\": {\"need_keywords\": [\"centre de contact\", \"contact center\", \"exp\\u00e9rience client\", \"omnicanal\", \"callbot\", \"agent conversationnel\", \"voice of customer\", \"voix du client\", \"quality monitoring\", \"workforce management\", \"genesys\", \"nice cxone\", \"service client international\"], \"sectors\": [\"retail\", \"finance\", \"telecommunications\", \"services\", \"healthcare\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"size\", \"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 89,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_90",
+    "doc_type": "service_catalog",
+    "title": "Conseil, intégration et services numériques internationaux",
+    "content_to_vectorize": "Offre : Conseil, intégration et services numériques internationaux\nCategorie : CONNECTIVITY\nDescription : Services internationaux de conseil, intégration, déploiement, support et pilotage destinés à sécuriser toutes les phases d’une transformation numérique et l’exploitation d’un écosystème multi-fournisseurs.\nBenefices client : Cadrer et déployer des programmes numériques complexes\nUnifier le pilotage de plusieurs fournisseurs\nAméliorer la disponibilité et l’observabilité\nStandardiser le support sur plusieurs pays\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir objectifs, p\\u00e9rim\\u00e8tre, pays et gouvernance\", \"Inventorier fournisseurs, contrats, actifs et niveaux de service\"], \"commercial_terms\": [\"Organisation, pays, horaires, SLA et responsabilit\\u00e9s d\\u00e9finis sur devis\", \"Les prestations peuvent combiner ressources locales, r\\u00e9gionales et centres de services mondiaux\"], \"variants\": [{\"name\": \"Success Suite | Customer Success Management\", \"details\": [\"Adoption, suivi de valeur et reporting personnalis\\u00e9\"]}, {\"name\": \"Project Management\", \"details\": [\"Gouvernance, risques, d\\u00e9lais et coordination locale\"]}, {\"name\": \"Deployment Services\", \"details\": [\"Achat, livraison et installation internationale d\\u2019infrastructures IT\"]}, {\"name\": \"Service Manage - Watch\", \"details\": [\"Observabilit\\u00e9 et suivi temps r\\u00e9el des applications\"]}, {\"name\": \"Digital System Integration\", \"details\": [\"Int\\u00e9gration des donn\\u00e9es dans un \\u00e9cosyst\\u00e8me de service management\"]}, {\"name\": \"Robotic Process Automation and Hyper-Automation\", \"details\": [\"Automatisation de processus et orchestration de t\\u00e2ches num\\u00e9riques\"]}, {\"name\": \"Multisourcing Service Integration\", \"details\": [\"Gouvernance centralis\\u00e9e des fournisseurs, co\\u00fbts et performances\"]}, {\"name\": \"Service Optimize\", \"details\": [\"Am\\u00e9lioration continue et pilotage des SLA\"]}, {\"name\": \"Operational Support Services\", \"details\": [\"Support coh\\u00e9rent des infrastructures \\u00e0 l\\u2019\\u00e9chelle mondiale\"]}, {\"name\": \"Service Manage\", \"details\": [\"Service desk unique et support 24/7\"]}, {\"name\": \"Asset and Data Management\", \"details\": [\"Inventaire et cycle de vie des actifs, logiciels et contrats\"]}, {\"name\": \"Customized Infrastructure Care\", \"details\": [\"Support op\\u00e9rationnel d\\u2019une infrastructure multi-sourc\\u00e9e\"]}, {\"name\": \"Technical Management\", \"details\": [\"Expertise technique continue pour les solutions de connectivit\\u00e9\"]}], \"match\": {\"need_keywords\": [\"transformation num\\u00e9rique\", \"transformation digitale\", \"int\\u00e9gration syst\\u00e8me\", \"gestion de projet it\", \"service management\", \"multisourcing\", \"multi-fournisseurs\", \"support international\", \"observabilit\\u00e9\", \"gestion des actifs it\", \"d\\u00e9ploiement international\", \"conseil technologique\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"locations\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 90,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_91",
+    "doc_type": "service_catalog",
+    "title": "Téléphonie fixe et VoIP internationale",
+    "content_to_vectorize": "Offre : Téléphonie fixe et VoIP internationale\nCategorie : CONNECTIVITY\nDescription : Services de voix d’entreprise pour connecter les sites, centraliser la téléphonie et les appels entrants, migrer vers l’IP et intégrer la voix aux plateformes de communications unifiées.\nBenefices client : Harmoniser la voix entre plusieurs sites et pays\nCentraliser le pilotage des services téléphoniques\nIntégrer la voix à Teams et aux outils collaboratifs\nAméliorer la résilience et la visibilité des usages\nPrerequis techniques : {\"prerequisites\": [\"Inventorier sites, num\\u00e9ros, trafic, IPBX/SBC et outils collaboratifs\", \"D\\u00e9finir les besoins de portabilit\\u00e9, secours et conformit\\u00e9 locale\"], \"commercial_terms\": [\"Pays, num\\u00e9ros, trafic, \\u00e9quipements, SLA et int\\u00e9grations sur devis\", \"Certaines variantes ont une couverture diff\\u00e9rente selon le pays\"], \"variants\": [{\"name\": \"Business Talk\", \"details\": [\"Service de voix internationale pour relier et administrer les sites\"]}, {\"name\": \"Business Talk IP\", \"details\": [\"VoIP multisite sur le r\\u00e9seau data avec \\u00e9quipements certifi\\u00e9s\"]}, {\"name\": \"Contact Center Access\", \"details\": [\"Collecte et routage international des appels clients\"]}, {\"name\": \"Business Talk Digital API\", \"details\": [\"Commande, modification et suivi num\\u00e9rique des services voix\"]}], \"match\": {\"need_keywords\": [\"voip internationale\", \"t\\u00e9l\\u00e9phonie fixe internationale\", \"business talk\", \"business talk ip\", \"trunk sip\", \"t\\u00e9l\\u00e9phonie multisite\", \"voix sur ip\", \"num\\u00e9ros internationaux\", \"routage appels international\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\", \"locations\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 91,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_92",
+    "doc_type": "service_catalog",
+    "title": "Internet et réseaux internationaux",
+    "content_to_vectorize": "Offre : Internet et réseaux internationaux\nCategorie : CONNECTIVITY\nDescription : Portefeuille mondial de connectivité managée pour relier sites, datacenters, utilisateurs, Internet et clouds avec VPN, Ethernet, SD-WAN, LAN, satellite, edge virtuel et visibilité applicative.\nBenefices client : Connecter des sites et clouds dans plusieurs pays\nModerniser le WAN et le LAN\nPiloter performance, sécurité et coûts\nÉtendre la couverture aux zones difficiles\nPrerequis techniques : {\"prerequisites\": [\"Cartographier les sites, pays, applications et flux\", \"D\\u00e9finir d\\u00e9bits, criticit\\u00e9, redondance, s\\u00e9curit\\u00e9 et clouds\", \"R\\u00e9aliser une \\u00e9tude de couverture\"], \"commercial_terms\": [\"Couverture, acc\\u00e8s local, bande passante, redondance, \\u00e9quipements et SLA sur devis\", \"Certains engagements affich\\u00e9s sont propres \\u00e0 des zones ou configurations pr\\u00e9cises\"], \"variants\": [{\"name\": \"Visibility as a Service\", \"details\": [\"Visibilit\\u00e9 sur les performances r\\u00e9seau et applicatives\"]}, {\"name\": \"Evolution Platform Catalog\", \"details\": [\"Catalogue unifi\\u00e9 de connectivit\\u00e9, cyber et cloud g\\u00e9r\\u00e9 par portail\"]}, {\"name\": \"Content Delivery Network Solutions\", \"details\": [\"Diffusion mondiale s\\u00e9curis\\u00e9e de contenus avec plus de 200 points de pr\\u00e9sence annonc\\u00e9s\"]}, {\"name\": \"Flexible SD-WAN\", \"details\": [\"R\\u00e9seau hybride pilot\\u00e9 et s\\u00e9curis\\u00e9 en temps r\\u00e9el\"]}, {\"name\": \"Virtual Network Edge\", \"details\": [\"Fonctions r\\u00e9seau virtualis\\u00e9es \\u00e0 la p\\u00e9riph\\u00e9rie\"]}, {\"name\": \"Flexible LAN\", \"details\": [\"Conception et support LAN/WAN mondiaux\"]}, {\"name\": \"Flexible SD-Branch\", \"details\": [\"Wi-Fi, LAN, SD-WAN, s\\u00e9curit\\u00e9/SASE et IoT administr\\u00e9s dans le cloud\"]}, {\"name\": \"Business VPN Internet\", \"details\": [\"Sorties Internet locales ou dans le cloud Orange pour r\\u00e9seau hybride\"]}, {\"name\": \"Business VPN\", \"details\": [\"VPN mondial manag\\u00e9 pour sites, utilisateurs et clouds\"]}, {\"name\": \"International Ethernet Link\", \"details\": [\"Ethernet VPN de niveau 2 entre sites et datacenters\"]}, {\"name\": \"Satellite Connectivity\", \"details\": [\"Connectivit\\u00e9 principale ou de secours pour zones isol\\u00e9es et mobilit\\u00e9\"]}, {\"name\": \"Internet Platinum\", \"details\": [\"Internet d\\u00e9di\\u00e9 \\u00e0 bande passante garantie pour sites critiques\"]}, {\"name\": \"Internet Essential\", \"details\": [\"Acc\\u00e8s Internet de partenaires dans plus de 140 pays annonc\\u00e9s\"]}, {\"name\": \"Enterprise Application Management\", \"details\": [\"Optimisation de la performance applicative sur site et \\u00e0 distance\"]}], \"match\": {\"need_keywords\": [\"r\\u00e9seau international\", \"connectivit\\u00e9 mondiale\", \"vpn mondial\", \"business vpn\", \"international ethernet\", \"sd-wan international\", \"lan mondial\", \"sd-branch\", \"satellite international\", \"content delivery network\", \"cdn\", \"network edge\", \"internet multi-pays\", \"r\\u00e9seau multinational\"], \"sectors\": [\"logistics\", \"industry\", \"energy\", \"finance\", \"retail\", \"technology\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"locations\", \"activities\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 92,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_93",
+    "doc_type": "service_catalog",
+    "title": "Mobilité internationale et gestion de flotte",
+    "content_to_vectorize": "Offre : Mobilité internationale et gestion de flotte\nCategorie : CONNECTIVITY\nDescription : Services mondiaux pour déployer, sécuriser, gérer et optimiser des flottes mobiles multi-opérateurs, y compris les terminaux, les dépenses télécoms, le support et les réseaux mobiles privés.\nBenefices client : Centraliser la visibilité d’une flotte internationale\nGérer les terminaux et applications de manière sécurisée\nOptimiser les coûts et contrats multi-opérateurs\nDéployer une couverture mobile privée pour les opérations\nPrerequis techniques : {\"prerequisites\": [\"Recenser pays, op\\u00e9rateurs, lignes, appareils, factures et usages\", \"D\\u00e9finir politiques de s\\u00e9curit\\u00e9, support et gouvernance\"], \"commercial_terms\": [\"Pays, op\\u00e9rateurs, terminaux, licences, support et SLA sur devis\", \"Les r\\u00e9seaux priv\\u00e9s n\\u00e9cessitent une \\u00e9tude radio, spectre et int\\u00e9gration\"], \"variants\": [{\"name\": \"Device Management Premium\", \"details\": [\"Gestion unifi\\u00e9e et s\\u00e9curis\\u00e9e des terminaux, applications et contenus\"]}, {\"name\": \"International Mobility Management\", \"details\": [\"D\\u00e9ploiement, gouvernance et support de flottes locales dans plusieurs pays\"]}, {\"name\": \"Multisourcing Service Integration for Mobility\", \"details\": [\"Pilotage commun de plusieurs op\\u00e9rateurs et fournisseurs mobiles\"]}, {\"name\": \"Telecom Expense Management\", \"details\": [\"Inventaire, factures, usages et optimisation des co\\u00fbts sur une plateforme\"]}, {\"name\": \"Mobile Private Networks Global services\", \"details\": [\"R\\u00e9seaux mobiles priv\\u00e9s avec couverture et niveaux de service d\\u00e9di\\u00e9s\"]}], \"match\": {\"need_keywords\": [\"flotte mobile internationale\", \"mobilit\\u00e9 internationale\", \"device management\", \"gestion terminaux\", \"uem\", \"telecom expense management\", \"gestion d\\u00e9penses t\\u00e9l\\u00e9com\", \"multi-op\\u00e9rateurs\", \"r\\u00e9seau mobile priv\\u00e9\", \"private mobile network\", \"support flotte mondial\"], \"sectors\": [\"industry\", \"logistics\", \"retail\", \"energy\", \"services\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\", \"locations\", \"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 93,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_94",
+    "doc_type": "service_catalog",
+    "title": "Services managés Orange Cyberdefense",
+    "content_to_vectorize": "Offre : Services managés Orange Cyberdefense\nCategorie : SECURITY\nDescription : Services de cybersécurité opérés en continu couvrant la réduction de la surface d’attaque, la protection, la surveillance, la détection et la réponse pour les environnements IT, cloud, postes de travail, applications et OT.\nBenefices client : Accéder à des opérations de sécurité continues\nRéduire l’exposition et accélérer la détection\nProtéger des environnements hétérogènes\nRenforcer la réponse et la résilience\nPrerequis techniques : {\"prerequisites\": [\"Cartographier actifs, sources de logs, outils et criticit\\u00e9s\", \"D\\u00e9finir responsabilit\\u00e9s, escalade, r\\u00e9sidence des donn\\u00e9es et contraintes r\\u00e9glementaires\", \"Confirmer le centre de services et le support disponibles pour la RDC\"], \"commercial_terms\": [\"P\\u00e9rim\\u00e8tre, technologies, volumes de logs, horaires, SLA et r\\u00e9tention sur devis\", \"L\\u2019onboarding et l\\u2019int\\u00e9gration peuvent n\\u00e9cessiter une phase de transition\"], \"variants\": [{\"name\": \"Incident Response\", \"details\": [\"Pr\\u00e9paration et intervention lors d\\u2019un cyberincident\"]}, {\"name\": \"Continuous Threat Exposure Management\", \"details\": [\"Gestion continue des vuln\\u00e9rabilit\\u00e9s et de l\\u2019exposition\"]}, {\"name\": \"SASE\", \"details\": [\"Convergence r\\u00e9seau et s\\u00e9curit\\u00e9 cloud pour les acc\\u00e8s\"]}, {\"name\": \"Identity and Access Management\", \"details\": [\"Gouvernance des identit\\u00e9s, privil\\u00e8ges et acc\\u00e8s\"]}, {\"name\": \"Cloud Security\", \"details\": [\"Protection et surveillance des environnements cloud\"]}, {\"name\": \"Workspace Security\", \"details\": [\"S\\u00e9curit\\u00e9 de l\\u2019espace de travail et des outils collaboratifs\"]}, {\"name\": \"Endpoint Security\", \"details\": [\"Protection et d\\u00e9tection sur postes et serveurs\"]}, {\"name\": \"Threat Intelligence\", \"details\": [\"Renseignement sur les menaces et surveillance cibl\\u00e9e\"]}, {\"name\": \"OT Security\", \"details\": [\"Cybers\\u00e9curit\\u00e9 des syst\\u00e8mes industriels et op\\u00e9rationnels\"]}, {\"name\": \"Network Security\", \"details\": [\"Protection manag\\u00e9e des r\\u00e9seaux et infrastructures\"]}, {\"name\": \"Application Security\", \"details\": [\"S\\u00e9curit\\u00e9 des applications et de leur cycle de vie\"]}, {\"name\": \"Managed Detection and Response\", \"details\": [\"D\\u00e9tection et r\\u00e9ponse manag\\u00e9es, SOC et XDR\"]}, {\"name\": \"Security Operations\", \"details\": [\"SIEM, SOAR et op\\u00e9rations de s\\u00e9curit\\u00e9 int\\u00e9gr\\u00e9es\"]}], \"match\": {\"need_keywords\": [\"service s\\u00e9curit\\u00e9 manag\\u00e9\", \"soc international\", \"mdr\", \"xdr\", \"sase\", \"siem\", \"soar\", \"threat intelligence\", \"s\\u00e9curit\\u00e9 cloud manag\\u00e9e\", \"s\\u00e9curit\\u00e9 ot\", \"s\\u00e9curit\\u00e9 industrielle\", \"endpoint security\", \"iam\", \"gestion exposition\", \"continuous threat exposure\", \"d\\u00e9tection et r\\u00e9ponse\"], \"sectors\": [\"finance\", \"healthcare\", \"industry\", \"energy\", \"government\", \"technology\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"locations\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 94,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_95",
+    "doc_type": "service_catalog",
+    "title": "Conseil et évaluations Orange Cyberdefense",
+    "content_to_vectorize": "Offre : Conseil et évaluations Orange Cyberdefense\nCategorie : SECURITY\nDescription : Services professionnels pour évaluer la maturité, la conformité, l’exposition et l’architecture, définir une stratégie de résilience, accompagner le CISO et préparer la transformation post-quantique.\nBenefices client : Établir une feuille de route cyber priorisée\nMesurer la maturité et l’exposition réelle\nPréparer la conformité et la résilience\nObtenir un accompagnement stratégique et technique\nPrerequis techniques : {\"prerequisites\": [\"D\\u00e9finir objectifs, p\\u00e9rim\\u00e8tre, parties prenantes et calendrier\", \"Donner acc\\u00e8s aux informations et environnements n\\u00e9cessaires dans un cadre autoris\\u00e9\"], \"commercial_terms\": [\"Mission, r\\u00e9f\\u00e9rentiels, livrables, pays et expertise sur devis\", \"Les obligations r\\u00e9glementaires applicables doivent \\u00eatre identifi\\u00e9es avec le client\"], \"variants\": [{\"name\": \"Post-Quantum Cryptography Transformation\", \"details\": [\"Inventaire, strat\\u00e9gie et migration vers la cryptographie post-quantique\"]}, {\"name\": \"Cyber Resilience Maturity Snapshot\", \"details\": [\"Photographie rapide de la maturit\\u00e9 de r\\u00e9silience\"]}, {\"name\": \"Incident Response Advisory\", \"details\": [\"Pr\\u00e9paration organisationnelle et technique \\u00e0 la r\\u00e9ponse\"]}, {\"name\": \"Governance, Risk and Compliance\", \"details\": [\"Gouvernance, gestion des risques et conformit\\u00e9\"]}, {\"name\": \"Security Regulation Compliance\", \"details\": [\"Accompagnement aux exigences r\\u00e9glementaires de s\\u00e9curit\\u00e9\"]}, {\"name\": \"CISO as a Service\", \"details\": [\"Pilotage s\\u00e9curit\\u00e9 externalis\\u00e9 ou fractionn\\u00e9\"]}, {\"name\": \"Microsoft Security Workshops\", \"details\": [\"Ateliers de s\\u00e9curit\\u00e9 sur l\\u2019environnement Microsoft\"]}, {\"name\": \"Microsoft Consulting Advisory\", \"details\": [\"Conseil et optimisation de la s\\u00e9curit\\u00e9 Microsoft\"]}, {\"name\": \"Security Maturity Assessment\", \"details\": [\"\\u00c9valuation globale de la maturit\\u00e9 cyber\"]}, {\"name\": \"Cloud Security Maturity Assessment\", \"details\": [\"\\u00c9valuation de la maturit\\u00e9 de s\\u00e9curit\\u00e9 cloud\"]}, {\"name\": \"Mobile Assessments\", \"details\": [\"\\u00c9valuation de la s\\u00e9curit\\u00e9 des environnements mobiles\"]}, {\"name\": \"Compromise Assessment\", \"details\": [\"Recherche d\\u2019indices d\\u2019une compromission existante\"]}, {\"name\": \"Advanced Footprint\", \"details\": [\"Cartographie avanc\\u00e9e de l\\u2019exposition externe\"]}, {\"name\": \"Project Management\", \"details\": [\"Pilotage des projets de cybers\\u00e9curit\\u00e9\"]}, {\"name\": \"World Watch\", \"details\": [\"Veille et renseignement contextualis\\u00e9s sur les menaces\"]}, {\"name\": \"Security Consulting\", \"details\": [\"Conseil cyber strat\\u00e9gique et op\\u00e9rationnel\"]}, {\"name\": \"Secure Architecture Consulting\", \"details\": [\"Conception et revue d\\u2019architectures s\\u00e9curis\\u00e9es\"]}, {\"name\": \"Executive Advisory\", \"details\": [\"Conseil aux dirigeants sur risques et d\\u00e9cisions cyber\"]}, {\"name\": \"OT Security Assessments\", \"details\": [\"\\u00c9valuation de la s\\u00e9curit\\u00e9 des syst\\u00e8mes industriels\"]}, {\"name\": \"OT Showroom and ICS Mock-Up\", \"details\": [\"D\\u00e9monstration et simulation d\\u2019environnements industriels\"]}], \"match\": {\"need_keywords\": [\"audit cybers\\u00e9curit\\u00e9\", \"maturit\\u00e9 cyber\", \"conformit\\u00e9 cyber\", \"grc\", \"ciso as a service\", \"ciso externalis\\u00e9\", \"conseil s\\u00e9curit\\u00e9\", \"architecture s\\u00e9curis\\u00e9e\", \"compromise assessment\", \"empreinte externe\", \"post-quantique\", \"cryptographie quantique\", \"\\u00e9valuation s\\u00e9curit\\u00e9 cloud\", \"audit ot\", \"r\\u00e9silience cyber\"], \"sectors\": [\"finance\", \"healthcare\", \"industry\", \"energy\", \"government\", \"technology\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 95,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_96",
+    "doc_type": "service_catalog",
+    "title": "Ethical Hacking Orange Cyberdefense",
+    "content_to_vectorize": "Offre : Ethical Hacking Orange Cyberdefense\nCategorie : SECURITY\nDescription : Tests offensifs autorisés visant à identifier et démontrer les faiblesses avant qu’elles ne soient exploitées, du test d’intrusion ciblé aux exercices Red Team guidés par les menaces.\nBenefices client : Identifier des vulnérabilités exploitables\nTester la résistance des défenses et processus\nPrioriser la remédiation selon l’impact réel\nSimuler des scénarios d’attaque avancés\nPrerequis techniques : {\"prerequisites\": [\"Obtenir une autorisation \\u00e9crite explicite\", \"D\\u00e9finir p\\u00e9rim\\u00e8tre, exclusions, fen\\u00eatres de test et contacts d\\u2019urgence\", \"Pr\\u00e9voir le traitement et la rem\\u00e9diation des constats\"], \"commercial_terms\": [\"P\\u00e9rim\\u00e8tre, r\\u00e8gles d\\u2019engagement, calendrier et livrables convenus avant intervention\", \"Mission factur\\u00e9e sur devis\"], \"variants\": [{\"name\": \"Penetration Testing\", \"details\": [\"Test d\\u2019intrusion d\\u2019un p\\u00e9rim\\u00e8tre d\\u00e9fini\"]}, {\"name\": \"Threat-Led Penetration Testing\", \"details\": [\"Test guid\\u00e9 par les menaces pertinentes pour l\\u2019organisation\"]}, {\"name\": \"Goal-Oriented Penetration Testing\", \"details\": [\"Simulation avec objectif d\\u2019attaque concret\"]}, {\"name\": \"Red Team Services\", \"details\": [\"Exercice offensif r\\u00e9aliste face aux d\\u00e9fenses humaines et techniques\"]}, {\"name\": \"Spot Check Penetration Testing\", \"details\": [\"Contr\\u00f4le cibl\\u00e9 et rapide d\\u2019un composant ou changement\"]}, {\"name\": \"Internal Infrastructure Assessments\", \"details\": [\"\\u00c9valuation offensive de l\\u2019infrastructure interne\"]}], \"match\": {\"need_keywords\": [\"ethical hacking\", \"test d'intrusion international\", \"red team\", \"threat-led\", \"test offensif\", \"audit infrastructure interne\", \"spot check s\\u00e9curit\\u00e9\", \"simulation cyberattaque\"], \"sectors\": [\"finance\", \"healthcare\", \"industry\", \"energy\", \"government\", \"technology\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"activities\", \"constraints\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 96,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_97",
+    "doc_type": "service_catalog",
+    "title": "Formations techniques Orange Cyberdefense",
+    "content_to_vectorize": "Offre : Formations techniques Orange Cyberdefense\nCategorie : SECURITY\nDescription : Formations pratiques destinées à développer les compétences offensives, défensives et de continuité d’activité des équipes cyber, IT, développement et infrastructures critiques.\nBenefices client : Renforcer les compétences pratiques des équipes\nComprendre les techniques d’attaque pour mieux défendre\nAméliorer la détection SIEM et la sécurité applicative\nPréparer la continuité des infrastructures critiques\nPrerequis techniques : {\"prerequisites\": [\"\\u00c9valuer le niveau et les r\\u00f4les des participants\", \"Pr\\u00e9voir l\\u2019environnement de formation et les disponibilit\\u00e9s\"], \"commercial_terms\": [\"Calendrier, format, langue, niveau et nombre de participants sur devis\", \"Certains cours peuvent avoir des pr\\u00e9requis techniques\"], \"variants\": [{\"name\": \"Hands-On Hacking Fundamentals\", \"details\": [\"Fondamentaux pratiques du hacking\"]}, {\"name\": \"Tactical Hacking Essentials\", \"details\": [\"Techniques offensives essentielles\"]}, {\"name\": \"Enterprise Infrastructure Hacking\", \"details\": [\"Attaque et d\\u00e9fense des infrastructures d\\u2019entreprise\"]}, {\"name\": \"Pragmatic API Exploration\", \"details\": [\"Exploration et tests de s\\u00e9curit\\u00e9 des API\"]}, {\"name\": \"Applied Web Application Hacking\", \"details\": [\"Tests pratiques des applications web\"]}, {\"name\": \"Unplugged: Modern Wi-Fi Hacking\", \"details\": [\"S\\u00e9curit\\u00e9 offensive des r\\u00e9seaux Wi-Fi modernes\"]}, {\"name\": \"A Journey into Mobile Application Hacking\", \"details\": [\"Tests de s\\u00e9curit\\u00e9 des applications mobiles\"]}, {\"name\": \"Introduction to Red Teaming\", \"details\": [\"M\\u00e9thodes et conduite d\\u2019exercices Red Team\"]}, {\"name\": \"Defend Against Threats with SIEM\", \"details\": [\"D\\u00e9tection et investigation avec un SIEM\"]}, {\"name\": \"Business Continuity Management for Critical Infrastructures\", \"details\": [\"Continuit\\u00e9 d\\u2019activit\\u00e9 pour infrastructures critiques\"]}], \"match\": {\"need_keywords\": [\"formation cybers\\u00e9curit\\u00e9\", \"formation hacking\", \"formation red team\", \"formation siem\", \"s\\u00e9curit\\u00e9 api formation\", \"s\\u00e9curit\\u00e9 web formation\", \"s\\u00e9curit\\u00e9 mobile formation\", \"formation wifi s\\u00e9curit\\u00e9\", \"continuit\\u00e9 infrastructure critique\", \"sensibilisation technique cyber\"], \"sectors\": [\"technology\", \"finance\", \"healthcare\", \"industry\", \"energy\", \"government\"], \"excluded_sectors\": [], \"required_profile_fields\": [\"size\", \"activities\"]}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 97,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_98",
+    "doc_type": "service_catalog",
+    "title": "Test Fibre Express",
+    "content_to_vectorize": "Offre : Test Fibre Express\nCategorie : CONNECTIVITY\nDescription : Offre de test automatique\nBenefices client : Test benefit\nPrerequis techniques : {\"prerequisites\": [], \"commercial_terms\": [], \"variants\": [], \"match\": {\"need_keywords\": [\"test\", \"fibre\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 98,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_99",
+    "doc_type": "service_catalog",
+    "title": "Test Fibre Express Modifiee",
+    "content_to_vectorize": "Offre : Test Fibre Express Modifiee\nCategorie : CONNECTIVITY\nDescription : Description mise a jour\nBenefices client : Test benefit\nPrerequis techniques : {\"prerequisites\": [], \"commercial_terms\": [], \"variants\": [], \"match\": {\"need_keywords\": [\"test\", \"fibre\"], \"sectors\": [], \"excluded_sectors\": [], \"required_profile_fields\": []}}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 99,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_100",
+    "doc_type": "service_catalog",
+    "title": "Fibre Optique Pro",
+    "content_to_vectorize": "Offre : Fibre Optique Pro\nCategorie : CONNECTIVITY\nDescription : Connexion Internet très haut débit dédiée aux professionnels avec garantie de temps de rétablissement (GTR) de 4 heures.\nBenefices client : Stabilité maximale, débits symétriques garantis pour le cloud et la visio, et basculement automatique sur backup 4G/5G.\nPrerequis techniques : {\"bandwidth_options\": [\"100 Mbps\", \"1 Gbps\", \"10 Gbps\"], \"backup_included\": true}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 100,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_101",
+    "doc_type": "service_catalog",
+    "title": "SD-WAN Managé",
+    "content_to_vectorize": "Offre : SD-WAN Managé\nCategorie : CONNECTIVITY\nDescription : Interconnexion intelligente et sécurisée de vos différents sites physiques pour optimiser les flux réseaux et sécuriser les accès cloud.\nBenefices client : Gestion centralisée du trafic, priorisation automatique des applications métier critiques (ERP, VoIP), et résilience multi-liens.\nPrerequis techniques : {\"multi_site_required\": true, \"supported_routers\": [\"Fortinet\", \"Cisco\"]}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 101,
+      "category": "CONNECTIVITY"
+    }
+  },
+  {
+    "id": "service_102",
+    "doc_type": "service_catalog",
+    "title": "Hébergement Cloud Souverain (VPS)",
+    "content_to_vectorize": "Offre : Hébergement Cloud Souverain (VPS)\nCategorie : CLOUD\nDescription : Serveurs virtuels privés hébergés dans des datacenters français hautement sécurisés, garantissant la souveraineté des données.\nBenefices client : Scalabilité des ressources à la demande, conformité RGPD assurée, sauvegardes quotidiennes automatisées et infogérance 24/7.\nPrerequis techniques : {\"os_options\": [\"Linux Ubuntu/Debian\", \"Windows Server\"], \"ram_range_gb\": [4, 128]}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 102,
+      "category": "CLOUD"
+    }
+  },
+  {
+    "id": "service_103",
+    "doc_type": "service_catalog",
+    "title": "Hébergement de Données de Santé (HDS)",
+    "content_to_vectorize": "Offre : Hébergement de Données de Santé (HDS)\nCategorie : CLOUD\nDescription : Solution d'hébergement cloud certifiée HDS (Hébergeur de Données de Santé) pour le stockage sécurisé des dossiers médicaux.\nBenefices client : Conformité légale stricte avec le code de la santé publique, cryptage renforcé et accès sécurisés par double authentification.\nPrerequis techniques : {\"hds_certified\": true, \"encryption_standard\": \"AES-256\"}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 103,
+      "category": "CLOUD"
+    }
+  },
+  {
+    "id": "service_104",
+    "doc_type": "service_catalog",
+    "title": "Firewall Managé",
+    "content_to_vectorize": "Offre : Firewall Managé\nCategorie : SECURITY\nDescription : Protection périmétrique de votre réseau d'entreprise avec filtrage de contenu, détection d'intrusions (IPS) et VPN pour le télétravail.\nBenefices client : Bloque les cybermenaces en amont, sécurise les collaborateurs distants avec des tunnels chiffrés, et fournit des rapports d'activité clairs.\nPrerequis techniques : {\"vpn_users_max\": 250, \"ips_throughput_gbps\": 1.2}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 104,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_105",
+    "doc_type": "service_catalog",
+    "title": "EDR & Antivirus Pro",
+    "content_to_vectorize": "Offre : EDR & Antivirus Pro\nCategorie : SECURITY\nDescription : Solution de détection et réponse aux menaces sur les postes de travail (EDR) pour bloquer les ransomwares et attaques complexes.\nBenefices client : Analyse comportementale en temps réel, isolation automatique des postes infectés, et supervision par notre SOC d'experts.\nPrerequis techniques : {\"supported_platforms\": [\"Windows\", \"macOS\", \"Linux\"], \"agent_based\": true}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 105,
+      "category": "SECURITY"
+    }
+  },
+  {
+    "id": "service_106",
+    "doc_type": "service_catalog",
+    "title": "Microsoft 365 Pro & Teams",
+    "content_to_vectorize": "Offre : Microsoft 365 Pro & Teams\nCategorie : COLLABORATIVE\nDescription : Suite collaborative cloud complète incluant Outlook, Teams, Word, Excel, PowerPoint ainsi que SharePoint pour le partage de fichiers.\nBenefices client : Collaboration fluide en temps réel, messagerie professionnelle unifiée, stockage cloud OneDrive de 1 To par utilisateur, et outils de coédition.\nPrerequis techniques : {\"subscription_type\": \"Business Premium\", \"storage_per_user_gb\": 1000}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 106,
+      "category": "COLLABORATIVE"
+    }
+  },
+  {
+    "id": "service_107",
+    "doc_type": "service_catalog",
+    "title": "Téléphonie Teams (VoIP)",
+    "content_to_vectorize": "Offre : Téléphonie Teams (VoIP)\nCategorie : COLLABORATIVE\nDescription : Intégration directe de vos lignes téléphoniques d'entreprise dans Microsoft Teams pour appeler et recevoir des appels de partout.\nBenefices client : Remplacement du standard téléphonique physique obsolète, réduction des coûts télécoms, et numéro unique sur PC, mobile et tablette.\nPrerequis techniques : {\"m365_license_required\": true, \"calling_plans_options\": [\"France Illimit\\u00e9\", \"International\"]}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 107,
+      "category": "COLLABORATIVE"
+    }
+  },
+  {
+    "id": "service_108",
+    "doc_type": "service_catalog",
+    "title": "Terminal de Paiement (TPE) Connecté",
+    "content_to_vectorize": "Offre : Terminal de Paiement (TPE) Connecté\nCategorie : PAYMENT\nDescription : Terminaux de paiement électroniques modernes (fixes ou mobiles) connectés en Wi-Fi / 4G avec encaissement ultra-rapide.\nBenefices client : Sécurité des transactions bancaires, compatibilité sans contact et paiements mobiles, et reporting en temps réel de vos ventes.\nPrerequis techniques : {\"connection_modes\": [\"4G LTE\", \"Wi-Fi\", \"Ethernet\"], \"pci_dss_compliant\": true}",
+    "metadata": {
+      "source_table": "catalog_servicecatalog",
+      "service_id": 108,
+      "category": "PAYMENT"
+    }
+  }
+]

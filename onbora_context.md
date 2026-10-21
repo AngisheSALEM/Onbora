@@ -267,3 +267,30 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
     *   6/6 tests unitaires et d'API reussis dans test_news_feed.py.
     *   Hook 1 (Charte Graphique, Zero Couleur Interdite & Zero Emoji) et Hook 2 (Dette Technique & Architecture) valides a 100%.
     *   Compilation TypeScript (npx tsc --noEmit) avec zero erreur.
+
+
+---
+
+## 14. Comparateur Sectoriel B2B : Priorit  Ce qui lui manque  & Matching Multi-Dimensionnel (Octobre 2026)
+
+*   **Inversion de Priorit : Focus Absolu sur  Ce qui lui manque ** :
+    *   La carte droite accompagnant le Radar des 6 Piliers affiche dsormais par dfaut ** Ce qui lui manque ** (dficits de bande passante par site, absence d'interconnexion SD-WAN, faiblesses cyberscurit, absence de lien de secours SPOF).
+    *   Chaque dficit expose son niveau de priorit (Priorit 1 Critique, Priorit 2 leve, Priorit 3 Modre), son impact chiffr sur le score (ex: -25 pts sur la Connectivit), la solution Orange Business recommande (Fibre Ddie LSI, SD-WAN, Firewall Manag Fortinet) et un argumentaire commercial (Pitch KAM) copiable en un clic.
+    *   Un switcher segment pur permet d'alterner entre Ce qui lui manque (dfaut) et O il se dmarque.
+*   **Modlisation Multi-Dimensionnelle & Non-Linaire du Dimensionnement** :
+    *   Le dimensionnement ne se rduit pas  une simple variable linaire, mais repose sur un espace vectoriel multi-critres :
+        1. *Volume de Terminaux & Postes Informatiques* (chelle logarithmique ln(1 + postes)).
+        2. *Dispersion Gographique & Nombre de Sites Distants* (chelle topologique ln(1 + sites)).
+        3. *Densit Oprationnelle par Site* (postes/sites : distinction entre campus centralis dense et rseau distribu d'agences/usines).
+        4. *Intensit de Bande Passante Requise* (intgrant le surcot de transit inter-sites).
+        5. *chelle conomique* (chiffre d'affaires).
+    *   Distance composite pondre (35% Postes, 30% Sites, 20% Densit/Topologie, 15% CA) identifiant fidlement le **Jumeau de Dimensionnement** (ex: Kamoa-Kakula Mining et Tenke Fungurume Mining  99% de ressemblance topologique).
+    *   Slecteur d'entreprise affichant la proximit, le nombre de postes et le nombre de sites pour chaque pair du secteur.
+*   **volutivit Organique des Donnes & Impact Dterministe** :
+    *   Lorsque les informations sont actualises (enrichissement web / moteur de recherche, mises  jour terrain), la pnalit capacitaire recalcule ragit immdiatement : si les machines et sites augmentent sans monte en dbit, le ratio s'effondre, gnrant des lacunes critiques et ralignant automatiquement le jumeau vers un compte du palier suprieur.
+    *   Suppression de tout bouton manuel artificiel de mise  jour dans l'en-tte de comparaison pour prserver un canvas pur, fluide et fidle aux flux rels.
+*   **Assurance Qualit & Conformit** :
+    *   4/4 tests automatiss valids dans backend/apps/kam/test_enterprise_comparison_sizing.py.
+    *   Hook 1 (Charte Graphique, Zro moji, 60-30-10 & Zro Couleur Interdite) valid  100%.
+    *   Hook 2 (Architecture, Vues Minces < 90 lignes & Zro N+1) valid  100%.
+    *   Compilation TypeScript (npx tsc --noEmit) avec zro erreur.
