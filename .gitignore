@@ -77,4 +77,12 @@ onbora interface probleme/
 # Local documents
 *.pdf
 
+# ChromaDB locale
+chroma_db/
+**/chroma_db/
 
+# Environnements virtuels et caches Python
+__pycache__/
+*.pyc
+.venv/
+env/
