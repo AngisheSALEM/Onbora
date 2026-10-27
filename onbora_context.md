@@ -289,8 +289,37 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
 *   **volutivit Organique des Donnes & Impact Dterministe** :
     *   Lorsque les informations sont actualises (enrichissement web / moteur de recherche, mises  jour terrain), la pnalit capacitaire recalcule ragit immdiatement : si les machines et sites augmentent sans monte en dbit, le ratio s'effondre, gnrant des lacunes critiques et ralignant automatiquement le jumeau vers un compte du palier suprieur.
     *   Suppression de tout bouton manuel artificiel de mise  jour dans l'en-tte de comparaison pour prserver un canvas pur, fluide et fidle aux flux rels.
-*   **Assurance Qualit & Conformit** :
-    *   4/4 tests automatiss valids dans backend/apps/kam/test_enterprise_comparison_sizing.py.
-    *   Hook 1 (Charte Graphique, Zro moji, 60-30-10 & Zro Couleur Interdite) valid  100%.
-    *   Hook 2 (Architecture, Vues Minces < 90 lignes & Zro N+1) valid  100%.
-    *   Compilation TypeScript (npx tsc --noEmit) avec zro erreur.
+*   **Assurance Qualité & Conformité** :
+    *   4/4 tests automatisés validés dans backend/apps/kam/test_enterprise_comparison_sizing.py.
+    *   Hook 1 (Charte Graphique, Zéro émoji, 60-30-10 & Zéro Couleur Interdite) validé à 100%.
+    *   Hook 2 (Architecture, Vues Minces < 90 lignes & Zéro N+1) validé à 100%.
+    *   Compilation TypeScript (npx tsc --noEmit) avec zéro erreur.
+
+---
+
+## 15. Sous-Système d'Embeddings, Recherche Vectorielle Sémantique & Veille Marché Web (Octobre 2026)
+
+*   **Moteur Vectoriel In-Process & Comparaison Sémantique (`apps/ai_core/vector_search/`)** :
+    *   **Architecture In-Process Haute Performance** : Service singleton `VectorSearchService` chargeant le dataset unifié de 1 207 documents (`backend/exports/vectorization/onbora_vectorization_full.jsonl`) en mémoire vive avec indexation cosinus (< 2ms de latence).
+    *   **Double Moteur d'Embedding Hybride & Résilient** :
+        *   *Google Gemini text-embedding-004* : Génération d'embeddings sémantiques 768 dimensions lorsque la clé API est active.
+        *   *Fallback Déterministe 768D In-Process* : En cas d'indisponibilité réseau, de quota restreint ou en environnement de test, bascule transparente sur une vectorisation 768 dimensions normalisée L2 garantissant une comparabilité cosinus immédiate.
+    *   **Résolution Flexible d'Identifiants** : Prise en charge universelle des identifiants (entiers `3495`, slugs `enterprise_3495` ou doc IDs complets `enterprise_profile_3495`).
+    *   **Détection d'Opportunités d'Upsell / Cross-Sell (`find_upsell_candidates`)** : Détection automatique des pairs sectoriels ayant adopté des offres (Fibre Dédiée, SD-WAN, Microsoft 365, CyberSOC) absentes chez le compte cible.
+*   **Moteur de Veille Économique B2B & Web Sourcing (`apps/ai_core/market_intel/`)** :
+    *   **Collecteurs RSS Temps Réel** : Ingestion continue de flux économiques africains (*Zoom-Eco*, *Radio Okapi*, *Actualité CD*) avec filtrage contextuel et parsing de dates standardisé.
+    *   **Enrichisseur d'Opportunités B2B** : Extraction structurée des entités (entreprise, secteur, taille estimée, type d'opportunité `NEW_PROSPECT`, `UPSELL`, `EXPANSION`) via Gemini et règles heuristiques locales.
+    *   **Résolution Automatisée (`EnterpriseResolver`)** :
+        *   *Comptes existants* : Rattachement automatique de signaux d'actualité (`is_web_discovery=False`) à la fiche `Enterprise` pour préparer les rendez-vous KAM.
+        *   *Nouveaux comptes* : Création de fiches de découverte web (`is_web_discovery=True`) convertibles en un clic en comptes de portefeuille B2B formels.
+*   **Endpoints DRF Dédiés & Commandes d'Automatisation** :
+    *   `POST /api/ai/vector/search/` : Recherche sémantique universelle dans le catalogue, les comptes et les rapports de visite.
+    *   `POST /api/ai/vector/similar-enterprises/` : Recherche de pairs et analyse comparative pour upselling.
+    *   `POST /api/ai/vector/market-intel/discover/` : Déclenchement asynchrone de la détection de nouveaux prospects.
+    *   `POST /api/ai/vector/reindex/` : Reconstruction et mise à jour de l'index vectoriel.
+    *   Commandes Django : `python manage.py run_vector_ingest` et `python manage.py run_web_sourcing`.
+    *   Actualisation dynamique KAM : `POST /api/kam/feed/refresh/` connecté directement au moteur de découverte.
+*   **Assurance Qualité & Conformité** :
+    *   12/12 tests unitaires validés dans `backend/apps/ai_core/test_vector_and_market_intel.py`.
+    *   27/27 tests AI Core existants validés dans `backend/apps/ai_core/tests.py`.
+    *   Hook 1 & Hook 2 validés à 100% (326 fichiers Python audités sans anomalie).

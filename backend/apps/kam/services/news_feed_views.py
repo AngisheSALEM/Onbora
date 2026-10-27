@@ -101,17 +101,21 @@ class B2BNewsFeedConvertView(APIView):
 class B2BNewsFeedRefreshView(APIView):
     """
     POST /api/kam/feed/refresh/
-    Relance la détection et la veille des nouveaux comptes et signaux B2B.
+    Relance la detection et la veille des nouveaux comptes et signaux B2B via MarketIntelService.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-            count = B2BNewsFeedService.seed_sample_news(request.user)
+            from ai_core.market_intel.service import MarketIntelService
+            stats = MarketIntelService().run_discovery(query="entreprises B2B RDC")
             return Response({
-                "message": f"{count} nouveaux signaux de veille B2B synchronisés avec succès.",
-                "count": count
+                "message": f"{stats['saved']} nouveaux signaux de veille B2B synchronises avec succes.",
+                "collected": stats["collected"],
+                "enriched": stats["enriched"],
+                "saved": stats["saved"],
+                "errors": stats.get("errors", []),
             }, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error("Erreur rafraîchissement flux B2B: %s", e)
+            logger.error("Erreur rafraichissement flux B2B: %s", e)
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

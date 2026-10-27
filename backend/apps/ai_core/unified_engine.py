@@ -89,8 +89,15 @@ class UnifiedCoreAIEngine:
         predicted_needs = []
         existing_real_lower = {n["need"].lower() for n in real_needs}
 
-        site_cnt = getattr(enterprise, 'site_count', 1) or 1
-        emp_cnt = getattr(enterprise, 'employee_count', 10) or 10
+        try:
+            site_cnt = int(getattr(enterprise, 'site_count', 1) or 1)
+        except (ValueError, TypeError):
+            site_cnt = 1
+
+        try:
+            emp_cnt = int(getattr(enterprise, 'employee_count', 10) or 10)
+        except (ValueError, TypeError):
+            emp_cnt = 10
         curr_op = getattr(enterprise, 'current_operator', '') or ''
         sector = (getattr(enterprise, 'sector', '') or '').lower()
 

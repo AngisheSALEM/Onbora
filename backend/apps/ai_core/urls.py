@@ -13,6 +13,10 @@ from .views import (
     AISessionDetailView,
     AIToolsListView,
     AIAudioTranscribeView,
+    AIVectorSearchView,
+    AIEnterpriseSimilarView,
+    AIMarketIntelDiscoverView,
+    AIVectorReindexView,
 )
 
 urlpatterns = [
@@ -38,4 +42,10 @@ urlpatterns = [
     path("analyze/", AIAnalyzeConversationView.as_view(), name="analyze"),
     path("validate/", AIValidateActionView.as_view(), name="validate"),
     path("session/<str:session_id>/", AISessionDetailView.as_view(), name="session_detail"),
+
+    # Recherche vectorielle semantique et veille marche
+    path("vector/search/", AIVectorSearchView.as_view(), name="vector_search"),
+    path("vector/similar-enterprises/", AIEnterpriseSimilarView.as_view(), name="vector_similar"),
+    path("vector/market-intel/discover/", AIMarketIntelDiscoverView.as_view(), name="market_intel_discover"),
+    path("vector/reindex/", AIVectorReindexView.as_view(), name="vector_reindex"),
 ]

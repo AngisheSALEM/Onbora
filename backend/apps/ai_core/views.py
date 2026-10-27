@@ -278,3 +278,136 @@ class AIAudioTranscribeView(APIView):
             "language": result.get("language", language),
             "provider": result.get("provider", "gemini-audio"),
         }, status=status.HTTP_200_OK)
+
+
+class AIVectorSearchView(APIView):
+    """Recherche semantique dans la base de connaissances Onbora."""
+    permission_classes = [AllowAny]
+
+    def post(self, request) -> Response:
+        from .vector_search.singleton import get_vector_search_service
+
+        query = request.data.get("query", "").strip()
+        n_results = int(request.data.get("n_results", 5))
+        doc_type = request.data.get("doc_type", None)
+
+        if not query:
+            return Response({"error": "Parametre 'query' obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            results = get_vector_search_service().search(
+                query=query,
+                n_results=n_results,
+                doc_type_filter=doc_type,
+            )
+            return Response({
+                "query": query,
+                "count": len(results),
+                "results": [
+                    {
+                        "doc_id": r.doc_id,
+                        "title": r.title,
+                        "doc_type": r.doc_type,
+                        "content": r.content[:500],
+                        "score": r.score,
+                        "metadata": r.metadata,
+                    }
+                    for r in results
+                ],
+            })
+        except Exception as exc:
+            logger.error("[AIVectorSearchView] Erreur : %s", exc)
+            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AIEnterpriseSimilarView(APIView):
+    """Trouve des entreprises similaires pour upsell/cross-sell."""
+    permission_classes = [AllowAny]
+
+    def post(self, request) -> Response:
+        from .vector_search.singleton import get_vector_search_service
+
+        enterprise_id = request.data.get("enterprise_id")
+        query_text = request.data.get("query_text", "").strip()
+        top_k = int(request.data.get("top_k", 10))
+        service_filter = request.data.get("service_not_having", None)
+
+        try:
+            svc = get_vector_search_service()
+            if enterprise_id:
+                if service_filter:
+                    results = svc.find_upsell_candidates(
+                        enterprise_id=enterprise_id,
+                        service_not_having=service_filter,
+                        top_k=top_k,
+                    )
+                else:
+                    results = svc.find_similar_enterprises(enterprise_id=enterprise_id, top_k=top_k)
+            elif query_text:
+                results = svc.search(
+                    query=query_text,
+                    n_results=top_k,
+                    doc_type_filter="enterprise_profile",
+                )
+            else:
+                return Response(
+                    {"error": "Fournir 'enterprise_id' ou 'query_text'."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            return Response({
+                "count": len(results),
+                "results": [
+                    {
+                        "doc_id": r.doc_id,
+                        "title": r.title,
+                        "doc_type": r.doc_type,
+                        "composite_score": r.score,
+                        "metadata": r.metadata,
+                        "upsell_service": getattr(r, "upsell_service", None),
+                    }
+                    for r in results
+                ],
+            })
+        except Exception as exc:
+            logger.error("[AIEnterpriseSimilarView] Erreur : %s", exc)
+            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AIMarketIntelDiscoverView(APIView):
+    """Lance un job de decouverte de nouveaux prospects via veille web."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request) -> Response:
+        import threading
+        from .market_intel.service import MarketIntelService
+
+        query = request.data.get("query", "").strip()
+        if not query:
+            return Response({"error": "Parametre 'query' obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
+
+        def _run():
+            try:
+                MarketIntelService().run_discovery(query=query)
+            except Exception as exc:
+                logger.error("[AIMarketIntelDiscoverView] Erreur dans le thread discovery : %s", exc)
+
+        t = threading.Thread(target=_run, daemon=True)
+        t.start()
+
+        return Response({"status": "started", "query": query})
+
+
+class AIVectorReindexView(APIView):
+    """Relance l'indexation vectorielle du dataset complet."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request) -> Response:
+        from .vector_search.singleton import get_vector_search_service
+
+        try:
+            count = get_vector_search_service().reindex()
+            return Response({"status": "done", "indexed": count})
+        except Exception as exc:
+            logger.error("[AIVectorReindexView] Erreur reindex : %s", exc)
+            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
