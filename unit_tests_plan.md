@@ -143,3 +143,17 @@ Ces tests sont écrits dans `backend/sales/tests.py`.
 - `flutter analyze --no-pub` : aucune anomalie. `flutter build apk --debug` : compilation Android réussie.
 - `cd backend` puis `manage.py test kam.tests kam.test_mobile_appointment_update --noinput` avec base SQLite de test : 22 tests passent. Les nouveaux tests couvrent tous les champs éditables d'un rendez-vous, la validation atomique, l'isolation entre KAM et la conservation en base du texte vocal combiné aux notes.
 - Les tests automatisés vérifient le transport et la persistance de la transcription. La reconnaissance d'une voix réelle par le microphone Android/iOS reste à valider sur appareil ; aucun enregistrement réel ni envoi CRM externe n'a été effectué pendant la validation.
+# Core AI — corrections du 3 novembre 2026
+
+| Zone | Vérifications de régression |
+| --- | --- |
+| Accès | Recherche anonyme refusée, isolation des portefeuilles et des sessions, anciennes sessions non revendicables, GET sans création, réindexation administrateur |
+| Validation | Identifiant de session requis, limites numériques invalides/négatives/excessives rejetées en 400 |
+| Mémoire | Historique injecté et borné, analyse concurrente rejetée sans perte, ancienne approbation réinitialisée |
+| Preuves | Repli sans besoin inventé, fiche technique sans IP fictive, invalidation des anciens brouillons en cache, scoring fondé sur les données |
+| Vecteurs | Même espace pour index et requêtes, cache invalidé sur changement, mises à jour visibles entre instances et après redémarrage |
+| Délais | Pas de cascade sur quota, modèle de repli limité au temps restant |
+| Tâches | File persistante et bornée, demande dédupliquée, bail exclusif/repris, résultats persistés, arrêt après trois échecs, signaux dédupliqués |
+| Parcours KAM | Rapport et rendez-vous mobile, PDF technique, radar de churn, rafraîchissement du fil sans lecture des sources réelles dans les tests |
+
+Commande : `venv/Scripts/python.exe manage.py test apps.ai_core kam.tests kam.test_mobile_appointment_update kam.test_news_feed kam.test_churn_radar --settings=onbora.test_settings --noinput` depuis `backend/`.

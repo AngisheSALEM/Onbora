@@ -109,8 +109,9 @@ class CommercialIntelligenceService:
         pour le compte client donné. Persiste les spécifications dans le PreCallBriefing du compte.
         """
         briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
-        if not force_refresh and briefing and briefing.analysis_data and briefing.analysis_data.get("technical_specs"):
-            return briefing.analysis_data["technical_specs"]
+        cached = (briefing.analysis_data or {}).get("technical_specs") if briefing else None
+        if not force_refresh and isinstance(cached, dict) and cached.get("schema_version") == "evidence-1":
+            return cached
 
         engine = get_unified_core_ai()
         specs = engine.generate_technical_sheet(

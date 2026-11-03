@@ -8,7 +8,7 @@ services:
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate --no-input && python manage.py seed_all
     preDeployCommand: python manage.py migrate --no-input && python manage.py seed_all
-    startCommand: gunicorn onbora.wsgi:application
+    startCommand: python start_services.py
     envVars:
       - key: DEBUG
         value: "False"

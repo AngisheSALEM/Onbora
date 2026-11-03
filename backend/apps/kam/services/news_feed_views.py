@@ -107,15 +107,9 @@ class B2BNewsFeedRefreshView(APIView):
 
     def post(self, request):
         try:
-            from ai_core.market_intel.service import MarketIntelService
-            stats = MarketIntelService().run_discovery(query="entreprises B2B RDC")
-            return Response({
-                "message": f"{stats['saved']} nouveaux signaux de veille B2B synchronises avec succes.",
-                "collected": stats["collected"],
-                "enriched": stats["enriched"],
-                "saved": stats["saved"],
-                "errors": stats.get("errors", []),
-            }, status=status.HTTP_200_OK)
+            from apps.ai_core.services.discovery_jobs import enqueue_discovery
+            job = enqueue_discovery(request.user, "entreprises B2B RDC")
+            return Response({"status": job.status, "job_id": str(job.pk), "saved": 0}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error("Erreur rafraichissement flux B2B: %s", e)
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -279,15 +279,16 @@ def _build_kam_debrief_result(enterprise, user, data, ai_data, effective_transcr
     ]
 
     try:
-        session_id = f"kam_account_{enterprise.id}"
+        session_id = f"kam_account_{enterprise.id}_user_{user.pk}"
+        AISessionService.get_or_create_session(session_id, enterprise.name, user=user)
         AISessionService.append_message(
-            session_id=session_id,
+            user=user, session_id=session_id,
             role="user",
             content=f"Débriefing vocal pour {enterprise.name} : {effective_transcript}",
             metadata={"account_id": enterprise.id}
         )
         AISessionService.add_report(
-            session_id=session_id,
+            user=user, session_id=session_id,
             report={
                 "type": "POST_CALL_DEBRIEF",
                 "executive_summary": ai_data.get("executive_summary", ""),

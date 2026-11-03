@@ -41,6 +41,24 @@ services:
       - db
       - redis
 
+  ai-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python manage.py run_ai_jobs
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME:-onbora_db}
+      - DB_USER=${DB_USER:-onbora_user}
+      - DB_PASSWORD=${DB_PASSWORD:-onbora_pass}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash}
+    depends_on:
+      - backend
+
   core-ai:
     build:
       context: ./core-ai

@@ -247,7 +247,7 @@ def build_dossier_export_html(dossier, company_name: str, contact_name: str, sou
     try:
         twin = BusinessTwin.objects.get(prospect_dossier=dossier)
         current_items = "".join([f"<li>• {item}</li>" for item in (twin.current_state or [])])
-        proposed_items = "".join([f"<li>✓ {item}</li>" for item in (twin.proposed_state or [])])
+        proposed_items = "".join([f"<li>{item}</li>" for item in (twin.proposed_state or [])])
         
         services_items = "".join([
             f"""<div style="margin-bottom: 12px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
@@ -460,15 +460,16 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
         logger.warning(f"[BriefingService] Erreur lors de la synchronisation de la synthèse d'entreprise: {exc}")
 
     try:
-        session_id = f"kam_account_{enterprise.id}"
+        session_id = f"kam_account_{enterprise.id}_user_{user.pk}"
+        AISessionService.get_or_create_session(session_id, enterprise.name, user=user)
         AISessionService.append_message(
-            session_id=session_id,
+            user=user, session_id=session_id,
             role="user",
             content=f"Rapport de rendez-vous commercial ({appointment.contact_name}) : {transcript}",
             metadata={"appointment_id": appointment.id}
         )
         AISessionService.add_report(
-            session_id=session_id,
+            user=user, session_id=session_id,
             report={
                 "type": "KAM_VISIT_REPORT",
                 "appointment_id": appointment.id,

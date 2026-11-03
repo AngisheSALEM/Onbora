@@ -103,6 +103,7 @@ class AICoreAPITestCase(TestCase):
         User = get_user_model()
         self.user = User.objects.create_user(
             username="test_kam_ia",
+            role="KAM",
             password="testpass123",
             email="kam_ia@onbora.test",
         )
@@ -242,6 +243,8 @@ class AICoreAPITestCase(TestCase):
     # -------------------------------------------------------------------------
     def test_validate_endpoint_authenticated(self):
         self.client.force_authenticate(user=self.user)
+        from apps.ai_core.services.session_service import AISessionService
+        AISessionService.get_or_create_session("test_hitl_session", user=self.user)
         payload = {
             "session_id": "test_hitl_session",
             "decision": "approved",
@@ -261,6 +264,8 @@ class AICoreAPITestCase(TestCase):
     # -------------------------------------------------------------------------
     def test_session_detail_endpoint_authenticated(self):
         self.client.force_authenticate(user=self.user)
+        from apps.ai_core.services.session_service import AISessionService
+        AISessionService.get_or_create_session("test_session_detail", user=self.user)
         response = self.client.get("/api/v1/ai/session/test_session_detail/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("session_id", response.data)
@@ -277,6 +282,10 @@ class CompanyAnalysisTestCase(TestCase):
     def setUp(self):
         from apps.ai_core.company_analysis.service import CompanyAnalysisClient
         self.client = CompanyAnalysisClient()
+        import requests
+        transport = patch("apps.ai_core.company_analysis.service.requests.post", side_effect=requests.ConnectionError("offline test"))
+        transport.start()
+        self.addCleanup(transport.stop)
 
     def test_analysis_client_generates_valid_brief(self):
         brief = self.client.get_analysis_for_enterprise(
@@ -324,7 +333,10 @@ class SectorRulesCompilerTestCase(TestCase):
 
     def test_compile_sector_rules(self):
         from apps.ai_core.services.sector_rules_compiler import SectorRulesCompiler
-        rules = SectorRulesCompiler.compile()
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as target:
+            rules = SectorRulesCompiler.compile(output_path=Path(target) / "rules.json")
         self.assertIn("meta", rules)
         self.assertIn("taxonomy_mapping", rules)
         self.assertIn("sectors", rules)
@@ -342,5 +354,8 @@ class SectorRulesCompilerTestCase(TestCase):
         from django.core.management import call_command
         from io import StringIO
         out = StringIO()
-        call_command("compile_sector_rules", stdout=out)
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as target:
+            call_command("compile_sector_rules", output=str(Path(target) / "rules.json"), stdout=out)
         self.assertIn("SUCC", out.getvalue())

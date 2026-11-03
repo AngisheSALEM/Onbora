@@ -577,6 +577,11 @@ class B2BNewsFeedItem(models.Model):
         ('NORMAL', 'Veille normale (Information continue)'),
     ]
 
+    SIGNAL_STRENGTH_CHOICES = [
+        ('STRONG', 'Signal fort'),
+        ('WEAK', 'Signal faible'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     enterprise = models.ForeignKey(
         'sales.Enterprise',
@@ -607,6 +612,9 @@ class B2BNewsFeedItem(models.Model):
     source_url = models.URLField(blank=True, default='', help_text="Lien direct vers la publication ou l'article")
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='EXPANSION', db_index=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='MEDIUM', db_index=True)
+    signal_strength = models.CharField(max_length=20, choices=SIGNAL_STRENGTH_CHOICES, default='STRONG', db_index=True, help_text="Intensité du signal pour déclencher une opportunité commerciale")
+    signal_score = models.IntegerField(default=80, help_text="Score d'opportunité commerciale calculé par Core AI (0-100)")
+    signal_rationale = models.CharField(max_length=255, blank=True, default='', help_text="Motivation synthétique Core AI pour le déclenchement de l'opportunité commerciale")
 
     # Analyse d'impact commercial & Recommandation Onbora Core AI
     commercial_angle = models.TextField(blank=True, default='', help_text="Opportunité commerciale et raison de contacter le compte")

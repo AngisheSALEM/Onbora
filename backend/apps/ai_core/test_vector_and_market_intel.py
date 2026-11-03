@@ -15,16 +15,20 @@ from kam.models import B2BNewsFeedItem
 User = get_user_model()
 
 
-class VectorSearchServiceTestCase(TestCase):
+from .test_hardening import VectorFixtureMixin
+
+
+class VectorSearchServiceTestCase(VectorFixtureMixin, TestCase):
     """Tests unitaires du service vectoriel in-process."""
 
     def setUp(self):
-        self.svc = get_vector_search_service()
+        self.svc = self.make_vector_service()
 
     def test_search_returns_results(self):
         results = self.svc.search("banque finance connectivite fibre", n_results=3)
         self.assertIsInstance(results, list)
         self.assertLessEqual(len(results), 3)
+        self.assertGreater(len(results), 0)
         if results:
             first = results[0]
             self.assertTrue(hasattr(first, "doc_id"))
@@ -34,6 +38,7 @@ class VectorSearchServiceTestCase(TestCase):
 
     def test_search_with_doc_type_filter(self):
         results = self.svc.search("fibre optique", n_results=5, doc_type_filter="service_catalog")
+        self.assertGreater(len(results), 0)
         for res in results:
             self.assertEqual(res.doc_type, "service_catalog")
 
@@ -44,6 +49,7 @@ class VectorSearchServiceTestCase(TestCase):
             (d for d in self.svc._documents if d.get("doc_type") == "enterprise_profile"),
             None,
         )
+        self.assertIsNotNone(enterprise_doc)
         if enterprise_doc:
             doc_id = enterprise_doc["id"]
             results = self.svc.find_similar_enterprises(doc_id, top_k=3)
@@ -58,6 +64,7 @@ class VectorSearchServiceTestCase(TestCase):
             (d for d in self.svc._documents if d.get("doc_type") == "enterprise_profile"),
             None,
         )
+        self.assertIsNotNone(enterprise_doc)
         if enterprise_doc:
             doc_id = enterprise_doc["id"]
             results = self.svc.find_upsell_candidates(doc_id, service_not_having="Fibre", top_k=3)
@@ -132,16 +139,21 @@ class MarketIntelTestCase(TestCase):
         self.assertEqual(item.category, "TECH_PROJECT")
 
 
-class VectorEndpointsTestCase(TestCase):
+class VectorEndpointsTestCase(VectorFixtureMixin, TestCase):
     """Tests des endpoints REST DRF."""
 
     def setUp(self):
+        self.svc = self.make_vector_service()
+        service_patch = patch("apps.ai_core.vector_search.singleton.get_vector_search_service", return_value=self.svc)
+        service_patch.start()
+        self.addCleanup(service_patch.stop)
         self.client = APIClient()
         self.user = User.objects.create_user(
             username="kam_test",
             password="password123",
             role="KAM",
         )
+        self.client.force_authenticate(user=self.user)
 
     def test_vector_search_endpoint(self):
         resp = self.client.post("/api/ai/vector/search/", {"query": "cybersecurite cloud", "n_results": 2})
@@ -164,11 +176,13 @@ class VectorEndpointsTestCase(TestCase):
     def test_market_intel_discover_endpoint(self):
         self.client.force_authenticate(user=self.user)
         resp = self.client.post("/api/ai/vector/market-intel/discover/", {"query": "expansion kinshasa"})
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         data = resp.json()
-        self.assertEqual(data["status"], "started")
+        self.assertEqual(data["status"], "pending")
 
     def test_vector_reindex_endpoint(self):
+        self.user.role = "ADMIN"
+        self.user.save(update_fields=["role"])
         self.client.force_authenticate(user=self.user)
         resp = self.client.post("/api/ai/vector/reindex/", {})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)

@@ -6,6 +6,7 @@ import re
 from typing import Any, Dict, Optional, Type, TypeVar
 from django.conf import settings
 from pydantic import BaseModel, ValidationError
+from .inference import generate_with_budget
 
 logger = logging.getLogger(__name__)
 
@@ -81,27 +82,19 @@ class BaseAIEngine:
             config_kwargs = {
                 "response_mime_type": "application/json",
                 "temperature": 0.2,
+                "max_output_tokens": 4096,
             }
             if system_instruction:
                 config_kwargs["system_instruction"] = system_instruction
 
-            models_to_try = [self.model_name]
-            for fallback in ("gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"):
-                if fallback not in models_to_try:
-                    models_to_try.append(fallback)
-
-            for current_model in models_to_try:
-                try:
-                    resp = self._client.models.generate_content(
-                        model=current_model,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(**config_kwargs)
-                    )
-                    if resp and resp.text:
-                        return extract_json_payload(resp.text)
-                except Exception as exc:
-                    logger.warning("[BaseAIEngine] Appel Gemini (%s) echoue : %s", current_model, exc)
-                    continue
+            response = generate_with_budget(
+                self._client, model=self.model_name, contents=prompt,
+                config=types.GenerateContentConfig(**config_kwargs),
+                budget_ms=getattr(settings, "AI_INFERENCE_BUDGET_MS", 20000),
+                fallback_models=getattr(settings, "AI_FALLBACK_MODELS", ()))
+            if response and response.text:
+                payload = extract_json_payload(response.text)
+                return payload if isinstance(payload, dict) else None
         except Exception as exc:
             logger.warning("[BaseAIEngine] Erreur globale Gemini (%s), bascule sur le fallback local.", exc)
             return None

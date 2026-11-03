@@ -6,19 +6,34 @@ import logging
 import math
 import os
 import re
+import threading
+import tempfile
+from functools import wraps
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-JSONL_PATH = os.path.join(
-    settings.BASE_DIR,
-    "exports",
-    "vectorization",
-    "onbora_vectorization_full.jsonl",
-)
+
+def _resolve_data_path(filename: str) -> str:
+    """Trouve le chemin absolu du fichier de données ou de cache de manière robuste."""
+    base_dir = Path(getattr(settings, "BASE_DIR", Path(".")))
+    candidates = [
+        base_dir / "exports" / "vectorization" / filename,
+        base_dir / "backend" / "exports" / "vectorization" / filename,
+        Path(__file__).resolve().parent.parent.parent.parent / "exports" / "vectorization" / filename,
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+    return str(candidates[0])
+
+
+JSONL_PATH = _resolve_data_path("onbora_vectorization_full.jsonl")
+CACHE_PATH = _resolve_data_path("onbora_vectors_cache_768d.json")
 
 
 @dataclass
@@ -34,6 +49,8 @@ class SimilarityResult:
 
 def cosine_similarity(a: List[float], b: List[float]) -> float:
     """Calcule la similarite cosine entre deux vecteurs (stdlib math, sans numpy)."""
+    if len(a) != len(b):
+        raise ValueError("Vectors must have the same dimension")
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x ** 2 for x in a))
     norm_b = math.sqrt(sum(x ** 2 for x in b))
@@ -42,41 +59,39 @@ def cosine_similarity(a: List[float], b: List[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
+def _synchronized(method):
+    @wraps(method)
+    def call(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return call
+
+
 class VectorSearchService:
     """
     Service de recherche semantique et comparaison sectorielle in-process.
-    Charge le dataset JSONL, genere les embeddings via Google Gemini text-embedding-004
-    (avec fallback semantique 768D deterministe in-process pour resilience maximale),
+    Charge le dataset JSONL et les mises à jour partagées PostgreSQL,
+    utilise un espace lexical déterministe 768D unique,
     stocke les vecteurs en RAM et expose des methodes de recherche et d'upsell.
     Lazy init : la vectorisation se lance au premier appel.
     """
 
     DIM = 768
+    EMBEDDING_VERSION = "token-hash-md5-l2-768-v1"
 
     def __init__(self) -> None:
         self._documents: List[dict] = []
         self._vectors: Dict[str, List[float]] = {}
         self._indexed = False
         self._client = None
-        self._init_gemini_client()
-
-    def _init_gemini_client(self) -> None:
-        api_key = getattr(settings, "GEMINI_API_KEY", "")
-        if not api_key:
-            logger.info("[VectorSearchService] GEMINI_API_KEY absent. Moteur semantique hash-vector 768D actif.")
-            return
-        try:
-            from google import genai
-            self._client = genai.Client(api_key=api_key)
-            logger.info("[VectorSearchService] Client Gemini embedding initialise avec succes.")
-        except Exception as exc:
-            logger.warning("[VectorSearchService] Fallback mode suite a init Gemini : %s", exc)
-            self._client = None
+        self._lock = threading.RLock()
+        self._base_documents = []
+        self._overlay_signature = None
 
     def _fallback_hash_vector(self, text: str) -> List[float]:
         """
         Genere un vecteur d'embedding 768D deterministe et normalise L2.
-        Fournit une similarite cosinus semantique immediate meme hors ligne ou quota depasse.
+        Fournit une similarité lexicale déterministe, sans prétendre à une proximité sémantique.
         """
         tokens = re.findall(r"[\w]+", text.lower())
         vec = [0.0] * self.DIM
@@ -90,22 +105,11 @@ class VectorSearchService:
 
         norm = math.sqrt(sum(x * x for x in vec))
         if norm > 0:
-            vec = [x / norm for x in vec]
+            vec = [round(x / norm, 5) for x in vec]
         return vec
 
     def _embed_text(self, text: str) -> List[float]:
-        """Tente d'appeler l'API Gemini text-embedding-004 ou bascule sur le hash 768D."""
-        if self._client:
-            try:
-                result = self._client.models.embed_content(
-                    model="models/text-embedding-004",
-                    contents=text[:4000],
-                )
-                if result and result.embeddings and result.embeddings[0].values:
-                    return list(result.embeddings[0].values)
-            except Exception as exc:
-                logger.debug("[VectorSearchService] Bascule fallback local pour embedding : %s", exc)
-
+        """One lexical embedding space for documents, updates and queries, with no provider mixing."""
         return self._fallback_hash_vector(text)
 
     def _load_documents(self) -> List[dict]:
@@ -127,37 +131,64 @@ class VectorSearchService:
             logger.error("[VectorSearchService] Erreur lecture JSONL : %s", exc)
         return docs
 
+    @_synchronized
     def _ensure_indexed(self) -> None:
-        """Lazy init : vectorise le dataset si ce n'est pas encore fait."""
         if not self._indexed:
             self._run_indexing()
+        self._refresh_dynamic_documents()
 
+    def _refresh_dynamic_documents(self):
+        from django.db.models import Count, Max
+        from ..models import AIVectorDocument
+        signature = AIVectorDocument.objects.aggregate(count=Count("pk"), latest=Max("updated_at"))
+        if signature == self._overlay_signature:
+            return
+        dynamic = [row.document for row in AIVectorDocument.objects.all()]
+        combined = {d["id"]: d for d in self._base_documents}
+        combined.update({d["id"]: d for d in dynamic})
+        self._documents = list(combined.values())
+        # Refreshing the overlay is cheap and removes documents deleted from the shared table.
+        self._vectors = {d["id"]: self._embed_text(self._document_text(d)) for d in self._documents}
+        self._overlay_signature = signature
+
+    @staticmethod
+    def _document_text(doc):
+        return doc.get("content_to_vectorize", doc.get("content", ""))
+
+    def _dataset_fingerprint(self):
+        raw = json.dumps(self._base_documents, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        return hashlib.sha256(raw).hexdigest()
+
+    @_synchronized
     def _run_indexing(self) -> None:
-        """Charge et vectorise tous les documents du dataset."""
-        logger.info("[VectorSearchService] Debut de l'indexation vectorielle...")
-        self._documents = self._load_documents()
-        self._vectors = {}
-        success = 0
-        for doc in self._documents:
-            doc_id = doc.get("id", "")
-            text = doc.get("content_to_vectorize", doc.get("content", ""))
-            if not text or not doc_id:
-                continue
-            vector = self._embed_text(text)
-            self._vectors[doc_id] = vector
-            success += 1
-
+        self._base_documents = self._load_documents()
+        self._documents = list(self._base_documents)
+        ids = {d["id"] for d in self._documents}
+        vectors = None
+        try:
+            with open(CACHE_PATH, "r", encoding="utf-8") as source:
+                cached = json.load(source)
+            candidate = cached.get("vectors", {})
+            valid_vectors = all(isinstance(v, list) and len(v) == self.DIM and
+                                all(isinstance(x, (float, int)) and math.isfinite(x) for x in v)
+                                for v in candidate.values())
+            if (cached.get("embedding_version") == self.EMBEDDING_VERSION and
+                    cached.get("dataset_fingerprint") == self._dataset_fingerprint() and
+                    set(candidate) == ids and valid_vectors):
+                vectors = candidate
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+        self._vectors = vectors if vectors is not None else {
+            d["id"]: self._embed_text(self._document_text(d)) for d in self._documents}
         self._indexed = True
-        logger.info(
-            "[VectorSearchService] Indexation terminee : %d/%d documents vectorises.",
-            success,
-            len(self._documents),
-        )
+        self._overlay_signature = None
+        if vectors is None:
+            self.persist_cache()
 
     def _resolve_doc_and_vector(self, identifier: Any) -> Tuple[Optional[str], Optional[List[float]], Optional[dict]]:
         """
         Retrouve l'identifiant document et son vecteur correspondant a partir
-        d'un entier, d'une string ou d'un doc_id exact.
+        d'un entier, d'une string ou d'un doc_id exact, avec fallback ORM Django.
         """
         str_id = str(identifier).strip()
 
@@ -188,15 +219,53 @@ class VectorSearchService:
                     actual_id = doc.get("id")
                     return actual_id, self._vectors[actual_id], doc
         except (ValueError, TypeError):
-            pass
+            int_id = None
+
+        # 4. Fallback ORM dynamique si l'entreprise est en base Django mais absente du JSONL initial
+        if int_id is not None:
+            try:
+                from sales.models import Enterprise
+                ent = Enterprise.objects.filter(id=int_id).first()
+                if ent:
+                    text = (
+                        f"Entreprise B2B : {ent.name} | Secteur : {ent.sector or 'Non renseigne'} | Segment : {ent.segment or 'PME'}\n"
+                        f"Localisation : {ent.city or 'Kinshasa'} | Taille : {ent.employee_count or 1} collaborateurs ({ent.site_count or 1} sites)\n"
+                        f"Connectivite actuelle : {ent.current_connectivity or '4G LTE'}\n"
+                        f"Chiffre d'affaires : {ent.annual_revenue or 0} USD\n"
+                    )
+                    vec = self._embed_text(text)
+                    doc_id = f"enterprise_profile_{ent.id}"
+                    doc = {
+                        "id": doc_id,
+                        "doc_type": "enterprise_profile",
+                        "title": f"Fiche profil - {ent.name}",
+                        "content_to_vectorize": text,
+                        "metadata": {
+                            "enterprise_id": ent.id,
+                            "name": ent.name,
+                            "sector": ent.sector,
+                            "segment": ent.segment,
+                            "city": ent.city,
+                            "employee_count": ent.employee_count,
+                            "site_count": ent.site_count,
+                            "current_connectivity": ent.current_connectivity,
+                        },
+                    }
+                    self._documents.append(doc)
+                    self._vectors[doc_id] = vec
+                    return doc_id, vec, doc
+            except Exception as exc:
+                logger.debug("[VectorSearchService] Erreur resolution ORM pour ent %s: %s", int_id, exc)
 
         return None, None, None
 
+    @_synchronized
     def search(
         self,
         query: str,
         n_results: int = 5,
         doc_type_filter: Optional[str] = None,
+        document_filter=None,
     ) -> List[SimilarityResult]:
         """
         Recherche semantique par similarite cosine.
@@ -207,6 +276,8 @@ class VectorSearchService:
 
         scores: List[tuple] = []
         for doc in self._documents:
+            if document_filter is not None and not document_filter(doc):
+                continue
             doc_id = doc.get("id", "")
             if doc_type_filter and doc.get("doc_type") != doc_type_filter:
                 continue
@@ -231,10 +302,12 @@ class VectorSearchService:
             )
         return results
 
+    @_synchronized
     def find_similar_enterprises(
         self,
         enterprise_id: Any,
         top_k: int = 10,
+        document_filter=None,
     ) -> List[SimilarityResult]:
         """
         Trouve les entreprises similaires a partir de l'embedding du profil enterprise.
@@ -242,7 +315,9 @@ class VectorSearchService:
         Filtre sur doc_type == 'enterprise_profile'.
         """
         self._ensure_indexed()
-        source_id, source_vec, _ = self._resolve_doc_and_vector(enterprise_id)
+        source_id, source_vec, source_doc = self._resolve_doc_and_vector(enterprise_id)
+        if document_filter is not None and (not source_doc or not document_filter(source_doc)):
+            return []
         if source_vec is None:
             logger.warning(
                 "[VectorSearchService] enterprise_id '%s' introuvable dans l'index.", enterprise_id
@@ -251,6 +326,8 @@ class VectorSearchService:
 
         scores: List[tuple] = []
         for doc in self._documents:
+            if document_filter is not None and not document_filter(doc):
+                continue
             doc_id = doc.get("id", "")
             if doc.get("doc_type") != "enterprise_profile":
                 continue
@@ -277,11 +354,62 @@ class VectorSearchService:
             )
         return results
 
+    @_synchronized
+    def get_enterprise_twin(
+        self,
+        enterprise_id: Any,
+        top_k: int = 5,
+    ) -> Optional[dict]:
+        """
+        Trouve l'entreprise jumelle directe de l'entreprise cible avec son score de proximite
+        vectorielle 768D (en pourcentage) et sa justification semantique claire (twin_rationale).
+        """
+        results = self.find_similar_enterprises(enterprise_id=enterprise_id, top_k=top_k)
+        if not results:
+            return None
+
+        twin = results[0]
+        source_id, _, source_doc = self._resolve_doc_and_vector(enterprise_id)
+        source_meta = (source_doc or {}).get("metadata", {})
+        twin_meta = twin.metadata or {}
+
+        reasons = []
+        if source_meta.get("sector") and source_meta.get("sector") == twin_meta.get("sector"):
+            reasons.append(f"Meme secteur ({source_meta.get('sector')})")
+        if twin_meta.get("segment"):
+            reasons.append(f"Segment {twin_meta.get('segment')}")
+        if twin_meta.get("site_count"):
+            reasons.append(f"{twin_meta.get('site_count')} sites d'implantation")
+        if twin_meta.get("current_connectivity"):
+            reasons.append(f"Connectivite {twin_meta.get('current_connectivity')}")
+
+        rationale = " • ".join(reasons) if reasons else "Proximite topologique et dimensionnement IT similaire"
+
+        return {
+            "target_enterprise_id": enterprise_id,
+            "twin_doc_id": twin.doc_id,
+            "twin_name": twin_meta.get("name") or twin.title.replace("Fiche profil - ", "").strip(),
+            "similarity_percentage": max(10, min(99, round(twin.score * 100))),
+            "twin_rationale": rationale,
+            "metadata": twin_meta,
+            "top_candidates": [
+                {
+                    "doc_id": r.doc_id,
+                    "title": (r.metadata.get("name") or r.title.replace("Fiche profil - ", "")).strip(),
+                    "similarity_percentage": max(10, min(99, round(r.score * 100))),
+                    "metadata": r.metadata,
+                }
+                for r in results[:top_k]
+            ],
+        }
+
+    @_synchronized
     def find_upsell_candidates(
         self,
         enterprise_id: Any,
         service_not_having: str,
         top_k: int = 5,
+        document_filter=None,
     ) -> List[SimilarityResult]:
         """
         Trouve les entreprises similaires qui ont adopte un service que la cible n'a pas.
@@ -289,6 +417,8 @@ class VectorSearchService:
         """
         self._ensure_indexed()
         source_id, source_vec, target_doc = self._resolve_doc_and_vector(enterprise_id)
+        if document_filter is not None and (not target_doc or not document_filter(target_doc)):
+            return []
         if source_vec is None:
             logger.warning(
                 "[VectorSearchService] enterprise_id '%s' introuvable dans l'index pour upsell.", enterprise_id
@@ -299,6 +429,8 @@ class VectorSearchService:
 
         scores: List[tuple] = []
         for doc in self._documents:
+            if document_filter is not None and not document_filter(doc):
+                continue
             doc_id = doc.get("id", "")
             if doc.get("doc_type") != "enterprise_profile":
                 continue
@@ -334,10 +466,109 @@ class VectorSearchService:
             )
         return results
 
-    def reindex(self) -> int:
-        """Recharge et re-vectorise le dataset complet. Retourne le nombre de documents indexes."""
+    @_synchronized
+    def reindex(self, force_recompute: bool = True) -> int:
+        """Rebuild from current sources, including the shared database overlay."""
         self._indexed = False
-        self._documents = []
-        self._vectors = {}
-        self._run_indexing()
+        if force_recompute:
+            try:
+                os.remove(CACHE_PATH)
+            except FileNotFoundError:
+                pass
+        self._ensure_indexed()
         return len(self._vectors)
+
+    @_synchronized
+    def vectorize_enterprise(self, enterprise: Any, persist_cache: bool = True) -> List[float]:
+        """
+        Vectorise ou re-vectorise une entreprise spécifique suite à une mise à jour ou création.
+        Génère le texte d'embedding enrichi, calcule le vecteur 768D (Gemini ou fallback déterministe),
+        met à jour la table des vecteurs en mémoire et sauvegarde le cache sur disque.
+        """
+        self._ensure_indexed()
+        doc_id = f"enterprise_profile_{enterprise.id}"
+
+        # Construction du texte d'embedding enrichi
+        text = (
+            f"Entreprise B2B : {enterprise.name} | Secteur : {enterprise.sector or 'Non renseigné'} | Segment : {enterprise.segment or 'PME'}\n"
+            f"Localisation : {enterprise.city or 'Kinshasa'} | Commune : {getattr(enterprise, 'commune', '') or ''} | Adresse : {getattr(enterprise, 'address', '') or ''}\n"
+            f"Effectif : {getattr(enterprise, 'employee_count', 1) or 1} collaborateurs | Nombre de sites : {getattr(enterprise, 'site_count', 1) or 1}\n"
+            f"Chiffre d'affaires : {getattr(enterprise, 'annual_revenue', 0) or 0} USD | RCCM : {getattr(enterprise, 'rccm', '') or 'N/A'}\n"
+            f"Connectivité : {getattr(enterprise, 'current_connectivity', '') or '4G LTE'}\n"
+        )
+        if getattr(enterprise, 'recommended_solution', None):
+            text += f"Solution recommandée : {enterprise.recommended_solution}\n"
+        if getattr(enterprise, 'scraped_data', None) and isinstance(enterprise.scraped_data, dict):
+            summary = enterprise.scraped_data.get("summary", {})
+            if isinstance(summary, dict) and summary.get("sentences"):
+                sents = " ".join([s.get("text", "") for s in summary.get("sentences", []) if isinstance(s, dict)])
+                text += f"Synthèse probante : {sents[:300]}\n"
+
+        vec = self._embed_text(text)
+        self._vectors[doc_id] = vec
+
+        # Mettre à jour ou ajouter dans self._documents
+        doc = {
+            "id": doc_id,
+            "doc_type": "enterprise_profile",
+            "title": f"Fiche profil - {enterprise.name}",
+            "content_to_vectorize": text,
+            "metadata": {
+                "enterprise_id": enterprise.id,
+                "name": enterprise.name,
+                "sector": enterprise.sector,
+                "segment": enterprise.segment,
+                "city": enterprise.city,
+                "employee_count": getattr(enterprise, 'employee_count', 1),
+                "site_count": getattr(enterprise, 'site_count', 1),
+                "current_connectivity": getattr(enterprise, 'current_connectivity', '4G LTE'),
+            },
+        }
+
+        # Remplacement si existant, sinon ajout
+        replaced = False
+        for i, existing in enumerate(self._documents):
+            if existing.get("id") == doc_id:
+                self._documents[i] = doc
+                replaced = True
+                break
+        if not replaced:
+            self._documents.append(doc)
+
+        from ..models import AIVectorDocument
+        AIVectorDocument.objects.update_or_create(doc_id=doc_id, defaults={"document": doc})
+        self._overlay_signature = None
+
+        logger.info("[VectorSearchService] Entreprise '%s' (ID %s) vectorisée avec succès (768D).", enterprise.name, enterprise.id)
+        return vec
+
+    @_synchronized
+    def persist_cache(self) -> None:
+        """Write only the static dataset cache. Dynamic documents live in PostgreSQL."""
+        cache_path = Path(CACHE_PATH)
+        temp_path = None
+        try:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            payload = {
+                "embedding_version": self.EMBEDDING_VERSION,
+                "dataset_fingerprint": self._dataset_fingerprint(),
+                "vectors": {d["id"]: self._embed_text(self._document_text(d)) for d in self._base_documents},
+            }
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=cache_path.parent,
+                                             suffix=".tmp", delete=False) as target:
+                temp_path = target.name
+                json.dump(payload, target)
+            os.replace(temp_path, cache_path)
+        except OSError:
+            logger.exception("[VectorSearchService] Cache persistence failed")
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+
+def __getattr__(name):
+    # Compatibility for old callers without constructing a second singleton.
+    if name == "vector_search_service":
+        from .singleton import get_vector_search_service
+        return get_vector_search_service()
+    raise AttributeError(name)

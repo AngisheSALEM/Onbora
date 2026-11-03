@@ -353,8 +353,10 @@ class KamAppointmentPurposeTests(APITestCase):
         self.assertIn('equipment_list', data)
         self.assertIn('network_configuration', data)
         self.assertIn('acceptance_checklist', data)
-        self.assertTrue(len(data['equipment_list']) > 0)
-        self.assertTrue(len(data['acceptance_checklist']) > 0)
+        self.assertEqual(data['equipment_list'], [])
+        self.assertEqual(data['network_configuration']['wan'], {})
+        self.assertEqual(data['status'], 'draft_requires_validation')
+        self.assertTrue(data['human_validation_required'])
 
         # 2. Test POST Technical Specs Regeneration
         custom_solutions = [

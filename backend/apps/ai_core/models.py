@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.conf import settings
+import uuid
 from pydantic import ValidationError as PydanticValidationError
 
 from .contracts import CompanyProfile, RecommendationResult, TurnResult
@@ -165,6 +167,10 @@ class AISessionMemory(models.Model):
         REJECTED = "rejected", "Rejeté"
 
     session_id = models.CharField(max_length=120, unique=True, db_index=True)
+    # Legacy sessions stay unowned and cannot be claimed through the API.
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                              on_delete=models.CASCADE, related_name="ai_sessions")
+    state_version = models.PositiveIntegerField(default=0)
     client_name = models.CharField(max_length=255, default="Compte B2B")
     summary = models.TextField(blank=True, default="")
     messages = models.JSONField(default=list, blank=True)
@@ -184,3 +190,32 @@ class AISessionMemory(models.Model):
 
     def __str__(self) -> str:
         return f"{self.session_id} - {self.client_name} ({self.decision_status})"
+
+
+class AIDiscoveryJob(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                              related_name="ai_discovery_jobs")
+    query = models.CharField(max_length=500)
+    status = models.CharField(max_length=16, default="pending", db_index=True,
+                              choices=[(s, s) for s in ("pending", "running", "succeeded", "failed")])
+    attempts = models.PositiveSmallIntegerField(default=0)
+    lease_token = models.UUIDField(null=True, blank=True)
+    lease_expires_at = models.DateTimeField(null=True, blank=True)
+    result = models.JSONField(default=dict, blank=True)
+    error_code = models.CharField(max_length=80, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class AIVectorDocument(models.Model):
+    """Database overlay shared by web and ingestion processes; vectors are derived locally."""
+    doc_id = models.CharField(primary_key=True, max_length=160)
+    document = models.JSONField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class AIMarketSignalReceipt(models.Model):
+    """Idempotency key committed in the same transaction as the resulting feed item."""
+    fingerprint = models.CharField(primary_key=True, max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)

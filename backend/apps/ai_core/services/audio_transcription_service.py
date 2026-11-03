@@ -127,37 +127,12 @@ def transcribe_audio_with_gemini(file_path: str, language: str = "fr") -> Dict[s
             max_output_tokens=4096,
         )
 
-        candidate_models = [model_name]
-        for fallback in ("gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"):
-            if fallback not in candidate_models:
-                candidate_models.append(fallback)
-
-        response = None
-        last_error = None
-        for current_model in candidate_models:
-            try:
-                response = client.models.generate_content(
-                    model=current_model,
-                    contents=[audio_part, prompt],
-                    config=content_config,
-                )
-                break
-            except Exception as exc:
-                last_error = exc
-                err_msg = str(exc)
-                if any(k in err_msg for k in ("404", "NOT_FOUND", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
-                    logger.warning(
-                        "[AudioTranscription] Modele '%s' temporairement indisponible (%s), tentative avec repli...",
-                        current_model,
-                        err_msg[:80],
-                    )
-                    continue
-                raise exc
-
-        if response is None:
-            if last_error:
-                raise last_error
-            raise RuntimeError("Aucun modele Gemini n'a pu repondre a la requete de transcription.")
+        from django.conf import settings
+        from ..common.inference import generate_with_budget
+        response = generate_with_budget(
+            client, model=model_name, contents=[audio_part, prompt], config=content_config,
+            budget_ms=getattr(settings, "AI_INFERENCE_BUDGET_MS", 20000),
+            fallback_models=getattr(settings, "AI_FALLBACK_MODELS", ()))
 
         transcript = (response.text or "").strip()
 

@@ -10,6 +10,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.permissions import IsAdmin, IsKAM
+from .access import document_filter_for, require_visible_enterprise
+from .serializers import (CatalogSearchInput, VectorSearchInput, SimilarEnterpriseInput,
+                          SessionAnalyzeInput, SessionValidateInput, DiscoveryInput)
 from .rag_service import get_catalog_rag
 from .pre_call.models import PreCallInput
 from .post_call.models import PostCallInput
@@ -43,10 +47,10 @@ class AICatalogSearchView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request) -> Response:
-        query = request.data.get("query", "").strip()
-        limit = int(request.data.get("limit", 5))
-        if not query:
-            return Response({"error": "Paramètre 'query' obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CatalogSearchInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        query = serializer.validated_data["query"]
+        limit = serializer.validated_data["limit"]
 
         results = get_catalog_rag().search(query=query, limit=limit)
         return Response({"query": query, "count": len(results), "results": results})
@@ -143,21 +147,13 @@ class AIAnalyzeConversationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
-        session_id = request.data.get("session_id", "default_session")
-        client_name = request.data.get("client_name", "Compte B2B")
-        conversation = request.data.get("conversation", "").strip()
-
-        if not conversation:
-            return Response({"error": "Champ 'conversation' requis."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            result = AISessionService.analyze_and_record(
-                session_id=session_id, client_name=client_name, transcript=conversation
-            )
-            return Response(result)
-        except Exception as exc:
-            logger.error("[AIAnalyzeConversationView] Erreur : %s", exc)
-            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        serializer = SessionAnalyzeInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        result = AISessionService.analyze_and_record(
+            session_id=data["session_id"], client_name=data["client_name"],
+            transcript=data["conversation"], user=request.user)
+        return Response(result)
 
 
 class AIValidateActionView(APIView):
@@ -165,20 +161,13 @@ class AIValidateActionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
-        session_id = request.data.get("session_id", "default_session")
-        decision = request.data.get("decision", "pending")
-        comment = request.data.get("comment", "")
-
-        try:
-            session = AISessionService.validate_action(session_id=session_id, decision=decision, comment=comment)
-            return Response({
-                "session_id": session.session_id,
-                "status": "validated_by_human" if decision in {"approved", "rejected"} else "pending",
-                "decision": session.decision_status,
-                "comment": session.validation_comment,
-            })
-        except ValueError as exc:
-            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = SessionValidateInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        session = AISessionService.validate_action(**data, user=request.user)
+        return Response({"session_id": session.session_id,
+                         "status": "pending" if data["decision"] == "pending" else "validated_by_human",
+                         "decision": session.decision_status, "comment": session.validation_comment})
 
 
 class AISessionDetailView(APIView):
@@ -186,7 +175,7 @@ class AISessionDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, session_id: str) -> Response:
-        session = AISessionService.get_or_create_session(session_id)
+        session = AISessionService.get_session(session_id, user=request.user)
         return Response({
             "session_id": session.session_id,
             "client_name": session.client_name,
@@ -282,23 +271,23 @@ class AIAudioTranscribeView(APIView):
 
 class AIVectorSearchView(APIView):
     """Recherche semantique dans la base de connaissances Onbora."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         from .vector_search.singleton import get_vector_search_service
 
-        query = request.data.get("query", "").strip()
-        n_results = int(request.data.get("n_results", 5))
-        doc_type = request.data.get("doc_type", None)
-
-        if not query:
-            return Response({"error": "Parametre 'query' obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = VectorSearchInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        query, n_results, doc_type = data["query"], data["n_results"], data.get("doc_type")
+        document_filter = document_filter_for(request.user)
 
         try:
             results = get_vector_search_service().search(
                 query=query,
                 n_results=n_results,
                 doc_type_filter=doc_type,
+                document_filter=document_filter,
             )
             return Response({
                 "query": query,
@@ -322,15 +311,19 @@ class AIVectorSearchView(APIView):
 
 class AIEnterpriseSimilarView(APIView):
     """Trouve des entreprises similaires pour upsell/cross-sell."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) -> Response:
         from .vector_search.singleton import get_vector_search_service
 
-        enterprise_id = request.data.get("enterprise_id")
-        query_text = request.data.get("query_text", "").strip()
-        top_k = int(request.data.get("top_k", 10))
-        service_filter = request.data.get("service_not_having", None)
+        serializer = SimilarEnterpriseInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        enterprise_id, query_text = data.get("enterprise_id"), data["query_text"]
+        top_k, service_filter = data["top_k"], data.get("service_not_having")
+        if enterprise_id:
+            enterprise_id = require_visible_enterprise(request.user, enterprise_id)
+        document_filter = document_filter_for(request.user)
 
         try:
             svc = get_vector_search_service()
@@ -339,15 +332,16 @@ class AIEnterpriseSimilarView(APIView):
                     results = svc.find_upsell_candidates(
                         enterprise_id=enterprise_id,
                         service_not_having=service_filter,
-                        top_k=top_k,
+                        top_k=top_k, document_filter=document_filter,
                     )
                 else:
-                    results = svc.find_similar_enterprises(enterprise_id=enterprise_id, top_k=top_k)
+                    results = svc.find_similar_enterprises(enterprise_id=enterprise_id, top_k=top_k, document_filter=document_filter)
             elif query_text:
                 results = svc.search(
                     query=query_text,
                     n_results=top_k,
                     doc_type_filter="enterprise_profile",
+                    document_filter=document_filter,
                 )
             else:
                 return Response(
@@ -375,39 +369,34 @@ class AIEnterpriseSimilarView(APIView):
 
 
 class AIMarketIntelDiscoverView(APIView):
-    """Lance un job de decouverte de nouveaux prospects via veille web."""
-    permission_classes = [IsAuthenticated]
+    """Persist a discovery request; the worker owns execution and recovery."""
+    permission_classes = [IsKAM]
 
     def post(self, request) -> Response:
-        import threading
-        from .market_intel.service import MarketIntelService
+        from .services.discovery_jobs import enqueue_discovery
+        serializer = DiscoveryInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job = enqueue_discovery(request.user, serializer.validated_data["query"])
+        return Response({"status": job.status, "query": job.query, "job_id": str(job.pk)},
+                        status=status.HTTP_202_ACCEPTED)
 
-        query = request.data.get("query", "").strip()
-        if not query:
-            return Response({"error": "Parametre 'query' obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
 
-        def _run():
-            try:
-                MarketIntelService().run_discovery(query=query)
-            except Exception as exc:
-                logger.error("[AIMarketIntelDiscoverView] Erreur dans le thread discovery : %s", exc)
+class AIDiscoveryJobDetailView(APIView):
+    permission_classes = [IsKAM]
 
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-
-        return Response({"status": "started", "query": query})
+    def get(self, request, job_id):
+        from django.shortcuts import get_object_or_404
+        from .models import AIDiscoveryJob
+        job = get_object_or_404(AIDiscoveryJob, pk=job_id, owner=request.user)
+        return Response({"job_id": str(job.pk), "status": job.status, "attempts": job.attempts,
+                         "result": job.result, "error_code": job.error_code})
 
 
 class AIVectorReindexView(APIView):
-    """Relance l'indexation vectorielle du dataset complet."""
-    permission_classes = [IsAuthenticated]
+    """Index maintenance is reserved for administrators."""
+    permission_classes = [IsAdmin]
 
     def post(self, request) -> Response:
         from .vector_search.singleton import get_vector_search_service
-
-        try:
-            count = get_vector_search_service().reindex()
-            return Response({"status": "done", "indexed": count})
-        except Exception as exc:
-            logger.error("[AIVectorReindexView] Erreur reindex : %s", exc)
-            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        count = get_vector_search_service().reindex(force_recompute=True)
+        return Response({"status": "done", "indexed": count})

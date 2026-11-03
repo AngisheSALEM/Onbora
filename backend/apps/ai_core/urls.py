@@ -16,6 +16,7 @@ from .views import (
     AIVectorSearchView,
     AIEnterpriseSimilarView,
     AIMarketIntelDiscoverView,
+    AIDiscoveryJobDetailView,
     AIVectorReindexView,
 )
 
@@ -47,5 +48,6 @@ urlpatterns = [
     path("vector/search/", AIVectorSearchView.as_view(), name="vector_search"),
     path("vector/similar-enterprises/", AIEnterpriseSimilarView.as_view(), name="vector_similar"),
     path("vector/market-intel/discover/", AIMarketIntelDiscoverView.as_view(), name="market_intel_discover"),
+    path("vector/market-intel/jobs/<uuid:job_id>/", AIDiscoveryJobDetailView.as_view(), name="discovery_job"),
     path("vector/reindex/", AIVectorReindexView.as_view(), name="vector_reindex"),
 ]
