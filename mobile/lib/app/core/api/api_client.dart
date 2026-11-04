@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 import '../storage/session_storage.dart';
@@ -12,17 +13,23 @@ class ApiException implements Exception {
   ApiException(this.message, {this.statusCode});
 
   @override
-  String toString() => statusCode != null ? '$message (Code $statusCode)' : message;
+  String toString() =>
+      statusCode != null ? '$message (Code $statusCode)' : message;
 }
 
 class ApiClient {
   final http.Client _httpClient;
 
-  ApiClient({http.Client? httpClient}) : _httpClient = httpClient ?? http.Client();
+  ApiClient({http.Client? httpClient})
+    : _httpClient = httpClient ?? http.Client();
 
-  Future<Map<String, String>> _getHeaders({bool includeAuth = true, String? contentType}) async {
+  Future<Map<String, String>> _getHeaders({
+    bool includeAuth = true,
+    String? contentType,
+  }) async {
     final headers = <String, String>{
-      HttpHeaders.contentTypeHeader: contentType ?? 'application/json; charset=UTF-8',
+      HttpHeaders.contentTypeHeader:
+          contentType ?? 'application/json; charset=UTF-8',
       HttpHeaders.acceptHeader: 'application/json',
     };
 
@@ -42,23 +49,35 @@ class ApiClient {
     final uri = Uri.parse(urlString);
 
     if (queryParams != null && queryParams.isNotEmpty) {
-      final stringParams = queryParams.map((key, value) => MapEntry(key, value.toString()));
+      final stringParams = queryParams.map(
+        (key, value) => MapEntry(key, value.toString()),
+      );
       return uri.replace(queryParameters: stringParams);
     }
     return uri;
   }
 
-  Future<dynamic> get(String path, {Map<String, dynamic>? queryParams, bool includeAuth = true}) async {
+  Future<dynamic> get(
+    String path, {
+    Map<String, dynamic>? queryParams,
+    bool includeAuth = true,
+  }) async {
     final uri = _buildUri(path, queryParams);
     final headers = await _getHeaders(includeAuth: includeAuth);
 
     try {
-      final response = await _httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 45));
+      final response = await _httpClient
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez votre connexion ou l'adresse du serveur.");
+      throw ApiException(
+        "Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez votre connexion ou l'adresse du serveur.",
+      );
     } on TimeoutException {
-      throw ApiException("Le serveur Render prend du temps à démarrer (Cold Start). Veuillez réessayer dans 15 secondes.");
+      throw ApiException(
+        "Le serveur Render prend du temps à démarrer (Cold Start). Veuillez réessayer dans 15 secondes.",
+      );
     } on http.ClientException catch (e) {
       throw ApiException("Erreur réseau: ${e.message}");
     } on Exception catch (e) {
@@ -66,18 +85,28 @@ class ApiClient {
     }
   }
 
-  Future<dynamic> post(String path, {dynamic body, bool includeAuth = true}) async {
+  Future<dynamic> post(
+    String path, {
+    dynamic body,
+    bool includeAuth = true,
+  }) async {
     final uri = _buildUri(path);
     final headers = await _getHeaders(includeAuth: includeAuth);
     final jsonBody = body != null ? jsonEncode(body) : null;
 
     try {
-      final response = await _httpClient.post(uri, headers: headers, body: jsonBody).timeout(const Duration(seconds: 45));
+      final response = await _httpClient
+          .post(uri, headers: headers, body: jsonBody)
+          .timeout(const Duration(seconds: 45));
       return _processResponse(response);
     } on SocketException {
-      throw ApiException("Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez que le serveur est démarré ou l'adresse configurée.");
+      throw ApiException(
+        "Impossible de joindre le serveur backend (${ApiConfig.activeBaseUrl}). Vérifiez que le serveur est démarré ou l'adresse configurée.",
+      );
     } on TimeoutException {
-      throw ApiException("Délai d'attente dépassé pour ${ApiConfig.activeBaseUrl} (Cold Start Render). Réessayez.");
+      throw ApiException(
+        "Délai d'attente dépassé pour ${ApiConfig.activeBaseUrl} (Cold Start Render). Réessayez.",
+      );
     } on http.ClientException catch (e) {
       throw ApiException("Erreur réseau: ${e.message}");
     } on Exception catch (e) {
@@ -100,11 +129,20 @@ class ApiClient {
     if (statusCode >= 200 && statusCode < 300) {
       return responseData;
     } else if (statusCode == 401) {
-      throw ApiException("Identifiants incorrects ou session expirée.", statusCode: 401);
+      throw ApiException(
+        "Identifiants incorrects ou session expirée.",
+        statusCode: 401,
+      );
     } else if (statusCode == 403) {
-      throw ApiException("Accès refusé. Privilèges insuffisants pour cette action.", statusCode: 403);
+      throw ApiException(
+        "Accès refusé. Privilèges insuffisants pour cette action.",
+        statusCode: 403,
+      );
     } else if (statusCode == 404) {
-      throw ApiException("Ressource introuvable sur le serveur.", statusCode: 404);
+      throw ApiException(
+        "Ressource introuvable sur le serveur.",
+        statusCode: 404,
+      );
     } else {
       String msg = "Erreur serveur ($statusCode)";
       if (responseData is Map && responseData.containsKey('detail')) {
@@ -116,5 +154,46 @@ class ApiClient {
       }
       throw ApiException(msg, statusCode: statusCode);
     }
+  }
+
+  Future<dynamic> patch(String path, {dynamic body}) async {
+    final response = await _httpClient
+        .patch(
+          _buildUri(path),
+          headers: await _getHeaders(),
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 45));
+    return _processResponse(response);
+  }
+
+  Future<void> delete(String path) async {
+    final response = await _httpClient
+        .delete(_buildUri(path), headers: await _getHeaders())
+        .timeout(const Duration(seconds: 45));
+    _processResponse(response);
+  }
+
+  Future<dynamic> uploadAudio(String path, String audioPath) async {
+    final request = http.MultipartRequest('POST', _buildUri(path));
+    final headers = await _getHeaders();
+    headers.remove(HttpHeaders.contentTypeHeader);
+    request.headers.addAll(headers);
+    request.files.add(await http.MultipartFile.fromPath('audio', audioPath));
+    final response = await _httpClient
+        .send(request)
+        .then(http.Response.fromStream)
+        .timeout(const Duration(seconds: 90));
+    return _processResponse(response);
+  }
+
+  Future<Uint8List> download(String path) async {
+    final response = await _httpClient
+        .get(_buildUri(path), headers: await _getHeaders())
+        .timeout(const Duration(seconds: 60));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _processResponse(response);
+    }
+    return response.bodyBytes;
   }
 }

@@ -31,10 +31,7 @@ import '../modules/sales/screen/plaque_detail_screen.dart';
 import '../modules/kam/binding/kam_binding.dart';
 import '../modules/kam/binding/kam_navigation_binding.dart';
 import '../modules/kam/screen/kam_main_navigation_screen.dart';
-import '../modules/kam/screen/kam_home_screen.dart';
-import '../modules/kam/screen/kam_briefing_screen.dart';
-import '../modules/kam/screen/kam_debrief_screen.dart';
-import '../modules/kam/screen/kam_account_detail_screen.dart';
+import '../modules/kam/screen/kam_workspace_screen.dart';
 
 class AppPages {
   static const INITIAL = Routes.LOGIN;
@@ -136,26 +133,26 @@ class AppPages {
     ),
     GetPage(
       name: Routes.KAM_HOME,
-      page: () => const KamHomeScreen(),
+      page: () => const KamWorkspaceScreen(),
       binding: KamBinding(),
     ),
     GetPage(
       name: Routes.KAM_BRIEFING,
-      page: () => const KamBriefingScreen(),
+      page: () => const KamSelectedAccountScreen(action: 'briefing'),
       binding: KamBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),
     ),
     GetPage(
       name: Routes.KAM_DEBRIEF,
-      page: () => const KamDebriefScreen(),
+      page: () => const KamSelectedAccountScreen(action: 'debrief'),
       binding: KamBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),
     ),
     GetPage(
       name: Routes.KAM_ACCOUNT_DETAIL,
-      page: () => const KamAccountDetailScreen(),
+      page: () => const KamSelectedAccountScreen(action: 'account'),
       binding: KamBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 200),

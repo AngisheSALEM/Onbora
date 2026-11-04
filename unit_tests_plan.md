@@ -157,3 +157,17 @@ Ces tests sont écrits dans `backend/sales/tests.py`.
 | Parcours KAM | Rapport et rendez-vous mobile, PDF technique, radar de churn, rafraîchissement du fil sans lecture des sources réelles dans les tests |
 
 Commande : `venv/Scripts/python.exe manage.py test apps.ai_core kam.tests kam.test_mobile_appointment_update kam.test_news_feed kam.test_churn_radar --settings=onbora.test_settings --noinput` depuis `backend/`.
+
+## Parité KAM Flutter — 4 novembre 2026
+
+| Domaine | Couverture automatisée |
+| --- | --- |
+| API partagée | Identifiants de comptes, authentification Token, payload de clôture avec voix et notes séparées |
+| Portefeuille | Ouverture d’un compte puis analyse réelle, recherche vide, reprise après erreur réseau |
+| Rendez-vous | Préparation depuis un rendez-vous, faits et questions renvoyés par le backend |
+| Veille | Enregistrement des actions lu/non lu et favori sur les endpoints du web |
+| Visite | Rejet du contenu vide, rapport réel depuis des notes, conservation des notes après échec |
+| Brouillons | Persistance et isolation par serveur, utilisateur et rendez-vous |
+| Mise en page | 320/768 px, clair/sombre, texte agrandi à 130 % |
+
+Commandes depuis `mobile/` : `flutter test`, `dart analyze`, `flutter build apk --debug`. Le microphone et la feuille de partage PDF restent à vérifier sur un appareil Android/iOS. Matrice fonctionnelle détaillée : `mobile/KAM_PARITY.md`.

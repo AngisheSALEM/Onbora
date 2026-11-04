@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import '../controller/kam_navigation_controller.dart';
-import '../screen/kam_home_screen.dart';
-import '../screen/kam_briefing_screen.dart';
-import '../screen/kam_debrief_screen.dart';
-import '../screen/kam_profile_screen.dart';
+import 'kam_workspace_screen.dart';
+import 'kam_settings_screen.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
@@ -33,17 +31,17 @@ class _KamMainNavigationScreenState extends State<KamMainNavigationScreen> {
   DateTime? _lastBackPressTime;
 
   final List<Widget> _kamViews = const [
-    KamHomeScreen(),
-    KamBriefingScreen(),
-    KamDebriefScreen(),
-    KamProfileScreen(),
+    KamWorkspaceScreen(),
+    KamWorkspaceScreen(section: KamSection.news),
+    KamWorkspaceScreen(section: KamSection.agenda),
+    KamSettingsScreen(),
   ];
 
   static const List<_NavItem> _kamNavItems = [
     _NavItem(icon: CupertinoIcons.building_2_fill, label: 'Comptes'),
-    _NavItem(icon: CupertinoIcons.doc_text_fill, label: 'Briefing'),
-    _NavItem(icon: CupertinoIcons.waveform, label: 'Débrief'),
-    _NavItem(label: 'Profil', isProfile: true),
+    _NavItem(icon: CupertinoIcons.news_solid, label: 'Actualité'),
+    _NavItem(icon: CupertinoIcons.calendar, label: 'Rendez-vous'),
+    _NavItem(label: 'Paramètres', isProfile: true),
   ];
 
   @override
