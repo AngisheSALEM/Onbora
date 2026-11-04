@@ -19,103 +19,19 @@ class PreCallBriefingDetailView(APIView):
     permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, account_id):
-        clean_id = str(account_id).replace('account-', '')
-        try:
-            enterprise = Enterprise.objects.get(id=clean_id)
-        except (Enterprise.DoesNotExist, ValueError):
-            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        user = request.user
-        # Permettre l'accès aux KAMs et Admins pour préparer tout compte / prospect
-        # Vérifier si un briefing avec analysis_data existe déjà
-        briefing = PreCallBriefing.objects.filter(enterprise=enterprise).first()
-        if briefing and briefing.analysis_data:
-            data = {
-                "id": briefing.id,
-                "enterprise_id": enterprise.id,
-                "enterprise_name": enterprise.name,
-                **briefing.analysis_data,
-                "real_needs": briefing.analysis_data.get("real_needs", []),
-                "predicted_needs": briefing.analysis_data.get("predicted_needs", []),
-                "company_overview": briefing.company_overview,
-                "key_decision_makers": briefing.key_decision_makers,
-                "detected_business_challenges": briefing.detected_business_challenges,
-                "custom_pitch_angles": briefing.custom_pitch_angles,
-                "critical_discovery_questions": briefing.critical_discovery_questions,
-                "golden_rules": briefing.golden_rules,
-                "created_at": briefing.created_at.strftime("%d/%m/%Y %H:%M"),
-                "updated_at": briefing.updated_at.strftime("%d/%m/%Y %H:%M"),
-                "ai_engine": "Onbora Analysis (Port 8001 / AI Core)",
-            }
-            from sales.models import EnterpriseInstalledOffer
-            offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
-            data["installed_offers"] = [
-                {
-                    "id": o.id,
-                    "installed_offer_name": o.installed_offer_name,
-                    "name": o.installed_offer_name,
-                    "category": o.category or "CONNECTIVITY",
-                    "provider": o.provider,
-                    "provider_label": o.get_provider_display(),
-                    "contract_status": o.contract_status,
-                    "contract_status_label": o.get_contract_status_display(),
-                    "installation_date": o.installation_date.isoformat() if o.installation_date else None,
-                    "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
-                    "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
-                    "bandwidth_mbps": o.bandwidth_mbps,
-                    "active_licenses_count": o.active_licenses_count,
-                    "unresolved_tickets_count": o.unresolved_tickets_count,
-                    "technical_equipment": o.technical_equipment,
-                    "created_at": o.created_at.isoformat(),
-                }
-                for o in offers
-            ]
-            return Response(data, status=status.HTTP_200_OK)
-
-        # Générer à la volée via Unified Core AI & Onbora Analysis Service
-        data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
-        from sales.models import EnterpriseInstalledOffer
-        offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
-        data["installed_offers"] = [
-            {
-                "id": o.id,
-                "installed_offer_name": o.installed_offer_name,
-                "name": o.installed_offer_name,
-                "category": o.category or "CONNECTIVITY",
-                "provider": o.provider,
-                "provider_label": o.get_provider_display(),
-                "contract_status": o.contract_status,
-                "contract_status_label": o.get_contract_status_display(),
-                "installation_date": o.installation_date.isoformat() if o.installation_date else None,
-                "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
-                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
-                "bandwidth_mbps": o.bandwidth_mbps,
-                "active_licenses_count": o.active_licenses_count,
-                "unresolved_tickets_count": o.unresolved_tickets_count,
-                "technical_equipment": o.technical_equipment,
-                "created_at": o.created_at.isoformat(),
-            }
-            for o in offers
-        ]
-        return Response(data, status=status.HTTP_200_OK)
+        from apps.ai_core.company_analysis.briefing import briefing_account, read_briefing
+        enterprise = briefing_account(request.user, account_id)
+        return Response(read_briefing(enterprise, request.user))
 
     def post(self, request, account_id):
-        clean_id = str(account_id).replace('account-', '')
-        try:
-            enterprise = Enterprise.objects.get(id=clean_id)
-        except (Enterprise.DoesNotExist, ValueError):
-            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        user = request.user
-        data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
-        return Response(data, status=status.HTTP_200_OK)
+        from apps.ai_core.company_analysis.briefing import briefing_account, refresh_briefing
+        enterprise = briefing_account(request.user, account_id)
+        data = refresh_briefing(enterprise, request.user, request.headers.get("Idempotency-Key"))
+        return Response(data, status=status.HTTP_202_ACCEPTED)
 
     def patch(self, request, account_id):
-        clean_id = str(account_id).replace('account-', '')
-        try:
-            enterprise = Enterprise.objects.get(id=clean_id)
-        except (Enterprise.DoesNotExist, ValueError):
-            return Response({"detail": "Compte client introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        from apps.ai_core.company_analysis.briefing import briefing_account
+        enterprise = briefing_account(request.user, account_id)
 
         data = CommercialIntelligenceService.update_and_resynthesize_briefing(
             enterprise=enterprise,

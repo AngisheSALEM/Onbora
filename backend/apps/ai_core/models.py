@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 import uuid
 from pydantic import ValidationError as PydanticValidationError
 
@@ -219,3 +220,32 @@ class AIMarketSignalReceipt(models.Model):
     """Idempotency key committed in the same transaction as the resulting feed item."""
     fingerprint = models.CharField(primary_key=True, max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CompanyResearchJob(models.Model):
+    """Durable association between an authorized Onbora request and a remote v2 job."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                              related_name="company_research_jobs")
+    enterprise = models.ForeignKey("sales.Enterprise", on_delete=models.CASCADE,
+                                   related_name="research_jobs")
+    idempotency_key = models.CharField(max_length=128)
+    request_data = models.JSONField(default=dict)
+    remote_job_id = models.CharField(max_length=80, blank=True)
+    state = models.CharField(max_length=16, default="queued", db_index=True,
+        choices=[(s, s) for s in ("queued", "running", "completed", "failed", "cancelled")])
+    response_data = models.JSONField(default=dict, blank=True)
+    error_code = models.CharField(max_length=80, blank=True)
+    error_count = models.PositiveSmallIntegerField(default=0)
+    next_poll_at = models.DateTimeField(default=timezone.now)
+    lease_token = models.UUIDField(null=True, blank=True)
+    lease_expires_at = models.DateTimeField(null=True, blank=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+    application_status = models.CharField(max_length=40, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [models.UniqueConstraint(fields=["owner", "idempotency_key"],
+                                               name="unique_company_research_request")]

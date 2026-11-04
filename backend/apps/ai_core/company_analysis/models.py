@@ -182,6 +182,7 @@ class UpsellData(BaseModel):
 
 
 class CompanyBriefOutput(BaseModel):
+    research_job: Optional[Dict[str, Any]] = None
     run_id: int = 1
     state: str = "reviewed"
     coverage: str = "complete"

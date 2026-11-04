@@ -10,14 +10,11 @@ Orchestrates:
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import re
-import sqlite3
 import unicodedata
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
@@ -34,8 +31,6 @@ from apps.kam.services.churn_radar_service import ChurnRadarService
 logger = logging.getLogger(__name__)
 
 DEFAULT_ANALYSIS_URL = getattr(settings, "ONBORA_ANALYSIS_URL", "http://127.0.0.1:8001").rstrip("/")
-ANALYSIS_DB_PATH = Path("C:/Users/Salem/Documents/projet/onbora-analysis-service/research_jobs.db")
-ANALYSIS_JSON_PATH = Path("C:/Users/Salem/Documents/projet/onbora-analysis-service/research_jobs_100.json")
 
 # Legal suffixes and filler terms to clean for robust matching
 LEGAL_TERMS_RE = re.compile(
@@ -74,51 +69,10 @@ class OnboraAnalysisSyncService:
         logger.info("[OnboraAnalysisSync] Index en mémoire préchargé avec %d entreprises.", len(self._enterprise_cache))
 
     def fetch_jobs_from_service(self, limit: int = 100) -> List[Dict[str, Any]]:
-        """
-        Récupère les jobs depuis le microservice HTTP sur le port 8001.
-        Bascule avec résilience sur la base SQLite locale ou l'export JSON.
-        """
-        url = f"{self.base_url}/api/v1/research-jobs?limit={limit}"
-        try:
-            logger.info("[OnboraAnalysisSync] Appel de l'endpoint %s", url)
-            resp = requests.get(url, timeout=self.timeout)
-            if resp.status_code == 200:
-                data = resp.json()
-                jobs = data.get("jobs", [])
-                if jobs:
-                    logger.info("[OnboraAnalysisSync] %d jobs reçus depuis l'API HTTP.", len(jobs))
-                    return jobs
-        except Exception as exc:
-            logger.warning("[OnboraAnalysisSync] Microservice HTTP injoignable (%s), bascule sur SQLite/JSON.", exc)
-
-        # Fallback 1: Direct SQLite reading
-        if ANALYSIS_DB_PATH.exists():
-            try:
-                conn = sqlite3.connect(str(ANALYSIS_DB_PATH))
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute("SELECT raw_json FROM research_jobs ORDER BY created_at DESC LIMIT ?", (limit,))
-                rows = cursor.fetchall()
-                conn.close()
-                if rows:
-                    jobs = [json.loads(r["raw_json"]) for r in rows]
-                    logger.info("[OnboraAnalysisSync] %d jobs récupérés directement depuis SQLite (%s).", len(jobs), ANALYSIS_DB_PATH)
-                    return jobs
-            except Exception as exc:
-                logger.warning("[OnboraAnalysisSync] Erreur lecture SQLite (%s).", exc)
-
-        # Fallback 2: JSON file reading
-        if ANALYSIS_JSON_PATH.exists():
-            try:
-                with open(ANALYSIS_JSON_PATH, "r", encoding="utf-8") as f:
-                    jobs = json.load(f)
-                    if isinstance(jobs, list):
-                        logger.info("[OnboraAnalysisSync] %d jobs récupérés depuis le fichier JSON (%s).", len(jobs[:limit]), ANALYSIS_JSON_PATH)
-                        return jobs[:limit]
-            except Exception as exc:
-                logger.warning("[OnboraAnalysisSync] Erreur lecture JSON fallback (%s).", exc)
-
-        return []
+        """Read only v2 observations tracked by Onbora, never the old mock DB/export."""
+        from apps.ai_core.models import CompanyResearchJob
+        return list(CompanyResearchJob.objects.filter(state="completed", applied_at__isnull=False)
+                    .exclude(response_data={}).values_list("response_data", flat=True)[:limit])
 
     def match_enterprise(self, target_name: str) -> Optional[Enterprise]:
         """
@@ -255,8 +209,8 @@ class OnboraAnalysisSyncService:
         if summary_sentences:
             summary = " ".join([s.get("text", "") for s in summary_sentences if isinstance(s, dict)])
         else:
-            paragraphs = [b.get("text", "") for b in blocks if b.get("type") == "paragraph"]
-            summary = " ".join(paragraphs[:3]) if paragraphs else f"Veille économique et signaux de marché collectés pour {company_name}."
+            from .adapter import supported_facts
+            summary = " ".join(f["statement"] for f in supported_facts(result)[:3])
 
         job_dt = self.parse_job_datetime(job_data.get("completed_at") or job_data.get("created_at")) or timezone.now()
 
@@ -316,7 +270,13 @@ class OnboraAnalysisSyncService:
 
     def process_job(self, job_data: Dict[str, Any], persist_vector_cache: bool = False) -> Dict[str, Any]:
         """Traite une fiche de recherche Onbora Analysis selon les règles métier."""
-        result = job_data.get("result", {})
+        from .adapter import supported_facts
+        if job_data.get("schema_version") != "2.0" or job_data.get("state") != "completed":
+            return {"status": "ignored", "reason": "Recherche v2 terminée requise"}
+        result = job_data.get("result") or {}
+        facts = supported_facts(result)
+        if not facts:
+            return {"status": "ignored", "reason": "Aucun fait attribuable"}
         subject = result.get("subject", {})
         target_name = subject.get("name", "").strip()
 
@@ -324,22 +284,13 @@ class OnboraAnalysisSyncService:
             return {"status": "ignored", "reason": "Nom d'entreprise manquant"}
 
         job_dt = self.parse_job_datetime(job_data.get("completed_at") or job_data.get("created_at")) or timezone.now()
-        provider_research = result.get("provider_research", {})
-        places = provider_research.get("places", [])
-        profile = result.get("profile", {})
-        sources = result.get("sources", [])
-
-        # Extraire les coordonnées
-        phone = places[0].get("phone") if places else profile.get("business_contacts", {}).get("phone")
-        website = places[0].get("website") if places else (sources[0].get("url") if sources else None)
-        addr = places[0].get("address") if places else profile.get("locations", {}).get("address", "")
-        city = subject.get("city", "Kinshasa")
-        rccm = subject.get("identifiers", {}).get("rccm") or profile.get("identifiers", {}).get("rccm")
-        sector = (
-            profile.get("activities", {}).get("items", ["Services Professionnels"])[0]
-            if profile.get("activities", {}).get("items")
-            else "Services B2B & Commerce"
-        )
+        resolved = result.get("identity", {}).get("resolved_subject") or {}
+        phone = next((f["normalized_value"] for f in facts if f.get("kind") == "phone"), None)
+        website = resolved.get("website")
+        addr = next((f["value"] for f in facts if f.get("kind") == "headquarters"), "")
+        city = subject.get("city", "")
+        rccm = resolved.get("identifiers", {}).get("rccm")
+        sector = next((f["value"] for f in facts if f["field"] == "activities"), "")
 
         matched_enterprise = self.match_enterprise(target_name)
 
@@ -405,8 +356,8 @@ class OnboraAnalysisSyncService:
                     name=target_name,
                     sector=sector,
                     city=city.capitalize(),
-                    address=addr or f"{city}, RD Congo",
-                    contact_phone=phone or "+243 81 000 0000",
+                    address=addr or "",
+                    contact_phone=phone or "",
                     website=website,
                     rccm=rccm,
                     segment="GRAND_COMPTE" if any(k in sector.lower() for k in ("banque", "mine", "télécom", "brasserie")) else "PME",

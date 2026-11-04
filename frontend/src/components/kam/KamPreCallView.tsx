@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { CompanyResearchStatus, companyResearchNotice, waitForCompanyResearch } from '@/lib/companyResearch';
+import { SkeletonBox } from '@/components/shared/SkeletonLoader';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
 import { fetchAPI, downloadBlobAPI } from '@/lib/api';
@@ -59,6 +61,7 @@ export interface DiscoveredSource {
 }
 
 export interface OnboraAnalysisBrief {
+  research_job?: CompanyResearchStatus | null;
   id?: number;
   enterprise_id: number | string;
   enterprise_name: string;
@@ -229,6 +232,7 @@ export default function KamPreCallView({
   );
   const [briefingData, setBriefingData] = useState<OnboraAnalysisBrief | null>(null);
   const [loading, setLoading] = useState(false);
+  const briefingRequest = useRef<AbortController | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -332,6 +336,7 @@ export default function KamPreCallView({
     setTechnicalSpecs(null);
     fetchBriefing(selectedAccountId);
     fetchInstalledOffers(selectedAccountId);
+    return () => briefingRequest.current?.abort();
   }, [selectedAccountId]);
 
   const fetchTechnicalSpecs = async (forceRegenerate = false) => {
@@ -519,20 +524,32 @@ export default function KamPreCallView({
   };
 
   const fetchBriefing = async (accountId: string, forceRegenerate = false) => {
+    briefingRequest.current?.abort();
+    const controller = new AbortController();
+    briefingRequest.current = controller;
     setLoading(true);
     setError(null);
     setIsEditing(false);
     try {
       const cleanId = String(accountId).replace('account-', '');
       const method = forceRegenerate ? 'POST' : 'GET';
-      const data: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { method });
+      let data: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, {
+        method, signal: controller.signal,
+        headers: forceRegenerate ? { 'Idempotency-Key': crypto.randomUUID() } : undefined,
+      });
+      if (data.research_job && ['queued', 'running'].includes(data.research_job.state)) {
+        await waitForCompanyResearch(data.research_job, controller.signal);
+        data = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { signal: controller.signal });
+      }
+      if (controller.signal.aborted) return;
       setBriefingData(data);
       populateEditBuffers(data);
     } catch (err: unknown) {
+      if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : "Erreur de chargement du brief.";
       setError(message);
     } finally {
-      setLoading(false);
+      if (briefingRequest.current === controller && !controller.signal.aborted) setLoading(false);
     }
   };
 
@@ -731,12 +748,12 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           )}
 
           <button
-            onClick={() => handleSaveBrief(true)}
+            onClick={() => fetchBriefing(selectedAccountId, true)}
             disabled={loading || isSaving}
-            title="Mettre à jour la synthèse et les solutions"
+            title="Actualiser les informations publiques de cette entreprise"
             className="p-2 rounded-xl bg-white dark:bg-[#2D2A2D] hover:bg-zinc-100 dark:hover:bg-[#383438] text-zinc-600 dark:text-zinc-300 border border-black/5 dark:border-white/5 cursor-pointer"
           >
-            <Icons.RefreshCw size={14} className={isSaving || loading ? "animate-spin text-[#787570]" : ""} />
+            <Icons.RefreshCw size={14} />
           </button>
 
           <button
@@ -821,12 +838,19 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
       {radarResult?.accountId === selectedAccountId && radarResult.error && <p role="alert" className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">Les risques et opportunités ne sont pas disponibles : {radarResult.error}</p>}
 
       {/* 3. LOADING & ERROR STATES */}
+      {!loading && companyResearchNotice(briefingData?.research_job) && (
+        <p className="max-w-4xl mx-auto w-full px-6 py-3 text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-300" role="status">
+          {companyResearchNotice(briefingData?.research_job)}
+        </p>
+      )}
       {radarData && (visibleTab === 'churn' || visibleTab === 'upsell') ? (
         <KamAccountSignalsSheet data={radarData} kind={visibleTab} />
       ) : loading ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.RefreshCw size={28} className="animate-spin text-[#787570] mb-3" />
-          <p className="text-xs text-zinc-500">Chargement...</p>
+        <div className="w-full max-w-4xl mx-auto p-8 space-y-6" role="status" aria-live="polite" aria-busy="true">
+          <p className="text-[13px] leading-[21px] text-zinc-500">Préparation de la fiche et vérification des informations publiques…</p>
+          <SkeletonBox height={26} width="55%" />
+          <SkeletonBox height={89} width="100%" />
+          <SkeletonBox height={55} width="85%" />
         </div>
       ) : error ? (
         <div className="p-8 rounded-2xl bg-white dark:bg-[#282528] text-center max-w-md mx-auto my-auto space-y-3 border border-black/5 dark:border-white/5">

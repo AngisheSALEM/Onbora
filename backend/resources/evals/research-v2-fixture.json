@@ -1,0 +1,224 @@
+{
+  "schema_version": "2.0",
+  "job_id": "job_demo_001",
+  "state": "completed",
+  "cancellation_requested": false,
+  "created_at": "2026-10-29T08:00:00Z",
+  "started_at": "2026-10-29T08:00:01Z",
+  "completed_at": "2026-10-29T08:00:08Z",
+  "expires_at": "2026-11-28T08:00:00Z",
+  "status_url": "/api/v2/research-jobs/job_demo_001",
+  "cache": {
+    "reused": false,
+    "source_job_id": null,
+    "collected_at": "2026-10-29T08:00:04Z"
+  },
+  "retention": {
+    "content_expires_at": "2026-11-05T08:00:00Z",
+    "evidence_expires_at": "2026-11-28T08:00:00Z",
+    "logs_expires_at": "2026-11-28T08:00:00Z"
+  },
+  "usage": {
+    "provider_calls": [
+      {
+        "provider": "fixture",
+        "operation": "read",
+        "count": 1
+      }
+    ],
+    "pages_attempted": 1,
+    "pages_read": 1,
+    "execution_duration_ms": 0,
+    "estimated_cost": null,
+    "currency": null
+  },
+  "diagnostics": [
+    {
+      "code": "fictional_example",
+      "message": "Exemple entièrement fictif ; aucun appel réel."
+    }
+  ],
+  "error": null,
+  "result": {
+    "outcome": "answered",
+    "subject": {
+      "name": "Entreprise Démonstration Onbora",
+      "country_code": "CD",
+      "city": "Kinshasa",
+      "website": "https://example.com",
+      "identifiers": {}
+    },
+    "identity": {
+      "status": "probable",
+      "resolved_subject": {
+        "name": "Entreprise Démonstration Onbora",
+        "country_code": "CD",
+        "city": "Kinshasa",
+        "website": "https://example.com",
+        "identifiers": {}
+      },
+      "reasons": [
+        "Concordance explicite avec le document simulé ; ce rapprochement ne vérifie aucune entreprise réelle."
+      ],
+      "evidence_ids": [
+        "ev_demo_001"
+      ],
+      "candidates": []
+    },
+    "profile": {
+      "description": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      },
+      "activities": {
+        "requested": true,
+        "status": "available",
+        "fact_ids": [
+          "fact_demo_001"
+        ]
+      },
+      "products_services": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      },
+      "locations": {
+        "requested": true,
+        "status": "available",
+        "fact_ids": [
+          "fact_demo_002"
+        ]
+      },
+      "business_contacts": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      },
+      "projects_partnerships": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      },
+      "news": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      },
+      "identifiers": {
+        "requested": false,
+        "status": "not_requested",
+        "fact_ids": []
+      }
+    },
+    "facts": [
+      {
+        "id": "fact_demo_001",
+        "field": "activities",
+        "value": "Maintenance industrielle",
+        "statement": "Dans ce scénario fictif, le site associé de manière probable à l'entreprise présente une activité de maintenance industrielle.",
+        "support_status": "supported",
+        "attribution": "company_claim",
+        "evidence_ids": [
+          "ev_demo_001"
+        ],
+        "valid_at": null,
+        "kind": "text",
+        "normalized_value": "Maintenance industrielle",
+        "fact_key": "0d87c03ce22e725a93ed03aa1d3949d0daca643390cf4f61a21e2c17e769eb52",
+        "observed_at": "2026-10-29T08:00:08Z",
+        "method": "rules-v2"
+      },
+      {
+        "id": "fact_demo_002",
+        "field": "locations",
+        "value": "Un bureau à Kinshasa",
+        "statement": "Dans ce scénario fictif, le même site déclare disposer d'un bureau à Kinshasa.",
+        "support_status": "supported",
+        "attribution": "company_claim",
+        "evidence_ids": [
+          "ev_demo_001"
+        ],
+        "valid_at": null,
+        "kind": "text",
+        "normalized_value": "Un bureau à Kinshasa",
+        "fact_key": "1b45700e2433874c409a1648ab631b1f16cc64369df0b903a13e4afca84ffe4d",
+        "observed_at": "2026-10-29T08:00:08Z",
+        "method": "rules-v2"
+      }
+    ],
+    "summary": {
+      "status": "available",
+      "sentences": [
+        {
+          "text": "Sous réserve de l’identité probable, le site associé déclare (activité) : Maintenance industrielle",
+          "fact_ids": [
+            "fact_demo_001"
+          ]
+        },
+        {
+          "text": "Sous réserve de l’identité probable, le site associé déclare (implantation) : Un bureau à Kinshasa",
+          "fact_ids": [
+            "fact_demo_002"
+          ]
+        }
+      ]
+    },
+    "sources": [
+      {
+        "id": "src_demo_001",
+        "url": "https://example.com/entreprise-fictive",
+        "title": "Présentation fictive de l'entreprise",
+        "publisher": "Entreprise Démonstration Onbora — scénario fictif",
+        "source_type": "company_website",
+        "discovered_by": "fixture",
+        "access_status": "accessible",
+        "relationship": "probable_match",
+        "relationship_reasons": [
+          "Nom, pays et ville concordants dans la fixture ; aucun identifiant juridique."
+        ],
+        "published_at": null,
+        "collected_at": "2026-10-29T08:00:04Z"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ev_demo_001",
+        "source_id": "src_demo_001",
+        "excerpt": "Entreprise Démonstration Onbora propose des services de maintenance industrielle et dispose d'un bureau à Kinshasa.",
+        "locator": "Document simulé conservé, paragraphe 1 (document entier).",
+        "content_hash": "sha256:e6668c1f1ac14a3c899bf1e3994515909c48f34b8cfe29bb098ea1922639d09d",
+        "collected_at": "2026-10-29T08:00:04Z"
+      }
+    ],
+    "declared_context": [],
+    "contradictions": [],
+    "missing_fields": [],
+    "limitations": [
+      {
+        "code": "fixture_mode",
+        "message": "Données entièrement fictives ; aucune collecte réelle."
+      },
+      {
+        "code": "identity_probable",
+        "message": "Aucun identifiant juridique dans la fixture."
+      },
+      {
+        "code": "conservative_summary",
+        "message": "Synthèse par modèles attribués ; seules les clauses exactes sont admises, sans paraphrase libre ni inférence."
+      }
+    ],
+    "extractor_version": "rules-v2",
+    "reused_documents": 0,
+    "field_diagnostics": []
+  },
+  "operation": "research",
+  "enrichment": null,
+  "comparison": {
+    "status": "not_requested",
+    "reason_code": null,
+    "baseline_job_id": null,
+    "fields": [],
+    "changes": []
+  }
+}

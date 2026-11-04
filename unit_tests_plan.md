@@ -171,3 +171,14 @@ Commande : `venv/Scripts/python.exe manage.py test apps.ai_core kam.tests kam.te
 | Mise en page | 320/768 px, clair/sombre, texte agrandi à 130 % |
 
 Commandes depuis `mobile/` : `flutter test`, `dart analyze`, `flutter build apk --debug`. Le microphone et la feuille de partage PDF restent à vérifier sur un appareil Android/iOS. Matrice fonctionnelle détaillée : `mobile/KAM_PARITY.md`.
+
+# Research API v2 — intégration du 4 novembre 2026
+
+Tests `apps.ai_core.test_company_research` : contrat v2, Bearer et absence de
+redirections, idempotence locale/distante, réponse POST perdue, suivi GET sans
+nouvelle création, accès propriétaire/compte, bail concurrent, échéance, preuves
+manquantes, absence de références fabriquées et conservation des corrections KAM.
+
+Parcours reproductible : `scripts/smoke_research_integration.py` utilise le corpus
+fictif avec un serveur HTTP et un worker Research séparé, jusqu'au brief Onbora.
+Les bases du test sont isolées ; aucun appel fournisseur payant.

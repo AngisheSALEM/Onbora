@@ -149,90 +149,31 @@ class UnifiedCoreAIEngine:
         en interrogeant le service externe sur le port 8001 avec fallback résilient,
         et en enrichissant la synthèse avec les besoins réels confirmés du terrain et les opportunités Core AI.
         """
+        recorded = getattr(enterprise, "scraped_data", None)
         analysis_brief = self.company_analysis_client.get_analysis_for_enterprise(
-            company_name=enterprise.name,
-            sector=getattr(enterprise, 'sector', None),
-            rccm=getattr(enterprise, 'rccm', None),
-            province=getattr(enterprise, 'city', None) or "Kinshasa",
-            dossier_number=getattr(enterprise, 'crm_id', None),
-            site_count=getattr(enterprise, 'site_count', 1),
-        )
+            company_name=enterprise.name, sector=getattr(enterprise, "sector", None),
+            rccm=getattr(enterprise, "rccm", None), province=getattr(enterprise, "city", None),
+            dossier_number=getattr(enterprise, "crm_id", None),
+            research_result=recorded if isinstance(recorded, dict) else None)
         res = analysis_brief.model_dump()
-
-        # Rétro-compatibilité ascendante pour préserver l'intégrité DB et les vues historiques
-        ai_sum = res.get("ai_summary", {})
-        base_overview_text = ai_sum.get("overview", {}).get("text", "")
-        challenges = [contra.get("text", "") for contra in ai_sum.get("contradictions", [])] + ai_sum.get("gaps", [])
-
-        # Extraction dynamique des besoins réels (visites) et anticipés (Core AI)
         real_needs, predicted_needs = self._extract_real_and_predicted_needs(enterprise)
-        res["real_needs"] = real_needs
-        res["predicted_needs"] = predicted_needs
-
-        # Synthèse exécutive sobre et professionnelle (sans mentions techniques internes)
-        clean_overview = (base_overview_text or f"Entreprise {enterprise.name} ({enterprise.sector or 'Services'}).").strip()
-        clean_overview = clean_overview.replace("Opportunités et besoins d'infrastructure identifiés par Core AI :", "")
-        clean_overview = clean_overview.replace("Besoins réels confirmés lors des derniers échanges terrain :", "")
-        enriched_overview = " ".join(clean_overview.split()).strip()
-
-        if isinstance(ai_sum, dict):
-            ai_sum["real_needs"] = real_needs
-            ai_sum["predicted_needs"] = predicted_needs
-            if "overview" in ai_sum and isinstance(ai_sum["overview"], dict):
-                ai_sum["overview"]["text"] = enriched_overview
-
-        journeys = res.get("lead_qualification", {}).get("journeys", [])
-        pitch_angles = []
-        questions = []
-        for j in journeys:
-            for off in j.get("offers", []):
-                pitch_angles.append({
-                    "target_offer": off.get("name", "Offre Orange Business"),
-                    "why_relevant": j.get("reason", "Pertinence commerciale avérée sur preuves."),
-                    "hook_sentence": j.get("next_question", "") or "Comment vos sites communiquent-ils aujourd'hui ?"
-                })
-            if j.get("next_question"):
-                questions.append(j.get("next_question"))
-
-        rev = float(getattr(enterprise, 'annual_revenue', 50000.0) or 50000.0)
+        res.update(real_needs=real_needs, predicted_needs=predicted_needs)
+        overview = res["ai_summary"]["overview"]["text"]
         res["company_overview"] = {
-            "company_name": enterprise.name,
-            "summary": enriched_overview,
-            "estimated_employees": "50-200 collaborateurs",
-            "digital_maturity": "HIGH" if res.get("identity_status") == "confirmed" else "MEDIUM",
-            "annual_revenue_usd": f"{rev:,.0f} USD",
-            "estimated_sites": getattr(enterprise, 'site_count', 1) or 1,
-            "telecom_budget_monthly_usd": round(rev * 0.015 / 12, 2)
-        }
-        res["key_decision_makers"] = [
-            {
-                "role": "Direction Générale & Décideur Agréé",
-                "name": getattr(enterprise, 'contact_name', '') or "Direction",
-                "profile_type": "Stratégie & ROI",
-                "concerns": "Sécurisation des opérations et conformité ARSP.",
-                "influence": "HIGH"
-            }
-        ]
-        res["detected_business_challenges"] = challenges or [
-            "Fiabilisation des flux de données et continuité de service",
-            "Sécurisation des liaisons inter-sites et agences"
-        ]
-        res["custom_pitch_angles"] = pitch_angles or [
-            {
-                "target_offer": "Fibre Sécurisée Dédiée Pro (GTR 4h)",
-                "why_relevant": "Garantit zéro coupure avec SLA 99.99%.",
-                "hook_sentence": "Quel est l'impact financier d'une rupture de connexion pour vos opérations ?"
-            }
-        ]
-        res["critical_discovery_questions"] = questions or [
-            "Quelle est la criticité de votre connexion internet au quotidien pour la facturation ?",
-            "Disposez-vous d'une ligne de secours active qui bascule sans coupure ?"
-        ]
+            "company_name": enterprise.name, "summary": overview,
+            "estimated_employees": getattr(enterprise, "employee_count", None),
+            "annual_revenue_usd": str(getattr(enterprise, "annual_revenue", "") or ""),
+            "estimated_sites": getattr(enterprise, "site_count", None)}
+        contact = getattr(enterprise, "contact_name", "")
+        res["key_decision_makers"] = [{"name": contact, "role": "Contact enregistré"}] if contact else []
+        res["detected_business_challenges"] = [item["need"] for item in real_needs]
+        res["custom_pitch_angles"] = []
+        res["critical_discovery_questions"] = [
+            "Quels usages et contraintes souhaitez-vous améliorer ?",
+            "Quels services sont déjà installés et avec quels engagements ?"]
         res["golden_rules"] = [
-            f"Ne jamais dénigrer directement {getattr(enterprise, 'current_operator', None) or 'le concurrent'} : valoriser nos engagements SLA 99.99% et notre GTR 4h signée.",
-            "Faire verbaliser la douleur financière avant d'aborder tout chiffre ou prix.",
-            "Valider la concordance des éléments ARSP et registres OHADA dès les premières minutes de l'entretien."
-        ]
+            "Distinguer les faits sourcés, les données déclarées et les hypothèses à confirmer.",
+            "Valider les besoins avec le client avant de proposer une solution."]
         return res
 
     def resynthesize_briefing(

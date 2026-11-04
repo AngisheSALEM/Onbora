@@ -1,4 +1,5 @@
 from django.urls import path
+from .company_analysis.views import CompanyResearchCreateView, CompanyResearchDetailView
 from .views import (
     AIHealthView,
     AICatalogSearchView,
@@ -21,6 +22,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path("research/enterprises/<int:enterprise_id>/", CompanyResearchCreateView.as_view(), name="company_research_create"),
+    path("research/jobs/<uuid:job_id>/", CompanyResearchDetailView.as_view(), name="company_research_detail"),
     # Santé et métadonnées
     path("health/", AIHealthView.as_view(), name="health"),
     path("tools/", AIToolsListView.as_view(), name="tools_list"),
