@@ -17,7 +17,8 @@ CATEGORIES = {'ACTIVITY': 'Activités', 'LOCATION': 'Implantations', 'CONTACT': 
               'PROJECT': 'Projets & partenariats', 'NEWS': 'Actualités', 'IDENTITY': 'Identité',
               'OFFER': 'Produits & services', 'DESCRIPTION': 'Présentation', 'OTHER': 'Autres faits'}
 CONFIDENCES = {'CORROBORATED': 'Recoupé', 'SUPPORTED': 'Sourcé',
-               'IDENTITY_UNCERTAIN': 'Identité à confirmer', 'UNKNOWN': 'Non renseigné'}
+               'IDENTITY_UNCERTAIN': 'Identité à confirmer', 'LEGACY_REVIEW': 'Historique à revalider',
+               'UNKNOWN': 'Non renseigné'}
 PRIORITIES = dict(AnalysisSignalReview.PRIORITIES)
 STATES = dict(AnalysisSignalReview.STATES)
 
@@ -91,6 +92,8 @@ def signal_dashboard(user, params):
                   'priority_pending': signals.filter(review_priority='HIGH', review_state__in=['NEW', 'VERIFY']).count(),
                   'actioned': signals.filter(actioned_at__isnull=False).count(),
                   'analyzed_companies': runs.values('enterprise_id').distinct().count(), 'research_runs': runs.count()},
+        'available_history': {'signals': _apply_filters(annotated_signals(user), params).count(),
+                              'research_runs': AnalysisSignalRun.objects.filter(enterprise__in=visible).count()},
         'timeline': timeline, 'categories': _counts(signals, 'category'), 'states': _counts(signals, 'review_state'),
         'sector_matrix': _sector_matrix(signals, runs),
         'priority_matrix': list(signals.order_by().values('review_priority', 'confidence').annotate(count=Count('pk'))),

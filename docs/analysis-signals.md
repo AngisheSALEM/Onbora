@@ -35,6 +35,8 @@ Les accès utilisent `visible_enterprises`, y compris les affectations de portef
 
 La migration `kam.0019` crée les tables et contraintes. Le script de déploiement `backend/build.sh` applique les migrations puis exécute `python manage.py backfill_analysis_signals`. Cette commande reprend les jobs v2 terminés, appliqués et validables déjà conservés, sans réseau et sans modifier les champs CRM. Elle est idempotente. Les données de démonstration et anciens exports non attribuables ne sont pas importés comme signaux réels.
 
-Lors de la mise en service locale du 5 novembre 2026, la migration a été appliquée et l’API a répondu HTTP 200. La base ne contenait aucun job v2 terminé à reprendre ; l’interface reste donc vide jusqu’aux prochaines recherches terminées.
+La commande reprend également les résultats historiques conservés dans `Enterprise.scraped_data`, au format antérieur à Research API v2. Elle vérifie le rattachement nominatif à l’entreprise et les références à des preuves avec extrait et source accessible. Ces faits restent marqués « Historique à revalider » : les anciens scores de confiance ne deviennent jamais des probabilités ou des preuves v2. Le résultat original est conservé dans l’observation ; aucun job v2 fictif n’est créé. La référence locale de reprise est déterministe et les dates enregistrées dans l’ancien résultat sont préservées. Les résultats dont le nom ne peut pas être rapproché de celui du compte sont laissés de côté.
+
+Lors de la mise en service locale du 5 novembre 2026, la migration a été appliquée et l’API a répondu HTTP 200. La base ne contenait aucun job v2 terminé, mais 98 fiches contenaient des résultats antérieurs. La reprise conservatrice de ces fiches a intégré 70 observations et 116 faits distincts. Les compteurs KAM restent limités aux entreprises autorisées et à la période sélectionnée ; la page signale aussi les faits conservés à d’autres dates.
 
 Le plan de validation est décrit dans `unit_tests_plan.md`.

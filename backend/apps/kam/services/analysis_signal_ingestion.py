@@ -11,7 +11,10 @@ from sales.models import Enterprise
 
 
 def observation_time(value, fallback):
-    parsed = parse_datetime(value) if isinstance(value, str) else None
+    try:
+        parsed = parse_datetime(value) if isinstance(value, str) else None
+    except ValueError:
+        parsed = None
     if parsed is None:
         return fallback
     return timezone.make_aware(parsed) if timezone.is_naive(parsed) else parsed
@@ -42,8 +45,10 @@ def sourced_payload(fact, result):
     citations = [{key: sources[source_id].get(key) for key in
                   ('url', 'title', 'publisher', 'source_type', 'relationship', 'collected_at', 'published_at')}
                  for source_id in sorted(source_ids) if source_id in sources]
+    legacy = 'original_legacy_fact' in fact
     return {'fact': fact, 'sources': citations, 'identity_status': result['identity']['status'],
-            'categorization': 'research_field_v2'}
+            'categorization': 'legacy_field_mapping' if legacy else 'research_field_v2',
+            'provenance': 'legacy_account_snapshot' if legacy else 'research_api_v2'}
 
 
 @transaction.atomic
@@ -69,7 +74,7 @@ def retain_analysis_signals(job, data):
     return run
 
 
-def _retain_fact(enterprise, run, fact, result):
+def _retain_fact(enterprise, run, fact, result, confidence_override=None):
     # Detection is the completed research observation, never the publication/event date.
     # Preserve the provider's original fact timestamp separately in the immutable payload.
     seen_at = run.observed_at
@@ -80,17 +85,28 @@ def _retain_fact(enterprise, run, fact, result):
             event_date = parse_date(valid_at) or (parse_datetime(valid_at).date() if parse_datetime(valid_at) else None)
         except ValueError:
             pass
-    signal, created = AnalysisSignal.objects.get_or_create(
-        enterprise=enterprise, fingerprint=fact_fingerprint(fact), defaults={
-            'title': fact['statement'], 'category': classify_fact(fact), 'sector': run.sector,
-            'first_seen': seen_at, 'last_seen': seen_at, 'event_date': event_date,
-        })
+    fingerprint = fact_fingerprint(fact)
+    signal = AnalysisSignal.objects.filter(enterprise=enterprise, fingerprint=fingerprint).first()
+    if signal is None:
+        # Old snapshots lack normalized values. Reuse only an exactly matching statement
+        # and event date when crossing formats, preserving its ID and the KAM's review.
+        matching = AnalysisSignal.objects.filter(enterprise=enterprise, title__iexact=fact['statement'],
+            category=classify_fact(fact), event_date=event_date)
+        if confidence_override != 'LEGACY_REVIEW':
+            matching = matching.filter(observations__confidence='LEGACY_REVIEW')
+        signal = matching.order_by('first_seen', 'pk').first()
+    created = signal is None
+    if created:
+        signal = AnalysisSignal.objects.create(enterprise=enterprise, fingerprint=fingerprint,
+            title=fact['statement'], category=classify_fact(fact), sector=run.sector,
+            first_seen=seen_at, last_seen=seen_at, event_date=event_date,
+        )
     if not created:
         if seen_at < signal.first_seen:
             signal.first_seen, signal.sector = seen_at, run.sector
         signal.last_seen = max(signal.last_seen, seen_at)
         signal.save(update_fields=['first_seen', 'last_seen', 'sector'])
-    confidence = ('IDENTITY_UNCERTAIN' if result['identity']['status'] != 'confirmed' else
+    confidence = confidence_override or ('IDENTITY_UNCERTAIN' if result['identity']['status'] != 'confirmed' else
                   'CORROBORATED' if fact.get('support_status') == 'corroborated' else 'SUPPORTED')
     AnalysisSignalObservation.objects.get_or_create(signal=signal, run=run, defaults={
         'observed_at': seen_at, 'confidence': confidence, 'payload': sourced_payload(fact, result)})

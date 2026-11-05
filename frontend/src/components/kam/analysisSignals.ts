@@ -24,6 +24,7 @@ export interface AnalysisSignal {
 export interface SignalDashboard {
   period: { start: string; end: string };
   generated_at: string;
+  available_history: { signals: number; research_runs: number };
   options: SignalOptions;
   stats: { new_signals: number; companies: number; priority_pending: number; actioned: number; analyzed_companies: number; research_runs: number };
   timeline: { day: string; count: number }[];

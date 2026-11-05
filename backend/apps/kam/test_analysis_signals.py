@@ -213,3 +213,70 @@ class AnalysisSignalsTests(TestCase):
         self.assertEqual(counts['2026-10-30'], 2)
         self.assertEqual(counts['2026-10-01'], 0)
         self.assertEqual(self.dashboard(focus_day='2026-10-30')['list']['count'], 2)
+
+    def legacy_snapshot(self):
+        result = observation()['result']
+        result['identity']['status'] = 'confirmed'
+        result['provider_research'] = {'status': 'complete'}
+        for source in result['sources']:
+            source['relationship'] = 'official'
+        for capture in result['evidence']:
+            capture['snippet'] = capture.pop('excerpt')
+        result['facts'] = [{'id': fact['id'], 'category': fact['field'], 'statement': fact['statement'],
+                            'evidence_ids': fact['evidence_ids'], 'confidence': 0.98,
+                            'verified_at': '2026-10-29T08:00:08Z'} for fact in result['facts']]
+        Enterprise.objects.filter(pk=self.enterprise.pk).update(scraped_data=result, last_sync_date=timezone.now())
+        return result
+
+    def test_legacy_research_is_imported_without_fake_jobs_or_confidence(self):
+        from kam.services.analysis_signal_legacy import retain_legacy_account_research
+        self.legacy_snapshot()
+        self.assertTrue(retain_legacy_account_research(self.enterprise.pk))
+        self.assertFalse(retain_legacy_account_research(self.enterprise.pk))
+        self.assertEqual(CompanyResearchJob.objects.count(), 0)
+        self.assertEqual(AnalysisSignal.objects.count(), 2)
+        self.assertIsNone(AnalysisSignalRun.objects.get().job_id)
+        detail = self.dashboard()['list']['results'][0]
+        self.assertEqual(detail['confidence'], 'LEGACY_REVIEW')
+        self.assertEqual(detail['priority'], 'UNKNOWN')
+        self.assertEqual(AnalysisSignal.objects.first().first_seen.day, 29)
+
+    def test_legacy_missing_evidence_and_wrong_company_are_not_promoted(self):
+        from kam.services.analysis_signal_legacy import retain_legacy_account_research
+        result = self.legacy_snapshot()
+        result['sources'][0]['access_status'] = 'discovered'
+        Enterprise.objects.filter(pk=self.enterprise.pk).update(scraped_data=result)
+        retain_legacy_account_research(self.enterprise.pk)
+        self.assertFalse(AnalysisSignal.objects.exists())
+        AnalysisSignalRun.objects.all().delete()
+        result['subject']['name'] = 'Autre société'
+        result['identity']['resolved_subject']['name'] = 'Autre société'
+        Enterprise.objects.filter(pk=self.enterprise.pk).update(scraped_data=result)
+        self.assertFalse(retain_legacy_account_research(self.enterprise.pk))
+        self.assertFalse(AnalysisSignalRun.objects.exists())
+
+    def test_legacy_backfill_includes_existing_account_snapshots_offline(self):
+        self.legacy_snapshot()
+        with patch('requests.request') as network:
+            call_command('backfill_analysis_signals', stdout=io.StringIO())
+            call_command('backfill_analysis_signals', stdout=io.StringIO())
+            network.assert_not_called()
+        self.assertEqual(AnalysisSignal.objects.count(), 2)
+
+    def test_history_outside_period_is_reported(self):
+        self.retain()
+        result = self.dashboard(start='2026-10-01', end='2026-10-05')
+        self.assertEqual(result['stats']['new_signals'], 0)
+        self.assertEqual(result['available_history']['signals'], 2)
+
+    def test_v2_repeat_of_legacy_statement_keeps_signal_and_personal_followup(self):
+        from kam.services.analysis_signal_legacy import retain_legacy_account_research
+        self.legacy_snapshot()
+        retain_legacy_account_research(self.enterprise.pk)
+        signal = AnalysisSignal.objects.first()
+        self.api.patch(f'{self.url}{signal.pk}/', {'priority': 'HIGH'}, format='json')
+        self.retain()
+        self.retain()
+        self.assertEqual(AnalysisSignal.objects.count(), 2)
+        self.assertEqual(AnalysisSignalObservation.objects.count(), 6)
+        self.assertEqual(AnalysisSignalReview.objects.get(signal=signal).priority, 'HIGH')
