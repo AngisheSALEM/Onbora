@@ -1,0 +1,35 @@
+.view {
+  --sector-canvas: #f6f5f2;
+  --sector-surface: #fff;
+  --sector-muted: #eceae5;
+  --sector-ink: #242124;
+  --sector-secondary: #55524e;
+  --sector-bar: #8e8b85;
+  --sector-accent: #4f6ce8;
+  background: var(--sector-canvas);
+  color: var(--sector-ink);
+}
+
+:global(.dark) .view {
+  --sector-canvas: #242124;
+  --sector-surface: #2f2c30;
+  --sector-muted: #3b373d;
+  --sector-ink: #fff;
+  --sector-secondary: #b8b5bb;
+  --sector-bar: #a1a1aa;
+}
+
+.view button:focus-visible,
+.view a:focus-visible,
+.view select:focus-visible {
+  outline: 2px solid var(--sector-accent);
+  outline-offset: 4px;
+}
+
+.view button { cursor: pointer; }
+.surface { background: var(--sector-surface); }
+.secondary { color: var(--sector-secondary); }
+.track { background: var(--sector-muted); }
+.bar { background: var(--sector-bar); }
+.action { background: var(--sector-accent); color: white; }
+.row:hover { background: var(--sector-muted); }

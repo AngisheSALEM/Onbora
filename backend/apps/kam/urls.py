@@ -1,4 +1,5 @@
 from django.urls import path
+from .sector_analytics_views import KamSectorAnalyticsView
 from .views import (
     DossierListView, DossierDetailView, DossierBusinessTwinView, 
     DossierExportView, DossierProvisionView, DossierHandoverPackView,
@@ -40,6 +41,7 @@ from .services.news_feed_views import (
 
 
 urlpatterns = [
+    path('sector-analytics/', KamSectorAnalyticsView.as_view(), name='kam-sector-analytics'),
     # Comparateur Sectoriel & Benchmarking B2B ("Versus" style)
     path('comparisons/sectors/', KamSectorOverviewView.as_view(), name='kam-comparisons-sectors'),
     path('comparisons/', KamEnterpriseComparisonView.as_view(), name='kam-comparisons-detail'),

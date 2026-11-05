@@ -182,3 +182,12 @@ manquantes, absence de références fabriquées et conservation des corrections 
 Parcours reproductible : `scripts/smoke_research_integration.py` utilise le corpus
 fictif avec un serveur HTTP et un worker Research séparé, jusqu'au brief Onbora.
 Les bases du test sont isolées ; aucun appel fournisseur payant.
+
+## Analyse sectorielle KAM — 5 novembre 2026
+
+- Backend : `kam.test_sector_analytics` (5 tests) vérifie les permissions, l’isolation des portefeuilles et des rapports KAM, le parc actif réel, la déduplication des besoins, les états vides et le nombre constant de requêtes (3).
+- Frontend : `node --test tests/sectorAnalytics.test.mjs` depuis `frontend/` (3 tests) vérifie les bornes calendaires 0/30/31/60/61/90 jours, les secteurs non renseignés et la déduplication des comptes par besoin.
+- Contrôles : TypeScript, ESLint ciblé, compilation Next.js de production et hooks design/dette technique ciblés.
+- Vérification navigateur : non réalisée, accès à l’aperçu local refusé par le contrôle d’accès du navigateur. Vérifier manuellement les thèmes clair/sombre, le tableau défilant sur mobile, le filtre secteur, la recherche et l’ouverture des fiches depuis les graphiques.
+
+Commande backend depuis `backend/` : `venv/Scripts/python.exe manage.py test kam.test_sector_analytics --settings=onbora.test_settings --noinput` (SQLite en mémoire, sans accès à la base de l’application).

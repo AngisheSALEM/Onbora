@@ -8,7 +8,7 @@ import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit' | 'compare' | 'feed';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit' | 'compare' | 'feed' | 'sectors';
 
 interface KamSidebarProps {
   activeView?: KamView;
@@ -57,6 +57,13 @@ export default function KamSidebar({
       href: '/kam/accounts',
       label: 'Comptes',
       icon: Icons.Building,
+      badge: null,
+    },
+    {
+      id: 'sectors' as KamView,
+      href: '/kam/sectors',
+      label: 'Analyse par secteur',
+      icon: Icons.BarChart,
       badge: null,
     },
     {
