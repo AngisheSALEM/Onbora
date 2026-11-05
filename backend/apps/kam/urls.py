@@ -1,5 +1,4 @@
 from django.urls import path
-from .analysis_signals_views import AnalysisSignalsView, AnalysisSignalDetailView
 from .views import (
     DossierListView, DossierDetailView, DossierBusinessTwinView, 
     DossierExportView, DossierProvisionView, DossierHandoverPackView,
@@ -41,8 +40,6 @@ from .services.news_feed_views import (
 
 
 urlpatterns = [
-    path('analysis-signals/', AnalysisSignalsView.as_view(), name='kam-analysis-signals'),
-    path('analysis-signals/<uuid:pk>/', AnalysisSignalDetailView.as_view(), name='kam-analysis-signal-detail'),
     # Comparateur Sectoriel & Benchmarking B2B ("Versus" style)
     path('comparisons/sectors/', KamSectorOverviewView.as_view(), name='kam-comparisons-sectors'),
     path('comparisons/', KamEnterpriseComparisonView.as_view(), name='kam-comparisons-detail'),

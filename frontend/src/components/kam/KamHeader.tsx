@@ -57,7 +57,6 @@ export default function KamHeader({
   }, [pathname]);
 
   const searchPlaceholder = useMemo(() => {
-    if (pathname.startsWith('/kam/analysis')) return 'Rechercher un signal ou une entreprise...';
     if (pathname.includes('/kam/accounts/risk')) return 'Rechercher un compte à risque dans ONBORA...';
     if (pathname.includes('/kam/accounts/renewals')) return 'Rechercher un renouvellement sous 90j...';
     if (pathname.includes('/kam/accounts/upsell')) return 'Rechercher une opportunité d’upsell...';

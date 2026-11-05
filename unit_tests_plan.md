@@ -182,15 +182,3 @@ manquantes, absence de références fabriquées et conservation des corrections 
 Parcours reproductible : `scripts/smoke_research_integration.py` utilise le corpus
 fictif avec un serveur HTTP et un worker Research séparé, jusqu'au brief Onbora.
 Les bases du test sont isolées ; aucun appel fournisseur payant.
-
-## Historique des signaux Onbora Analysis — 5 novembre 2026
-
-- Backend : `kam.test_analysis_signals` vérifie l’archivage automatique par le worker, la déduplication entre recherches et dans une même réponse, la conservation des sources, la reprise hors réseau idempotente, les permissions, le suivi personnel audité et la stabilité du nombre de requêtes. Les tests couvrent aussi la réserve sur l’identité, les périodes vides, les filtres, les journées de Kinshasa et le niveau de preuve disponible à la fin d’une période passée.
-- Régression : `apps.ai_core.test_company_research` et `kam.test_news_feed` couvrent le parcours de recherche et le fil d’actualité existants.
-- Reprise antérieure à v2 : import hors réseau des résultats déjà présents dans les comptes, références et identité contrôlées, réserve « Historique à revalider », absence de faux jobs v2, dates conservées, reprise idempotente et conservation du suivi lors du passage au format v2. L’API signale les faits disponibles hors période. Vérification locale : 70 observations et 116 faits distincts repris ; 2 signaux accessibles au compte salim sur les 30 derniers jours.
-- Frontend : `node --test tests/analysisSignals.test.mjs` depuis `frontend/` (7 tests) vérifie les filtres encodés, les liens de sources, les dates, les séries nulles et le rendu accessible des graphiques et matrices.
-- Contrôles : compilation Next.js de production, TypeScript, ESLint ciblé, migration sans dérive et hooks design/dette technique ciblés.
-- Vérification navigateur automatisée non réalisée : accès à l’aperçu local refusé précédemment. Vérifier manuellement les thèmes clair/sombre, le tableau défilant sur mobile, les graphiques cliquables, la pagination et l’enregistrement du suivi sans perte de notes.
-- Vérification sur la base utilisée par le backend : migration `kam.0019` appliquée, reprise exécutée sans appel externe et réponse analytique authentifiée HTTP 200. Aucun job v2 terminé n’était disponible à reprendre au moment de cette vérification.
-
-Commande backend depuis `backend/` : `venv/Scripts/python.exe manage.py test kam.test_analysis_signals apps.ai_core.test_company_research kam.test_news_feed --settings=onbora.test_settings --noinput` (SQLite en mémoire).

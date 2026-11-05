@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { KamProvider, useKamContext } from '@/components/kam/KamContext';
 import KamSidebar from '@/components/kam/KamSidebar';
@@ -11,14 +10,13 @@ import { SkeletonBox } from '@/components/shared/SkeletonLoader';
 
 function KamShell({ children }: { children: React.ReactNode }) {
   const { loading, error, loadAssignedAccounts, visits } = useKamContext();
-  const ownsLoading = usePathname()?.startsWith('/kam/analysis');
 
   return (
     <div className="flex h-screen w-full bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white font-sans antialiased overflow-hidden select-none transition-colors duration-300">
       <KamSidebar unreadSignalsCount={visits.length > 0 ? 1 : 0} />
       <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         <KamHeader />
-        {loading && !ownsLoading ? (
+        {loading ? (
           <div role="status" aria-label="Chargement du portefeuille" className="flex-1 p-8 space-y-6">
             <SkeletonBox height={40} width="40%" />
             <div className="grid md:grid-cols-2 gap-6">
@@ -27,7 +25,7 @@ function KamShell({ children }: { children: React.ReactNode }) {
             </div>
             <SkeletonBox height={280} />
           </div>
-        ) : error && !ownsLoading ? (
+        ) : error ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="p-8 max-w-md bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 text-center space-y-3">
               <Icons.AlertTriangle size={32} className="text-zinc-500 mx-auto" />
