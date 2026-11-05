@@ -72,6 +72,8 @@ def apply_completed_research(claimed, data):
         job.response_data, job.applied_at = data, timezone.now()
         job.lease_token, job.lease_expires_at = None, None
         job.error_code = ""
+        from kam.services.analysis_signal_ingestion import retain_analysis_signals
+        retain_analysis_signals(job, data)
         job.save()
 
 

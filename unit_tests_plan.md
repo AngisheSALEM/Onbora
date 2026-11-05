@@ -183,11 +183,13 @@ Parcours reproductible : `scripts/smoke_research_integration.py` utilise le corp
 fictif avec un serveur HTTP et un worker Research séparé, jusqu'au brief Onbora.
 Les bases du test sont isolées ; aucun appel fournisseur payant.
 
-## Analyse sectorielle KAM — 5 novembre 2026
+## Historique des signaux Onbora Analysis — 5 novembre 2026
 
-- Backend : `kam.test_sector_analytics` (5 tests) vérifie les permissions, l’isolation des portefeuilles et des rapports KAM, le parc actif réel, la déduplication des besoins, les états vides et le nombre constant de requêtes (3).
-- Frontend : `node --test tests/sectorAnalytics.test.mjs` depuis `frontend/` (3 tests) vérifie les bornes calendaires 0/30/31/60/61/90 jours, les secteurs non renseignés et la déduplication des comptes par besoin.
-- Contrôles : TypeScript, ESLint ciblé, compilation Next.js de production et hooks design/dette technique ciblés.
-- Vérification navigateur : non réalisée, accès à l’aperçu local refusé par le contrôle d’accès du navigateur. Vérifier manuellement les thèmes clair/sombre, le tableau défilant sur mobile, le filtre secteur, la recherche et l’ouverture des fiches depuis les graphiques.
+- Backend : `kam.test_analysis_signals` vérifie l’archivage automatique par le worker, la déduplication entre recherches et dans une même réponse, la conservation des sources, la reprise hors réseau idempotente, les permissions, le suivi personnel audité et la stabilité du nombre de requêtes. Les tests couvrent aussi la réserve sur l’identité, les périodes vides, les filtres, les journées de Kinshasa et le niveau de preuve disponible à la fin d’une période passée.
+- Régression : `apps.ai_core.test_company_research` et `kam.test_news_feed` couvrent le parcours de recherche et le fil d’actualité existants.
+- Frontend : `node --test tests/analysisSignals.test.mjs` depuis `frontend/` (7 tests) vérifie les filtres encodés, les liens de sources, les dates, les séries nulles et le rendu accessible des graphiques et matrices.
+- Contrôles : compilation Next.js de production, TypeScript, ESLint ciblé, migration sans dérive et hooks design/dette technique ciblés.
+- Vérification navigateur automatisée non réalisée : accès à l’aperçu local refusé précédemment. Vérifier manuellement les thèmes clair/sombre, le tableau défilant sur mobile, les graphiques cliquables, la pagination et l’enregistrement du suivi sans perte de notes.
+- Vérification sur la base utilisée par le backend : migration `kam.0019` appliquée, reprise exécutée sans appel externe et réponse analytique authentifiée HTTP 200. Aucun job v2 terminé n’était disponible à reprendre au moment de cette vérification.
 
-Commande backend depuis `backend/` : `venv/Scripts/python.exe manage.py test kam.test_sector_analytics --settings=onbora.test_settings --noinput` (SQLite en mémoire, sans accès à la base de l’application).
+Commande backend depuis `backend/` : `venv/Scripts/python.exe manage.py test kam.test_analysis_signals apps.ai_core.test_company_research kam.test_news_feed --settings=onbora.test_settings --noinput` (SQLite en mémoire).

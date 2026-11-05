@@ -641,6 +641,71 @@ class B2BNewsFeedItem(models.Model):
         return f"[{tag}] {target} : {self.title}"
 
 
+class AnalysisSignalRun(models.Model):
+    """A retained research observation, including runs that yielded no supported facts."""
+    origin_job_id = models.UUIDField(unique=True)
+    job = models.OneToOneField('ai_core.CompanyResearchJob', null=True, blank=True,
+                              on_delete=models.SET_NULL, related_name='signal_run')
+    enterprise = models.ForeignKey('sales.Enterprise', on_delete=models.CASCADE)
+    sector = models.CharField(max_length=100, blank=True)
+    observed_at = models.DateTimeField(db_index=True)
+    recorded_at = models.DateTimeField(default=timezone.now)
+    outcome = models.CharField(max_length=40, blank=True)
+
+
+class AnalysisSignal(models.Model):
+    """One distinct attributable fact per enterprise; repeated research is not a new signal."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enterprise = models.ForeignKey('sales.Enterprise', on_delete=models.CASCADE, related_name='analysis_signals')
+    fingerprint = models.CharField(max_length=64)
+    title = models.TextField()
+    category = models.CharField(max_length=30, db_index=True)
+    sector = models.CharField(max_length=100, blank=True)
+    first_seen = models.DateTimeField(db_index=True)
+    last_seen = models.DateTimeField()
+    event_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['enterprise', 'fingerprint'], name='unique_analysis_signal_fact')]
+
+
+class AnalysisSignalObservation(models.Model):
+    """Immutable sourced version of a signal in a particular research run."""
+    signal = models.ForeignKey(AnalysisSignal, on_delete=models.CASCADE, related_name='observations')
+    run = models.ForeignKey(AnalysisSignalRun, on_delete=models.CASCADE, related_name='observations')
+    observed_at = models.DateTimeField(db_index=True)
+    confidence = models.CharField(max_length=30)
+    payload = models.JSONField(default=dict)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['signal', 'run'], name='unique_signal_run_observation')]
+
+
+class AnalysisSignalReview(models.Model):
+    STATES = [('NEW', 'À examiner'), ('VERIFY', 'À vérifier'), ('ACTIONED', 'Action engagée'),
+              ('CLOSED', 'Clôturé'), ('DISMISSED', 'Écarté')]
+    PRIORITIES = [('UNKNOWN', 'À qualifier'), ('HIGH', 'Haute'), ('MEDIUM', 'Moyenne'), ('NORMAL', 'Veille')]
+    signal = models.ForeignKey(AnalysisSignal, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    state = models.CharField(max_length=20, choices=STATES, default='NEW')
+    priority = models.CharField(max_length=20, choices=PRIORITIES, default='UNKNOWN')
+    note = models.TextField(blank=True)
+    actioned_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['signal', 'user'], name='unique_signal_user_review')]
+
+
+class AnalysisSignalReviewEvent(models.Model):
+    signal = models.ForeignKey(AnalysisSignal, on_delete=models.CASCADE, related_name='review_events')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    state = models.CharField(max_length=20)
+    priority = models.CharField(max_length=20)
+    note = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+
 
 
 

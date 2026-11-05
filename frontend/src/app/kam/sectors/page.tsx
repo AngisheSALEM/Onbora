@@ -1,5 +1,5 @@
-import KamSectorAnalyticsView from '@/components/kam/KamSectorAnalyticsView';
+import { redirect } from 'next/navigation';
 
 export default function KamSectorsPage() {
-  return <KamSectorAnalyticsView />;
+  redirect('/kam/analysis');
 }
