@@ -1,6 +1,6 @@
 # Contexte Général du Projet Onbora
 
-Dernière mise à jour : 16 août 2026
+Dernière mise à jour : 6 novembre 2026
 
 ---
 
@@ -322,4 +322,35 @@ L'alignement structurel du modèle DDD et l'implémentation complète des 5 epic
 *   **Assurance Qualité & Conformité** :
     *   12/12 tests unitaires validés dans `backend/apps/ai_core/test_vector_and_market_intel.py`.
     *   27/27 tests AI Core existants validés dans `backend/apps/ai_core/tests.py`.
+
+---
+
+## 16. Comptes rendus KAM issus des traces commerciales — 6 novembre 2026
+
+Changement validé explicitement par l'utilisateur : le vocal n'est plus le passage
+obligatoire des parcours KAM Web et mobile. Cette décision remplace les anciennes
+descriptions centrées sur le dictaphone pour ces parcours, en conservant les rapports
+historiques et les anciennes routes de compatibilité.
+
+* **Collecte légère** : notes ou message de suivi collé, import du texte d'un PDF,
+  DOCX ou fichier texte (5 Mo maximum), prochaine action facultative avec responsable
+  et échéance. Les échanges ne sont pas récupérés automatiquement depuis les messageries.
+* **Interface en cartes** : informations de rencontre, document et prochaine action ;
+  disposition adaptative, surfaces neutres et CTA principal cobalt, sans cartes imbriquées.
+* **Core AI unifié** : `generate_meeting_report` délègue au moteur spécialisé
+  `apps.ai_core.meeting_report`. Les extractions s'appuient sur des passages présents
+  dans les sources : points essentiels, besoins exprimés, objections, actions et décisions.
+  Les propositions et retours avant-vente alimentent un périmètre proposé distinct des
+  besoins confirmés. Des questions de suivi signalent les points restant à clarifier.
+* **Brouillon puis validation** : compte rendu et email modifiables avant enregistrement.
+  La préparation seule ne clôture pas la visite. Aucun email n'est envoyé automatiquement.
+  Signature du brouillon, contrôle d'accès, enregistrement atomique et idempotence ;
+  conservation des informations d'origine et de la validation dans le dossier.
+* **Résilience** : extraction locale prudente lorsque l'inférence n'est pas disponible,
+  conservation des notes sur l'appareil, absence de besoin inventé pour une note vide,
+  et retour en haut du parcours mobile lors de la relecture ou d'une erreur.
+* **Validation** : 19 tests backend ciblés, 12 tests du parcours mobile, build Web,
+  ESLint ciblé, analyse Dart et hooks de conformité design/architecture réussis.
+  Les appels fournisseur sont isolés dans les tests ; le rendu Web a été contrôlé
+  dans le navigateur local.
     *   Hook 1 & Hook 2 validés à 100% (326 fichiers Python audités sans anomalie).
