@@ -1,0 +1,19 @@
+/* Standalone fields must remain visible despite the global nested-input reset. */
+.modal .field {
+  background-color: var(--surface-secondary) !important;
+  color: var(--foreground);
+  caret-color: var(--foreground);
+  border: 0 !important;
+  border-radius: 8px;
+}
+
+.modal .field::placeholder {
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.modal .field:focus-visible {
+  outline: 2px solid var(--color-primary-blue) !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}

@@ -4,8 +4,9 @@ import { FormEvent, useEffect, useId, useRef, useState } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 import { SkeletonBox } from '@/components/shared/SkeletonLoader';
+import styles from './KamAccountActionForm.module.css';
 
-export const actionField = 'w-full min-h-11 rounded-lg bg-[#F6F5F2] dark:bg-[#2F2C30] px-4 py-3 border-0 outline-none focus-visible:outline-2 focus-visible:outline-[#4F6CE8] text-[14px] leading-[22px]';
+const actionField = `${styles.field} w-full min-h-11 rounded-lg px-4 py-3 border-0 text-[14px] leading-[22px]`;
 export const actionButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-[14px] leading-[22px] font-semibold cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F6CE8] disabled:opacity-50 disabled:cursor-default';
 
 function localDateTime(date: Date) {
@@ -67,7 +68,7 @@ export default function KamAccountActionForm({ accountId, onSaved, onCancel }: {
 
   return <dialog ref={dialog} aria-labelledby={`${id}-heading`} aria-describedby={`${id}-description`}
     onCancel={event => { event.preventDefault(); if (!lock.current) onCancel(); }}
-    className="m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl bg-white dark:bg-[#242124] p-5 sm:p-8 text-[#242124] dark:text-zinc-100 shadow-xl backdrop:bg-black/40">
+    className={`${styles.modal} m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl bg-white dark:bg-[#242124] p-5 sm:p-8 text-[#242124] dark:text-zinc-100 shadow-xl backdrop:bg-black/40`}>
     <header className="mb-6 flex items-start justify-between gap-4">
       <div>
         <h2 id={`${id}-heading`} className="text-[21px] leading-[27px] font-semibold">Consigner une action</h2>
