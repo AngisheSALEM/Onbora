@@ -254,3 +254,19 @@ Les bases du test sont isolées ; aucun appel fournisseur payant.
 - Client API : tests Node de regroupement des GET simultanés, isolation des sessions, reprise après erreur, invalidation après mutation et annulation indépendante.
 - Validation : tests Django ciblés et Core AI, tests Node, TypeScript, ESLint ciblé et build de production Next.js ; hooks design et architecture.
 - Mesure serveur sur la base de développement configurée : comptes 14 ms / 2 requêtes, leads 49 ms / 3 requêtes, résumé 137 ms / 10 requêtes. Mesure ponctuelle sans réseau navigateur ni concurrence ; voir `docs/performance_kam.md`.
+
+### Historique commercial par compte et programmation d’actions — 11 novembre 2026
+
+- `kam.test_account_activity` : 19 tests couvrant l’isolation des portefeuilles, les rôles,
+  les comptes absents, la validation des dates, des résultats et des lieux de visite.
+- Reprise des visites, comptes rendus et événements existants, y compris ceux des anciens KAM ;
+  lecture sans écriture et sans doublon entre rendez-vous, action programmée et compte rendu.
+- Programmation d’une action ; création atomique d’un rendez-vous physique pour une visite ;
+  réalisation et annulation avec résultat/motif obligatoire, horodatage et auteur conservés.
+- Clôture immuable, rejeu identique sans changement d’horodatage, cohérence avec les statuts
+  de l’agenda, visite en cours et clôture depuis le parcours de compte rendu.
+- Lecture constante de 5 requêtes SQL avec plusieurs actions/rapports et utilisateurs ;
+  absence de chargement des transcriptions brutes pour la liste d’activité.
+- Vérification Web : onglet Historique indépendant du chargement du briefing, états vide,
+  chargement, erreur et confirmation ; formulaire accessible avec date locale, types d’action,
+  interlocuteur, lieu conditionnel et résultat ; TypeScript, ESLint ciblé, build Next.js et hooks.

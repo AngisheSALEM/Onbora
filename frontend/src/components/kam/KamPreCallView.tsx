@@ -10,6 +10,7 @@ import { KamTechnicalSheetModal, TechnicalSpecsData } from './KamTechnicalSheetM
 import KamAccountComparisonSection from './KamAccountComparisonSection';
 import KamAccountNewsTab from './KamAccountNewsTab';
 import KamCrmHistory from './KamCrmHistory';
+import KamAccountHistoryTab from './KamAccountHistoryTab';
 
 // ============================================================================
 // DATA TYPES
@@ -241,9 +242,9 @@ export default function KamPreCallView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance) | 'compare' (Comparatif sectoriel) | 'news' (Actualités)
-  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'compare' | 'news'>(
-    initialTab === 'compare' ? 'compare' : initialTab === 'news' ? 'news' : 'brief'
+  // Sections of the account, including its commercial activity history.
+  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'compare' | 'news' | 'history'>(
+    initialTab === 'history' ? 'history' : initialTab === 'compare' ? 'compare' : initialTab === 'news' ? 'news' : 'brief'
   );
   const [accountNewsCount, setAccountNewsCount] = useState<number>(0);
   const visibleTab = activeTab;
@@ -822,25 +823,27 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
         </div>
       )}
 
-      {/* 2. DISCREET TABS (Minimalist underline style, zero visual clutter) */}
+      {/* Account sections use contrast rather than decorative separator lines. */}
       {(briefingData || currentAccount) && (
         <nav aria-label="Sections du compte" className="flex items-center gap-6 overflow-x-auto shrink-0 mb-6">
           <button
             onClick={() => setActiveTab('brief')}
-            className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
+            aria-current={visibleTab === 'brief' ? 'page' : undefined}
+            className={`min-h-11 px-3 py-2 rounded-lg text-[14px] leading-[22px] font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${
               visibleTab === 'brief'
-                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
-                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                ? 'bg-[#ECEAE5] dark:bg-[#3B373D] text-[#242124] dark:text-white'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'
             }`}
           >
             Synthèse & Solutions
           </button>
           <button
             onClick={() => setActiveTab('details')}
-            className={`pb-3 text-sm font-semibold transition-all relative cursor-pointer ${
+            aria-current={visibleTab === 'details' ? 'page' : undefined}
+            className={`min-h-11 px-3 py-2 rounded-lg text-[14px] leading-[22px] font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${
               visibleTab === 'details'
-                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
-                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                ? 'bg-[#ECEAE5] dark:bg-[#3B373D] text-[#242124] dark:text-white'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'
             }`}
           >
             Faits & Vigilance
@@ -849,10 +852,10 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             type="button"
             onClick={() => { setActiveTab('compare'); setIsEditing(false); }}
             aria-current={visibleTab === 'compare' ? 'page' : undefined}
-            className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${
+            className={`min-h-11 px-3 py-2 rounded-lg text-[14px] leading-[22px] font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${
               visibleTab === 'compare'
-                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
-                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                ? 'bg-[#ECEAE5] dark:bg-[#3B373D] text-[#242124] dark:text-white'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'
             }`}
           >
             Comparatif sectoriel
@@ -861,10 +864,10 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             type="button"
             onClick={() => { setActiveTab('news'); setIsEditing(false); }}
             aria-current={visibleTab === 'news' ? 'page' : undefined}
-            className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-11 px-3 py-2 rounded-lg text-[14px] leading-[22px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${
               visibleTab === 'news'
-                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
-                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                ? 'bg-[#ECEAE5] dark:bg-[#3B373D] text-[#242124] dark:text-white'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'
             }`}
           >
             <span>Actualités</span>
@@ -873,6 +876,14 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                 {accountNewsCount}
               </span>
             )}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('history'); setIsEditing(false); }}
+            aria-current={visibleTab === 'history' ? 'page' : undefined}
+            className={`min-h-11 px-3 py-2 rounded-lg text-[14px] leading-[22px] font-semibold whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${visibleTab === 'history' ? 'bg-[#ECEAE5] dark:bg-[#3B373D] text-[#242124] dark:text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'}`}
+          >
+            Historique
           </button>
         </nav>
       )}
@@ -884,7 +895,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           {companyResearchNotice(briefingData?.research_job)}
         </p>
       )}
-      {loading ? (
+      {visibleTab === 'history' ? (
+        <div className="mx-auto w-full max-w-4xl pb-12">
+          <KamAccountHistoryTab key={selectedAccountId} accountId={selectedAccountId} />
+        </div>
+      ) : loading ? (
         <div className="w-full max-w-4xl mx-auto p-8 space-y-6" role="status" aria-live="polite" aria-busy="true">
           <p className="text-[13px] leading-[21px] text-zinc-500">Préparation de la fiche et vérification des informations publiques…</p>
           <SkeletonBox height={26} width="55%" />

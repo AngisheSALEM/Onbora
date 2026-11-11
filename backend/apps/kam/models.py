@@ -195,6 +195,36 @@ class KamVisitReport(models.Model):
         return f"Rapport KAM: {self.enterprise.name} ({self.created_at.strftime('%d/%m/%Y')})"
 
 
+class AccountCommercialAction(models.Model):
+    """Action planned or performed on an account, with an attributable outcome."""
+    TYPES = [
+        ('CALL', 'Appel'), ('EMAIL', 'Email'), ('FOLLOW_UP', 'Relance'),
+        ('PROPOSAL', 'Proposition commerciale'), ('VISIT', 'Visite en présentiel'),
+        ('OTHER', 'Autre action'),
+    ]
+    STATUSES = [('SCHEDULED', 'Programmée'), ('COMPLETED', 'Réalisée'), ('CANCELLED', 'Annulée')]
+
+    enterprise = models.ForeignKey('sales.Enterprise', on_delete=models.CASCADE, related_name='commercial_actions')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='created_commercial_actions')
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='completed_commercial_actions')
+    appointment = models.OneToOneField(KamAppointment, null=True, blank=True, on_delete=models.SET_NULL, related_name='commercial_action')
+    action_type = models.CharField(max_length=20, choices=TYPES)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    contact_name = models.CharField(max_length=150, blank=True, default='')
+    location = models.CharField(max_length=255, blank=True, default='')
+    scheduled_at = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUSES, default='SCHEDULED')
+    completed_at = models.DateTimeField(null=True, blank=True)
+    result = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['scheduled_at', 'id']
+        indexes = [models.Index(fields=['enterprise', 'status', 'scheduled_at'], name='kam_action_account_status_idx')]
+
+
 class PreCallBriefing(models.Model):
     kam = models.ForeignKey(
         settings.AUTH_USER_MODEL,

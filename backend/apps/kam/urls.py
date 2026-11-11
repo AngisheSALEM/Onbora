@@ -1,4 +1,5 @@
 from django.urls import path
+from .account_activity_views import AccountActivityView, AccountActionDetailView
 from .meeting_report_views import MeetingReportView, MeetingReportDocumentView
 from .views import (
     DossierListView, DossierDetailView, DossierBusinessTwinView, 
@@ -44,6 +45,8 @@ from .services.news_feed_views import (
 
 
 urlpatterns = [
+    path('accounts/<int:account_id>/activity/', AccountActivityView.as_view(), name='kam-account-activity'),
+    path('accounts/<int:account_id>/actions/<int:action_id>/', AccountActionDetailView.as_view(), name='kam-account-action-detail'),
     path('accounts/<int:account_id>/report-draft/', MeetingReportView.as_view(), name='kam-account-report-draft'),
     path('accounts/<int:account_id>/report-complete/', MeetingReportView.as_view(operation='complete'), name='kam-account-report-complete'),
     path('accounts/<int:account_id>/report-document/', MeetingReportDocumentView.as_view(), name='kam-account-report-document'),
