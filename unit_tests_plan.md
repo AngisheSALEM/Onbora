@@ -270,3 +270,12 @@ Les bases du test sont isolées ; aucun appel fournisseur payant.
 - Vérification Web : onglet Historique indépendant du chargement du briefing, états vide,
   chargement, erreur et confirmation ; formulaire accessible avec date locale, types d’action,
   interlocuteur, lieu conditionnel et résultat ; TypeScript, ESLint ciblé, build Next.js et hooks.
+
+### Simplification de l’historique du compte — 11 novembre 2026
+
+- L’écran affiche seulement les actions passées ; suppression du sous-titre et de la programmation.
+- Un bouton « + » accessible ouvre la consignation dans une modale native : focus contenu,
+  fermeture par croix, Annuler ou Échap, retour du focus et défilement interne sur petit écran.
+- Le formulaire enregistre uniquement des actions réalisées, avec date passée et résultat obligatoire ;
+  les informations saisies sont conservées lors d’une erreur et la fermeture est bloquée pendant l’envoi.
+- Vérifications : TypeScript, ESLint ciblé et hook design sur les deux composants modifiés.

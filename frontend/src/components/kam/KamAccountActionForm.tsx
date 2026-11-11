@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useId, useRef, useState } from 'react';
+import { FormEvent, useEffect, useId, useRef, useState } from 'react';
 import { fetchAPI } from '@/lib/api';
+import { Icons } from '@/components/shared/Icons';
 import { SkeletonBox } from '@/components/shared/SkeletonLoader';
 
 export const actionField = 'w-full min-h-11 rounded-lg bg-[#F6F5F2] dark:bg-[#2F2C30] px-4 py-3 border-0 outline-none focus-visible:outline-2 focus-visible:outline-[#4F6CE8] text-[14px] leading-[22px]';
@@ -11,29 +12,41 @@ function localDateTime(date: Date) {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-export default function KamAccountActionForm({ accountId, completed, onSaved, onCancel }: {
-  accountId: string; completed: boolean; onSaved: () => void; onCancel: () => void;
+export default function KamAccountActionForm({ accountId, onSaved, onCancel }: {
+  accountId: string; onSaved: () => void; onCancel: () => void;
 }) {
   const id = useId();
   const lock = useRef(false);
+  const dialog = useRef<HTMLDialogElement>(null);
   const [kind, setKind] = useState('FOLLOW_UP');
-  const [date, setDate] = useState(() => localDateTime(new Date(Date.now() + (completed ? -60000 : 86400000))));
+  const [date, setDate] = useState(() => localDateTime(new Date(Date.now() - 60000)));
   const [result, setResult] = useState('');
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const modal = dialog.current;
+    const previousOverflow = document.body.style.overflow;
+    modal?.showModal();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      modal?.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (lock.current) return;
     const form = new FormData(event.currentTarget);
     const scheduled = new Date(date);
-    if (completed && !result.trim()) {
+    if (!result.trim()) {
       setError('Précisez le résultat de l’action réalisée.');
       return;
     }
-    if ((completed && scheduled.getTime() > Date.now()) || (!completed && scheduled.getTime() <= Date.now())) {
-      setError(completed ? 'Choisissez la date et l’heure auxquelles l’action a été réalisée.' : 'Choisissez une date et une heure à venir.');
+    if (!Number.isFinite(scheduled.getTime()) || scheduled.getTime() > Date.now()) {
+      setError('Choisissez la date et l’heure auxquelles l’action a été réalisée.');
       return;
     }
     lock.current = true; setBusy(true); setError('');
@@ -43,7 +56,7 @@ export default function KamAccountActionForm({ accountId, completed, onSaved, on
           action_type: kind, title: String(form.get('title') || '').trim(),
           scheduled_at: scheduled.toISOString(), contact_name: form.get('contact_name'),
           description: notes, location: kind === 'VISIT' ? form.get('location') : '',
-          status: completed ? 'COMPLETED' : 'SCHEDULED', result: completed ? result : '',
+          status: 'COMPLETED', result: result.trim(),
         }),
       });
       onSaved();
@@ -52,11 +65,17 @@ export default function KamAccountActionForm({ accountId, completed, onSaved, on
     } finally { lock.current = false; setBusy(false); }
   }
 
-  return <form onSubmit={save} aria-labelledby={`${id}-heading`} className="space-y-5 py-6">
-    <div>
-      <h3 id={`${id}-heading`} className="text-[21px] leading-[27px] font-semibold">{completed ? 'Consigner une action réalisée' : 'Programmer une action'}</h3>
-      <p className="mt-2 text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">Les champs marqués * sont obligatoires. L’action sera rattachée à ce compte, à votre nom.</p>
-    </div>
+  return <dialog ref={dialog} aria-labelledby={`${id}-heading`} aria-describedby={`${id}-description`}
+    onCancel={event => { event.preventDefault(); if (!lock.current) onCancel(); }}
+    className="m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl bg-white dark:bg-[#242124] p-5 sm:p-8 text-[#242124] dark:text-zinc-100 shadow-xl backdrop:bg-black/40">
+    <header className="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h2 id={`${id}-heading`} className="text-[21px] leading-[27px] font-semibold">Consigner une action</h2>
+        <p id={`${id}-description`} className="mt-2 text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">Les champs marqués * sont obligatoires. L’action sera rattachée à ce compte, à votre nom.</p>
+      </div>
+      <button type="button" aria-label="Fermer le formulaire" disabled={busy} onClick={onCancel} className={`${actionButton} min-w-11 shrink-0 px-2 hover:bg-black/5 dark:hover:bg-white/5`}><Icons.X size={20} /></button>
+    </header>
+    <form onSubmit={save} aria-labelledby={`${id}-heading`} className="space-y-5">
     <fieldset disabled={busy} className="grid gap-5 sm:grid-cols-2">
       <div className="space-y-2">
         <label htmlFor={`${id}-kind`} className="text-[13px] leading-[21px] font-medium">Type d’action *</label>
@@ -66,7 +85,7 @@ export default function KamAccountActionForm({ accountId, completed, onSaved, on
         </select>
       </div>
       <div className="space-y-2">
-        <label htmlFor={`${id}-date`} className="text-[13px] leading-[21px] font-medium">{completed ? 'Date et heure de réalisation *' : 'Date et heure prévues *'}</label>
+        <label htmlFor={`${id}-date`} className="text-[13px] leading-[21px] font-medium">Date et heure de réalisation *</label>
         <input id={`${id}-date`} className={actionField} type="datetime-local" required value={date} onChange={e => setDate(e.target.value)} />
         <p className="text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">Heure locale de votre appareil.</p>
       </div>
@@ -83,23 +102,23 @@ export default function KamAccountActionForm({ accountId, completed, onSaved, on
         <input id={`${id}-location`} name="location" className={actionField} required maxLength={255} pattern=".*\S.*" placeholder="Adresse du rendez-vous" />
       </div>}
       <div className="space-y-2 sm:col-span-2">
-        <label htmlFor={`${id}-notes`} className="text-[13px] leading-[21px] font-medium">{completed ? 'Contexte' : 'Objectif et notes'}</label>
+        <label htmlFor={`${id}-notes`} className="text-[13px] leading-[21px] font-medium">Contexte</label>
         <textarea id={`${id}-notes`} className={actionField} rows={3} maxLength={5000} value={notes} onChange={e => setNotes(e.target.value)} />
         <p className="text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">{notes.length} / 5 000 caractères</p>
       </div>
-      {completed && <div className="space-y-2 sm:col-span-2">
+      <div className="space-y-2 sm:col-span-2">
         <label htmlFor={`${id}-result`} className="text-[13px] leading-[21px] font-medium">Résultat de l’action *</label>
         <textarea id={`${id}-result`} className={actionField} required rows={3} maxLength={5000} value={result} onChange={e => setResult(e.target.value)} placeholder="Ex. Le client souhaite une proposition révisée pour vendredi." />
         <p className="text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">{result.length} / 5 000 caractères</p>
-      </div>}
+      </div>
     </fieldset>
-    {kind === 'VISIT' && !completed && <p className="text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-400">Cette visite sera également ajoutée à votre agenda.</p>}
     {error && <p role="alert" className="text-[14px] leading-[22px]">{error}</p>}
     <div className="flex flex-wrap gap-3">
       <button type="submit" disabled={busy} className={`${actionButton} bg-[#4F6CE8] text-white`}>
-        {busy && <SkeletonBox width={16} height={16} />}{busy ? 'Enregistrement…' : completed ? 'Enregistrer l’action' : 'Programmer l’action'}
+        {busy && <SkeletonBox width={16} height={16} />}{busy ? 'Enregistrement…' : 'Enregistrer l’action'}
       </button>
       <button type="button" onClick={onCancel} disabled={busy} className={`${actionButton} hover:bg-black/5 dark:hover:bg-white/5`}>Annuler</button>
     </div>
-  </form>;
+    </form>
+  </dialog>;
 }
