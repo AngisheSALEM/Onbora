@@ -97,6 +97,16 @@ class Plaque(models.Model):
             self.kml_data = self.generate_kml()
         super().save(*args, **kwargs)
 
+class SeedImportRecord(models.Model):
+    """Stable import identity; registry leads remain distinct from confirmed CRM data."""
+
+    external_id = models.CharField(max_length=100, unique=True)
+    enterprise = models.OneToOneField(
+        'sales.Enterprise', null=True, on_delete=models.CASCADE, related_name='seed_import')
+    payload = models.JSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class CrmAccountRecord(models.Model):
     """
     Données maîtresses structurées synchronisées depuis le CRM central (ex: Orange CRM, Kaabu, Salesforce).

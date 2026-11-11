@@ -1,4 +1,5 @@
 from django.urls import path
+from .seed_views import SeedRecordImportView
 from .views import (
     EnterpriseListFullView,
     EnterpriseSearchView,
@@ -12,6 +13,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('seed/records/<slug:external_id>/', SeedRecordImportView.as_view(), name='crm-seed-import'),
     # Repertoire Central CRM des Entreprises B2B
     path('enterprises/', EnterpriseListFullView.as_view(), name='crm-enterprise-list-full'),
     path('enterprises/search/', EnterpriseSearchView.as_view(), name='crm-enterprise-search'),

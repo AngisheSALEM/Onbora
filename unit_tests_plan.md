@@ -1,5 +1,18 @@
 # Plan de Tests Unitaires — Onbora
 
+### Import CRM et leads Onbora Analysis — 11 novembre 2026
+
+- `sales.test_seed_import` : 12 tests sur l’authentification administrateur, le mapping,
+  les routes v1, les rejeux, les changements de profil et la préservation du suivi commercial.
+- Contrainte unique d’identité et transaction atomique ; refus des collisions avec les
+  fiches CRM existantes et rollback intégral en cas d’échec.
+- Leads conservés séparément des données CRM confirmées ; provenance, noms complets et
+  sources conservés, sans qualification ni parc installé inventé.
+- Émetteur Onbora Analysis : 8 tests autonomes couvrant lecture source seule, CLI,
+  export déterministe, identité stable, reprise HTTP et absence de doublons au rejeu.
+- Échange HTTP complet sur une base isolée : 20 fiches envoyées deux fois par le
+  script émetteur avec un jeton administrateur ; 20 entreprises et 20 fiches CRM au total.
+
 Dernière mise à jour : 18 juillet 2026
 
 Ce document répertorie tous les tests unitaires et d'intégration à écrire et à valider pour garantir la stabilité et la sécurité d'Onbora.
