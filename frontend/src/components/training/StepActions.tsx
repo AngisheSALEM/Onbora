@@ -48,7 +48,7 @@ export default function StepActions({
             </>
           ) : (
             <>
-              <Icons.Sparkles size={14} className="text-white" />
+           
               {actionLabel}
             </>
           )}

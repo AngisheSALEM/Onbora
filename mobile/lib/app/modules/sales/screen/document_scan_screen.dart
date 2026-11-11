@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -426,7 +426,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                         // Fast Demo Trigger
                         TextButton.icon(
                           onPressed: _isProcessing ? null : () => _runDemoScan(_selectedDocType),
-                          icon: Icon(LucideIcons.sparkles, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
+                          icon: Icon(LucideIcons.fileText, size: 13, color: isDark ? Colors.white70 : AppConstants.textDark),
                           label: Text(
                             'Tester avec un modèle de document type',
                             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : AppConstants.textDark),

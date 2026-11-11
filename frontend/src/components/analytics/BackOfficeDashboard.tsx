@@ -1070,7 +1070,7 @@ export default function BackOfficeDashboard({
             </div>
 
             <div className="mt-auto p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-200/50 dark:border-zinc-800/30 flex items-center gap-3">
-              <Icons.Sparkles size={20} className="text-zinc-600 dark:text-zinc-400 shrink-0" />
+              
               <p className="text-[11px] text-zinc-900 dark:text-zinc-200 font-medium">
                 <strong>Recommandation IA :</strong> Le secteur <em>Banque & Finance</em> et le secteur <em>Industrie & Logistique</em> affichent les plus hauts paniers moyens (MRR &gt; 1 200 $). Priorisez les relances sur ces deux segments.
               </p>

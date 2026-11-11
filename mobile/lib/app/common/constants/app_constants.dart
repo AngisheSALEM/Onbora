@@ -1,50 +1,91 @@
 import 'package:flutter/material.dart';
 
-/// Centralized Application Constants & Apple Typography Hierarchy (SF Pro Native)
+/// Centralized Application Constants & Apple Typography Hierarchy (SF Pro Native & Golden Ratio phi ≈ 1.618)
 abstract class AppConstants {
+  // --- Le Nombre d'Or (Golden Ratio) & Racines Harmoniques ---
+  static const double phi = 1.6180339887;
+  static const double phiRoot = 1.2720196495;
+
   // --- Native Apple SF Pro Typography System ---
   static const String fontFamilyPrimary = 'SFPro';
   static const String fontFamilySecondary = 'SFPro';
   
-  // Standard sizes
-  static const double fontSizeOverline = 11.0;  // Surtitre / Eyebrow (11-12px)
-  static const double fontSizeSubhead = 13.0;   // Métadonnées / Footnote (13-14px)
-  static const double fontSizeBody = 16.0;      // Titre Primaire / Headline (16px)
-  static const double fontSizeTitle2 = 22.0;    // Titre de Section / Title 2 (22px)
-  static const double fontSizeLargeTitle = 34.0;// Grand Titre iOS (34px)
+  // Échelle Typographique Harmonique régie par le Nombre d'Or (phi ≈ 1.618 & Suite de Fibonacci)
+  static const double fontSizeMicro = 8.0;       // Fibonacci 8 : Micro annotations / puces compactes (13 / phi)
+  static const double fontSizeCaption = 10.0;    // Légendes / footnotes (16 / phi)
+  static const double fontSizeEyebrow = 11.0;    // Surtitres / Eyebrows / Tags majuscules (14 / phiRoot)
+  static const double fontSizeOverline = 11.0;   // Surtitre / Eyebrow (11px)
+  static const double fontSizeSubhead = 13.0;    // Fibonacci 13 : Métadonnées / Subhead (21 / phi)
+  static const double fontSizeBodySm = 14.0;     // Corps dense / Cellules de tableau (11 * phiRoot)
+  static const double fontSizeBody = 16.0;       // Racine standard (phi^0) : Corps principal de lecture
+  static const double fontSizeHeadline = 21.0;   // Fibonacci 21 : Titre d'élément / Title 2 (13 * phi)
+  static const double fontSizeTitle = 26.0;      // Base * phi : Titre de section / Title 1 (16 * phi)
+  static const double fontSizeLargeTitle = 34.0; // Fibonacci 34 : Grand Titre iOS (21 * phi)
+  static const double fontSizeHero = 55.0;       // Fibonacci 55 : Titre Hero Display (34 * phi)
+  static const double fontSizeDisplay = 89.0;    // Fibonacci 89 : Chiffres clés / Compteurs KPI (55 * phi)
 
+  // Aliases de rétrocompatibilité
   static const double fontSizeXs = 11.0;
   static const double fontSizeSm = 12.0;
   static const double fontSizeMd = 14.0;
   static const double fontSizeLg = 16.0;
   static const double fontSizeXl = 18.0;
-  static const double fontSizeTitle = 22.0;
+  static const double fontSizeTitle2 = 21.0;     // Harmonie exacte du Nombre d'Or (13 * phi)
   static const double fontSizeHeader = 26.0;
-  static const double fontSizeHero = 34.0;
 
-  // --- Strict Typography Hierarchy Getters (700 Large Titles, 600 Sub-elements/Headlines, 500 Badges, 400 Body) ---
+  // --- Strict Typography Hierarchy Getters (Alignés sur le Nombre d'Or & Apple SF Pro) ---
   
-  /// 1. Grand Titre iOS (Large Title) : 34px | Bold | #FFFFFF (Dark) / #111111 (Light)
+  /// 0. Display KPI / Stat Majeur : 89px | Heavy | phi Ratio (89 = 55 * 1.618)
+  static TextStyle displayStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeDisplay,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1.2,
+    height: 1.05,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
+  );
+
+  /// 0bis. Hero Display : 55px | Bold | phi Ratio (55 = 34 * 1.618)
+  static TextStyle heroStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeHero,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.8,
+    height: 1.13,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
+  );
+
+  /// 1. Grand Titre iOS (Large Title) : 34px | Bold | phi Ratio (34 = 21 * 1.618)
   static TextStyle largeTitleStyle(bool isDark) => TextStyle(
     fontFamily: fontFamilyPrimary,
     fontSize: fontSizeLargeTitle,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
-    height: 1.15,
+    height: 1.18,
     color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
-  /// 2. Titre de Section (Title 2) : 22px | SemiBold | #FFFFFF (Dark) / #111111 (Light)
+  /// 2. Titre de Section (Title 1) : 26px | SemiBold | phi Ratio (26 = 16 * 1.618)
+  static TextStyle title1Style(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeTitle,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.4,
+    height: 1.23,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
+  );
+
+  /// 2bis. Titre de Sous-Section / Élément (Title 2) : 21px | SemiBold | phi Ratio (21 = 13 * 1.618)
   static TextStyle title2Style(bool isDark) => TextStyle(
     fontFamily: fontFamilyPrimary,
-    fontSize: fontSizeTitle2,
+    fontSize: fontSizeHeadline,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
-    height: 1.22,
+    height: 1.28,
     color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
-  /// 3. Surtitre / Tag de Catégorie (Overline / Eyebrow) : 11px | Medium | #8E8E93 (Gris Apple)
+  /// 3. Surtitre / Tag de Catégorie (Overline / Eyebrow) : 11px | Medium | Espacement Optique Ouvert (+0.4)
   static TextStyle overlineStyle(bool isDark) => TextStyle(
     fontFamily: fontFamilyPrimary,
     fontSize: fontSizeOverline,
@@ -53,23 +94,53 @@ abstract class AppConstants {
     color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF8E8E93),
   );
 
-  /// 4. Titre d'Élément Primaire (Headline) : 16px | SemiBold | #FFFFFF (Dark) / #111111 (Light)
+  /// 4. Titre d'Élément Primaire (Headline) : 21px | SemiBold
   static TextStyle headlineStyle(bool isDark) => TextStyle(
     fontFamily: fontFamilyPrimary,
-    fontSize: fontSizeBody,
+    fontSize: fontSizeHeadline,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.2,
-    height: 1.25,
+    letterSpacing: -0.25,
+    height: 1.28,
     color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
   );
 
-  /// 5. Métadonnées / Secondary Label (Subhead) : 13px | Regular | #8E8E93 (Gris Apple)
+  /// 5. Corps Principal de Lecture (Body) : 16px | Regular | Golden Leading (16 * 1.618 = 26px -> height: 1.618)
+  static TextStyle bodyStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeBody,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.15,
+    height: phi,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
+  );
+
+  /// 5bis. Corps Compact (Body Sm / Table) : 14px | Regular
+  static TextStyle bodySmStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeBodySm,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.1,
+    height: 1.45,
+    color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111),
+  );
+
+  /// 6. Métadonnées / Secondary Label (Subhead) : 13px | Regular | Golden Leading (13 * 1.618 = 21px -> height: 1.618)
   static TextStyle subheadStyle(bool isDark) => TextStyle(
     fontFamily: fontFamilyPrimary,
     fontSize: fontSizeSubhead,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.1,
-    height: 1.35,
+    height: phi,
+    color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF8E8E93),
+  );
+
+  /// 7. Micro Annotations (8px) : Bold | Fibonacci 8
+  static TextStyle microStyle(bool isDark) => TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: fontSizeMicro,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.2,
+    height: 1.5,
     color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF8E8E93),
   );
 
@@ -87,13 +158,14 @@ abstract class AppConstants {
   static const double marginXl = 20.0;
   static const double marginXxL = 24.0;
 
-  // --- Apple Concentric Geometry ---
-  static const double borderRadiusSm = 8.0;
-  static const double borderRadiusMd = 14.0;
-  static const double borderRadiusLg = 20.0;
-  static const double borderRadiusXl = 24.0;
-  static const double borderRadiusAppleCard = 20.0;
-  static const double borderRadiusAppleButton = 16.0;
+  // --- Small Border Radius Hierarchy (Friendly & Professional B2B SaaS) ---
+  static const double borderRadiusXs = 4.0;
+  static const double borderRadiusSm = 6.0;      // Badges & micro-chips (6px)
+  static const double borderRadiusMd = 8.0;      // Standard Friendly Button (8px)
+  static const double borderRadiusLg = 12.0;     // Subcards & Nested Inputs (12px)
+  static const double borderRadiusXl = 16.0;     // Modales & Hero Sections (16px)
+  static const double borderRadiusAppleCard = 14.0; // Cartes Principales (14px)
+  static const double borderRadiusAppleButton = 8.0; // Boutons d'Action (8px)
   static const double borderRadiusPill = 999.0;
 
   // --- Brand & High-Contrast Colors ---

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <title>Onbora — Le Prisme Analytique</title>
+  <!-- Outer strategic arc (Tier 1: Market Data) -->
+  <path d="M 58 64 A 90 90 0 1 1 58 192" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Middle analytical arc (Tier 2: Business Signal) -->
+  <path d="M 84 94 A 48 48 0 1 1 84 162" stroke="#7896FF" stroke-width="20" stroke-linecap="round"/>
+  <!-- Focal insight core (Tier 3: Strategic Decision Node) -->
+  <circle cx="160" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Focused analytical beam axis in negative space -->
+  <line x1="46" y1="128" x2="74" y2="128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+</svg>

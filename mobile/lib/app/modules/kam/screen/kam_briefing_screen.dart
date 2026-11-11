@@ -5,6 +5,7 @@ import '../controller/kam_briefing_controller.dart';
 import '../model/kam_account_model.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
+import '../../../common/screen/widget/skeleton_loader.dart';
 
 class KamBriefingScreen extends StatelessWidget {
   const KamBriefingScreen({super.key});
@@ -32,9 +33,17 @@ class KamBriefingScreen extends StatelessWidget {
               child: Obx(() {
                 final briefing = controller.briefing.value;
                 if (briefing == null) {
-                  return Center(
-                    child: CupertinoActivityIndicator(
-                      color: isDark ? Colors.white : AppConstants.primaryBlack,
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonBox(height: 120, borderRadius: 18),
+                        SizedBox(height: 16),
+                        SkeletonBox(height: 160, borderRadius: 18),
+                        SizedBox(height: 16),
+                        SkeletonBox(height: 140, borderRadius: 18),
+                      ],
                     ),
                   );
                 }
@@ -187,7 +196,7 @@ class KamBriefingScreen extends StatelessWidget {
         return Row(
           children: [
             _buildTabButton(
-              icon: CupertinoIcons.sparkles,
+              icon: CupertinoIcons.bolt_fill,
               label: "L'Essentiel",
               index: 0,
               isSelected: activeTab == 0,

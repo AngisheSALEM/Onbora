@@ -61,11 +61,9 @@ export default function KamAgendaView({
   const [highlightedAccountIndex, setHighlightedAccountIndex] = useState(-1);
   const accountComboboxRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState('');
-  const [meetingType, setMeetingType] = useState<'PHYSICAL' | 'GOOGLE_MEET' | 'CALL'>('PHYSICAL');
   const [scheduledAt, setScheduledAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [location, setLocation] = useState('');
-  const [meetUrl, setMeetUrl] = useState('');
   const [contactName, setContactName] = useState('');
   const [contactRole, setContactRole] = useState('');
   const [contactEditorOpen, setContactEditorOpen] = useState(false);
@@ -316,11 +314,10 @@ export default function KamAgendaView({
       const payload = {
         enterprise_id: enterpriseNumericId,
         title: title.trim(),
-        meeting_type: meetingType,
+        meeting_type: 'PHYSICAL',
         scheduled_at: new Date(scheduledAt).toISOString(),
         duration_minutes: durationMinutes,
         location: location.trim(),
-        meet_url: meetUrl.trim(),
         contact_name: contactName.trim(),
         contact_role: contactRole.trim(),
         objective: objective.trim(),
@@ -366,7 +363,7 @@ export default function KamAgendaView({
   const handleExpressMeetingStarted = (appointment: AppointmentData) => {
     setAppointments((previous) => [appointment, ...previous]);
     setIsExpressMeetingOpen(false);
-    router.push(`/kam/vocal-visit?appointmentId=${appointment.id}`);
+    router.push(`/kam/meeting-report?appointmentId=${appointment.id}`);
   };
 
   // Filter and sort appointments (À venir en haut, passés en bas)
@@ -452,7 +449,7 @@ export default function KamAgendaView({
 
   return (
     <div className="flex-1 flex flex-col gap-4 sm:gap-5 p-5 md:p-6 lg:p-8 select-none bg-[#ECEAE5] dark:bg-[#242124]">
-      
+
       {/* 1. Header Toolbar : Titre & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -477,7 +474,7 @@ export default function KamAgendaView({
             onClick={() => setIsExpressMeetingOpen(true)}
             className="flex items-center gap-2 px-3.5 py-1.5 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-white dark:hover:bg-[#363336] text-zinc-700 dark:text-zinc-200 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/5"
           >
-            <Icons.Mic size={14} />
+            <Icons.FileText size={14} />
             <span>Réunion express</span>
           </button>
 
@@ -513,7 +510,7 @@ export default function KamAgendaView({
       {loading ? (
         <div className="flex-1 flex items-center justify-center p-12">
           <div className="flex flex-col items-center gap-3">
-            <Icons.Sparkles size={30} className="animate-spin text-[#4F6CE8]" />
+
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               Chargement de votre planning...
             </span>
@@ -542,7 +539,7 @@ export default function KamAgendaView({
               Aucun rendez-vous planifié
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Planifiez un rendez-vous ou démarrez immédiatement une réunion express avec l&apos;un de vos comptes. Le micro et les notes alimenteront ensuite le compte-rendu Core AI.
+              Planifiez un rendez-vous ou démarrez immédiatement une réunion express avec l&apos;un de vos comptes. Vos notes et vos échanges serviront ensuite à préparer le compte rendu.
             </p>
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
@@ -555,7 +552,7 @@ export default function KamAgendaView({
               onClick={() => setIsExpressMeetingOpen(true)}
               className="ml-2 px-5 py-2.5 bg-[#E4E1DB] dark:bg-[#363336] hover:bg-white dark:hover:bg-[#403C40] text-zinc-800 dark:text-white rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-2"
             >
-              <Icons.Mic size={15} />
+              <Icons.FileText size={15} />
               <span>Démarrer une réunion</span>
             </button>
           </div>
@@ -638,12 +635,12 @@ export default function KamAgendaView({
                           {!isPast && (
                             <button
                               type="button"
-                              onClick={() => router.push(`/kam/vocal-visit?appointmentId=${app.id}`)}
+                              onClick={() => router.push(`/kam/meeting-report?appointmentId=${app.id}`)}
                               className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
-                              title="Démarrer le Brief Vocal Live"
+                              title="Préparer le compte rendu"
                             >
-                              <Icons.Mic size={13} />
-                              <span className="hidden sm:inline">Brief Vocal</span>
+                              <Icons.FileText size={13} />
+                              <span className="hidden sm:inline">Compte rendu</span>
                             </button>
                           )}
                           {isCompleted && (
@@ -692,7 +689,7 @@ export default function KamAgendaView({
       {isNewAppointmentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 select-none">
           <div role="dialog" aria-modal="true" aria-labelledby="kam-create-appointment-title" className="bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white w-full max-w-lg rounded-[32px] border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden animate-scale-up">
-            
+
             {/* Modal Header */}
             <div className="p-6 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -721,7 +718,7 @@ export default function KamAgendaView({
 
             {/* Modal Form */}
             <form onSubmit={handleCreateAppointment} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              
+
               {/* Account Selection via Search Bar */}
               <div ref={accountComboboxRef} className="space-y-1.5 relative">
                 <label htmlFor="kam-appointment-enterprise-search" className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
@@ -913,37 +910,6 @@ export default function KamAgendaView({
                 <textarea id="kam-meeting-objective" value={objective} onChange={(e) => setObjective(e.target.value)} rows={2} placeholder="Ex : confirmer le périmètre et la prochaine étape" className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] resize-y" />
               </div>
 
-              {/* Meeting Type */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
-                  Format de Rencontre
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'PHYSICAL', label: 'Terrain (Physique)', icon: Icons.MapPin },
-                    { id: 'GOOGLE_MEET', label: 'Google Meet', icon: Icons.Video },
-                    { id: 'CALL', label: 'Appel', icon: Icons.Phone },
-                  ].map((type) => {
-                    const Icon = type.icon;
-                    return (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setMeetingType(type.id as any)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                          meetingType === type.id
-                            ? 'bg-[#4F6CE8] text-white border-[#4F6CE8] shadow-xs'
-                            : 'bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-700 dark:text-zinc-300 border-black/5 dark:border-white/5 hover:bg-white dark:hover:bg-[#363336]'
-                        }`}
-                      >
-                        <Icon size={16} />
-                        <span className="text-[11px]">{type.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Date & Time and Duration */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -1011,8 +977,7 @@ export default function KamAgendaView({
                 </section>
               )}
 
-              {/* Location or Meet Link */}
-              {meetingType === 'PHYSICAL' ? (
+              {/* Lieu de la rencontre */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
                     Lieu / Adresse
@@ -1025,20 +990,7 @@ export default function KamAgendaView({
                     className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all"
                   />
                 </div>
-              ) : meetingType === 'GOOGLE_MEET' ? (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider block">
-                    Lien Google Meet
-                  </label>
-                  <input
-                    type="url"
-                    value={meetUrl}
-                    onChange={(e) => setMeetUrl(e.target.value)}
-                    placeholder="https://meet.google.com/..."
-                    className="w-full p-3 bg-[#F6F5F2] dark:bg-[#2D2A2D] border border-black/5 dark:border-white/5 rounded-2xl text-xs text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#4F6CE8] transition-all font-mono"
-                  />
-                </div>
-              ) : null}
+
 
               {/* Modal Footer */}
               {formError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{formError}</p>}
@@ -1059,7 +1011,7 @@ export default function KamAgendaView({
                 >
                   {savingAppointment ? (
                     <>
-                      <Icons.Sparkles size={14} className="animate-spin" />
+
                       <span>Enregistrement...</span>
                     </>
                   ) : (

@@ -260,7 +260,7 @@ export default function KamExecutiveBriefingModal({
             <div className="p-5 bg-[#121218] rounded-3xl">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Icons.Sparkles size={16} className="text-orange-400" />
+                  
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-orange-400">
                     Signaux d&apos;Intention IA ({briefing.trigger_signals.length})
                   </h3>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <title>Onbora — L'Orbite Active</title>
+  <g transform="rotate(-30 128 128)">
+    <!-- Sweeping orbital arc -->
+    <path d="M 128 38 A 90 90 0 1 0 215 106" stroke="#4F6CE8" stroke-width="28" stroke-linecap="round"/>
+    <!-- Guiding AI beacon node -->
+    <circle cx="204" cy="62" r="15" fill="#4F6CE8"/>
+  </g>
+</svg>

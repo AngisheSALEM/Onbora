@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 256" width="760" height="256" fill="none">
+  <title>Onbora Lockup — La Sentinelle Web</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg>

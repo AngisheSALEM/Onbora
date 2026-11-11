@@ -301,7 +301,7 @@ export default function KamDebriefView({
             </>
           ) : (
             <>
-              <Icons.Sparkles size={14} className="text-[#4F6CE8] shrink-0" />
+         
               <span>Parlez pendant 2 minutes. Onbora structure automatiquement le compte-rendu interne et le brouillon d&apos;email client.</span>
             </>
           )}
@@ -311,7 +311,7 @@ export default function KamDebriefView({
       {/* AI Loader */}
       {isGenerating && (
         <div className="p-8 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl animate-pulse space-y-2 shadow-sm">
-          <Icons.Sparkles size={32} className="mx-auto text-[#4F6CE8] animate-spin" />
+          
           <div className="font-semibold text-sm text-zinc-900 dark:text-white">
             Synthèse IA en cours par Onbora Intel Engine...
           </div>
@@ -483,7 +483,7 @@ export default function KamDebriefView({
           >
             {isSubmitting ? (
               <>
-                <Icons.Sparkles size={16} className="animate-spin" />
+     
                 <span>Enregistrement en base...</span>
               </>
             ) : (

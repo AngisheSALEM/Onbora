@@ -11,6 +11,7 @@ import os
 import time
 import uuid
 import logging
+from urllib.parse import urlsplit
 from typing import Dict, Any, Optional
 import requests
 from django.conf import settings
@@ -67,7 +68,7 @@ class DataverseClient:
         }
 
         try:
-            res = requests.post(token_endpoint, data=data, timeout=15)
+            res = requests.post(token_endpoint, data=data, timeout=15, allow_redirects=False)
             if res.status_code != 200:
                 raise DataverseClientException(
                     f"Échec authentification Azure AD: HTTP {res.status_code}",
@@ -102,7 +103,7 @@ class DataverseClient:
 
         for attempt in range(1, max_attempts + 1):
             try:
-                res = requests.request(method, url, json=payload, headers=headers, timeout=30)
+                res = requests.request(method, url, json=payload, headers=headers, timeout=30, allow_redirects=False)
                 if res.status_code in [200, 201, 204]:
                     return res.json() if res.text and res.status_code != 204 else {"status": "succeeded"}
                 elif res.status_code in [429, 503]:
@@ -161,6 +162,59 @@ class DataverseClient:
         }
 
     # --- Schémas de Mapping & Opérations Haut Niveau ---
+
+    def read_page(self, path: str) -> Dict[str, Any]:
+        """Lecture paginée réelle. Un nextLink ne peut jamais transmettre le token à un autre hôte."""
+        if self.simulation_mode:
+            raise DataverseClientException('L’import exige une connexion Dynamics réelle.')
+        base = f'{self.resource_url}/api/data/v9.2/'
+        url = path if path.startswith('https://') else base + path
+        parsed, origin = urlsplit(url), urlsplit(base)
+        if (parsed.scheme, parsed.netloc) != (origin.scheme, origin.netloc) or not parsed.path.startswith(origin.path):
+            raise DataverseClientException('Lien de pagination Dynamics refusé.')
+        if parsed.fragment or '..' in parsed.path or '%' in parsed.path or '\\' in url:
+            raise DataverseClientException('Chemin Dynamics refusé.')
+        try:
+            response = requests.get(url, headers={
+                'Authorization': f'Bearer {self._get_access_token()}',
+                'Accept': 'application/json', 'OData-Version': '4.0',
+                'Prefer': 'odata.maxpagesize=200,odata.include-annotations="OData.Community.Display.V1.FormattedValue,Microsoft.Dynamics.CRM.lookuplogicalname"',
+            }, timeout=30, allow_redirects=False)
+            if response.status_code != 200:
+                raise DataverseClientException('Lecture Dynamics refusée ou indisponible.', status_code=response.status_code)
+            data = response.json()
+            if not isinstance(data, dict):
+                raise ValueError('Invalid response')
+            return data
+        except (requests.RequestException, ValueError):
+            raise DataverseClientException('Réponse Dynamics indisponible ou illisible.') from None
+
+    def read_collection(self, path):
+        seen = set()
+        while path:
+            if path in seen or len(seen) >= 10000:
+                raise DataverseClientException('Pagination Dynamics incohérente.')
+            seen.add(path)
+            page = self.read_page(path)
+            if not isinstance(page.get('value'), list):
+                raise DataverseClientException('Collection Dynamics illisible.')
+            yield from page['value']
+            path = page.get('@odata.nextLink')
+
+    def check_connection(self) -> Dict[str, Any]:
+        """Vérification réelle en lecture seule, sans simulation ni réessais longs."""
+        token = self._get_access_token()
+        try:
+            response = requests.get(
+                f'{self.resource_url}/api/data/v9.2/WhoAmI',
+                headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'},
+                timeout=15, allow_redirects=False,
+            )
+            if response.status_code != 200:
+                raise DataverseClientException('Accès Dynamics refusé.', status_code=response.status_code)
+            return response.json()
+        except (requests.RequestException, ValueError):
+            raise DataverseClientException('Connexion Dynamics indisponible.') from None
 
     def sync_account(self, enterprise_id: int, account_payload: Dict[str, Any]) -> Dict[str, Any]:
         """Synchronise ou met à jour une fiche Entreprise dans la table 'accounts' de Dataverse."""

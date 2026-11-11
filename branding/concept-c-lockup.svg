@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 256" width="760" height="256" fill="none">
+  <title>Onbora Lockup — Concept C</title>
+  <!-- Symbol scaled to 160x160 positioned at (48, 48) -->
+  <g transform="translate(48, 48) scale(0.625)">
+    <g fill="#4F6CE8">
+    <!-- Primary monolithic ring -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="
+      M 128 32
+      C 181.019 32 224 74.981 224 128
+      C 224 181.019 181.019 224 128 224
+      C 74.981 224 32 181.019 32 128
+      C 32 74.981 74.981 32 128 32
+      Z
+      M 128 66
+      C 93.758 66 66 93.758 66 128
+      C 66 162.242 93.758 190 128 190
+      C 162.242 190 190 162.242 190 128
+      C 190 93.758 162.242 66 128 66
+      Z
+    "/>
+    <!-- Directional supersonic chevron with exact 30-degree angles -->
+    <path d="M 108 103.75 L 150 128 L 108 152.25 L 120 128 Z"/>
+  </g>
+  </g>
+  <!-- Typography "Onbora" + subtitle -->
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">COPILOTE IA COMMERCIAL B2B</text>
+</svg>

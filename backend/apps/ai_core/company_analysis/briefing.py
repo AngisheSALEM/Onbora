@@ -30,7 +30,7 @@ def read_briefing(enterprise, user):
             "golden_rules": briefing.golden_rules,
             "created_at": briefing.created_at.isoformat(), "updated_at": briefing.updated_at.isoformat()}
     else:
-        data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user)
+        data = CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user, persist=False)
     data["installed_offers"] = [
         {"id": offer.id, "installed_offer_name": offer.installed_offer_name,
          "name": offer.installed_offer_name, "category": offer.category,

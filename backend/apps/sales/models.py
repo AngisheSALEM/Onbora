@@ -134,8 +134,8 @@ class CrmAccountRecord(models.Model):
         default=0.00,
         help_text="Chiffre d'affaires annuel certifié CRM (USD)"
     )
-    employee_count = models.IntegerField(default=1, help_text="Effectif salarial validé")
-    site_count = models.IntegerField(default=1, help_text="Nombre d'implantations")
+    employee_count = models.IntegerField(default=1, null=True, blank=True, help_text="Effectif salarial validé")
+    site_count = models.IntegerField(default=1, null=True, blank=True, help_text="Nombre d'implantations")
     payment_health = models.CharField(
         max_length=30,
         choices=PAYMENT_HEALTH_CHOICES,
@@ -195,11 +195,11 @@ class Enterprise(models.Model):
     # Données CRM Congolaises & Métriques Financières
     crm_id = models.CharField(max_length=50, blank=True, null=True, db_index=True, help_text="Identifiant unique CRM (ex: CRM-CD-0001)")
     annual_revenue = models.DecimalField(
-        max_digits=15, decimal_places=2, default=50000.00, db_index=True,
+        max_digits=15, decimal_places=2, default=50000.00, db_index=True, null=True, blank=True,
         help_text="Chiffre d'affaires annuel en USD (critère maître de segmentation)"
     )
-    employee_count = models.IntegerField(default=10, help_text="Effectif salarial")
-    site_count = models.IntegerField(default=1, help_text="Nombre d'implantations / agences")
+    employee_count = models.IntegerField(default=10, null=True, blank=True, help_text="Effectif salarial")
+    site_count = models.IntegerField(default=1, null=True, blank=True, help_text="Nombre d'implantations / agences")
     
     # Identifiants légaux RDC & Afrique
     rccm = models.CharField(max_length=100, blank=True, null=True, help_text="Registre du Commerce et du Crédit Mobilier (ex: CD/KNG/RCCM/...)")
@@ -227,6 +227,7 @@ class Enterprise(models.Model):
     
     # Segmentation & Entité Destinataire (Moteur Backend)
     SEGMENT_CHOICES = [
+        ('UNKNOWN', 'Non renseigné'),
         ('GRAND_COMPTE', 'Grand Compte'),
         ('PME', 'PME'),
         ('TPE_INFORMEL', 'TPE / Informel'),
@@ -364,7 +365,13 @@ class EnterpriseInstalledOffer(models.Model):
     Parc installé des solutions télécoms et cloud chez l'entreprise.
     Alimente directement le Radar de Churn (échéances, pannes) et le moteur d'Upsell.
     """
+    sector_pillar_id = models.CharField(max_length=60, blank=True, default='')
+    is_demo = models.BooleanField(default=False)
+    demo_key = models.CharField(max_length=140, null=True, blank=True, unique=True, editable=False)
+
     STATUS_CHOICES = [
+        ('UNKNOWN', 'Statut non renseigné'),
+        ('INACTIVE', 'Inactif dans le CRM'),
         ('ACTIVE', 'Service Actif'),
         ('PENDING_ACTIVATION', 'En cours de déploiement'),
         ('SUSPENDED', 'Suspendu pour impayé ou incident'),
@@ -373,6 +380,7 @@ class EnterpriseInstalledOffer(models.Model):
     ]
 
     PROVIDER_CHOICES = [
+        ('UNKNOWN', 'Fournisseur non renseigné'),
         ('ORANGE_BUSINESS', 'Orange Business / MSP'),
         ('CONCURRENT', 'Opérateur Concurrent'),
         ('AUTRE', 'Autre prestataire'),
@@ -424,6 +432,7 @@ class EnterpriseInstalledOffer(models.Model):
         max_digits=12,
         decimal_places=2,
         default=0.00,
+        null=True, blank=True,
         help_text="Revenu mensuel récurrent généré (MRR en USD)"
     )
     bandwidth_mbps = models.IntegerField(
@@ -433,6 +442,7 @@ class EnterpriseInstalledOffer(models.Model):
     )
     active_licenses_count = models.IntegerField(
         default=1,
+        null=True, blank=True,
         help_text="Nombre de licences ou de postes déployés"
     )
     unresolved_tickets_count = models.IntegerField(

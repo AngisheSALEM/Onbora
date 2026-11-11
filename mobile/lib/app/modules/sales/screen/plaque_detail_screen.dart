@@ -480,7 +480,7 @@ class _PlaqueDetailScreenState extends State<PlaqueDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFF1C1C1E),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

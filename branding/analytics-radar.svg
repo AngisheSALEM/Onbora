@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <title>Onbora — Le Radar Décisionnel</title>
+  <!-- Main structural perimeter O ring with 45° analytic breach -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="26" stroke-linecap="round"/>
+  <!-- 3 ascending metric bars integrated into the active quadrant -->
+  <!-- Bar 1 (Baseline metric) -->
+  <line x1="152" y1="120" x2="152" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Bar 2 (Scored insight) -->
+  <line x1="178" y1="120" x2="178" y2="64" stroke="#4F6CE8" stroke-width="14" stroke-linecap="round"/>
+  <!-- Bar 3 (Strategic peak / Alpha opportunity) -->
+  <line x1="204" y1="120" x2="204" y2="44" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Radar sweep focal center -->
+  <circle cx="128" cy="128" r="16" fill="#4F6CE8"/>
+</svg>

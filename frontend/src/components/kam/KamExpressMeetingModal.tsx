@@ -13,17 +13,8 @@ interface Props {
   onStarted: (appointment: AppointmentData) => void;
 }
 
-type MeetingType = 'PHYSICAL' | 'GOOGLE_MEET' | 'CALL';
-
-const MEETING_FORMATS: Array<{ value: MeetingType; label: string; icon: keyof typeof Icons }> = [
-  { value: 'PHYSICAL', label: 'Terrain', icon: 'MapPin' },
-  { value: 'GOOGLE_MEET', label: 'Visio', icon: 'Video' },
-  { value: 'CALL', label: 'Appel', icon: 'Phone' },
-];
-
 export default function KamExpressMeetingModal({ assignedAccounts, onClose, onStarted }: Props) {
   const [accountId, setAccountId] = useState('');
-  const [meetingType, setMeetingType] = useState<MeetingType>('PHYSICAL');
   const [suggestion, setSuggestion] = useState<PurposeSuggestion | null>(null);
   const [purpose, setPurpose] = useState<KamVisitPurpose | null>(null);
   const [purposeIsManual, setPurposeIsManual] = useState(false);
@@ -83,7 +74,7 @@ export default function KamExpressMeetingModal({ assignedAccounts, onClose, onSt
         body: JSON.stringify({
           enterprise_id: enterpriseId,
           title: `Réunion express — ${account?.account_name || 'Entreprise'}`,
-          meeting_type: meetingType,
+          meeting_type: 'PHYSICAL',
           start_immediately: true,
           ...(purposeIsManual ? { visit_purpose: purpose } : {}),
         }),
@@ -98,13 +89,13 @@ export default function KamExpressMeetingModal({ assignedAccounts, onClose, onSt
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <section role="dialog" aria-modal="true" aria-labelledby="kam-express-title" className="w-full max-w-md overflow-hidden rounded-[28px] bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white shadow-2xl border border-black/10 dark:border-white/10">
-        <header className="p-5 border-b border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-start justify-between gap-4">
+      <section role="dialog" aria-modal="true" aria-labelledby="kam-express-title" className="w-full max-w-md overflow-hidden rounded-xl bg-[#ECEAE5] dark:bg-[#242124] text-zinc-900 dark:text-white shadow-2xl border border-black/10 dark:border-white/10">
+        <header className="p-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center"><Icons.Mic size={20} /></div>
+            <div className="w-10 h-10 rounded-2xl bg-[#4F6CE8]/15 text-[#4F6CE8] flex items-center justify-center"><Icons.FileText size={20} /></div>
             <div>
               <h2 id="kam-express-title" className="text-base font-extrabold">Démarrer une réunion</h2>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Accès direct à la prise de notes et au micro.</p>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Retrouvez vos notes et préparez le suivi.</p>
             </div>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} disabled={saving} aria-label="Fermer la réunion express" className="p-2 rounded-xl text-zinc-500 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#4F6CE8] disabled:opacity-50"><Icons.X size={18} /></button>
@@ -134,22 +125,14 @@ export default function KamExpressMeetingModal({ assignedAccounts, onClose, onSt
             </div>
           )}
 
-          <fieldset className="space-y-2">
-            <legend className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Format</legend>
-            <div className="grid grid-cols-3 gap-2">
-              {MEETING_FORMATS.map((format) => {
-                const Icon = Icons[format.icon];
-                return <button key={format.value} type="button" aria-pressed={meetingType === format.value} onClick={() => setMeetingType(format.value)} className={`flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${meetingType === format.value ? 'bg-[#4F6CE8] text-white' : 'bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#363336]'}`}><Icon size={16} />{format.label}</button>;
-              })}
-            </div>
-          </fieldset>
+
 
           {error && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{error}</p>}
         </div>
 
         <footer className="px-5 py-4 border-t border-black/5 dark:border-white/5 flex justify-end gap-2">
           <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2.5 text-xs font-semibold text-zinc-500 disabled:opacity-50">Annuler</button>
-          <button type="button" onClick={startMeeting} disabled={saving || loadingSuggestion || !accountId || !purpose} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold disabled:opacity-50"><Icons.Mic size={15} />{saving ? 'Démarrage…' : 'Démarrer maintenant'}</button>
+          <button type="button" onClick={startMeeting} disabled={saving || loadingSuggestion || !accountId || !purpose} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold disabled:opacity-50"><Icons.FileText size={15} />{saving ? 'Démarrage…' : 'Démarrer maintenant'}</button>
         </footer>
       </section>
     </div>

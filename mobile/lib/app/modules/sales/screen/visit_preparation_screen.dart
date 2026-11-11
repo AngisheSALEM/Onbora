@@ -528,7 +528,7 @@ class _VisitPreparationScreenState extends State<VisitPreparationScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              const Icon(CupertinoIcons.sparkles, color: Color(0xFF007AFF), size: 16),
+                              const Icon(CupertinoIcons.bolt_fill, color: Color(0xFF007AFF), size: 16),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(

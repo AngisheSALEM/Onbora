@@ -31,7 +31,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   final _searchController = TextEditingController();
 
   static const List<_CategoryMeta> _categories = [
-    _CategoryMeta(key: 'Toutes', label: 'Toutes les offres', icon: CupertinoIcons.sparkles),
+    _CategoryMeta(key: 'Toutes', label: 'Toutes les offres', icon: CupertinoIcons.square_grid_2x2),
     _CategoryMeta(key: 'Télécom', label: 'Télécom & Connectivité', icon: CupertinoIcons.wifi),
     _CategoryMeta(key: 'Cybersécurité', label: 'Cybersécurité & Réseau', icon: CupertinoIcons.shield_fill),
     _CategoryMeta(key: 'Cloud', label: 'Cloud & Microsoft 365', icon: CupertinoIcons.cloud_fill),

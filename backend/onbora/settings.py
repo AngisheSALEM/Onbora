@@ -30,6 +30,7 @@ if str(APPS_DIR) not in sys.path:
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-g2j09mjd_^#m=!(kqykc8u_jbgu%g$heebil7chcb9+-ctmph0')
+CRM_CREDENTIALS_KEY = os.getenv('CRM_CREDENTIALS_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'

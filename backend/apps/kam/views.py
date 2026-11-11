@@ -187,7 +187,7 @@ class DossierHandoverPackView(APIView):
 
 # --- ENDPOINTS ONBORA KAM INTEL, BRIEFINGS & DÉBRIEFING EN BASE DE DONNÉES RÉELLE ---
 
-from django.db.models import Q
+from django.db.models import Q, F, Exists, OuterRef
 from django.utils import timezone
 from sales.models import Enterprise
 from accounts.models import User
@@ -211,17 +211,23 @@ class KamStrategicAccountListView(APIView):
             return Response({"detail": "Authentification requise."}, status=status.HTTP_401_UNAUTHORIZED)
 
         if user.role == User.KAM:
-            enterprises = Enterprise.objects.filter(assigned_kam=user).order_by('-annual_revenue')
+            enterprises = Enterprise.objects.filter(assigned_kam=user).order_by(F('assigned_at').desc(nulls_last=True), '-annual_revenue')
         elif user.role in [User.KAM_MANAGER, User.ADMIN] or user.is_superuser:
             kam_id = request.query_params.get('kam_id')
             if kam_id:
-                enterprises = Enterprise.objects.filter(assigned_kam_id=kam_id).order_by('-annual_revenue')
+                enterprises = Enterprise.objects.filter(assigned_kam_id=kam_id).order_by(F('assigned_at').desc(nulls_last=True), '-annual_revenue')
             else:
                 enterprises = Enterprise.objects.filter(
                     Q(assigned_entity='KAM_OFFICE') | Q(segment__in=['GRAND_COMPTE', 'PME'])
                 ).order_by('-annual_revenue')[:100]
         else:
             enterprises = Enterprise.objects.none()
+
+        from kam.models import B2BNewsFeedItem
+        enterprises = enterprises.select_related('assigned_kam').prefetch_related('installed_offers').annotate(
+            has_converted_news=Exists(B2BNewsFeedItem.objects.filter(
+                enterprise_id=OuterRef('pk'), is_converted_to_portfolio=True))
+        )
 
         page = request.query_params.get('page')
         if page:
@@ -671,7 +677,7 @@ class KamAppointmentListCreateView(APIView):
         scheduled_at = data.get('scheduled_at')
         duration_minutes = int(data.get('duration_minutes', 45))
         location = data.get('location', '').strip()
-        meet_url = data.get('meet_url', '').strip()
+        meet_url = ''
         contact_name = data.get('contact_name', '').strip()
         contact_role = data.get('contact_role', '').strip()
         objective = data.get('objective', '').strip()
@@ -682,8 +688,8 @@ class KamAppointmentListCreateView(APIView):
             return Response({"detail": "Le titre ou l'objet du rendez-vous est requis."}, status=status.HTTP_400_BAD_REQUEST)
         if not scheduled_at and not start_immediately:
             return Response({"detail": "La date et l'heure du rendez-vous sont requises."}, status=status.HTTP_400_BAD_REQUEST)
-        if meeting_type not in dict(KamAppointment.MEETING_TYPES):
-            return Response({"detail": "Format de rencontre invalide."}, status=status.HTTP_400_BAD_REQUEST)
+        if meeting_type != 'PHYSICAL':
+            return Response({"detail": "Les rendez-vous se déroulent uniquement en présentiel."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             enterprise = Enterprise.objects.get(id=enterprise_id)
@@ -906,7 +912,7 @@ class KamVisitReportDetailView(APIView):
     permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, pk):
-        from django.db.models import Q
+        from django.db.models import Q, F
         report = KamVisitReport.objects.select_related('appointment', 'enterprise').filter(Q(pk=pk) | Q(appointment_id=pk)).first()
         if not report:
             return Response({"detail": "Rapport introuvable."}, status=status.HTTP_404_NOT_FOUND)
@@ -1088,115 +1094,3 @@ class AccountRiskSignalsView(APIView):
         if "error" in signals:
             return Response(signals, status=status.HTTP_404_NOT_FOUND)
         return Response(signals, status=status.HTTP_200_OK)
-
-
-class KamInstalledOffersView(APIView):
-    """
-    GET: Liste les solutions et produits implantés pour un compte entreprise.
-    POST: Ajoute manuellement une nouvelle solution implantée au parc client.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, account_id):
-        from sales.models import Enterprise, EnterpriseInstalledOffer
-        try:
-            enterprise = Enterprise.objects.get(id=account_id)
-        except Enterprise.DoesNotExist:
-            return Response({"detail": "Compte introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        offers = EnterpriseInstalledOffer.objects.filter(enterprise=enterprise).order_by('-created_at')
-        results = [
-            {
-                "id": o.id,
-                "installed_offer_name": o.installed_offer_name,
-                "name": o.installed_offer_name,
-                "category": o.category or "CONNECTIVITY",
-                "provider": o.provider,
-                "provider_label": o.get_provider_display(),
-                "contract_status": o.contract_status,
-                "contract_status_label": o.get_contract_status_display(),
-                "installation_date": o.installation_date.isoformat() if o.installation_date else None,
-                "contract_end_date": o.contract_end_date.isoformat() if o.contract_end_date else None,
-                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
-                "bandwidth_mbps": o.bandwidth_mbps,
-                "active_licenses_count": o.active_licenses_count,
-                "unresolved_tickets_count": o.unresolved_tickets_count,
-                "technical_equipment": o.technical_equipment,
-                "created_at": o.created_at.isoformat(),
-            }
-            for o in offers
-        ]
-        return Response(results, status=status.HTTP_200_OK)
-
-    def post(self, request, account_id):
-        from sales.models import Enterprise, EnterpriseInstalledOffer
-        try:
-            enterprise = Enterprise.objects.get(id=account_id)
-        except Enterprise.DoesNotExist:
-            return Response({"detail": "Compte introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-        offer_name = request.data.get('installed_offer_name') or request.data.get('name')
-        if not offer_name or not str(offer_name).strip():
-            return Response({"detail": "Le nom de l'offre ou de la solution est requis."}, status=status.HTTP_400_BAD_REQUEST)
-
-        category = request.data.get('category', 'CONNECTIVITY')
-        provider = request.data.get('provider', 'ORANGE_BUSINESS')
-        contract_status = request.data.get('contract_status', 'ACTIVE')
-        contract_end_date = request.data.get('contract_end_date') or None
-        installation_date = request.data.get('installation_date') or timezone.now().date()
-        monthly_cost_mrr = request.data.get('monthly_cost_mrr', 0.0)
-        bandwidth_mbps = request.data.get('bandwidth_mbps') or None
-        active_licenses_count = request.data.get('active_licenses_count', 1)
-        technical_equipment = request.data.get('technical_equipment', '')
-
-        offer = EnterpriseInstalledOffer.objects.create(
-            enterprise=enterprise,
-            installed_offer_name=str(offer_name).strip(),
-            category=category,
-            provider=provider,
-            contract_status=contract_status,
-            installation_date=installation_date,
-            contract_end_date=contract_end_date,
-            monthly_cost_mrr=monthly_cost_mrr,
-            bandwidth_mbps=int(bandwidth_mbps) if bandwidth_mbps else None,
-            active_licenses_count=int(active_licenses_count) if active_licenses_count else 1,
-            technical_equipment=technical_equipment,
-        )
-
-        return Response({
-            "id": offer.id,
-            "installed_offer_name": offer.installed_offer_name,
-            "name": offer.installed_offer_name,
-            "category": offer.category,
-            "provider": offer.provider,
-            "provider_label": offer.get_provider_display(),
-            "contract_status": offer.contract_status,
-            "contract_status_label": offer.get_contract_status_display(),
-            "installation_date": offer.installation_date.isoformat() if offer.installation_date else None,
-            "contract_end_date": offer.contract_end_date.isoformat() if offer.contract_end_date else None,
-            "monthly_cost_mrr": float(offer.monthly_cost_mrr or 0),
-            "bandwidth_mbps": offer.bandwidth_mbps,
-            "active_licenses_count": offer.active_licenses_count,
-            "unresolved_tickets_count": offer.unresolved_tickets_count,
-            "technical_equipment": offer.technical_equipment,
-            "created_at": offer.created_at.isoformat(),
-        }, status=status.HTTP_201_CREATED)
-
-
-class KamInstalledOfferDetailView(APIView):
-    """
-    DELETE: Supprime une solution implantée du parc.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def delete(self, request, account_id, offer_id):
-        from sales.models import EnterpriseInstalledOffer
-        try:
-            offer = EnterpriseInstalledOffer.objects.get(id=offer_id, enterprise_id=account_id)
-            offer.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except EnterpriseInstalledOffer.DoesNotExist:
-            return Response({"detail": "Offre introuvable."}, status=status.HTTP_404_NOT_FOUND)
-
-
-

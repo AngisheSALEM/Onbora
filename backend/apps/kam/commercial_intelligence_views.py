@@ -174,6 +174,13 @@ class PostCallSyncCrmView(APIView):
             return Response({"detail": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
 
         # Insertion transactionnelle dans l'Outbox PostgreSQL
+        from accounts.dynamics_service import DynamicsConnectionService
+        from .integrations.dynamics.client import DataverseClientException
+        try:
+            crm_client = DynamicsConnectionService.client()
+        except DataverseClientException as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
         sync_op = SyncOperation.objects.create(
             target_system='DYNAMICS_365',
             entity_type='APPOINTMENT',
@@ -190,7 +197,7 @@ class PostCallSyncCrmView(APIView):
         )
 
         # Déclenchement du worker (mode immédiat pour confirmation en direct)
-        worker = DynamicsOutboxWorker()
+        worker = DynamicsOutboxWorker(client=crm_client)
         worker.process_pending_operations(batch_size=5)
 
         sync_op.refresh_from_db()

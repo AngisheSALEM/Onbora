@@ -1,4 +1,6 @@
 from django.urls import path
+from .dynamics_views import DynamicsConnectionView, DynamicsConnectionTestView
+from .dynamics_import_views import DynamicsImportView, DynamicsMappingView, DynamicsImportedRecordsView
 from .views import (
     RegisterView,
     LoginView,
@@ -18,6 +20,11 @@ from .copilot_views import (
 )
 
 urlpatterns = [
+    path('integrations/dynamics/', DynamicsConnectionView.as_view(), name='dynamics-connection'),
+    path('integrations/dynamics/test/', DynamicsConnectionTestView.as_view(), name='dynamics-connection-test'),
+    path('integrations/dynamics/imports/', DynamicsImportView.as_view(), name='dynamics-imports'),
+    path('integrations/dynamics/mapping/', DynamicsMappingView.as_view(), name='dynamics-mapping'),
+    path('integrations/dynamics/records/', DynamicsImportedRecordsView.as_view(), name='dynamics-records'),
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
     path('me/', MeView.as_view(), name='me'),

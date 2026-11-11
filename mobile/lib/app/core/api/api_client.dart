@@ -187,6 +187,25 @@ class ApiClient {
     return _processResponse(response);
   }
 
+  Future<dynamic> uploadDocument(
+    String path,
+    String name,
+    Uint8List bytes,
+  ) async {
+    final request = http.MultipartRequest('POST', _buildUri(path));
+    final headers = await _getHeaders();
+    headers.remove(HttpHeaders.contentTypeHeader);
+    request.headers.addAll(headers);
+    request.files.add(
+      http.MultipartFile.fromBytes('document', bytes, filename: name),
+    );
+    final response = await _httpClient
+        .send(request)
+        .then(http.Response.fromStream)
+        .timeout(const Duration(seconds: 90));
+    return _processResponse(response);
+  }
+
   Future<Uint8List> download(String path) async {
     final response = await _httpClient
         .get(_buildUri(path), headers: await _getHeaders())

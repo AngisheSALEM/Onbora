@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { fetchAPI } from '@/lib/api';
 import { Icons } from '@/components/shared/Icons';
 
 interface SectorEnterprise {
+  has_infrastructure_data?: boolean;
+  is_demo?: boolean;
   id: number;
   name: string;
   segment: string;
@@ -27,10 +29,21 @@ interface SectorInfo {
 interface RadarItem {
   dimension_id: string;
   label: string;
-  score_a: number;
-  score_b: number;
+  score_a: number | null;
+  score_b: number | null;
   winner: 'A' | 'B' | 'TIE';
-  delta: number;
+  delta: number | null;
+  weight_percentage?: number;
+  description?: string;
+  unit_val_a?: string;
+  unit_val_b?: string;
+  unit?: string;
+  raw_val_a?: number | null;
+  raw_val_b?: number | null;
+  pack_name_a?: string;
+  pack_name_b?: string;
+  is_deficit_a?: boolean;
+  is_winner_a?: boolean;
 }
 
 interface Advantage {
@@ -84,11 +97,13 @@ interface ComparisonData {
   sector: string;
   is_benchmark_comparison: boolean;
   winner: 'A' | 'B' | 'TIE';
-  overall_score_a: number;
-  overall_score_b: number;
-  score_diff: number;
+  overall_score_a: number | null;
+  overall_score_b: number | null;
+  score_diff: number | null;
   meta_a: SectorEnterprise;
   meta_b: {
+    is_demo?: boolean;
+    has_infrastructure_data?: boolean;
     id: number | null;
     name: string;
     sector: string;
@@ -101,9 +116,13 @@ interface ComparisonData {
     bandwidth_total?: number;
     sizing_tier?: string;
     similarity_percentage?: number;
+    vector_similarity_percentage?: number;
+    is_twin?: boolean;
+    is_closest_twin?: boolean;
+    twin_rationale?: string;
   };
   radar: RadarItem[];
-  sizing_comparison?: SizingComparison;
+  sizing_comparison?: SizingComparison | null;
   sector_peers?: SectorEnterprise[];
   advantages_a: Advantage[];
   advantages_b: Advantage[];
@@ -114,7 +133,6 @@ interface ComparisonData {
 }
 
 export default function KamEnterpriseComparisonView() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // State
@@ -129,28 +147,13 @@ export default function KamEnterpriseComparisonView() {
   const [error, setError] = useState<string | null>(null);
 
   const [activeDimension, setActiveDimension] = useState<string | null>(null);
-  const [copiedPitchIndex, setCopiedPitchIndex] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'gaps' | 'criteria'>('overview');
-  const [rightCardTab, setRightCardTab] = useState<'gaps' | 'advantages'>('gaps');
-  const [expandedGapIndices, setExpandedGapIndices] = useState<Set<number>>(new Set());
+  const [activeTab, setActiveTab] = useState<'overview' | 'gaps'>('overview');
 
-  const toggleGapExpand = (idx: number) => {
-    setExpandedGapIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(idx)) {
-        next.delete(idx);
-      } else {
-        next.add(idx);
-      }
-      return next;
-    });
-  };
 
   // 1. Charger la liste des secteurs & entreprises
   useEffect(() => {
     let isMounted = true;
-    setLoadingSectors(true);
-    fetchAPI('/api/kam/comparisons/sectors/')
+        fetchAPI('/api/kam/comparisons/sectors/')
       .then((data) => {
         if (!isMounted) return;
         const list: SectorInfo[] = data.sectors || [];
@@ -226,30 +229,33 @@ export default function KamEnterpriseComparisonView() {
   };
 
   // 2. Charger les données de comparaison
-  const loadComparison = useCallback(async (aId: number, bId: number | null) => {
-    setLoadingComparison(true);
-    setError(null);
-    try {
-      let url = `/api/kam/comparisons/?enterprise_a=${aId}`;
-      if (bId) {
-        url += `&enterprise_b=${bId}`;
-      }
-      const data: ComparisonData = await fetchAPI(url);
-      setComparison(data);
-    } catch (err: any) {
-      console.error('Erreur comparateur KAM:', err);
-      setError(err.message || 'Erreur lors de la comparaison.');
-      setComparison(null);
-    } finally {
-      setLoadingComparison(false);
-    }
-  }, []);
-
   useEffect(() => {
-    if (enterpriseAId) {
-      loadComparison(enterpriseAId, enterpriseBId);
-    }
-  }, [enterpriseAId, enterpriseBId, loadComparison]);
+    if (!enterpriseAId) return;
+    let isSubscribed = true;
+    let url = `/api/kam/comparisons/?enterprise_a=${enterpriseAId}`;
+    url += `&enterprise_b=${enterpriseBId ?? 'benchmark'}`;
+    fetchAPI(url)
+      .then((data: ComparisonData) => {
+        if (isSubscribed) {
+          setComparison(data);
+          if (enterpriseBId !== data.meta_b.id) setEnterpriseBId(data.meta_b.id);
+          setError(null);
+          setLoadingComparison(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isSubscribed) {
+          const message = err instanceof Error ? err.message : 'Erreur lors de la comparaison.';
+          setError(message);
+          setComparison(null);
+          setLoadingComparison(false);
+        }
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [enterpriseAId, enterpriseBId]);
 
   // Inverser A et B
   const handleSwap = () => {
@@ -260,48 +266,20 @@ export default function KamEnterpriseComparisonView() {
     }
   };
 
-  // Copier le pitch KAM
-  const handleCopyPitch = (text: string, index: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedPitchIndex(index);
-    setTimeout(() => setCopiedPitchIndex(null), 2500);
-  };
+  // Tri d'impact : ROUGE (Manques / Déficits) en premier -> BLEU (Excellence / Atouts) en deuxième -> GRIS (Égalités) en dernier
+  const radarDimensions = useMemo(() => {
+    return [...(comparison?.radar || [])].sort((a, b) => {
+      const isDeficitA = a.is_deficit_a !== undefined ? a.is_deficit_a : a.score_a !== null && a.score_b !== null && a.score_a < a.score_b;
+      const isWinnerA = a.is_winner_a !== undefined ? a.is_winner_a : a.score_a !== null && a.score_b !== null && a.score_a > a.score_b;
+      const priorityA = isDeficitA ? 0 : (isWinnerA ? 1 : 2);
 
-  // Coordonnées pour le Radar SVG
-  const radarDimensions = comparison?.radar || [];
-  const size = 320;
-  const center = size / 2;
-  const radius = size * 0.38;
+      const isDeficitB = b.is_deficit_a !== undefined ? b.is_deficit_a : b.score_a !== null && b.score_b !== null && b.score_a < b.score_b;
+      const isWinnerB = b.is_winner_a !== undefined ? b.is_winner_a : b.score_a !== null && b.score_b !== null && b.score_a > b.score_b;
+      const priorityB = isDeficitB ? 0 : (isWinnerB ? 1 : 2);
 
-  // Calcul des polygones pour le radar
-  const getCoordinates = (index: number, total: number, valueRatio: number) => {
-    const angle = (Math.PI * 2 / total) * index - Math.PI / 2;
-    const r = radius * Math.max(0.1, Math.min(1, valueRatio));
-    return {
-      x: center + r * Math.cos(angle),
-      y: center + r * Math.sin(angle),
-    };
-  };
-
-  const polygonAPoints = useMemo(() => {
-    if (!radarDimensions.length) return '';
-    return radarDimensions
-      .map((item, i) => {
-        const coords = getCoordinates(i, radarDimensions.length, item.score_a / 100);
-        return `${coords.x},${coords.y}`;
-      })
-      .join(' ');
-  }, [radarDimensions]);
-
-  const polygonBPoints = useMemo(() => {
-    if (!radarDimensions.length) return '';
-    return radarDimensions
-      .map((item, i) => {
-        const coords = getCoordinates(i, radarDimensions.length, item.score_b / 100);
-        return `${coords.x},${coords.y}`;
-      })
-      .join(' ');
-  }, [radarDimensions]);
+      return priorityA - priorityB;
+    });
+  }, [comparison?.radar]);
 
   // Filtrage des critères par dimension active si sélectionnée
   const filteredCriteria = useMemo(() => {
@@ -334,7 +312,7 @@ export default function KamEnterpriseComparisonView() {
             Comparateur Sectoriel Versus
           </h1>
           <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Analysez les écarts concurrentiels entre deux entreprises d'un même secteur pour identifier les manques et opportunités d'upsell.
+            Analysez les écarts concurrentiels entre deux entreprises d&apos;un même secteur pour identifier les manques et opportunités d&apos;upsell.
           </p>
         </div>
 
@@ -414,7 +392,7 @@ export default function KamEnterpriseComparisonView() {
               <option value="BENCHMARK" className="bg-white dark:bg-[#2D2A2D]">
                 Moyenne du secteur ({selectedSector || 'Benchmark Global'})
               </option>
-              {currentSectorEnterprises
+              {(comparison?.meta_a.id === enterpriseAId ? comparison.sector_peers || [] : currentSectorEnterprises)
                 .filter((ent) => ent.id !== enterpriseAId)
                 .map((ent) => (
                   <option key={ent.id} value={ent.id} className="bg-white dark:bg-[#2D2A2D]">
@@ -429,9 +407,9 @@ export default function KamEnterpriseComparisonView() {
       {/* État de Chargement / Erreur */}
       {loadingComparison ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12 gap-3">
-          <Icons.Sparkles size={32} className="animate-spin text-[#4F6CE8]" />
+
           <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Calcul de l'analyse comparative sectorielle...
+            Calcul de l&apos;analyse comparative sectorielle...
           </p>
         </div>
       ) : error ? (
@@ -455,328 +433,248 @@ export default function KamEnterpriseComparisonView() {
             <div className="flex items-center justify-center gap-6 pt-2 text-xs font-semibold">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-1 bg-[#4F6CE8] rounded-full"></span>
-                <span className="text-zinc-900 dark:text-white">{comparison.meta_a.name} ({comparison.overall_score_a} pts)</span>
+                <span className="text-zinc-900 dark:text-white">{comparison.meta_a.name} ({comparison.overall_score_a ?? "—"} pts)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full"></span>
-                <span className="text-zinc-500 dark:text-zinc-400">{comparison.meta_b.name} ({comparison.overall_score_b} pts)</span>
+                <span className="text-zinc-500 dark:text-zinc-400">{comparison.meta_b.name} ({comparison.overall_score_b ?? "—"} pts)</span>
               </div>
             </div>
           </div>
 
-          {/* 4. Coeur Comparatif : Radar Chart (Gauche) + Où il se démarque (Droite) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Colonne Gauche : Radar Chart Interactif */}
-            <div className="lg:col-span-5 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col items-center justify-between shadow-sm">
-              <div className="w-full flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Radar des 6 Piliers
-                </span>
-                {activeDimension && (
-                  <button
-                    onClick={() => setActiveDimension(null)}
-                    className="text-[11px] text-[#4F6CE8] hover:underline cursor-pointer"
+          {/* 4. Comparaison Directe Minimaliste : Entreprise 1 vs Entreprise 2 */}
+          <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[28px] p-6 md:p-8 border border-black/5 dark:border-white/5 shadow-xs space-y-6">
+            {/* Cartes d'En-tête Versus (2 colonnes aérées sans badge VS pour afficher le nom complet) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-4 border-b border-black/5 dark:border-white/5">
+              {/* Entreprise 1 */}
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4F6CE8]" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#4F6CE8]">
+                    Entreprise 1 • Référence
+                  </span>
+                </div>
+                <div className="relative group">
+                  <h3
+                    title={comparison.meta_a.name}
+                    className="text-base md:text-lg font-bold text-zinc-900 dark:text-white leading-snug tracking-tight truncate cursor-help"
                   >
-                    Réinitialiser le filtre
-                  </button>
-                )}
-              </div>
-
-              {/* Rendu SVG du Radar Chart */}
-              <div className="relative flex items-center justify-center w-full max-w-[340px] aspect-square">
-                <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
-                  {/* Cercles / Toiles concentriques */}
-                  {[0.25, 0.5, 0.75, 1.0].map((step, idx) => (
-                    <polygon
-                      key={idx}
-                      points={radarDimensions
-                        .map((_, i) => {
-                          const c = getCoordinates(i, radarDimensions.length, step);
-                          return `${c.x},${c.y}`;
-                        })
-                        .join(' ')}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      className="text-black/5 dark:text-white/5"
-                    />
-                  ))}
-
-                  {/* Rayons / Axes */}
-                  {radarDimensions.map((dim, i) => {
-                    const c = getCoordinates(i, radarDimensions.length, 1.0);
-                    return (
-                      <line
-                        key={dim.dimension_id}
-                        x1={center}
-                        y1={center}
-                        x2={c.x}
-                        y2={c.y}
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        className="text-black/10 dark:text-white/10"
-                      />
-                    );
-                  })}
-
-                  {/* Polygone Entreprise B (Gris / Pointillé) */}
-                  <polygon
-                    points={polygonBPoints}
-                    fill="currentColor"
-                    fillOpacity="0.08"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeDasharray="4 4"
-                    className="text-zinc-400 dark:text-zinc-500 transition-all duration-300"
-                  />
-
-                  {/* Polygone Entreprise A (Bleu Cobalt Onbora) */}
-                  <polygon
-                    points={polygonAPoints}
-                    fill="#4F6CE8"
-                    fillOpacity="0.25"
-                    stroke="#4F6CE8"
-                    strokeWidth="2.5"
-                    className="transition-all duration-300"
-                  />
-
-                  {/* Sommets cliquables & Infobulles */}
-                  {radarDimensions.map((dim, i) => {
-                    const cA = getCoordinates(i, radarDimensions.length, dim.score_a / 100);
-                    const cB = getCoordinates(i, radarDimensions.length, dim.score_b / 100);
-                    const cLabel = getCoordinates(i, radarDimensions.length, 1.18);
-                    const isSelected = activeDimension === dim.dimension_id;
-
-                    return (
-                      <g key={dim.dimension_id}>
-                        {/* Point B */}
-                        <circle cx={cB.x} cy={cB.y} r={3} fill="#A1A1AA" />
-                        {/* Point A */}
-                        <circle
-                          cx={cA.x}
-                          cy={cA.y}
-                          r={isSelected ? 6 : 4}
-                          fill="#4F6CE8"
-                          className="cursor-pointer transition-all hover:scale-125"
-                          onClick={() => setActiveDimension(isSelected ? null : dim.dimension_id)}
-                        />
-                        {/* Label Axe */}
-                        <text
-                          x={cLabel.x}
-                          y={cLabel.y}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          onClick={() => setActiveDimension(isSelected ? null : dim.dimension_id)}
-                          className={`text-[9px] md:text-[10px] font-semibold cursor-pointer select-none transition-colors ${
-                            isSelected
-                              ? 'fill-[#4F6CE8] font-bold'
-                              : 'fill-zinc-600 dark:fill-zinc-400 hover:fill-zinc-900 dark:hover:fill-white'
-                          }`}
-                        >
-                          {dim.label}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-
-              {/* Indicateur de score en bas du radar */}
-              <div className="w-full grid grid-cols-2 gap-2 mt-4 pt-3 text-center border-t border-black/5 dark:border-white/5">
-                <div>
-                  <span className="text-[10px] text-zinc-500 block uppercase">Indice Connectivité A</span>
-                  <span className="text-lg font-black text-[#4F6CE8]">
-                    {radarDimensions.find((d) => d.dimension_id === 'connectivity')?.score_a || 0}/100
-                  </span>
+                    {comparison.meta_a.name}
+                  </h3>
+                  <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:flex items-center z-30 px-3 py-1.5 text-xs font-medium text-white bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-md rounded-xl shadow-xl whitespace-normal max-w-sm pointer-events-none transition-all duration-150 border border-white/10">
+                    {comparison.meta_a.name}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 block uppercase">Indice Cybersécurité A</span>
-                  <span className="text-lg font-black text-[#4F6CE8]">
-                    {radarDimensions.find((d) => d.dimension_id === 'security')?.score_a || 0}/100
+                <div className="flex items-baseline gap-2 pt-0.5">
+                  <span
+                    className={`text-2xl font-black ${
+                      comparison.overall_score_a !== null && comparison.overall_score_b !== null && comparison.overall_score_a < comparison.overall_score_b
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-zinc-900 dark:text-white'
+                    }`}
+                  >
+                    {comparison.overall_score_a ?? "—"}
                   </span>
+                  <span className="text-xs text-zinc-400 font-bold">{comparison.overall_score_a === null ? "Non évalué" : "/ 100 pts de maturité"}</span>
+                </div>
+              </div>
+
+              {/* Entreprise 2 */}
+              <div className="space-y-1.5 md:text-right min-w-0">
+                <div className="flex items-center md:justify-end gap-2">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-500">
+                    Entreprise 2 • Comparatif
+                  </span>
+                  {comparison.meta_b?.is_closest_twin && (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] border border-[#4F6CE8]/20">
+                      Jumeau Vectoriel {comparison.meta_b?.similarity_percentage}%
+                    </span>
+                  )}
+                  <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
+                </div>
+                <div className="relative group flex md:justify-end">
+                  <h3
+                    title={comparison.meta_b.name}
+                    className="text-base md:text-lg font-bold text-zinc-900 dark:text-white leading-snug tracking-tight truncate cursor-help max-w-full"
+                  >
+                    {comparison.meta_b.name}
+                  </h3>
+                  <div className="absolute right-0 bottom-full mb-1.5 hidden group-hover:flex items-center z-30 px-3 py-1.5 text-xs font-medium text-white bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-md rounded-xl shadow-xl whitespace-normal max-w-sm pointer-events-none transition-all duration-150 border border-white/10 text-left">
+                    {comparison.meta_b.name}
+                  </div>
+                </div>
+                <div className="flex items-baseline md:justify-end gap-2 pt-0.5">
+                  <span className="text-2xl font-black text-zinc-900 dark:text-white">
+                    {comparison.overall_score_b ?? "—"}
+                  </span>
+                  <span className="text-xs text-zinc-400 font-bold">{comparison.overall_score_b === null ? "Non évalué" : "/ 100 pts de maturité"}</span>
                 </div>
               </div>
             </div>
 
-            {/* Colonne Droite : Priorité sur "CE QUI LUI MANQUE" avec Switcher vers "Où il se démarque" */}
-            <div className="lg:col-span-7 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col justify-between shadow-sm">
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <div className="inline-flex p-1 rounded-full bg-[#ECEAE5] dark:bg-[#242124]">
-                    <button
-                      onClick={() => setRightCardTab('gaps')}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        rightCardTab === 'gaps'
-                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
-                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <span>Ce qui lui manque ({comparison.gaps_a.length})</span>
-                    </button>
-                    <button
-                      onClick={() => setRightCardTab('advantages')}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        rightCardTab === 'advantages'
-                          ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-sm'
-                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <span>Où il se démarque ({comparison.advantages_a.length})</span>
-                    </button>
-                  </div>
-                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    Face à {comparison.meta_b.name}
+            {/* Justification de Correspondance Vectorielle IA */}
+            {(comparison.meta_a.has_infrastructure_data === false || comparison.meta_b.has_infrastructure_data === false) && (
+              <p className="text-[13px] leading-[21px] text-zinc-500 dark:text-zinc-400">
+                Parc non renseigné. Complétez les informations de l’entreprise pour établir la comparaison.
+              </p>
+            )}
+
+            {comparison.meta_b?.twin_rationale && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 text-xs text-zinc-600 dark:text-zinc-400">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-semibold text-zinc-900 dark:text-white shrink-0">
+                    Correspondance vectorielle IA :
+                  </span>
+                  <span className="truncate text-zinc-500 dark:text-zinc-400">
+                    {comparison.meta_b.twin_rationale}
                   </span>
                 </div>
-
-                {/* VUE 1 : CE QUI LUI MANQUE (Accordéon Dropdown, Collapse par défaut) */}
-                {rightCardTab === 'gaps' && (
-                  <div className="space-y-2.5">
-                    {comparison.gaps_a.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-zinc-500">
-                        Aucun déficit majeur détecté pour ce dimensionnement.
-                      </div>
-                    ) : (
-                      comparison.gaps_a.map((gap, idx) => {
-                        const isExpanded = expandedGapIndices.has(idx);
-                        return (
-                          <div
-                            key={idx}
-                            className="rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] overflow-hidden transition-all border border-transparent hover:border-black/5 dark:hover:border-white/5"
-                          >
-                            {/* En-tête Compact & Dépliable */}
-                            <button
-                              type="button"
-                              onClick={() => toggleGapExpand(idx)}
-                              className="w-full p-3.5 flex items-center justify-between gap-3 text-left cursor-pointer transition-colors"
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <span className={`w-2 h-2 rounded-full shrink-0 ${
-                                  gap.severity === 'CRITICAL' ? 'bg-[#4F6CE8]' : 'bg-zinc-400 dark:bg-zinc-500'
-                                }`} />
-                                <span className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                                  {gap.issue}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-2 shrink-0">
-                                {gap.impact_score && (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] dark:text-[#6885FF]">
-                                    -{gap.impact_score} pts
-                                  </span>
-                                )}
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-400">
-                                  {gap.severity === 'CRITICAL' ? 'Critique' : gap.severity === 'HIGH' ? 'Priorité 2' : 'Priorité 3'}
-                                </span>
-                                <Icons.ChevronDown
-                                  size={14}
-                                  className={`text-zinc-400 transition-transform duration-200 ${
-                                    isExpanded ? 'rotate-180 text-zinc-700 dark:text-zinc-200' : ''
-                                  }`}
-                                />
-                              </div>
-                            </button>
-
-                            {/* Contenu Déplié (Collapse par défaut dans tous les cas) */}
-                            {isExpanded && (
-                              <div className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-black/5 dark:border-white/5 animate-fade-in">
-                                <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                                  {gap.description}
-                                </p>
-
-                                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                  <span className="text-[11px] font-bold text-[#4F6CE8] dark:text-[#6885FF]">
-                                    Orange Business : {gap.solution_recommended}
-                                  </span>
-                                  {gap.pitch && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(gap.pitch || '');
-                                        setCopiedPitchIndex(idx + 500);
-                                        setTimeout(() => setCopiedPitchIndex(null), 2500);
-                                      }}
-                                      className="text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors shrink-0"
-                                    >
-                                      {copiedPitchIndex === idx + 500 ? 'Pitch copié !' : 'Copier argumentaire'}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-
-                {/* VUE 2 : OÙ IL SE DÉMARQUE */}
-                {rightCardTab === 'advantages' && (
-                  <div className="space-y-4">
-                    {comparison.advantages_a.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-zinc-500">
-                        Aucun écart majeur détecté en faveur de cette entreprise sur les critères actuels.
-                      </div>
-                    ) : (
-                      comparison.advantages_a.map((adv, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3.5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col gap-2 transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                            <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                              {adv.criterion}
-                            </span>
-                            <span className="text-xs font-bold text-[#4F6CE8] dark:text-[#6885FF]">
-                              {adv.value_main}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-[#4F6CE8] rounded-full transition-all duration-500"
-                                style={{ width: `${adv.lead_percentage}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0">
-                              devance {adv.lead_percentage}%
-                            </span>
-                          </div>
-
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            {adv.summary}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
+                <div className="text-[11px] font-bold text-[#4F6CE8] shrink-0">
+                  {comparison.meta_b.similarity_percentage}% proximité
+                </div>
               </div>
+            )}
 
-              {/* Bouton pour basculer vers les manques */}
-              <div className="mt-5 pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
-                <span className="text-[11px] text-zinc-500">
-                  Découvrez les vulnérabilités exploitables par le KAM
+            {/* Grille Match-Stats Face-à-face des Piliers Clés (Établis par le Core AI pour le secteur) */}
+            <div className="space-y-2.5 pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-1 pb-1 border-b border-black/5 dark:border-white/5">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+
+                  <span>Piliers Télécoms établis par le Core AI • {comparison.sector}</span>
                 </span>
-                <button
-                  onClick={() => setActiveTab('gaps')}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F6CE8] hover:underline cursor-pointer"
-                >
-                  <span>Voir toutes les lacunes</span>
-                  <Icons.ArrowRight size={13} />
-                </button>
+                <span className="text-[10px] text-zinc-400 font-medium">
+                  {radarDimensions.length} piliers sectoriels analysés
+                </span>
               </div>
+              {radarDimensions.map((dim) => {
+                const isDeficitA = dim.is_deficit_a !== undefined ? dim.is_deficit_a : dim.score_a !== null && dim.score_b !== null && dim.score_a < dim.score_b;
+                const isWinnerA = dim.is_winner_a !== undefined ? dim.is_winner_a : dim.score_a !== null && dim.score_b !== null && dim.score_a > dim.score_b;
+                const isWinnerB = dim.winner === 'B' || (!isWinnerA && !isDeficitA && dim.score_b !== null && dim.score_a !== null && dim.score_b > dim.score_a);
+
+                const displayValA = dim.unit_val_a || `${dim.score_a}%`;
+                const displayValB = dim.unit_val_b || `${dim.score_b}%`;
+
+                return (
+                  <div
+                    key={dim.dimension_id}
+                    onClick={() => setActiveDimension(prev => prev === dim.dimension_id ? null : dim.dimension_id)}
+                    className="grid grid-cols-12 items-center gap-2 md:gap-4 py-2.5 px-0.5 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+                  >
+                    {/* Colonne Gauche : Entreprise 1 (Pastille Match-Stats alignée à gauche sous le nom) */}
+                    <div className="col-span-3 flex flex-col items-start justify-center text-left">
+                      <span
+                        className={`inline-flex items-center justify-center px-3.5 py-1.5 min-w-[72px] md:min-w-[88px] rounded-full text-xs md:text-sm font-bold tracking-tight text-center transition-all ${
+                          isDeficitA
+                            ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/25 shadow-xs'
+                            : isWinnerA
+                            ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] dark:text-[#6885FF] border border-[#4F6CE8]/25 font-extrabold'
+                            : 'bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5'
+                        }`}
+                        title={dim.score_a === null ? "Parc non renseigné" : dim.pack_name_a || `${displayValA} (Score: ${dim.score_a}%)`}
+                      >
+                        {displayValA}
+                      </span>
+                      {dim.pack_name_a && (
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate max-w-[140px] mt-0.5 text-left hidden sm:block">
+                          {dim.pack_name_a}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Colonne Centrale : Libellé du Pilier Catalogue */}
+                    <div className="col-span-6 text-center px-2">
+                      <span className="text-xs md:text-sm font-bold text-zinc-800 dark:text-zinc-200 block leading-snug">
+                        {dim.label}
+                      </span>
+                      {dim.description && (
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 line-clamp-1 hidden md:block mt-0.5">
+                          {dim.description}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Colonne Droite : Entreprise de Référence (Pastille Match-Stats alignée à droite sous le nom) */}
+                    <div className="col-span-3 flex flex-col items-end justify-center text-right">
+                      <span
+                        className={`inline-flex items-center justify-center px-3.5 py-1.5 min-w-[72px] md:min-w-[88px] rounded-full text-xs md:text-sm font-bold tracking-tight text-center transition-all ${
+                          isWinnerB
+                            ? 'bg-zinc-800/10 dark:bg-white/15 text-zinc-900 dark:text-white border border-black/10 dark:border-white/15 font-extrabold'
+                            : 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 border border-black/5 dark:border-white/5'
+                        }`}
+                        title={dim.score_b === null ? "Parc non renseigné" : dim.pack_name_b || `${displayValB} (Score: ${dim.score_b}%)`}
+                      >
+                        {displayValB}
+                      </span>
+                      {dim.pack_name_b && (
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate max-w-[140px] mt-0.5 text-right hidden sm:block">
+                          {dim.pack_name_b}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Synthèse Face-à-face Épurée */}
+            {(comparison.gaps_a.length > 0 || comparison.advantages_a.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-black/5 dark:border-white/5">
+                {/* Colonne Entreprise 1 : Ce qui lui manque / Opportunités */}
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#242124] border border-black/5 dark:border-white/5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#4F6CE8]" />
+                      Opportunités à positionner ({comparison.gaps_a.length})
+                    </span>
+                    <span className="text-[10px] text-zinc-400 truncate max-w-[150px]">{comparison.meta_a.name}</span>
+                  </div>
+                  <ul className="space-y-2">
+                    {comparison.gaps_a.slice(0, 3).map((gap, i) => (
+                      <li key={i} className="text-xs text-zinc-600 dark:text-zinc-300 flex items-start gap-2">
+                        <span className="text-[#4F6CE8] font-bold shrink-0">•</span>
+                        <div className="space-y-0.5">
+                          <span className="font-semibold text-zinc-900 dark:text-white">{gap.issue}</span>
+                          <span className="block text-[11px] text-zinc-500">Solution Orange : {gap.solution_recommended}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Colonne Entreprise 2 : Points forts du pair */}
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#242124] border border-black/5 dark:border-white/5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-zinc-400" />
+                      Points forts de référence ({comparison.advantages_a.length > 0 ? comparison.advantages_a.length : 'Standards'})
+                    </span>
+                    <span className="text-[10px] text-zinc-400 truncate max-w-[150px]">{comparison.meta_b.name}</span>
+                  </div>
+                  <ul className="space-y-2">
+                    {comparison.advantages_a.length > 0 ? (
+                      comparison.advantages_a.slice(0, 3).map((adv, i) => (
+                        <li key={i} className="text-xs text-zinc-600 dark:text-zinc-300 flex items-start gap-2">
+                          <span className="text-zinc-400 font-bold shrink-0">•</span>
+                          <div className="space-y-0.5">
+                            <span className="font-semibold text-zinc-900 dark:text-white">{adv.criterion}</span>
+                            <span className="block text-[11px] text-zinc-500">{adv.summary}</span>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-xs text-zinc-500 italic">Conforme aux standards de référence du secteur.</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* 5. Navigation par Onglets de Détails (Ce qui lui manque / Plan d'Action KAM / Tableau Complet) */}
+                    {/* 5. Navigation par Onglets de Détails (Ce qui lui manque / Plan d'Action KAM / Tableau Complet) */}
           <div className="flex items-center gap-2 pt-2">
             {[
               { id: 'overview' as const, label: 'Tableau Comparatif & Caractéristiques', icon: Icons.List },
               { id: 'gaps' as const, label: 'Ce qui lui manque (Lacunes & Vulnérabilités)', icon: Icons.AlertTriangle },
-              { id: 'criteria' as const, label: 'Recommandations & Pitch KAM', icon: Icons.Award },
             ].map((tab) => {
               const IconComp = tab.icon;
               const isActive = activeTab === tab.id;
@@ -857,7 +755,7 @@ export default function KamEnterpriseComparisonView() {
                               {comparison.meta_b.name}
                             </span>
                           ) : (
-                            <span className="text-zinc-400 dark:text-zinc-500">Égalité</span>
+                            <span className="text-zinc-400 dark:text-zinc-500">{comparison.score_diff === null ? "Non comparable" : "Égalité"}</span>
                           )}
                         </td>
                       </tr>
@@ -885,7 +783,7 @@ export default function KamEnterpriseComparisonView() {
 
                 {comparison.gaps_a.length === 0 ? (
                   <div className="p-8 text-center text-xs text-zinc-500">
-                    Félicitations ! Aucune vulnérabilité majeure identifiée sur ce compte.
+                    {comparison.score_diff === null ? "Parc à renseigner avant d’évaluer les écarts." : "Aucune vulnérabilité majeure identifiée sur ce compte."}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -912,7 +810,7 @@ export default function KamEnterpriseComparisonView() {
                           {gap.description}
                         </p>
                         <div className="pt-2 border-t border-black/5 dark:border-white/5 text-[11px] font-semibold text-[#4F6CE8] dark:text-[#6885FF] flex items-center gap-1.5">
-                          <Icons.Sparkles size={12} />
+
                           <span>Offre Orange Business : {gap.solution_recommended}</span>
                         </div>
                       </div>
@@ -935,7 +833,7 @@ export default function KamEnterpriseComparisonView() {
 
                 {comparison.gaps_b.length === 0 ? (
                   <div className="p-8 text-center text-xs text-zinc-500">
-                    Aucune vulnérabilité identifiée ou benchmark conforme.
+                    {comparison.score_diff === null ? "Parc à renseigner avant d’évaluer les écarts." : "Aucune vulnérabilité identifiée ou benchmark conforme."}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -962,7 +860,7 @@ export default function KamEnterpriseComparisonView() {
                           {gap.description}
                         </p>
                         <div className="pt-2 border-t border-black/5 dark:border-white/5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                          <Icons.Sparkles size={12} />
+
                           <span>Offre Orange Business : {gap.solution_recommended}</span>
                         </div>
                       </div>
@@ -971,67 +869,6 @@ export default function KamEnterpriseComparisonView() {
                 )}
               </section>
             </div>
-          )}
-
-          {/* Onglet 3 : Recommandations & Pitch KAM */}
-          {activeTab === 'criteria' && (
-            <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                    Argumentaires de négociation prêts à l'emploi (Pitchs KAM)
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Utilisez ces éléments de langage valorisant les standards sectoriels pour convertir les manques constatés en contrats signés.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {comparison.kam_recommendations.map((rec, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-2xl bg-[#ECEAE5] dark:bg-[#242124] flex flex-col justify-between gap-3"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-zinc-900 dark:text-white">
-                          Cible : {rec.target_enterprise}
-                        </span>
-                        <span className="text-[10px] font-bold text-[#4F6CE8] dark:text-[#6885FF] uppercase">
-                          Opportunité d'Upsell
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white/70 dark:bg-black/20 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        {rec.solution_title}
-                      </div>
-                      <p className="text-xs italic text-zinc-600 dark:text-zinc-300 leading-relaxed pt-1">
-                        {rec.pitch_argument}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-end pt-2">
-                      <button
-                        onClick={() => handleCopyPitch(rec.pitch_argument, idx)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-semibold transition-all cursor-pointer"
-                      >
-                        {copiedPitchIndex === idx ? (
-                          <>
-                            <Icons.CheckCheck size={13} />
-                            <span>Pitch copié !</span>
-                          </>
-                        ) : (
-                          <>
-                            <Icons.Copy size={13} />
-                            <span>Copier l'argumentaire</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
           )}
         </>
       ) : null}

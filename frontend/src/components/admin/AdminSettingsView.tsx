@@ -5,6 +5,7 @@ import { Icons } from '@/components/shared/Icons';
 import UserAvatar from '@/components/kam/UserAvatar';
 import ProfilePhotoUploader from '@/components/shared/ProfilePhotoUploader';
 import ThemeSettingCard from '@/components/shared/ThemeSettingCard';
+import AdminDynamicsConnection from './AdminDynamicsConnection';
 import { useAuth } from '@/context/AuthContext';
 import { fetchAPI } from '@/lib/api';
 
@@ -106,6 +107,7 @@ export default function AdminSettingsView() {
 
       {/* 2. Theme Preferences */}
       <ThemeSettingCard />
+      <AdminDynamicsConnection />
 
       {/* 3. FAQ & Knowledge Base */}
       <div className="bg-white dark:bg-[#2D2A2D] rounded-3xl p-6 shadow-sm border border-black/5 dark:border-white/5 flex flex-col gap-4">

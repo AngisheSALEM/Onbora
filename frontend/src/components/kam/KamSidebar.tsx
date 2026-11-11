@@ -7,8 +7,9 @@ import { Icons } from '@/components/shared/Icons';
 import Logo from '@/components/shared/Logo';
 import { useAuth } from '@/context/AuthContext';
 import UserAvatar, { ActivityStatus } from './UserAvatar';
+import { useKamContext } from './KamContext';
 
-export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit' | 'compare' | 'feed';
+export type KamView = 'precall' | 'visits' | 'leadscoring' | 'churnradar' | 'accounts' | 'agenda' | 'signals' | 'settings' | 'briefing' | 'report' | 'prepare-visit' | 'vocal-visit' | 'compare' | 'feed' | 'new-leads';
 
 interface KamSidebarProps {
   activeView?: KamView;
@@ -20,23 +21,35 @@ interface KamSidebarProps {
 export default function KamSidebar({
   activeView,
   onViewChange,
-  unreadSignalsCount = 0,
-  unreadDirectivesCount = 0,
+  unreadSignalsCount,
 }: KamSidebarProps) {
   const pathname = usePathname() || '';
   const { user, logout } = useAuth();
   const displayName = user ? `${user.first_name || user.username}` : 'Salem';
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [activityStatus, setActivityStatus] = useState<ActivityStatus>('AVAILABLE');
+  const [activityStatus, setActivityStatus] = useState<ActivityStatus>(() => {
+    if (typeof window === 'undefined') return 'AVAILABLE';
+    try {
+      return (localStorage.getItem('onbora_kam_activity_status') as ActivityStatus) || 'AVAILABLE';
+    } catch {
+      return 'AVAILABLE';
+    }
+  });
+
+  let kamContext: ReturnType<typeof useKamContext> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    kamContext = useKamContext();
+  } catch {
+    // Rendered outside KamProvider
+  }
+
+  const effectiveUnreadCount = unreadSignalsCount !== undefined
+    ? unreadSignalsCount
+    : (kamContext?.unreadNewsCount ?? 0);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('onbora_kam_activity_status') as ActivityStatus | null;
-      if (saved) setActivityStatus(saved);
-    } catch {
-      // ignore
-    }
 
     const handleStatusChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ status: ActivityStatus }>;
@@ -60,11 +73,18 @@ export default function KamSidebar({
       badge: null,
     },
     {
-      id: 'feed' as KamView,
-      href: '/kam/feed',
-      label: 'Fil d\'actualité',
-      icon: Icons.Rss,
+      id: 'new-leads' as KamView,
+      href: '/kam/feed/leads',
+      label: 'Nouveaux leads',
+      icon: Icons.UserPlus,
       badge: null,
+    },
+    {
+      id: 'feed' as KamView,
+      href: '/kam/feed/portfolio',
+      label: 'Actualité portefeuille',
+      icon: Icons.Newspaper,
+      badge: effectiveUnreadCount > 0 ? effectiveUnreadCount : null,
     },
     {
       id: 'agenda' as KamView,
@@ -97,10 +117,13 @@ export default function KamSidebar({
       return pathname === '/kam' || pathname === '/kam/' || pathname.startsWith('/kam/accounts') || pathname.startsWith('/kam/briefing');
     }
     if (item.id === 'feed') {
-      return pathname.startsWith('/kam/feed');
+      return pathname === '/kam/feed' || pathname.startsWith('/kam/feed/portfolio');
+    }
+    if (item.id === 'new-leads') {
+      return pathname.startsWith('/kam/feed/leads');
     }
     if (item.id === 'agenda') {
-      return pathname.startsWith('/kam/agenda') || pathname.startsWith('/kam/prepare-visit') || pathname.startsWith('/kam/vocal-visit');
+      return pathname.startsWith('/kam/agenda') || pathname.startsWith('/kam/prepare-visit') || pathname.startsWith('/kam/vocal-visit') || pathname.startsWith('/kam/meeting-report');
     }
     if (item.id === 'visits') {
       return pathname.startsWith('/kam/visits') || pathname.startsWith('/kam/report');
@@ -110,7 +133,6 @@ export default function KamSidebar({
     }
     return pathname === item.href;
   };
-
 
   return (
     <aside
@@ -122,20 +144,14 @@ export default function KamSidebar({
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-1 py-1">
           {!isCollapsed && (
-            <Link href="/kam/accounts" aria-label="Portefeuille Onbora" className="flex items-center gap-3 group">
-              <Logo size={36} />
-              <div className="hidden md:block">
-                <h1 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight group-hover:text-[#787570] transition-colors">
-                  ONBORA 
-                </h1>
-             
-              </div>
+            <Link href="/kam/accounts" aria-label="Portefeuille Onbora" className="flex items-center group py-0.5">
+              <Logo variant="full" size={32} />
             </Link>
           )}
 
           {isCollapsed && (
-            <Link href="/kam/accounts" className="mx-auto">
-              <Logo size={32} />
+            <Link href="/kam/accounts" className="mx-auto" aria-label="Portefeuille Onbora">
+              <Logo variant="icon" size={32} />
             </Link>
           )}
 
@@ -225,7 +241,7 @@ export default function KamSidebar({
       </div>
 
       {/* Bottom : Profile Capsule with Avatar & Dedicated Logout Button */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+      <div className="flex flex-col gap-2 pt-2">
         <div className={`p-1 md:p-2.5 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed ? (
             <Link
@@ -261,9 +277,6 @@ export default function KamSidebar({
             </Link>
           )}
         </div>
-
-        {/* Dedicated Logout Action Button */}
-       
       </div>
 
       {/* Logout Confirmation Modal */}

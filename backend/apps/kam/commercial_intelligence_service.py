@@ -58,7 +58,7 @@ class CommercialIntelligenceService:
     """
 
     @staticmethod
-    def generate_pre_call_briefing(enterprise: Enterprise, kam_user) -> dict:
+    def generate_pre_call_briefing(enterprise: Enterprise, kam_user, *, persist=True) -> dict:
         """
         Génère un dossier d'attaque complet pre-call pour un rendez-vous complexe.
         Appelle le microservice Core AI (Brain) sur /api/core-ai/pre-call avec repli sur le fallback local.
@@ -71,6 +71,13 @@ class CommercialIntelligenceService:
             "Faire verbaliser la douleur financière avant d'aborder tout chiffre ou prix.",
             "Identifier dès les 10 premières minutes si le DAF doit être intégré à la réunion de restitution."
         ]
+        if not persist:
+            return {
+                **ai_data, 'id': None, 'enterprise_id': enterprise.pk,
+                'enterprise_name': enterprise.name, 'golden_rules': golden_rules,
+                'real_needs': ai_data.get('real_needs', []),
+                'predicted_needs': ai_data.get('predicted_needs', []),
+            }
         briefing, _ = PreCallBriefing.objects.update_or_create(
             enterprise=enterprise,
             kam=kam_user,

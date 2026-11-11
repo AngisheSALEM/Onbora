@@ -110,7 +110,7 @@ function KamAppointmentPreparationContent() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-3">
-          <Icons.Sparkles size={32} className="animate-spin text-[#4F6CE8]" />
+  
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
             Chargement de la préparation du rendez-vous...
           </span>
@@ -185,7 +185,7 @@ function KamAppointmentPreparationContent() {
           </div>
         </div>
 
-        {/* Right: Actions (Fiche precall 360, Lancer le vocal live) */}
+        {/* Right: Actions (Fiche precall 360, Préparer le compte rendu) */}
         <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
           {appointment?.enterprise_id && (
             <button
@@ -199,11 +199,11 @@ function KamAppointmentPreparationContent() {
           )}
 
           <button
-            onClick={() => router.push(`/kam/vocal-visit?appointmentId=${appointmentId}`)}
+            onClick={() => router.push(`/kam/meeting-report?appointmentId=${appointmentId}`)}
             className="px-4 py-2 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-2"
           >
-            <Icons.Mic size={14} />
-            <span>Lancer le vocal live</span>
+            <Icons.FileText size={14} />
+            <span>Préparer le compte rendu</span>
           </button>
         </div>
       </div>
@@ -398,15 +398,15 @@ function KamAppointmentPreparationContent() {
           {/* PIED DE CARTE: ACTION RAPIDE VERS LE BRIEF VOCAL */}
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Prêt pour l&apos;entretien ? Lancez le brief vocal live pour consigner ou dicter vos échanges en temps réel.
+              Après votre rencontre, reprenez vos notes ou vos échanges pour préparer le compte rendu.
             </span>
 
             <button
-              onClick={() => router.push(`/kam/vocal-visit?appointmentId=${appointmentId}`)}
+              onClick={() => router.push(`/kam/meeting-report?appointmentId=${appointmentId}`)}
               className="px-5 py-2.5 bg-[#4F6CE8] hover:bg-[#3D57C5] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2 shrink-0"
             >
-              <Icons.Mic size={15} />
-              <span>Ouvrir le Brief Vocal Live</span>
+              <Icons.FileText size={15} />
+              <span>Préparer le compte rendu</span>
             </button>
           </div>
 
@@ -423,7 +423,7 @@ export default function KamAppointmentPreparationPage() {
       fallback={
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="flex flex-col items-center gap-3">
-            <Icons.Sparkles size={28} className="animate-spin text-[#4F6CE8]" />
+          
             <span className="text-xs font-semibold text-zinc-500">Chargement de la préparation...</span>
           </div>
         </div>

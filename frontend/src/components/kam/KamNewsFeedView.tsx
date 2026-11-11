@@ -1,597 +1,1172 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
+
+import React, { useState, useEffect, useCallback } from 'react';
+
 import Link from 'next/link';
+
 import { useRouter } from 'next/navigation';
+
 import { Icons } from '@/components/shared/Icons';
+
+import { SkeletonNewsLoader } from '@/components/shared/SkeletonLoader';
+
 import { fetchAPI } from '@/lib/api';
+
 import { B2BNewsItem } from './kamTypes';
+
 import { useKamContext } from './KamContext';
+import KamNewLeadCard, { KamNewLeadCardSkeleton } from './KamNewLeadCard';
 
-type FeedTypeFilter = 'ALL' | 'PORTFOLIO' | 'WEB_DISCOVERY' | 'SAVED';
 
-export default function KamNewsFeedView() {
+
+type FeedScope = 'WEB_DISCOVERY' | 'PORTFOLIO';
+
+
+
+const cleanHeadline = (text?: string) => (text || '').replace(/^\[.*?\]\s*/, '').trim();
+
+export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedScope }) {
+
   const router = useRouter();
-  const { searchQuery, visits } = useKamContext();
+
+  const {
+
+    searchQuery,
+
+    visits,
+
+    loadAssignedAccounts,
+
+    activeFilter,
+
+    setActiveFilter,
+
+    setFilterOptions,
+
+    setFilterCategoryLabel,
+    markAllNewsAsRead,
+    loadNewsData,
+  } = useKamContext();
+
+
+
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const [feedItems, setFeedItems] = useState<B2BNewsItem[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [refreshing, setRefreshing] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
-  const [feedType, setFeedType] = useState<FeedTypeFilter>('ALL');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+
+  const [savedOnly, setSavedOnly] = useState(false);
+  const title = scope === 'WEB_DISCOVERY' ? 'Nouveaux leads' : 'Actualité portefeuille';
+
   const [convertingId, setConvertingId] = useState<string | null>(null);
+
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
+
+
+
+
+  // When KAM enters the feed, mark news as viewed after a short delay so the sidebar badge disappears
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      markAllNewsAsRead();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [markAllNewsAsRead]);
+
+  const handleSelectArticle = (item: B2BNewsItem) => {
+    router.push(`/kam/feed/${item.is_web_discovery ? 'leads' : 'portfolio'}/${encodeURIComponent(item.id)}`);
+    if (!item.is_read) {
+      handleToggleRead(item);
+    }
+  };
+
+
+
   const [counters, setCounters] = useState({
+
     all: 0,
+
     portfolio: 0,
+
     web_discovery: 0,
+
     unread: 0,
+
     saved: 0,
+
+    strong_signals: 0,
+
+    weak_signals: 0,
+
   });
 
-  const loadFeed = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let url = '/api/kam/feed/?';
-      if (feedType === 'PORTFOLIO') url += 'type=PORTFOLIO&';
-      else if (feedType === 'WEB_DISCOVERY') url += 'type=WEB_DISCOVERY&';
-      else if (feedType === 'SAVED') url += 'saved=true&';
 
-      if (selectedCategory !== 'ALL') {
-        url += `category=${encodeURIComponent(selectedCategory)}&`;
-      }
-      if (searchQuery) {
-        url += `search=${encodeURIComponent(searchQuery)}&`;
-      }
 
-      const res = await fetchAPI(url);
-      if (res && Array.isArray(res.results)) {
-        setFeedItems(res.results);
-        if (res.counters) {
-          setCounters(res.counters);
-        }
-      } else {
-        setFeedItems([]);
-      }
-    } catch (err: any) {
-      console.error("Erreur chargement fil d'actualité:", err);
-      setError(err?.message || "Impossible de charger le fil d'actualité.");
-    } finally {
-      setLoading(false);
-    }
-  }, [feedType, selectedCategory, searchQuery]);
+  // Signal filter is controlled via search bar filter dropdown in KamHeader
+
+  const signalFilter = (activeFilter === 'STRONG' || activeFilter === 'WEAK') ? activeFilter : 'ALL';
+
+
+
+  // Configure search bar filter options in KamContext
 
   useEffect(() => {
-    loadFeed();
-  }, [loadFeed]);
+
+    setFilterCategoryLabel("FILTRER PAR INTENSITÉ DU SIGNAL");
+
+    setFilterOptions([
+
+      {
+
+        id: 'ALL',
+
+        label: 'Tous les signaux',
+
+        count: counters.all,
+
+        icon: <Icons.Layers size={13} className="text-zinc-400" />,
+
+      },
+
+      {
+
+        id: 'STRONG',
+
+        label: 'Signaux forts',
+
+        count: counters.strong_signals,
+
+        icon: <Icons.BicepsFlexed size={13} className="text-amber-500" />,
+
+      },
+
+      {
+
+        id: 'WEAK',
+
+        label: 'Signaux faibles',
+
+        count: counters.weak_signals,
+
+        icon: <Icons.SignalLow size={13} className="text-slate-400" />,
+
+      },
+
+    ]);
+
+
+
+    return () => {
+
+      setFilterOptions([]);
+
+      setFilterCategoryLabel("FILTRER");
+
+    };
+
+  }, [counters.all, counters.strong_signals, counters.weak_signals, setFilterCategoryLabel, setFilterOptions]);
+
+
+
+  const fetchFeedData = useCallback(async (signal?: AbortSignal) => {
+
+    let url = `/api/kam/feed/?type=${scope}&`;
+    if (savedOnly) url += 'saved=true&';
+
+    if (signalFilter !== 'ALL') {
+
+      url += `signal=${encodeURIComponent(signalFilter)}&`;
+
+    }
+
+
+
+    if (debouncedSearch) {
+
+      url += `search=${encodeURIComponent(debouncedSearch)}&`;
+
+    }
+
+
+
+    return await fetchAPI(url, signal ? { signal } : {});
+
+  }, [scope, savedOnly, signalFilter, debouncedSearch]);
+
+
+
+  useEffect(() => {
+
+    let ignore = false;
+    const controller = new AbortController();
+
+    fetchFeedData(controller.signal)
+
+      .then((res) => {
+
+        if (!ignore) {
+
+          if (res && Array.isArray(res.results)) {
+
+            setFeedItems(res.results);
+
+            if (res.counters) setCounters(res.counters);
+
+          } else {
+
+            setFeedItems([]);
+
+          }
+
+          setLoading(false);
+
+        }
+
+      })
+
+      .catch((err: unknown) => {
+
+        if (!ignore) {
+
+          const msg = err instanceof Error ? err.message : "Impossible de charger le fil d'actualité.";
+
+          setError(msg);
+
+          setLoading(false);
+
+        }
+
+      });
+
+
+
+    return () => {
+
+      ignore = true;
+      controller.abort();
+
+    };
+
+  }, [fetchFeedData]);
+
+
+
+  const loadFeed = async () => {
+
+    setLoading(true);
+
+    try {
+
+      const res = await fetchFeedData();
+
+      if (res && Array.isArray(res.results)) {
+
+        setFeedItems(res.results);
+
+        if (res.counters) setCounters(res.counters);
+
+      } else {
+
+        setFeedItems([]);
+
+      }
+
+    } catch (err: unknown) {
+
+      const msg = err instanceof Error ? err.message : "Impossible de charger le fil d'actualité.";
+
+      setError(msg);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
 
   const handleRefreshFeed = async () => {
+
     setRefreshing(true);
+
     try {
+
       await fetchAPI('/api/kam/feed/refresh/', { method: 'POST' });
+
       await loadFeed();
-      setSuccessToast("Veille web et signaux B2B actualisés avec succès.");
-      setTimeout(() => setSuccessToast(null), 4000);
-    } catch (err: any) {
+      await loadNewsData();
+
+      setSuccessToast("Veille de marché et signaux analysés par Core AI.");
+
+      setTimeout(() => setSuccessToast(null), 3500);
+
+    } catch (err: unknown) {
+
       console.error("Erreur rafraîchissement veille:", err);
+
       setError("Échec de l'actualisation de la veille.");
+
     } finally {
+
       setRefreshing(false);
+
     }
+
   };
 
-  const handleToggleRead = async (item: B2BNewsItem, e: React.MouseEvent) => {
-    e.stopPropagation();
+
+
+  const handleToggleRead = async (item: B2BNewsItem, e?: React.MouseEvent) => {
+
+    if (e) e.stopPropagation();
+
     try {
+
       const res = await fetchAPI(`/api/kam/feed/${item.id}/read/`, {
+
         method: 'POST',
+
         body: JSON.stringify({ is_read: !item.is_read }),
+
       });
+
       if (res && res.id) {
+
         setFeedItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, is_read: res.is_read } : it)));
+
         setCounters((prev) => ({
+
           ...prev,
+
           unread: res.is_read ? Math.max(0, prev.unread - 1) : prev.unread + 1,
+
         }));
+
+
+
       }
+
     } catch (err) {
+
       console.error("Erreur toggle read:", err);
+
     }
+
   };
 
-  const handleToggleSave = async (item: B2BNewsItem, e: React.MouseEvent) => {
-    e.stopPropagation();
+
+
+  const handleToggleSave = async (item: B2BNewsItem, e?: React.MouseEvent) => {
+
+    if (e) e.stopPropagation();
+
     try {
+
       const res = await fetchAPI(`/api/kam/feed/${item.id}/save/`, {
+
         method: 'POST',
+
       });
+
       if (res && res.id) {
+
         setFeedItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, is_saved: res.is_saved } : it)));
+
         setCounters((prev) => ({
+
           ...prev,
+
           saved: res.is_saved ? prev.saved + 1 : Math.max(0, prev.saved - 1),
+
         }));
+
+
+
       }
+
     } catch (err) {
+
       console.error("Erreur toggle save:", err);
+
     }
+
   };
 
-  const handleConvertToPortfolio = async (item: B2BNewsItem) => {
+
+
+  const handleConvertToPortfolio = async (item: B2BNewsItem, e?: React.MouseEvent) => {
+
+    if (e) e.stopPropagation();
+
     setConvertingId(item.id);
+
     try {
+
       const res = await fetchAPI(`/api/kam/feed/${item.id}/convert/`, {
+
         method: 'POST',
+
       });
+
       if (res && res.enterprise_id) {
+
         setFeedItems((prev) =>
+
           prev.map((it) =>
+
             it.id === item.id
+
               ? {
+
                   ...it,
+
                   is_converted_to_portfolio: true,
+
                   enterprise: res.enterprise_id,
+
                   enterprise_name: res.enterprise_name,
+
                 }
+
               : it
+
           )
+
         );
-        setSuccessToast(res.message || "Compte ajouté avec succès à votre portefeuille.");
-        setTimeout(() => setSuccessToast(null), 5000);
+
+
+
+        setCounters((prev) => ({
+
+          ...prev,
+
+          portfolio: prev.portfolio + 1,
+
+          web_discovery: Math.max(0, prev.web_discovery - 1),
+
+        }));
+
+        try {
+
+          await loadAssignedAccounts();
+
+        } catch (loadErr) {
+
+          console.warn("Rechargement des comptes en arrière-plan :", loadErr);
+
+        }
+
+        setSuccessToast(
+
+          res.message || "Entreprise ajoutée à votre portefeuille avec succès."
+
+        );
+
+        setTimeout(() => setSuccessToast(null), 6000);
+
       }
-    } catch (err: any) {
+
+    } catch (err: unknown) {
+
+      const msg = err instanceof Error ? err.message : "Impossible d'ajouter le lead au portefeuille.";
+
       console.error("Erreur conversion en portefeuille:", err);
-      alert(err?.message || "Impossible d'ajouter le compte au portefeuille.");
+
+      alert(msg);
+
     } finally {
+
       setConvertingId(null);
+
     }
+
   };
 
-  const handleOpenAccountOrBriefing = (item: B2BNewsItem) => {
+
+
+  const handleOpenAccountOrBriefing = (item: B2BNewsItem, e?: React.MouseEvent) => {
+
+    if (e) e.stopPropagation();
+
     if (item.enterprise) {
-      // Rechercher la visite ou compte dans le contexte
+
       const match = visits.find((v) => String(v.account_id) === String(item.enterprise));
+
       if (match) {
+
         router.push(`/kam/briefing?id=${encodeURIComponent(match.id)}`);
+
       } else {
+
         router.push(`/kam/accounts`);
+
       }
+
     }
+
   };
+
+
 
   const formatRelativeTime = (isoString: string) => {
+
     try {
+
       const date = new Date(isoString);
+
       const now = new Date();
+
       const diffMs = now.getTime() - date.getTime();
+
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
       if (diffHours < 1) return "À l'instant";
+
       if (diffHours === 1) return "Il y a 1h";
+
       if (diffHours < 24) return `Il y a ${diffHours}h`;
+
       const diffDays = Math.floor(diffHours / 24);
+
       if (diffDays === 1) return "Hier";
+
       return `Il y a ${diffDays}j`;
+
     } catch {
+
       return "Récemment";
+
     }
+
   };
 
-  const categories = [
-    { id: 'ALL', label: 'Toutes les catégories' },
-    { id: 'EXPANSION', label: 'Croissance & Agences' },
-    { id: 'MANAGEMENT', label: 'Gouvernance & DSI' },
-    { id: 'TECH_PROJECT', label: 'Projets Tech' },
-    { id: 'INCIDENT', label: 'Incidents Fournisseurs' },
-    { id: 'FINANCE', label: 'Financement & M&A' },
-    { id: 'NEW_ACCOUNT', label: 'Nouveaux Comptes' },
-  ];
+
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto px-6 md:px-10 py-6 space-y-6">
+
+    <div className="flex-1 flex flex-col h-full overflow-y-auto px-6 md:px-12 py-7 space-y-6 max-w-5xl mx-auto w-full select-none">
+
       {/* Toast Notification */}
+
       {successToast && (
+
         <div className="p-3.5 bg-[#4F6CE8] text-white rounded-2xl flex items-center justify-between text-xs font-semibold shadow-lg animate-in fade-in duration-200">
+
           <div className="flex items-center gap-2.5">
-            <Icons.CheckCircle size={18} />
+
+            <Icons.CheckCircle size={17} />
+
             <span>{successToast}</span>
+
           </div>
+
           <button
+
             onClick={() => setSuccessToast(null)}
+
             className="p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+
           >
+
             <Icons.X size={14} />
+
           </button>
+
         </div>
+
       )}
 
-      {/* Main Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5 mb-1">
-            <span className="p-1.5 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] flex items-center justify-center">
-              <Icons.Rss size={18} />
-            </span>
-            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-              Fil d&apos;actualité B2B & Veille Web
-            </h2>
-          </div>
-          <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
-            Surveillance continue de vos comptes stratégiques et détection en temps réel de nouvelles opportunités sur le net.
-          </p>
+
+
+      {/* Editorial Header */}
+
+      <div className="space-y-1">
+
+        <h1 className="text-[34px] leading-[40px] font-black text-zinc-900 dark:text-white tracking-tight">
+
+          {title}
+
+        </h1>
+
+
+
+      </div>
+
+
+
+      {/* Clean Single Filter Bar: Source Segmented Control on Left + Actualiser on Right */}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+        <div className="flex items-center gap-1 p-1 bg-black/[0.04] dark:bg-white/[0.06] rounded-xl w-fit" role="group" aria-label="Afficher les actualités">
+          {[{ saved: false, label: 'Tous', icon: Icons.Layers }, { saved: true, label: 'Favoris', icon: Icons.Bookmark }].map(({ saved, label, icon: Icon }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setSavedOnly(saved)}
+              aria-pressed={savedOnly === saved}
+              className={`px-3.5 py-2 rounded-lg text-[13px] leading-[21px] font-semibold transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-[#4F6CE8] ${savedOnly === saved ? 'bg-white dark:bg-[#2D2A2D] text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
+            >
+              <Icon size={14} />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Action Button: Refresh Web Feed */}
+        {/* Action Button: Refresh */}
+
         <button
+
           onClick={handleRefreshFeed}
+
           disabled={refreshing}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#2D2A2D] text-zinc-700 dark:text-zinc-300 border border-black/[0.06] dark:border-white/[0.08] text-xs font-semibold transition-all hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer shadow-xs disabled:opacity-50 self-start sm:self-auto"
+
         >
-          <Icons.RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
-          <span>{refreshing ? 'Scan du net en cours...' : 'Actualiser la veille web'}</span>
+
+          <Icons.RefreshCw size={13} className={refreshing ? 'animate-spin text-[#4F6CE8]' : 'text-zinc-400'} />
+
+          <span>{refreshing ? 'Actualisation...' : 'Actualiser'}</span>
+
         </button>
+
       </div>
 
-      {/* Metric Cards Banner */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total des signaux</span>
-          <div className="text-2xl font-black text-zinc-900 dark:text-white">{counters.all}</div>
-          <p className="text-[11px] text-zinc-500">Flux d&apos;intelligence B2B Onbora</p>
+
+
+      {/* Active Signal Filter Indicator if set via Search Bar Filter */}
+
+      {signalFilter !== 'ALL' && (
+
+        <div className="flex items-center gap-2 animate-in fade-in duration-150">
+
+          <span className="text-xs text-zinc-400 font-medium">Signal filtré :</span>
+
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+
+            signalFilter === 'STRONG'
+
+              ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/25'
+
+              : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20'
+
+          }`}>
+
+            {signalFilter === 'STRONG' ? (
+
+              <Icons.BicepsFlexed size={12} className="text-amber-600 dark:text-amber-400" />
+
+            ) : (
+
+              <Icons.SignalLow size={12} className="text-slate-500 dark:text-slate-400" />
+
+            )}
+
+            <span>{signalFilter === 'STRONG' ? 'Signaux forts' : 'Signaux faibles'}</span>
+
+            <button
+
+              onClick={() => setActiveFilter('ALL')}
+
+              className="p-0.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full cursor-pointer ml-1 transition-colors"
+
+              title="Réinitialiser le filtre"
+
+            >
+
+              <Icons.X size={11} />
+
+            </button>
+
+          </span>
+
         </div>
 
-        <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#4F6CE8]">Comptes Portefeuille</span>
-          <div className="text-2xl font-black text-zinc-900 dark:text-white">{counters.portfolio}</div>
-          <p className="text-[11px] text-zinc-500">Actualités sur vos clients actifs</p>
-        </div>
+      )}
 
-        <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Nouveaux Comptes du Net</span>
-          <div className="text-2xl font-black text-zinc-900 dark:text-white">{counters.web_discovery}</div>
-          <p className="text-[11px] text-zinc-500">Sociétés repérées sur le web</p>
-        </div>
 
-        <div className="p-4 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Non Lus / À traiter</span>
-          <div className="text-2xl font-black text-zinc-900 dark:text-white">{counters.unread}</div>
-          <p className="text-[11px] text-zinc-500">{counters.saved} signaux favoris sauvegardés</p>
-        </div>
-      </div>
-
-      {/* Tabs & Filters Navigation */}
-      <div className="flex flex-col gap-3">
-        {/* Main Feed Type Tabs */}
-        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#E4E1DB] dark:bg-[#363336] rounded-2xl w-fit">
-          <button
-            onClick={() => setFeedType('ALL')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              feedType === 'ALL'
-                ? 'bg-white dark:bg-[#242124] text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            Tous les signaux ({counters.all})
-          </button>
-
-          <button
-            onClick={() => setFeedType('PORTFOLIO')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              feedType === 'PORTFOLIO'
-                ? 'bg-white dark:bg-[#242124] text-[#4F6CE8] shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            <Icons.Building size={14} />
-            <span>Mon Portefeuille B2B ({counters.portfolio})</span>
-          </button>
-
-          <button
-            onClick={() => setFeedType('WEB_DISCOVERY')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              feedType === 'WEB_DISCOVERY'
-                ? 'bg-white dark:bg-[#242124] text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            <Icons.Globe size={14} />
-            <span>Nouveaux Comptes du Net ({counters.web_discovery})</span>
-          </button>
-
-          <button
-            onClick={() => setFeedType('SAVED')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              feedType === 'SAVED'
-                ? 'bg-white dark:bg-[#242124] text-[#4F6CE8] shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            <Icons.Star size={14} />
-            <span>Favoris ({counters.saved})</span>
-          </button>
-        </div>
-
-        {/* Secondary Category Filters */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          {categories.map((cat) => {
-            const isActive = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#4F6CE8] text-white shadow-xs'
-                    : 'bg-[#F6F5F2] dark:bg-[#2D2A2D] text-zinc-600 dark:text-zinc-400 hover:bg-[#E4E1DB] dark:hover:bg-[#363336]'
-                }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Feed List Content */}
+
       {loading ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-3">
-          <Icons.Sparkles size={28} className="animate-spin text-[#4F6CE8]" />
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            Recherche et analyse des flux B2B en cours...
-          </span>
-        </div>
+
+        scope === 'WEB_DISCOVERY' ? <KamNewLeadCardSkeleton /> : <SkeletonNewsLoader count={3} />
+
       ) : error ? (
+
         <div className="p-8 max-w-md mx-auto text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-3">
-          <Icons.AlertTriangle size={32} className="text-zinc-500 mx-auto" />
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Erreur de chargement</h4>
+
+          <Icons.AlertTriangle size={30} className="text-zinc-500 mx-auto" />
+
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Actualités indisponibles</h3>
+
           <p className="text-xs text-zinc-500">{error}</p>
+
           <button
+
             onClick={loadFeed}
+
             className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
+
           >
+
             Réessayer
+
           </button>
+
         </div>
+
       ) : feedItems.length === 0 ? (
-        <div className="p-12 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-3 max-w-lg mx-auto">
-          <Icons.Globe size={36} className="text-zinc-400 mx-auto" />
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-white">Aucun signal trouvé</h4>
+
+        <div className="p-14 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-3xl border border-black/5 dark:border-white/5 space-y-3 max-w-md mx-auto">
+
+          <Icons.Newspaper size={34} className="text-zinc-400 mx-auto" />
+
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Aucun signal trouvé</h3>
+
           <p className="text-xs text-zinc-500">
-            Aucun résultat ne correspond à vos filtres actuels. Lancez un scan de la veille pour explorer le net.
+
+            Aucun résultat ne correspond à votre filtre. Vous pouvez lancer une actualisation du flux.
+
           </p>
+
           <button
+
             onClick={handleRefreshFeed}
+
             className="px-4 py-2 bg-[#4F6CE8] text-white rounded-xl text-xs font-semibold cursor-pointer"
+
           >
-            Lancer un scan du net
+
+            Actualiser
+
           </button>
+
         </div>
+
       ) : (
-        <div className="space-y-4 pb-8">
+
+        <div className="space-y-3.5 pb-12">
+
           {feedItems.map((item) => {
-            const isWeb = item.is_web_discovery;
-            const companyDisplayName = isWeb
+
+            if (scope === 'WEB_DISCOVERY') {
+              return (
+                <KamNewLeadCard
+                  key={item.id}
+                  item={item}
+                  publishedLabel={formatRelativeTime(item.published_at)}
+                  converting={convertingId === item.id}
+                  onOpen={() => handleSelectArticle(item)}
+                  onSave={(event) => handleToggleSave(item, event)}
+                  onConvert={(event) => handleConvertToPortfolio(item, event)}
+                />
+              );
+            }
+
+            const isLead = item.is_web_discovery;
+
+            const companyName = isLead
+
               ? item.discovered_company_name
+
               : item.enterprise_name || 'Compte B2B';
 
+            const rawLocation = isLead ? item.discovered_location : item.enterprise_location;
+
+            const city = rawLocation ? rawLocation.split(',')[0].trim() : null;
+
+            const isStrong = item.signal_strength === 'STRONG';
+
+
+
             return (
-              <div
+
+              <article
+
                 key={item.id}
-                className={`p-5 md:p-6 rounded-3xl transition-all duration-200 border ${
-                  !item.is_read
-                    ? 'bg-[#F6F5F2] dark:bg-[#2D2A2D] border-black/10 dark:border-white/10 shadow-sm'
-                    : 'bg-[#F6F5F2]/60 dark:bg-[#2D2A2D]/60 border-black/5 dark:border-white/5 opacity-90'
+
+                onClick={() => handleSelectArticle(item)}
+
+                className={`p-5 md:p-6 rounded-[24px] border border-black/5 dark:border-white/5 bg-[#F6F5F2] dark:bg-[#2D2A2D] hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-200 cursor-pointer group space-y-3 ${
+
+                  item.is_read ? 'opacity-75 hover:opacity-100' : ''
+
                 }`}
+
               >
-                {/* Card Header Strip */}
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Badge Web Discovery vs Portfolio */}
-                    {isWeb ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200">
-                        <Icons.Globe size={13} />
-                        <span>Nouveau Compte Découvert sur le Net</span>
+
+                {/* Meta Header Line: Entreprise & Localisation à gauche / Badges d'état & Signaux à droite */}
+
+                <div className="flex items-center justify-between gap-3">
+
+                  {/* Left: Titre de l'entreprise & localisation & temps relatif */}
+
+                  <div className="flex items-center gap-2 text-xs min-w-0">
+
+                    <span className="font-bold text-zinc-900 dark:text-white truncate max-w-[260px] md:max-w-md">
+
+                      {companyName}
+
+                    </span>
+
+                    {city && (
+
+                      <span className="text-zinc-400 font-normal truncate shrink-0">
+
+                        ({city})
+
                       </span>
+
+                    )}
+
+                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
+
+                    <span className="text-zinc-400 font-normal shrink-0">
+
+                      {formatRelativeTime(item.published_at)}
+
+                    </span>
+
+                  </div>
+
+
+
+                  {/* Right: Badges d'icônes (Lead/Portefeuille, Signal fort/faible) & Bookmark */}
+
+                  <div className="flex items-center gap-2 shrink-0">
+
+                    {/* Source Badge: Icon-only for Lead vs Portefeuille */}
+
+                    {isLead ? (
+
+                      <span
+
+                        className="inline-flex items-center justify-center p-1.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25"
+
+                        title="Nouveau lead"
+
+                      >
+
+                        <Icons.UserPlus size={12} />
+
+                      </span>
+
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#4F6CE8]/10 text-[#4F6CE8]">
-                        <Icons.Building size={13} />
-                        <span>Compte en Portefeuille</span>
+
+                      <span
+
+                        className="inline-flex items-center justify-center p-1.5 rounded-full bg-[#4F6CE8]/15 text-[#4F6CE8] border border-[#4F6CE8]/25"
+
+                        title="Compte en portefeuille"
+
+                      >
+
+                        <Icons.Briefcase size={12} />
+
                       </span>
+
                     )}
 
-                    {/* Source Name */}
-                    <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-full">
-                      {item.source_name}
-                    </span>
 
-                    {/* Category */}
-                    <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                      • {item.category_display}
-                    </span>
 
-                    {/* Relative Time */}
-                    <span className="text-[11px] text-zinc-400">
-                      • {formatRelativeTime(item.published_at)}
-                    </span>
-                  </div>
+                    {/* Colored Signal Badge: Icon-only for Signal Fort (Biceps) vs Signal Faible (SignalLow) */}
 
-                  {/* Top Right Quick Actions: Save / Star & Read Toggle */}
-                  <div className="flex items-center gap-1.5">
+                    {isStrong ? (
+
+                      <span
+
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25"
+
+                        title="Signal fort"
+
+                      >
+
+                        <Icons.BicepsFlexed size={12} className="text-amber-600 dark:text-amber-400" />
+
+                        {typeof item.signal_score === 'number' && (
+
+                          <span className="opacity-80 font-mono text-[10px]">
+
+                            {item.signal_score}%
+
+                          </span>
+
+                        )}
+
+                      </span>
+
+                    ) : (
+
+                      <span
+
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20"
+
+                        title="Signal faible"
+
+                      >
+
+                        <Icons.SignalLow size={12} className="text-slate-500 dark:text-slate-400" />
+
+                        {typeof item.signal_score === 'number' && (
+
+                          <span className="opacity-80 font-mono text-[10px]">
+
+                            {item.signal_score}%
+
+                          </span>
+
+                        )}
+
+                      </span>
+
+                    )}
+
+
+
+                    {/* Bookmark Toggle Icon */}
+
                     <button
+
+                      type="button"
+
                       onClick={(e) => handleToggleSave(item, e)}
-                      title={item.is_saved ? "Retirer des favoris" : "Sauvegarder en favori"}
-                      className={`p-1.5 rounded-xl transition-colors cursor-pointer ${
-                        item.is_saved
-                          ? 'bg-[#4F6CE8]/10 text-[#4F6CE8]'
-                          : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
-                      }`}
+
+                      title={item.is_saved ? "Retirer des favoris" : "Enregistrer en favori"}
+
+                      className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer ml-1"
+
                     >
-                      <Icons.Star size={15} />
+
+                      <Icons.Bookmark size={18} className={item.is_saved ? 'fill-[#4F6CE8] text-[#4F6CE8]' : ''} />
+
                     </button>
 
-                    <button
-                      onClick={(e) => handleToggleRead(item, e)}
-                      title={item.is_read ? "Marquer comme non lu" : "Marquer comme lu"}
-                      className={`p-1.5 rounded-xl transition-colors cursor-pointer ${
-                        item.is_read
-                          ? 'text-zinc-400 hover:text-zinc-700 dark:hover:text-white'
-                          : 'bg-[#4F6CE8]/10 text-[#4F6CE8]'
-                      }`}
-                    >
-                      <Icons.CheckCircle size={15} />
-                    </button>
                   </div>
+
                 </div>
 
-                {/* Company Name & News Title */}
-                <div className="space-y-1.5 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white">
-                      {companyDisplayName}
-                    </span>
-                    {item.priority === 'HIGH' && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
-                        Action prioritaire sous 24h
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-sm md:text-base font-extrabold text-zinc-900 dark:text-white leading-snug">
-                    {item.title}
-                  </h3>
-                </div>
 
-                {/* Summary Text */}
-                <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mb-4">
+
+                {/* Editorial Headline */}
+
+                <h2 className="text-base md:text-lg font-bold text-zinc-900 dark:text-white leading-snug group-hover:text-[#4F6CE8] transition-colors">
+
+                  {cleanHeadline(item.title)}
+
+                </h2>
+
+
+
+                {/* Concise Summary (2 lines max) */}
+
+                <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+
                   {item.summary}
+
                 </p>
 
-                {/* Web Discovery Details Strip (if discovered account) */}
-                {isWeb && (
-                  <div className="p-3 bg-[#E4E1DB]/60 dark:bg-[#363336]/60 rounded-2xl flex flex-wrap items-center gap-4 text-xs text-zinc-600 dark:text-zinc-300 mb-4">
-                    {item.discovered_sector && (
-                      <div className="flex items-center gap-1.5">
-                        <Icons.Briefcase size={14} className="text-zinc-400" />
-                        <span>{item.discovered_sector}</span>
-                      </div>
-                    )}
-                    {item.discovered_location && (
-                      <div className="flex items-center gap-1.5">
-                        <Icons.MapPin size={14} className="text-zinc-400" />
-                        <span>{item.discovered_location}</span>
-                      </div>
-                    )}
-                    {item.discovered_size && (
-                      <div className="flex items-center gap-1.5">
-                        <Icons.Users size={14} className="text-zinc-400" />
-                        <span>{item.discovered_size}</span>
-                      </div>
-                    )}
-                    {item.discovered_website && (
-                      <a
-                        href={item.discovered_website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1 text-[#4F6CE8] hover:underline"
-                      >
-                        <Icons.ExternalLink size={13} />
-                        <span>{item.discovered_website.replace('https://', '')}</span>
-                      </a>
-                    )}
+
+
+                {/* Core AI Opportunity Rationale line */}
+
+                {item.signal_rationale && (
+
+                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium pt-0.5">
+
+                    <span className="truncate">{item.signal_rationale}</span>
+
                   </div>
+
                 )}
 
-                {/* AI Opportunity & Commercial Angle Callout */}
-                <div className="p-4 bg-white/70 dark:bg-[#1E1B1E]/70 rounded-2xl border border-black/5 dark:border-white/5 space-y-2 mb-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-xs font-extrabold text-[#4F6CE8]">
-                      <Icons.Sparkles size={15} />
-                      <span>Angle Commercial IA & Déclencheur</span>
-                    </div>
 
-                    {item.recommended_offer && (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#4F6CE8]/10 text-[#4F6CE8]">
-                        <Icons.Zap size={12} />
-                        <span>{item.recommended_offer}</span>
-                      </div>
-                    )}
-                  </div>
 
-                  <p className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-                    {item.commercial_angle}
-                  </p>
+                {/* Card Footer Actions */}
 
-                  {item.recommended_action && (
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 pt-1 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5">
-                      <span className="font-bold text-zinc-900 dark:text-white">Action suggérée :</span>
-                      <span>{item.recommended_action}</span>
-                    </div>
-                  )}
-                </div>
+                <div className="flex items-center justify-between gap-3 pt-1">
 
-                {/* Card Actions Footer */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {isWeb ? (
+                  <div className="flex items-center gap-3">
+
+                    {isLead ? (
+
                       item.is_converted_to_portfolio ? (
-                        <button
-                          onClick={() => handleOpenAccountOrBriefing(item)}
-                          className="px-3.5 py-2 rounded-xl bg-[#4F6CE8]/10 text-[#4F6CE8] hover:bg-[#4F6CE8]/15 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-                        >
-                          <Icons.Check size={14} />
-                          <span>En portefeuille (Consulter le compte)</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleConvertToPortfolio(item)}
-                          disabled={convertingId === item.id}
-                          className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
-                        >
-                          <Icons.Plus size={14} />
-                          <span>
-                            {convertingId === item.id ? 'Ajout en cours...' : 'Ajouter à mon portefeuille B2B'}
+
+                        <div className="flex flex-wrap items-center gap-2">
+
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+
+                            <Icons.Check size={12} />
+
+                            <span>Portefeuille</span>
+
                           </span>
+
+                          <Link
+
+                            href={`/kam/briefing?id=account-${item.enterprise || item.id}&tab=compare`}
+
+                            onClick={(e) => e.stopPropagation()}
+
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4F6CE8] text-white hover:bg-[#3D56C7] text-xs font-semibold transition-all shadow-xs cursor-pointer"
+
+                            title="Comparer l'entreprise en fonction de son secteur d'activité"
+
+                          >
+
+                            <Icons.Layers size={12} />
+
+                            <span>Comparer</span>
+
+                          </Link>
+
+                        </div>
+
+                      ) : (
+
+                        <button
+
+                          type="button"
+
+                          onClick={(e) => handleConvertToPortfolio(item, e)}
+
+                          disabled={convertingId === item.id}
+
+                          title="Ajouter au portefeuille"
+
+                          aria-label="Ajouter au portefeuille"
+
+                          className="p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 inline-flex items-center justify-center cursor-pointer transition-colors disabled:opacity-70 shadow-xs"
+
+                        >
+
+                          {convertingId === item.id ? (
+
+                            <Icons.RefreshCw size={14} className="animate-spin text-[#4F6CE8]" />
+
+                          ) : (
+
+                            <Icons.UserPlus size={14} />
+
+                          )}
+
                         </button>
+
                       )
+
                     ) : (
-                      <button
-                        onClick={() => handleOpenAccountOrBriefing(item)}
-                        className="px-4 py-2 rounded-xl bg-[#4F6CE8] hover:bg-[#3D57C5] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-                      >
-                        <Icons.FileText size={14} />
-                        <span>Ouvrir le briefing du compte</span>
-                      </button>
+
+                      <div className="flex items-center gap-2">
+
+                        <button
+
+                          type="button"
+
+                          onClick={(e) => handleOpenAccountOrBriefing(item, e)}
+
+                          className="inline-flex items-center gap-1 text-xs font-bold text-[#4F6CE8] hover:underline cursor-pointer"
+
+                        >
+
+                          <span>Consulter le compte</span>
+
+                          <Icons.ArrowRight size={13} />
+
+                        </button>
+
+                        {item.enterprise && (
+
+                          <Link
+
+                            href={`/kam/briefing?id=account-${item.enterprise}&tab=compare`}
+
+                            onClick={(e) => e.stopPropagation()}
+
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-[#4F6CE8] hover:text-white text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 transition-colors"
+
+                          >
+
+                            <span>Comparer</span>
+
+                          </Link>
+
+                        )}
+
+                      </div>
+
                     )}
 
-                    {/* Planifier un échange / rendez-vous */}
-                    <Link
-                      href="/kam/agenda"
-                      className="px-3.5 py-2 rounded-xl bg-[#E4E1DB] dark:bg-[#363336] text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
-                    >
-                      <Icons.Calendar size={14} />
-                      <span>Planifier un rendez-vous</span>
-                    </Link>
+
+
+                    <span className="text-xs text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 font-medium inline-flex items-center gap-1">
+
+                      <span>Action commerciale</span>
+
+                      <Icons.ChevronRight size={12} />
+
+                    </span>
+
                   </div>
+
+
 
                   {item.source_url && (
+
                     <a
+
                       href={item.source_url}
+
                       target="_blank"
+
                       rel="noreferrer"
-                      className="text-xs text-zinc-400 hover:text-[#4F6CE8] inline-flex items-center gap-1 transition-colors"
+
+                      onClick={(e) => e.stopPropagation()}
+
+                      className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 inline-flex items-center gap-1 transition-colors"
+
                     >
-                      <span>Consulter la source</span>
+
+                      <span>Source</span>
+
                       <Icons.ExternalLink size={12} />
+
                     </a>
+
                   )}
+
                 </div>
-              </div>
+
+              </article>
+
             );
+
           })}
+
         </div>
+
       )}
+
+
+
     </div>
+
   );
+
 }

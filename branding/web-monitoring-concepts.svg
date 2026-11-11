@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="984" viewBox="0 0 1600 984"><rect width="1600" height="984" fill="#f7f7f4"/><text x="60" y="78" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="40" font-weight="700" fill="#161616">Onbora — Concepts Veille Web &amp; Analyse B2B</text><text x="60" y="116" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" fill="#6b6b6b">Exploration Bleue Cobalt (#4F6CE8) &amp; Céleste (#7896FF) — IA en Écoute Permanente du Web</text><rect x="60" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#161616" stroke-width="2"/><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="90" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — La Sentinelle Web</title>
+  <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 760 256" x="90" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora Lockup — La Sentinelle Web</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="90" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — La Sentinelle Web</title>
+  <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+</svg></g><text x="122" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="180" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — La Sentinelle Web</title>
+  <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+</svg></g><text x="196" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="238" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — La Sentinelle Web</title>
+  <!-- Outer global web perimeter ring with listening apertures -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- Continuous web monitoring signal waves -->
+  <path d="M 128 64 A 64 64 0 0 1 192 128" stroke="#7896FF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 128 92 A 36 36 0 0 1 164 128" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Central AI Sentinel Nucleus -->
+  <circle cx="128" cy="128" r="14" fill="#4F6CE8"/>
+  <!-- Web sensor nodes intercepting global signals -->
+  <circle cx="214" cy="74" r="8" fill="#7896FF"/>
+  <circle cx="174" cy="38" r="8" fill="#4F6CE8"/>
+  <circle cx="218" cy="128" r="8" fill="#7896FF"/>
+</svg></g><text x="246" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="90.0" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">A · La Sentinelle Web</text><text x="90.0" y="808" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#161616" letter-spacing="1.5">RECOMMENDED</text><text x="90.0" y="842" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Radar de veille 360° captant les signaux du</text><text x="90.0" y="868" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">web mondial pour le KAM.</text><rect x="562.667" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="592.667" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — Le Réseau Orbital</title>
+  <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 760 256" x="592.667" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora Lockup — Le Réseau Orbital</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="592.667" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — Le Réseau Orbital</title>
+  <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+</svg></g><text x="624.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="682.667" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — Le Réseau Orbital</title>
+  <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+</svg></g><text x="698.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="740.667" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — Le Réseau Orbital</title>
+  <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+</svg></g><text x="748.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="592.6666666666667" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">B · Le Réseau Orbital</text><text x="592.6666666666667" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Toile Internet planétaire dont le noyau</text><text x="592.6666666666667" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">synthétise l&#x27;analyse B2B.</text><rect x="1065.33" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="1095.33" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — L'Écoute IA</title>
+  <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 760 256" x="1095.33" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora Lockup — L'Écoute IA</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="1095.33" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — L'Écoute IA</title>
+  <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+</svg></g><text x="1127.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="1185.33" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — L'Écoute IA</title>
+  <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+</svg></g><text x="1201.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" x="1243.33" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>Onbora — L'Écoute IA</title>
+  <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+</svg></g><text x="1251.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="1095.3333333333335" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">C · L&#x27;Écoute IA</text><text x="1095.3333333333335" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Ondes hertziennes &amp; fréquences du web</text><text x="1095.3333333333335" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">convergeant vers le cockpit.</text></svg>

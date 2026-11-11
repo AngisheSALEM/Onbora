@@ -348,7 +348,7 @@ export default function KamSignalsView({
                 onClick={handleRunAiAnalysis}
                 className="px-4 py-1.5 bg-[#4F6CE8] hover:bg-[#3E5AC8] active:scale-95 text-white rounded-full text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                <Icons.Sparkles size={14} className={isAnalyzing ? 'animate-spin' : ''} />
+           
                 <span>{isAnalyzing ? 'Analyse en cours...' : 'Extraction IA'}</span>
               </button>
 

@@ -171,7 +171,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
       {/* 3. LEADS LIST */}
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.Sparkles size={36} className="animate-spin text-[#787570] mb-3" />
+         
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
             Calcul du scoring en direct sur vos comptes...
           </span>
@@ -264,7 +264,7 @@ export default function KamLeadScoringView({ onOpenPreCallForLead }: KamLeadScor
                         onClick={() => onOpenPreCallForLead(lead.enterprise_id)}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#55524E] hover:bg-[#55524E] active:scale-95 text-white text-xs font-semibold rounded-xl shadow-none cursor-pointer transition-all"
                       >
-                        <Icons.Sparkles size={13} />
+                       
                         <span>Préparer le Pre-Call</span>
                       </button>
                     )}

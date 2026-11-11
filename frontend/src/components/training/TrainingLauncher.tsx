@@ -63,7 +63,7 @@ export default function TrainingLauncher({
           
           <div className="flex items-start gap-2.5">
             <div className="p-1 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 shrink-0">
-              <Icons.Sparkles size={12} />
+         
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">

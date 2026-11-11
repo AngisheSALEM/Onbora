@@ -6,9 +6,10 @@ import { SkeletonBox } from '@/components/shared/SkeletonLoader';
 import { Icons } from '@/components/shared/Icons';
 import { StrategicVisit } from './kamTypes';
 import { fetchAPI, downloadBlobAPI } from '@/lib/api';
-import KamAccountSignalsSheet, { AccountRadarDetail } from './KamAccountSignalsSheet';
 import { KamTechnicalSheetModal, TechnicalSpecsData } from './KamTechnicalSheetModal';
 import KamAccountComparisonSection from './KamAccountComparisonSection';
+import KamAccountNewsTab from './KamAccountNewsTab';
+import KamCrmHistory from './KamCrmHistory';
 
 // ============================================================================
 // DATA TYPES
@@ -131,6 +132,8 @@ export interface NeedItem {
 
 export interface InstalledOfferItem {
   id: number | string;
+  is_demo?: boolean;
+  sector_pillar_id?: string;
   installed_offer_name?: string;
   name?: string;
   category?: string;
@@ -216,6 +219,7 @@ interface KamPreCallViewProps {
   assignedAccounts: StrategicVisit[];
   initialAccountId?: string | number;
   initialTab?: string;
+  initialPeerId?: number;
   onLaunchMeetingForAccount?: (accountId: number | string) => void;
   onBackToAccounts?: () => void;
 }
@@ -224,6 +228,7 @@ export default function KamPreCallView({
   assignedAccounts,
   initialAccountId,
   initialTab,
+  initialPeerId,
   onLaunchMeetingForAccount,
   onBackToAccounts,
 }: KamPreCallViewProps) {
@@ -236,39 +241,18 @@ export default function KamPreCallView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance) | 'compare' (Comparatif sectoriel)
-  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'churn' | 'upsell' | 'compare'>(
-    initialTab === 'compare' ? 'compare' : 'brief'
+  // Discreet Tabs Navigation: 'brief' (Synthèse & Solutions) | 'details' (Faits & Vigilance) | 'compare' (Comparatif sectoriel) | 'news' (Actualités)
+  const [activeTab, setActiveTab] = useState<'brief' | 'details' | 'compare' | 'news'>(
+    initialTab === 'compare' ? 'compare' : initialTab === 'news' ? 'news' : 'brief'
   );
-  const [radarResult, setRadarResult] = useState<{ accountId: string; data: AccountRadarDetail | null; error?: string } | null>(null);
-  const radarData = radarResult?.accountId === selectedAccountId ? radarResult.data : null;
-  const hasChurnRisk = !!radarData && ['MEDIUM', 'HIGH', 'CRITICAL'].includes(radarData.risk_level);
-  const hasUpsell = !!radarData?.upsell_opportunities?.length;
-  const visibleTab = (activeTab === 'churn' && !hasChurnRisk) || (activeTab === 'upsell' && !hasUpsell) ? 'brief' : activeTab;
-
-  useEffect(() => {
-    if (!selectedAccountId) return;
-    const controller = new AbortController();
-    const cleanId = String(selectedAccountId).replace('account-', '');
-    fetchAPI(`/api/kam/accounts/${cleanId}/radar/`, { signal: controller.signal })
-      .then((data: AccountRadarDetail) => {
-        if (!controller.signal.aborted) setRadarResult({ accountId: selectedAccountId, data });
-      })
-      .catch((err: unknown) => {
-        if (
-          controller.signal.aborted ||
-          (typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError') ||
-          (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('aborted')))
-        ) {
-          return;
-        }
-        setRadarResult({ accountId: selectedAccountId, data: null, error: err instanceof Error ? err.message : 'Impossible de charger les signaux du compte.' });
-      });
-    return () => controller.abort();
-  }, [selectedAccountId]);
+  const [accountNewsCount, setAccountNewsCount] = useState<number>(0);
+  const visibleTab = activeTab;
 
   // Manual Editing States
   const [isEditing, setIsEditing] = useState(false);
+  const editingBrief = useRef(false);
+  const [researchError, setResearchError] = useState('');
+  useEffect(() => { editingBrief.current = isEditing; }, [isEditing]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -284,10 +268,14 @@ export default function KamPreCallView({
   const [solutionsTab, setSolutionsTab] = useState<'recommended' | 'installed'>('recommended');
   const [installedOffers, setInstalledOffers] = useState<InstalledOfferItem[]>([]);
   const [loadingInstalled, setLoadingInstalled] = useState(false);
+  const installedRequest = useRef<AbortController | null>(null);
   const [showAddInstalledModal, setShowAddInstalledModal] = useState(false);
 
   // Form buffers for new installed product modal
   const [newInstalledName, setNewInstalledName] = useState('');
+  const [sectorOptions, setSectorOptions] = useState<Array<{ id: string; name: string; category: string; description: string }>>([]);
+  const [newInstalledPillar, setNewInstalledPillar] = useState('');
+  const [installedError, setInstalledError] = useState('');
   const [newInstalledCategory, setNewInstalledCategory] = useState('Connectivité');
   const [newInstalledProvider, setNewInstalledProvider] = useState('ORANGE_BUSINESS');
   const [newInstalledStatus, setNewInstalledStatus] = useState('ACTIVE');
@@ -309,7 +297,7 @@ export default function KamPreCallView({
 
   // Autocomplete & Catalog Search States
   const [showCatalogSuggestions, setShowCatalogSuggestions] = useState(false);
-  const [catalogSearchResults, setCatalogSearchResults] = useState<any[]>([]);
+  const [catalogSearchResults, setCatalogSearchResults] = useState<Record<string, string>[]>([]);
   const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [catalogModalQuery, setCatalogModalQuery] = useState('');
@@ -322,22 +310,6 @@ export default function KamPreCallView({
   const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsData | null>(null);
   const [loadingTechnicalSpecs, setLoadingTechnicalSpecs] = useState(false);
   const [regeneratingTechnicalSpecs, setRegeneratingTechnicalSpecs] = useState(false);
-
-  // Synchroniser initialAccountId
-  useEffect(() => {
-    if (initialAccountId && String(initialAccountId) !== selectedAccountId) {
-      setSelectedAccountId(String(initialAccountId));
-    }
-  }, [initialAccountId]);
-
-  // Charger le briefing et les solutions implantées dès que le compte change
-  useEffect(() => {
-    if (!selectedAccountId) return;
-    setTechnicalSpecs(null);
-    fetchBriefing(selectedAccountId);
-    fetchInstalledOffers(selectedAccountId);
-    return () => briefingRequest.current?.abort();
-  }, [selectedAccountId]);
 
   const fetchTechnicalSpecs = async (forceRegenerate = false) => {
     if (!selectedAccountId) return;
@@ -455,23 +427,33 @@ export default function KamPreCallView({
     setEditContradictions((data.ai_summary?.contradictions || []).map((c) => c.text));
     setEditGaps(data.ai_summary?.gaps || []);
     setEditSolutions(extractRecommendedSolutions(data));
-    if (data.installed_offers) {
-      setInstalledOffers(data.installed_offers);
-    }
   };
 
   const fetchInstalledOffers = async (accountId: string) => {
+    installedRequest.current?.abort();
+    const controller = new AbortController();
+    installedRequest.current = controller;
     const cleanId = String(accountId).replace('account-', '');
     setLoadingInstalled(true);
+    setInstalledOffers([]);
+    setSectorOptions([]);
+    setInstalledError('');
+    setNewInstalledPillar('');
     try {
-      const data = await fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/`);
+      const [data, options] = await Promise.all([
+        fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/`, { signal: controller.signal }),
+        fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/?options=sector`, { signal: controller.signal }),
+      ]);
+      setSectorOptions(options);
       if (Array.isArray(data)) {
         setInstalledOffers(data);
       }
     } catch (e) {
+      if (controller.signal.aborted) return;
       console.error('Erreur chargement solutions implantées:', e);
+      setInstalledError('Parc indisponible. Rechargez la fiche pour réessayer.');
     } finally {
-      setLoadingInstalled(false);
+      if (!controller.signal.aborted) setLoadingInstalled(false);
     }
   };
 
@@ -479,6 +461,7 @@ export default function KamPreCallView({
     if (e) e.preventDefault();
     if (!newInstalledName.trim() || !selectedAccountId) return;
     setIsSubmittingInstalled(true);
+    setInstalledError('');
     try {
       const cleanId = String(selectedAccountId).replace('account-', '');
       const created = await fetchAPI(`/api/kam/accounts/${cleanId}/installed-offers/`, {
@@ -486,6 +469,7 @@ export default function KamPreCallView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           installed_offer_name: newInstalledName.trim(),
+          sector_pillar_id: newInstalledPillar,
           category: newInstalledCategory,
           provider: newInstalledProvider,
           contract_status: newInstalledStatus,
@@ -499,12 +483,14 @@ export default function KamPreCallView({
       setInstalledOffers((prev) => [created, ...prev]);
       setShowAddInstalledModal(false);
       setNewInstalledName('');
+      setNewInstalledPillar('');
       setNewInstalledBandwidth('');
       setNewInstalledMrr('');
       setNewInstalledEndDate('');
       setNewInstalledEquipment('');
     } catch (err) {
       console.error('Erreur création solution implantée:', err);
+      setInstalledError('Ajout impossible. Vérifiez les champs et réessayez.');
     } finally {
       setIsSubmittingInstalled(false);
     }
@@ -520,6 +506,7 @@ export default function KamPreCallView({
       setInstalledOffers((prev) => prev.filter((o) => o.id !== offerId));
     } catch (err) {
       console.error('Erreur suppression solution implantée:', err);
+      setInstalledError('Suppression impossible. Réessayez.');
     }
   };
 
@@ -530,20 +517,37 @@ export default function KamPreCallView({
     setLoading(true);
     setError(null);
     setIsEditing(false);
+    setResearchError('');
     try {
       const cleanId = String(accountId).replace('account-', '');
       const method = forceRegenerate ? 'POST' : 'GET';
-      let data: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, {
+      const data: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, {
         method, signal: controller.signal,
         headers: forceRegenerate ? { 'Idempotency-Key': crypto.randomUUID() } : undefined,
       });
-      if (data.research_job && ['queued', 'running'].includes(data.research_job.state)) {
-        await waitForCompanyResearch(data.research_job, controller.signal);
-        data = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { signal: controller.signal });
-      }
       if (controller.signal.aborted) return;
       setBriefingData(data);
       populateEditBuffers(data);
+      // Keep the saved brief visible while research runs; failures preserve it.
+      if (data.research_job && ['queued', 'running'].includes(data.research_job.state)) {
+        void waitForCompanyResearch(data.research_job, controller.signal)
+          .then(async (job) => {
+            if (controller.signal.aborted) return;
+            if (job.state !== 'completed') {
+              setBriefingData((current) => current ? { ...current, research_job: job } : current);
+              return;
+            }
+            const refreshed: OnboraAnalysisBrief = await fetchAPI(`/api/kam/pre-call/${cleanId}/`, { signal: controller.signal });
+            if (!controller.signal.aborted && !editingBrief.current) {
+              setBriefingData(refreshed);
+              populateEditBuffers(refreshed);
+            }
+          })
+          .catch(() => {
+            if (!controller.signal.aborted) setResearchError('L’actualisation n’a pas abouti. La fiche enregistrée reste disponible.');
+          });
+      }
+
     } catch (err: unknown) {
       if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : "Erreur de chargement du brief.";
@@ -552,6 +556,32 @@ export default function KamPreCallView({
       if (briefingRequest.current === controller && !controller.signal.aborted) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.resolve().then(() => {
+      if (!cancelled && initialAccountId) setSelectedAccountId(String(initialAccountId));
+    });
+    return () => { cancelled = true; };
+  }, [initialAccountId]);
+
+  useEffect(() => {
+    if (!selectedAccountId) return;
+    let cancelled = false;
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      setTechnicalSpecs(null);
+      void fetchBriefing(selectedAccountId);
+      void fetchInstalledOffers(selectedAccountId);
+    });
+    return () => {
+      cancelled = true;
+      briefingRequest.current?.abort();
+      installedRequest.current?.abort();
+    };
+    // These requests belong to the selected account, not to editor state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAccountId]);
 
   const handleSaveBrief = async (forceResynthesize = true) => {
     if (!briefingData || !selectedAccountId) return;
@@ -793,7 +823,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
       )}
 
       {/* 2. DISCREET TABS (Minimalist underline style, zero visual clutter) */}
-      {(briefingData || currentAccount || radarData) && (
+      {(briefingData || currentAccount) && (
         <nav aria-label="Sections du compte" className="flex items-center gap-6 overflow-x-auto shrink-0 mb-6">
           <button
             onClick={() => setActiveTab('brief')}
@@ -815,12 +845,6 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           >
             Faits & Vigilance
           </button>
-          {hasChurnRisk && (
-            <button type="button" onClick={() => { setActiveTab('churn'); setIsEditing(false); }} aria-current={visibleTab === 'churn' ? 'page' : undefined} className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${visibleTab === 'churn' ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}>Risques de churn</button>
-          )}
-          {hasUpsell && (
-            <button type="button" onClick={() => { setActiveTab('upsell'); setIsEditing(false); }} aria-current={visibleTab === 'upsell' ? 'page' : undefined} className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${visibleTab === 'upsell' ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}>Opportunités d’upsell</button>
-          )}
           <button
             type="button"
             onClick={() => { setActiveTab('compare'); setIsEditing(false); }}
@@ -833,19 +857,34 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           >
             Comparatif sectoriel
           </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('news'); setIsEditing(false); }}
+            aria-current={visibleTab === 'news' ? 'page' : undefined}
+            className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+              visibleTab === 'news'
+                ? 'text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            }`}
+          >
+            <span>Actualités</span>
+            {accountNewsCount > 0 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
+                {accountNewsCount}
+              </span>
+            )}
+          </button>
         </nav>
       )}
-      {radarResult?.accountId === selectedAccountId && radarResult.error && <p role="alert" className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">Les risques et opportunités ne sont pas disponibles : {radarResult.error}</p>}
 
       {/* 3. LOADING & ERROR STATES */}
+      {researchError && <p role="status" className="mb-4 text-[13px] leading-[21px] text-zinc-500 dark:text-zinc-400">{researchError}</p>}
       {!loading && companyResearchNotice(briefingData?.research_job) && (
         <p className="max-w-4xl mx-auto w-full px-6 py-3 text-[13px] leading-[21px] text-zinc-600 dark:text-zinc-300" role="status">
           {companyResearchNotice(briefingData?.research_job)}
         </p>
       )}
-      {radarData && (visibleTab === 'churn' || visibleTab === 'upsell') ? (
-        <KamAccountSignalsSheet data={radarData} kind={visibleTab} />
-      ) : loading ? (
+      {loading ? (
         <div className="w-full max-w-4xl mx-auto p-8 space-y-6" role="status" aria-live="polite" aria-busy="true">
           <p className="text-[13px] leading-[21px] text-zinc-500">Préparation de la fiche et vérification des informations publiques…</p>
           <SkeletonBox height={26} width="55%" />
@@ -863,7 +902,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           </button>
         </div>
       ) : briefingData ? (
-        <div className="max-w-4xl mx-auto w-full pb-12">
+        <div className={`${visibleTab === 'news' || visibleTab === 'compare' ? 'max-w-5xl' : 'max-w-4xl'} mx-auto w-full pb-12 transition-all`}>
 
           {/* ========================================================================= */}
           {/* TAB 1: SINGLE CARD (LIKE A WORD DOCUMENT) - RÉSUMÉ ET SOLUTIONS            */}
@@ -1235,10 +1274,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                 {/* Sub-tab 2: Produits implantés */}
                 {solutionsTab === 'installed' && (
                   <div className="space-y-3">
+                    {installedError && <p role="alert" className="text-[14px] leading-[1.618]">{installedError}</p>}
                     {loadingInstalled ? (
-                      <div className="py-8 text-center text-xs text-zinc-400 flex items-center justify-center gap-2">
-                        <Icons.RefreshCw size={14} className="animate-spin text-[#4F6CE8]" />
-                        <span>Chargement des produits implantés...</span>
+                      <div className="space-y-3" aria-label="Chargement du parc installé">
+                        <SkeletonBox height={72} />
+                        <SkeletonBox height={72} />
                       </div>
                     ) : installedOffers.length === 0 ? (
                       <div className="py-8 px-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-center space-y-3 bg-[#FBFBFA] dark:bg-[#1C1A1C]">
@@ -1265,11 +1305,13 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     ) : (
                       <div className="space-y-3">
                         {installedOffers.map((offer) => {
-                          const isOrange = offer.provider === 'ORANGE_BUSINESS';
                           const statusLabels: Record<string, { label: string; color: string }> = {
+                            UNKNOWN: { label: 'Statut non renseigné', color: 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300' },
+                            INACTIVE: { label: 'Inactif dans le CRM', color: 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300' },
                             ACTIVE: { label: 'En service', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' },
-                            DEPLOYING: { label: 'En déploiement', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' },
-                            PENDING_RENEWAL: { label: 'À renouveler', color: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' },
+                            PENDING_ACTIVATION: { label: 'En déploiement', color: 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300' },
+                            SUSPENDED: { label: 'Suspendu', color: 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300' },
+                            EXPIRED: { label: 'À échéance', color: 'bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300' },
                             TERMINATED: { label: 'Résilié', color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20' },
                           };
                           const statusKey = offer.contract_status || 'ACTIVE';
@@ -1286,15 +1328,6 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                               <div className="flex items-start justify-between gap-3">
                                 <div className="space-y-1 flex-1">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <span
-                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                        isOrange
-                                          ? 'bg-[#4F6CE8]/10 text-[#4F6CE8] border-[#4F6CE8]/20'
-                                          : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700'
-                                      }`}
-                                    >
-                                      {isOrange ? 'Orange Business' : (offer.provider || 'Opérateur tiers')}
-                                    </span>
                                     <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">
                                       {offer.category}
                                     </span>
@@ -1328,7 +1361,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                                 {offer.monthly_cost_mrr && Number(offer.monthly_cost_mrr) > 0 && (
                                   <span className="flex items-center gap-1 font-mono font-medium">
                                     <Icons.FileText size={12} className="text-zinc-400" />
-                                    <span>{Number(offer.monthly_cost_mrr).toLocaleString('fr-FR')} €/mois</span>
+                                    <span>{Number(offer.monthly_cost_mrr).toLocaleString('fr-FR')} USD/mois</span>
                                   </span>
                                 )}
                                 {offer.active_licenses_count && offer.active_licenses_count > 1 && (
@@ -1367,6 +1400,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
           {/* ========================================================================= */}
           {visibleTab === 'details' && (
             <div className="bg-white dark:bg-[#282528] rounded-2xl p-7 md:p-9 shadow-xs border border-black/5 dark:border-white/5 space-y-8 animate-in fade-in duration-150">
+              <KamCrmHistory key={selectedAccountId} accountId={selectedAccountId} />
               
               {/* Faits clés */}
               <div className="space-y-3">
@@ -1546,6 +1580,17 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               enterpriseId={selectedAccountId}
               enterpriseName={briefingData?.enterprise_name || currentAccount?.account_name}
               sector={briefingData?.company?.activity_arsp || currentAccount?.briefing?.industry || ''}
+              initialPeerId={initialPeerId}
+            />
+          )}
+
+          {visibleTab === 'news' && (
+            <KamAccountNewsTab
+              accountId={selectedAccountId}
+              accountName={briefingData?.enterprise_name || currentAccount?.account_name || 'Entreprise'}
+              sector={briefingData?.company?.activity_arsp || currentAccount?.briefing?.industry || ''}
+              onLaunchMeeting={onLaunchMeetingForAccount}
+              onNewsCountChange={setAccountNewsCount}
             />
           )}
 
@@ -1608,7 +1653,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                   <span>Recherche dans l&apos;index catalogue...</span>
                 </div>
               ) : catalogSearchResults.length > 0 ? (
-                catalogSearchResults.map((result: any, i: number) => {
+                catalogSearchResults.map((result, i: number) => {
                   const offerName = result.nom_offre || result.name || result.titre;
                   const offerCat = result.categorie || result.category || 'Orange Business';
                   const offerDesc = result.description_commerciale || result.description || result.resume || '';
@@ -1687,6 +1732,20 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
             </div>
 
             <form onSubmit={handleAddInstalledOffer} className="space-y-4">
+              <label className="block space-y-2 text-[13px] leading-[1.618] text-zinc-700 dark:text-zinc-300">
+                <span>Solution du comparatif sectoriel</span>
+                <select value={newInstalledPillar} className="w-full rounded-full bg-[#F6F5F2] dark:bg-[#242124] px-4 py-3 border-0 outline-none focus-visible:ring-2 focus-visible:ring-[#4F6CE8]"
+                  onChange={event => {
+                    const option = sectorOptions.find(item => item.id === event.target.value);
+                    setNewInstalledPillar(event.target.value);
+                    if (option) { setNewInstalledName(option.name); setNewInstalledCategory(option.category); }
+                  }}>
+                  <option value="">Autre solution / saisie libre</option>
+                  {sectorOptions.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+                </select>
+                <p>Choisissez le même domaine que dans le comparatif, puis renseignez le produit réellement en service.</p>
+              </label>
+              {installedError && <p role="alert" className="text-[14px] leading-[1.618]">{installedError}</p>}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   Nom de la solution ou offre *
@@ -1712,9 +1771,8 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
                   >
                     <option value="ORANGE_BUSINESS">Orange Business</option>
-                    <option value="COMPETITOR">Opérateur tiers / Concurrent</option>
-                    <option value="INTERNAL">Solution interne client</option>
-                    <option value="OTHER">Autre</option>
+                    <option value="CONCURRENT">Opérateur tiers / Concurrent</option>
+                    <option value="AUTRE">Autre prestataire / Solution interne</option>
                   </select>
                 </div>
 
@@ -1724,9 +1782,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                   </label>
                   <select
                     value={newInstalledCategory}
+                    disabled={!!newInstalledPillar}
                     onChange={(e) => setNewInstalledCategory(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
                   >
+                    {newInstalledPillar && <option value={newInstalledCategory}>{newInstalledCategory}</option>}
                     <option value="Connectivité">Connectivité & Réseaux</option>
                     <option value="Cybersécurité">Cybersécurité</option>
                     <option value="Cloud & Data">Cloud & Datacenter</option>
@@ -1748,8 +1808,9 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                     className="w-full px-3 py-2 rounded-xl bg-[#F6F5F2] dark:bg-black/30 border border-black/5 dark:border-white/5 text-xs text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-[#4F6CE8]"
                   >
                     <option value="ACTIVE">En service (Actif)</option>
-                    <option value="DEPLOYING">En cours de déploiement</option>
-                    <option value="PENDING_RENEWAL">À renouveler / Proche échéance</option>
+                    <option value="PENDING_ACTIVATION">En cours de déploiement</option>
+                    <option value="SUSPENDED">Suspendu</option>
+                    <option value="EXPIRED">Arrivé à échéance</option>
                     <option value="TERMINATED">Résilié</option>
                   </select>
                 </div>
@@ -1772,7 +1833,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                    Coût mensuel (MRR en €)
+                    Coût mensuel (MRR en USD)
                   </label>
                   <input
                     type="number"
@@ -1787,7 +1848,7 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                    Postes / Licences
+                    Postes / Licences / SIM
                   </label>
                   <input
                     type="number"

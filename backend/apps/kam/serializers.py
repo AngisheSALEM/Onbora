@@ -129,6 +129,7 @@ class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
     enterprise_assigned_kam = serializers.ReadOnlyField(source='enterprise.assigned_kam.username')
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+    signal_strength_display = serializers.CharField(source='get_signal_strength_display', read_only=True)
 
     class Meta:
         model = B2BNewsFeedItem
@@ -139,6 +140,7 @@ class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
             'discovered_location', 'discovered_size', 'discovered_signals',
             'title', 'summary', 'source_name', 'source_url',
             'category', 'category_display', 'priority', 'priority_display',
+            'signal_strength', 'signal_strength_display', 'signal_score', 'signal_rationale',
             'commercial_angle', 'recommended_action', 'recommended_offer',
             'is_read', 'is_saved', 'is_converted_to_portfolio',
             'published_at', 'created_at', 'updated_at'

@@ -115,7 +115,7 @@ class KamToolbarModals {
                     ),
                     const SizedBox(height: 10),
                     _buildAlertItem(
-                      icon: CupertinoIcons.sparkles,
+                      icon: CupertinoIcons.bolt_fill,
                       iconColor: AppConstants.primaryBlue,
                       title: 'Synthèse Pré-Visite IA disponible',
                       description: 'Le briefing 360° pour le rendez-vous BGFIBank de 14h30 est prêt pour consultation.',
@@ -258,7 +258,7 @@ class KamToolbarModals {
                     Row(
                       children: [
                         Icon(
-                          CupertinoIcons.sparkles,
+                          CupertinoIcons.chart_bar_alt_fill,
                           color: isDark ? Colors.white : AppConstants.textDark,
                           size: 20,
                         ),

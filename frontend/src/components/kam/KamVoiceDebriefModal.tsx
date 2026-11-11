@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StrategicVisit, MeetingDebrief } from './kamTypes';
 import { Icons } from '@/components/shared/Icons';
+import { SkeletonDebriefLoader } from '@/components/shared/SkeletonLoader';
 import { fetchAPI, uploadAudioAPI } from '@/lib/api';
 import { evaluateVerbatimQuality } from './KamVocalVisitModal';
 
@@ -411,7 +412,7 @@ export default function KamVoiceDebriefModal({
               </span>
               {isTranscribing && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] text-[10px] font-bold border border-[#4F6CE8]/20 animate-pulse">
-                  <Icons.Sparkles size={10} className="animate-spin" />
+                  <Icons.Activity size={10} className="animate-pulse" />
                   <span>Whisper ASR</span>
                 </span>
               )}
@@ -446,7 +447,11 @@ export default function KamVoiceDebriefModal({
                 disabled={isGenerating || isTranscribing || totalWords === 0}
                 className="px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 text-xs font-semibold rounded-full shadow-md transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Icons.Sparkles size={16} className={isGenerating ? 'animate-spin' : ''} />
+                {isGenerating ? (
+                  <Icons.Loader size={16} className="animate-spin" />
+                ) : (
+                  <Icons.Zap size={16} />
+                )}
                 <span>{isGenerating ? "Génération IA en cours..." : `Générer Rapport & Offres (${totalWords} mots)`}</span>
               </button>
             </div>
@@ -596,16 +601,15 @@ export default function KamVoiceDebriefModal({
             </div>
           </div>
 
-          {/* AI Loader */}
+          {/* AI Skeleton Loader */}
           {isGenerating && (
-            <div className="p-8 text-center bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-2xl border border-black/5 dark:border-white/10 animate-pulse space-y-2">
-              <Icons.Sparkles size={32} className="mx-auto text-[#4F6CE8] animate-spin" />
-              <div className="font-extrabold text-sm text-zinc-900 dark:text-white">
-                Synthèse IA en cours par Onbora Core AI...
+            <div className="space-y-3">
+              <div className="text-center pb-2">
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                  Synthèse IA en cours par Onbora Core AI...
+                </span>
               </div>
-              <div className="text-xs text-zinc-500">
-                Extraction des engagements, matching catalogue Orange B2B et rédaction de l&apos;email client.
-              </div>
+              <SkeletonDebriefLoader />
             </div>
           )}
 

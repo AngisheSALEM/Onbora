@@ -12,7 +12,7 @@ function isAbortError(error: unknown, signal?: AbortSignal | null): boolean {
   return false;
 }
 
-export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
+async function requestAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers = new Headers(options.headers);
@@ -51,7 +51,28 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     throw new Error(errorData.detail || errorData.non_field_errors?.[0] || 'Une erreur est survenue.');
   }
 
+  if (response.status === 204) return null;
   return response.json();
+}
+
+// Share simultaneous reads only. No response cache, so account changes and
+// logout/login cannot serve stale data or another user's response.
+const pendingReads = new Map<string, ReturnType<typeof requestAPI>>();
+
+export function fetchAPI(endpoint: string, options: RequestInit = {}): ReturnType<typeof requestAPI> {
+  const method = (options.method || 'GET').toUpperCase();
+  if (method !== 'GET') pendingReads.clear();
+  if (method !== 'GET' || Object.keys(options).length > 0 || typeof window === 'undefined') {
+    return requestAPI(endpoint, options);
+  }
+  const key = `${localStorage.getItem('token') || ''}:${endpoint}`;
+  const pending = pendingReads.get(key);
+  if (pending) return pending;
+  const request = requestAPI(endpoint, options).finally(() => {
+    if (pendingReads.get(key) === request) pendingReads.delete(key);
+  });
+  pendingReads.set(key, request);
+  return request;
 }
 
 export async function uploadAudioAPI(endpoint: string, formData: FormData) {

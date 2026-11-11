@@ -61,7 +61,7 @@ export default function KamOfficeSettingsView() {
     },
     {
       q: "Comment sont consultés les Rapports de Visite et Comptes-Rendus des KAMs ?",
-      a: "Tous les comptes-rendus de rendez-vous physiques, visioconférences Google Meet et appels téléphoniques rédigés par les KAMs sont centralisés dans l'onglet 'Rapports de Visite'. Vous pouvez y analyser les synthèses d'entretiens, les scores BANT, les besoins qualifiés et les projets d'e-mails de suivi.",
+      a: "Les comptes rendus des visites en présentiel sont centralisés dans l'onglet 'Rapports de Visite'. Vous pouvez y consulter les synthèses, les scores BANT, les besoins qualifiés et les projets d'e-mails de suivi.",
     },
     {
       q: "Un KAM peut-il modifier lui-même son périmètre d'entreprises ?",

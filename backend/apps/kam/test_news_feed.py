@@ -7,6 +7,7 @@ from rest_framework import status
 from sales.models import Enterprise, Plaque
 from kam.models import B2BNewsFeedItem
 from kam.services.news_feed_service import B2BNewsFeedService
+from ai_core.services.commercial_signal_scorer import commercial_signal_scorer
 
 User = get_user_model()
 
@@ -36,13 +37,18 @@ class B2BNewsFeedServiceTestCase(TestCase):
         self.client.force_authenticate(user=self.kam_user)
 
     def test_seed_and_get_feed(self):
+        B2BNewsFeedService.seed_sample_news(self.kam_user)
         feed_data = B2BNewsFeedService.get_feed(self.kam_user, feed_type='ALL')
         self.assertGreaterEqual(feed_data["total_count"], 5)
         self.assertIn("counters", feed_data)
         self.assertGreater(feed_data["counters"]["portfolio"], 0)
         self.assertGreater(feed_data["counters"]["web_discovery"], 0)
+        self.assertIn("strong_signals", feed_data["counters"])
+        self.assertIn("weak_signals", feed_data["counters"])
+        self.assertGreater(feed_data["counters"]["strong_signals"], 0)
+        self.assertGreater(feed_data["counters"]["weak_signals"], 0)
 
-    def test_feed_filtering_by_type(self):
+    def test_feed_filtering_by_type_and_signal(self):
         B2BNewsFeedService.seed_sample_news(self.kam_user)
         
         # Portfolio only
@@ -54,6 +60,50 @@ class B2BNewsFeedServiceTestCase(TestCase):
         web_feed = B2BNewsFeedService.get_feed(self.kam_user, feed_type='WEB_DISCOVERY')
         for item in web_feed["items"]:
             self.assertTrue(item.is_web_discovery)
+
+        # Filter by Strong signals
+        strong_feed = B2BNewsFeedService.get_feed(self.kam_user, signal_strength='STRONG')
+        self.assertGreater(len(strong_feed["items"]), 0)
+        for item in strong_feed["items"]:
+            self.assertEqual(item.signal_strength, 'STRONG')
+            self.assertGreaterEqual(item.signal_score, 70)
+
+        # Filter by Weak signals
+        weak_feed = B2BNewsFeedService.get_feed(self.kam_user, signal_strength='WEAK')
+        self.assertGreater(len(weak_feed["items"]), 0)
+        for item in weak_feed["items"]:
+            self.assertEqual(item.signal_strength, 'WEAK')
+            self.assertLess(item.signal_score, 70)
+
+    def test_commercial_signal_scorer_heuristics(self):
+        # 1. Strong signal: incident / concurrent
+        res_incident = commercial_signal_scorer.score_news(
+            title="Panne majeure et coupure internet sur les sites miniers de l'opérateur concurrent",
+            summary="Interruption des flux SCADA pendant 8 heures à Kolwezi",
+            category="INCIDENT"
+        )
+        self.assertEqual(res_incident["signal_strength"], "STRONG")
+        self.assertGreaterEqual(res_incident["signal_score"], 80)
+        self.assertIn("concurrent", res_incident["signal_rationale"].lower())
+
+        # 2. Strong signal: expansion & nouvelles agences
+        res_expansion = commercial_signal_scorer.score_news(
+            title="Ouverture de 5 nouvelles agences bancaires à Lubumbashi",
+            summary="Extension du réseau commercial et recrutement",
+            category="EXPANSION"
+        )
+        self.assertEqual(res_expansion["signal_strength"], "STRONG")
+        self.assertGreaterEqual(res_expansion["signal_score"], 75)
+
+        # 3. Weak signal: RSE & vœux
+        res_weak = commercial_signal_scorer.score_news(
+            title="Soirée des vœux institutionnels et remise des trophées RSE",
+            summary="Événementiel interne de célébration et mécénat associatif",
+            category="MANAGEMENT"
+        )
+        self.assertEqual(res_weak["signal_strength"], "WEAK")
+        self.assertLess(res_weak["signal_score"], 70)
+        self.assertIn("faible", res_weak["signal_rationale"].lower())
 
     def test_search_and_category_filter(self):
         B2BNewsFeedService.seed_sample_news(self.kam_user)
@@ -101,24 +151,69 @@ class B2BNewsFeedServiceTestCase(TestCase):
         self.assertIsNotNone(item.enterprise)
         self.assertEqual(item.enterprise.name, "Katanga Cobalt Hub")
         self.assertEqual(item.enterprise.assigned_kam, self.kam_user)
+        self.assertEqual(item.enterprise.current_connectivity, "")
+        self.assertFalse(item.enterprise.installed_offers.exists())
+        self.assertIsNone(result["overall_score"])
 
-    def test_api_feed_endpoints(self):
+    def test_api_feed_endpoints_with_signal_filter(self):
+        B2BNewsFeedService.seed_sample_news(self.kam_user)
         # 1. GET /api/kam/feed/
         res = self.client.get('/api/kam/feed/')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn("results", res.data)
         self.assertIn("counters", res.data)
+        self.assertIn("strong_signals", res.data["counters"])
+        self.assertIn("weak_signals", res.data["counters"])
 
-        # 2. POST /api/kam/feed/<pk>/read/
+        # Check fields in results
+        first_item = res.data["results"][0]
+        self.assertIn("signal_strength", first_item)
+        self.assertIn("signal_score", first_item)
+        self.assertIn("signal_rationale", first_item)
+
+        # 2. GET /api/kam/feed/?signal=STRONG
+        res_strong = self.client.get('/api/kam/feed/?signal=STRONG')
+        self.assertEqual(res_strong.status_code, status.HTTP_200_OK)
+        for it in res_strong.data["results"]:
+            self.assertEqual(it["signal_strength"], "STRONG")
+
+        # 3. GET /api/kam/feed/?signal=WEAK
+        res_weak = self.client.get('/api/kam/feed/?signal=WEAK')
+        self.assertEqual(res_weak.status_code, status.HTTP_200_OK)
+        for it in res_weak.data["results"]:
+            self.assertEqual(it["signal_strength"], "WEAK")
+
+        # 4. POST /api/kam/feed/<pk>/read/
         item = B2BNewsFeedItem.objects.first()
         res_read = self.client.post(f'/api/kam/feed/{item.id}/read/', {'is_read': True})
         self.assertEqual(res_read.status_code, status.HTTP_200_OK)
         self.assertTrue(res_read.data["is_read"])
 
-        # 3. POST /api/kam/feed/<pk>/save/
+        # 5. POST /api/kam/feed/<pk>/save/
         res_save = self.client.post(f'/api/kam/feed/{item.id}/save/')
         self.assertEqual(res_save.status_code, status.HTTP_200_OK)
 
-        # 4. POST /api/kam/feed/refresh/
-        res_refresh = self.client.post('/api/kam/feed/refresh/')
+        # 6. POST /api/kam/feed/refresh/
+        from unittest.mock import patch
+        stats = {"updated_accounts": 0, "created_new_leads": 0, "total_jobs_fetched": 0,
+                 "skipped_obsolete": 0, "errors": 0}
+        with patch('ai_core.company_analysis.sync_service.OnboraAnalysisSyncService.sync_all_jobs', return_value=stats):
+            res_refresh = self.client.post('/api/kam/feed/refresh/')
         self.assertEqual(res_refresh.status_code, status.HTTP_200_OK)
+
+    def test_enterprise_specific_news(self):
+        ent = Enterprise.objects.create(
+            name='Kamoa-Kakula Mining Complex (Ivanhoe)',
+            sector='Mines & Énergie',
+            city='Kolwezi',
+            assigned_kam=self.kam_user
+        )
+        res = self.client.get(f'/api/kam/accounts/{ent.id}/news/')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(res.data['count'], 2)
+        self.assertIn('results', res.data)
+        first_news = res.data['results'][0]
+        self.assertEqual(first_news['enterprise'], ent.id)
+        self.assertIn('Kamoa', first_news['title'] + first_news['summary'])
+        self.assertIn('signal_strength', first_news)
+        self.assertIn('signal_score', first_news)

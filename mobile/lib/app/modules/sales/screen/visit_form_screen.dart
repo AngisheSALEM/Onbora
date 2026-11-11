@@ -173,7 +173,7 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF3B373D) : const Color(0xFFECEAE5),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -355,7 +355,7 @@ class _VisitFormScreenState extends State<VisitFormScreen> {
                     color: isSelected
                         ? AppConstants.primaryBlue
                         : (isDark ? AppConstants.cardDark : AppConstants.cardLight),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMd),
                     border: Border.all(
                       color: isSelected
                           ? AppConstants.primaryBlue

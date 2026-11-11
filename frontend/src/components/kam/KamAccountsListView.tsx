@@ -41,6 +41,9 @@ export default function KamAccountsListView({
   }, [visits, setFilterCategoryLabel, setFilterOptions]);
 
   const [summaryData, setSummaryData] = useState<{
+    b2bCount: number;
+    newPotentialsCount: number;
+    signalsCount: number;
     highRiskCount: number;
     highRiskDelta: string;
     healthyCount: number;
@@ -52,6 +55,9 @@ export default function KamAccountsListView({
     noActionCount: number;
     noActionSubtitle: string;
   }>({
+    b2bCount: 0,
+    newPotentialsCount: 0,
+    signalsCount: 0,
     highRiskCount: 0,
     highRiskDelta: '',
     healthyCount: 0,
@@ -74,6 +80,9 @@ export default function KamAccountsListView({
         if (data.summary_cards) {
           const sc = data.summary_cards;
           setSummaryData({
+            b2bCount: sc.b2b_accounts?.count ?? sc.high_risk?.b2b_count ?? sc.high_risk?.total_count ?? visits.length,
+            newPotentialsCount: sc.b2b_accounts?.new_potentials_count ?? sc.high_risk?.new_potentials_count ?? visits.filter(v => v.is_recently_added || !v.orange_contract_end_date).length,
+            signalsCount: sc.b2b_accounts?.signals_count ?? sc.high_risk?.signals_count ?? 1,
             highRiskCount: sc.high_risk?.count ?? 0,
             highRiskDelta: sc.high_risk?.delta_text ?? '',
             healthyCount: sc.high_risk?.healthy_count ?? 0,
@@ -95,7 +104,7 @@ export default function KamAccountsListView({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [visits.length]);
 
   const router = useRouter();
 
@@ -130,44 +139,60 @@ export default function KamAccountsListView({
 
       {/* Disposition Asymétrique des Cartes Cliquables (redirection vers pages détails dédiées) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Grande Carte Principale à Gauche : Cliquable vers /kam/accounts/risk */}
+        {/* Grande Carte Principale à Gauche : Comptes B2B (Anciennement Comptes à risque élevé) */}
         <div
-          onClick={() => router.push('/kam/accounts/risk')}
-          className="lg:col-span-7 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex flex-col justify-between cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-          title="Consulter le détail des comptes à risque élevé"
+          onClick={() => router.push('/kam/accounts/all')}
+          className="lg:col-span-7 bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-6 border border-black/5 dark:border-white/5 flex flex-col justify-between cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+          title="Consulter l'ensemble des comptes B2B"
         >
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                Comptes à risque élevé
+                Comptes B2B
               </span>
               <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                Voir les {summaryLoading ? '…' : summaryData.highRiskCount} comptes &rarr;
+                Voir tous les {summaryLoading ? '…' : (summaryData.b2bCount || visits.length)} comptes &rarr;
               </span>
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
-                {summaryLoading ? '…' : summaryData.highRiskCount}
+                {summaryLoading ? '…' : (summaryData.b2bCount || visits.length)}
               </span>
             </div>
-            {summaryData.highRiskDelta && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-medium">{summaryData.highRiskDelta}</p>}
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-medium">
+              Portefeuille d&apos;entreprises B2B sous gestion
+            </p>
           </div>
 
-          <div className="mt-6 pt-5 grid grid-cols-2 gap-4">
-            <div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 block">
-                Comptes sains
+          <div className="mt-6 pt-5 grid grid-cols-2 gap-4 border-t border-black/5 dark:border-white/5">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push('/kam/feed?type=WEB_DISCOVERY');
+              }}
+              className="cursor-pointer group"
+              title="Consulter les nouveaux comptes potentiels détectés"
+            >
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 block group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                Nouveaux comptes potentiels
               </span>
               <span className="text-2xl font-bold text-zinc-900 dark:text-white mt-1 block">
-                {summaryLoading ? '…' : summaryData.healthyCount}
+                {summaryLoading ? '…' : summaryData.newPotentialsCount}
               </span>
             </div>
-            <div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 block">
-                Sous surveillance
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push('/kam/feed');
+              }}
+              className="cursor-pointer group"
+              title="Consulter les signaux et actualités"
+            >
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 block group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                Signaux
               </span>
               <span className="text-2xl font-bold text-zinc-900 dark:text-white mt-1 block">
-                {summaryLoading ? '…' : summaryData.surveillanceCount}
+                {summaryLoading ? '…' : summaryData.signalsCount}
               </span>
             </div>
           </div>
@@ -178,7 +203,7 @@ export default function KamAccountsListView({
           {/* Carte 1 -> /kam/accounts/renewals */}
           <div
             onClick={() => router.push('/kam/accounts/renewals')}
-            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[20px] p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
             title="Consulter le détail des renouvellements à surveiller"
           >
             <div className="flex items-center justify-between">
@@ -202,14 +227,16 @@ export default function KamAccountsListView({
           {/* Carte 2 -> /kam/accounts/upsell */}
           <div
             onClick={() => router.push('/kam/accounts/upsell')}
-            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[20px] p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-            title="Consulter le détail des opportunités d’upsell"
+            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+            title="Consulter le détail des opportunités d’upsell (Comparateur & Signaux)"
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 Opportunités d’upsell
               </span>
-          
+              <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                Comparateur & Signaux
+              </span>
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-2xl font-bold text-zinc-900 dark:text-white">
@@ -224,7 +251,7 @@ export default function KamAccountsListView({
           {/* Carte 3 -> /kam/accounts/no-action */}
           <div
             onClick={() => router.push('/kam/accounts/no-action')}
-            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[20px] p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+            className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-4 border border-black/5 dark:border-white/5 flex flex-col justify-between h-full cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
             title="Consulter le détail des comptes sans prochaine action"
           >
             <div className="flex items-center justify-between">
@@ -247,7 +274,7 @@ export default function KamAccountsListView({
         </div>
       </div>
       {summaryError && <p role="alert" className="text-sm text-zinc-600 dark:text-zinc-300">{summaryError}</p>}
-      <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6">
+      <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-6">
         <div className="flex items-center justify-between gap-4 mb-4">
           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Mes comptes B2B ({visits.length})</h2>
           <Link href="/kam/accounts/all" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:underline focus-visible:underline">Voir tout</Link>

@@ -22,6 +22,7 @@ def main():
             [sys.executable, "-m", "gunicorn", "onbora.wsgi:application", "--bind",
              f"0.0.0.0:{os.getenv('PORT', '8000')}"],
             [sys.executable, "manage.py", "run_ai_jobs"],
+            [sys.executable, "manage.py", "run_dynamics_imports"],
         ]
         for command in commands:
             processes.append(subprocess.Popen(command, cwd=Path(__file__).resolve().parent))

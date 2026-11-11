@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-10-20T14:47:34.801133+00:00",
+    "generated_at": "2026-11-03T15:20:40.301404+00:00",
     "catalog_version": "orange-business-rdc-global-2026-07-28",
-    "compiler_version": "2.0-core-ai",
+    "compiler_version": "3.0-core-ai-dynamic-pillars",
     "total_catalog_services": 41,
-    "author": "Onbora AI Core Policy Engine"
+    "author": "Onbora AI Core Policy & Pillar Engine"
   },
   "taxonomy_mapping": {
     "banque & services financiers": "finance",
@@ -32,6 +32,7 @@
     "boissons & distribution": "commerce",
     "télécoms & it b2b": "technology",
     "technologie": "technology",
+    "technologies & it": "technology",
     "télécommunications": "telecommunications",
     "bureautique & connectivité": "technology",
     "ingénierie & consulting": "technology",
@@ -43,8 +44,10 @@
     "santé & diagnostics": "healthcare",
     "santé de proximité": "healthcare",
     "pharmacie & santé": "healthcare",
+    "santé": "healthcare",
     "éducation supérieure": "education",
     "éducation & enseignement": "education",
+    "éducation": "education",
     "hôtellerie & tourisme": "services",
     "tourisme & billetterie": "services",
     "sécurité privée": "services",
@@ -53,18 +56,159 @@
     "services véhicules": "services",
     "services personnels": "services",
     "médias & graphisme": "services",
-    "médias & télévision": "services"
+    "médias & télévision": "services",
+    "services": "services"
   },
   "sectors": {
     "finance": {
       "sector_key": "finance",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Liaison Spécialisée Dédiée & Débit Garanti (LSI)",
+          "weight": 0.25,
+          "description": "Liaison dédiée symétrique et débit 100% garanti avec GTR 4h contractuelle obligatoire pour les transactions financières.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            },
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "lsi",
+            "symétrique",
+            "procezo"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique 100% garanti avec engagement contractuel de rétablissement sous 4h (GTR), indispensable pour les transactions interbancaires."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Périmétrique & Micro-SOC",
+          "weight": 0.25,
+          "description": "Protection pare-feu managée Next-Gen, surveillance Micro-SOC 24/7 et conformité aux standards réglementaires bancaires.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "micro_soc",
+              "name": "Micro-SOC"
+            },
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "soc",
+            "fortinet",
+            "utm",
+            "cyber"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Surveillance Micro-SOC 24/7 et pare-feu Next-Gen managé pour garantir la conformité réglementaire bancaire et prévenir les fraudes."
+        },
+        {
+          "id": "sla",
+          "label": "Haute Disponibilité & Lien de Secours Automatique (Dual Homing)",
+          "weight": 0.2,
+          "description": "Double adduction réseau automatique (Fibre + Secours 4G/Satellite) pour supprimer tout risque d'interruption SPOF des opérations de guichet.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "backup",
+            "dual",
+            "redondance",
+            "4g pro",
+            "double adduction"
+          ],
+          "penalty": 20,
+          "criticality": "CRITICAL",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule instantanée sur lien de secours sans interruption de service en cas de section de fibre, évitant l'arrêt des opérations de caisse."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Agences & SD-WAN Sécurisé",
+          "weight": 0.15,
+          "description": "Réseau privé maillé inter-agences avec pilotage intelligent et priorisation des flux critiques de core banking.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "vpn ipsec",
+            "vpn"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion chiffrée de l'ensemble de vos agences avec priorisation dynamique des requêtes bancaires et supervision temps réel."
+        },
+        {
+          "id": "cloud",
+          "label": "Hébergement Datacenter & Cloud Souverain RDC",
+          "weight": 0.15,
+          "description": "Hébergement en datacenter certifié à Kinshasa et sauvegarde souveraine des données financières.",
+          "category": "Datacenter et infrastructure",
+          "catalog_services": [
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            },
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            }
+          ],
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "sauvegarde",
+            "hébergement",
+            "backup"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement des serveurs critiques en Datacenter certifié à Kinshasa assurant la souveraineté territoriale des données bancaires."
+        }
+      ],
       "radar_weights": {
+        "connectivity": 0.25,
         "security": 0.25,
-        "sla": 0.25,
-        "connectivity": 0.2,
-        "cloud": 0.15,
-        "equipment": 0.1,
-        "budget": 0.05
+        "sla": 0.2,
+        "equipment": 0.15,
+        "cloud": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.3,
@@ -74,58 +218,61 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Dédiée Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 20,
+          "category": "Internet fixe et réseaux",
+          "label": "Liaison Spécialisée Dédiée & Débit Garanti (LSI)",
+          "criticality": "CRITICAL",
+          "penalty": 25,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
             "dédiée",
-            "procezo",
-            "symétrique"
-          ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Débit garanti symétrique avec engagement de service GTR 4h obligatoire pour les flux financiers."
-        },
-        {
-          "category": "SLA",
-          "label": "Lien de Secours Automatique (Dual Homing)",
-          "criticality": "CRITICAL",
-          "penalty": 25,
-          "dimension": "sla",
-          "match_keywords": [
-            "secours",
-            "backup",
-            "dual",
-            "redondance",
-            "4g pro"
+            "lsi",
+            "symétrique",
+            "procezo"
           ],
           "recommended_offer": "Liaison Spécialisée Internet",
           "recommended_offer_id": "liaison_specialisee_internet",
-          "pitch": "Bascule instantanée sans coupure en cas de section de fibre, évitant l'arrêt des opérations bancaires."
+          "pitch": "Débit symétrique 100% garanti avec engagement contractuel de rétablissement sous 4h (GTR), indispensable pour les transactions interbancaires."
         },
         {
-          "category": "SECURITY",
-          "label": "Pare-feu Managé & Filtrage Avancé",
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Périmétrique & Micro-SOC",
           "criticality": "CRITICAL",
           "penalty": 25,
           "dimension": "security",
           "match_keywords": [
             "firewall",
             "sécurité",
+            "soc",
             "fortinet",
             "utm",
-            "périmétrique"
+            "cyber"
           ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Conformité réglementaire bancaire et protection contre les cyberattaques et fuites de données financières."
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Surveillance Micro-SOC 24/7 et pare-feu Next-Gen managé pour garantir la conformité réglementaire bancaire et prévenir les fraudes."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "Interconnexion Multi-Agences SD-WAN",
+          "category": "Internet fixe et réseaux",
+          "label": "Haute Disponibilité & Lien de Secours Automatique (Dual Homing)",
+          "criticality": "CRITICAL",
+          "penalty": 20,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "backup",
+            "dual",
+            "redondance",
+            "4g pro",
+            "double adduction"
+          ],
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule instantanée sur lien de secours sans interruption de service en cas de section de fibre, évitant l'arrêt des opérations de caisse."
+        },
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Agences & SD-WAN Sécurisé",
           "criticality": "HIGH",
           "penalty": 15,
           "dimension": "equipment",
@@ -133,39 +280,181 @@
             "sd-wan",
             "interconnexion",
             "mpls",
-            "vpn ipsec"
+            "vpn ipsec",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Routage applicatif intelligent et supervision centralisée en temps réel de toutes les agences."
+          "pitch": "Interconnexion chiffrée de l'ensemble de vos agences avec priorisation dynamique des requêtes bancaires et supervision temps réel."
         },
         {
-          "category": "CLOUD",
-          "label": "Sauvegarde Externalisée Cloud Souverain RDC",
+          "category": "Datacenter et infrastructure",
+          "label": "Hébergement Datacenter & Cloud Souverain RDC",
           "criticality": "HIGH",
           "penalty": 15,
           "dimension": "cloud",
           "match_keywords": [
-            "sauvegarde",
+            "datacenter",
             "cloud",
-            "backup",
-            "datacenter"
+            "sauvegarde",
+            "hébergement",
+            "backup"
           ],
-          "recommended_offer": "Microsoft 365",
-          "recommended_offer_id": "microsoft_365",
-          "pitch": "Réplication externalisée en datacenter local garantissant la souveraineté des données financières."
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement des serveurs critiques en Datacenter certifié à Kinshasa assurant la souveraineté territoriale des données bancaires."
         }
       ]
     },
     "fintech": {
       "sector_key": "fintech",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Liaison Spécialisée Dédiée & Débit Garanti (LSI)",
+          "weight": 0.25,
+          "description": "Liaison dédiée symétrique et débit 100% garanti avec GTR 4h contractuelle obligatoire pour les transactions financières.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            },
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "lsi",
+            "symétrique",
+            "procezo"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique 100% garanti avec engagement contractuel de rétablissement sous 4h (GTR), indispensable pour les transactions interbancaires."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Périmétrique & Micro-SOC",
+          "weight": 0.25,
+          "description": "Protection pare-feu managée Next-Gen, surveillance Micro-SOC 24/7 et conformité aux standards réglementaires bancaires.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "micro_soc",
+              "name": "Micro-SOC"
+            },
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "soc",
+            "fortinet",
+            "utm",
+            "cyber"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Surveillance Micro-SOC 24/7 et pare-feu Next-Gen managé pour garantir la conformité réglementaire bancaire et prévenir les fraudes."
+        },
+        {
+          "id": "sla",
+          "label": "Haute Disponibilité & Lien de Secours Automatique (Dual Homing)",
+          "weight": 0.2,
+          "description": "Double adduction réseau automatique (Fibre + Secours 4G/Satellite) pour supprimer tout risque d'interruption SPOF des opérations de guichet.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "backup",
+            "dual",
+            "redondance",
+            "4g pro",
+            "double adduction"
+          ],
+          "penalty": 20,
+          "criticality": "CRITICAL",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule instantanée sur lien de secours sans interruption de service en cas de section de fibre, évitant l'arrêt des opérations de caisse."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Agences & SD-WAN Sécurisé",
+          "weight": 0.15,
+          "description": "Réseau privé maillé inter-agences avec pilotage intelligent et priorisation des flux critiques de core banking.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "vpn ipsec",
+            "vpn"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion chiffrée de l'ensemble de vos agences avec priorisation dynamique des requêtes bancaires et supervision temps réel."
+        },
+        {
+          "id": "cloud",
+          "label": "Hébergement Datacenter & Cloud Souverain RDC",
+          "weight": 0.15,
+          "description": "Hébergement en datacenter certifié à Kinshasa et sauvegarde souveraine des données financières.",
+          "category": "Datacenter et infrastructure",
+          "catalog_services": [
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            },
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            }
+          ],
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "sauvegarde",
+            "hébergement",
+            "backup"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement des serveurs critiques en Datacenter certifié à Kinshasa assurant la souveraineté territoriale des données bancaires."
+        }
+      ],
       "radar_weights": {
+        "connectivity": 0.25,
         "security": 0.25,
-        "sla": 0.25,
-        "connectivity": 0.2,
-        "cloud": 0.15,
-        "equipment": 0.1,
-        "budget": 0.05
+        "sla": 0.2,
+        "equipment": 0.15,
+        "cloud": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.3,
@@ -175,58 +464,61 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Dédiée Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 20,
+          "category": "Internet fixe et réseaux",
+          "label": "Liaison Spécialisée Dédiée & Débit Garanti (LSI)",
+          "criticality": "CRITICAL",
+          "penalty": 25,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
             "dédiée",
-            "procezo",
-            "symétrique"
+            "lsi",
+            "symétrique",
+            "procezo"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Débit garanti symétrique avec engagement de service GTR 4h obligatoire pour les flux financiers."
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique 100% garanti avec engagement contractuel de rétablissement sous 4h (GTR), indispensable pour les transactions interbancaires."
         },
         {
-          "category": "SLA",
-          "label": "Lien de Secours Automatique (Dual Homing)",
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Périmétrique & Micro-SOC",
           "criticality": "CRITICAL",
           "penalty": 25,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "soc",
+            "fortinet",
+            "utm",
+            "cyber"
+          ],
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Surveillance Micro-SOC 24/7 et pare-feu Next-Gen managé pour garantir la conformité réglementaire bancaire et prévenir les fraudes."
+        },
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "Haute Disponibilité & Lien de Secours Automatique (Dual Homing)",
+          "criticality": "CRITICAL",
+          "penalty": 20,
           "dimension": "sla",
           "match_keywords": [
             "secours",
             "backup",
             "dual",
             "redondance",
-            "4g pro"
+            "4g pro",
+            "double adduction"
           ],
-          "recommended_offer": "Liaison Spécialisée Internet",
-          "recommended_offer_id": "liaison_specialisee_internet",
-          "pitch": "Bascule instantanée sans coupure en cas de section de fibre, évitant l'arrêt des opérations bancaires."
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule instantanée sur lien de secours sans interruption de service en cas de section de fibre, évitant l'arrêt des opérations de caisse."
         },
         {
-          "category": "SECURITY",
-          "label": "Pare-feu Managé & Filtrage Avancé",
-          "criticality": "CRITICAL",
-          "penalty": 25,
-          "dimension": "security",
-          "match_keywords": [
-            "firewall",
-            "sécurité",
-            "fortinet",
-            "utm",
-            "périmétrique"
-          ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Conformité réglementaire bancaire et protection contre les cyberattaques et fuites de données financières."
-        },
-        {
-          "category": "EQUIPMENT",
-          "label": "Interconnexion Multi-Agences SD-WAN",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Agences & SD-WAN Sécurisé",
           "criticality": "HIGH",
           "penalty": 15,
           "dimension": "equipment",
@@ -234,39 +526,179 @@
             "sd-wan",
             "interconnexion",
             "mpls",
-            "vpn ipsec"
+            "vpn ipsec",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Routage applicatif intelligent et supervision centralisée en temps réel de toutes les agences."
+          "pitch": "Interconnexion chiffrée de l'ensemble de vos agences avec priorisation dynamique des requêtes bancaires et supervision temps réel."
         },
         {
-          "category": "CLOUD",
-          "label": "Sauvegarde Externalisée Cloud Souverain RDC",
+          "category": "Datacenter et infrastructure",
+          "label": "Hébergement Datacenter & Cloud Souverain RDC",
           "criticality": "HIGH",
           "penalty": 15,
           "dimension": "cloud",
           "match_keywords": [
-            "sauvegarde",
+            "datacenter",
             "cloud",
-            "backup",
-            "datacenter"
+            "sauvegarde",
+            "hébergement",
+            "backup"
           ],
-          "recommended_offer": "Microsoft 365",
-          "recommended_offer_id": "microsoft_365",
-          "pitch": "Réplication externalisée en datacenter local garantissant la souveraineté des données financières."
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement des serveurs critiques en Datacenter certifié à Kinshasa assurant la souveraineté territoriale des données bancaires."
         }
       ]
     },
     "energy": {
       "sector_key": "energy",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Liaison Hybride Résiliente Fibre & VSAT",
+          "weight": 0.25,
+          "description": "Couverture continue des concessions minières et sites industriels isolés combinant fibre optique et satellite VSAT.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            },
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "vsat",
+            "satellite",
+            "procezo",
+            "hybride",
+            "lsi"
+          ],
+          "penalty": 30,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transmission continue et sécurisée pour vos sites miniers et usines de raffinage, même en zone d'extraction reculée."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Sites Distants & SD-WAN Industriel",
+          "weight": 0.25,
+          "description": "Liaison sécurisée unifiée entre la direction générale, les sites miniers et les installations logistiques portuaires.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "ot",
+            "sites distants"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Unification de vos liaisons distantes permettant un pilotage centralisé de vos flux ERP industriels sans rupture de chaîne."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité d'Exploitation & SLA Industriel 24/7",
+          "weight": 0.2,
+          "description": "Dispositif de maintien opérationnel 24/7 avec secours automatique 4G/Satellite et astreinte technique dédiée.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "sla",
+            "gtr",
+            "supervision",
+            "astreinte",
+            "4g"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des tonnages et des expéditions 24 heures sur 24."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Opérationnelle (OT/IT & Pare-feu)",
+          "weight": 0.15,
+          "description": "Isolation et protection des automates industriels (SCADA) et des flux de gestion d'extraction contre les attaques ciblées.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet",
+            "cyber",
+            "scada"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Ségrégation stricte entre réseau bureautique et automates industriels pour immuniser la production contre les ransomwares."
+        },
+        {
+          "id": "cloud",
+          "label": "Flotte Mobile & IoT / Télémétrie M2M Chantier",
+          "weight": 0.15,
+          "description": "Cartes SIM M2M pour la télémétrie d'engins lourds, suivi du carburant et flotte mobile d'astreinte sur site.",
+          "category": "IoT et M2M",
+          "catalog_services": [
+            {
+              "id": "essentiel_m2m",
+              "name": "Essentiel M2M"
+            },
+            {
+              "id": "business_gfu",
+              "name": "Flotte Mobile (Business GFU)"
+            }
+          ],
+          "match_keywords": [
+            "m2m",
+            "iot",
+            "flotte",
+            "gfu",
+            "télémétrie",
+            "business flex"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Essentiel M2M",
+          "recommended_offer_id": "essentiel_m2m",
+          "pitch": "Suivi en temps réel de vos engins et consommation de carburant via le réseau M2M d'Orange RDC."
+        }
+      ],
       "radar_weights": {
+        "connectivity": 0.25,
         "equipment": 0.25,
-        "sla": 0.25,
-        "connectivity": 0.2,
+        "sla": 0.2,
         "security": 0.15,
-        "cloud": 0.1,
-        "budget": 0.05
+        "cloud": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.2,
@@ -276,8 +708,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Liaison Résiliente Hybride (Fibre / VSAT)",
+          "category": "Internet fixe et réseaux",
+          "label": "Liaison Hybride Résiliente Fibre & VSAT",
           "criticality": "CRITICAL",
           "penalty": 30,
           "dimension": "connectivity",
@@ -286,15 +718,16 @@
             "vsat",
             "satellite",
             "procezo",
-            "hybride"
+            "hybride",
+            "lsi"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Continuité de transmission pour les sites miniers et industriels isolés même en zone blanche."
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transmission continue et sécurisée pour vos sites miniers et usines de raffinage, même en zone d'extraction reculée."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "Réseau Industriel & Interconnexion Sites Distants",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Sites Distants & SD-WAN Industriel",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
@@ -302,55 +735,216 @@
             "sd-wan",
             "interconnexion",
             "mpls",
-            "ot"
+            "ot",
+            "sites distants"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Liaison sécurisée entre le siège de direction et les sites d'extraction ou usines de production."
+          "pitch": "Unification de vos liaisons distantes permettant un pilotage centralisé de vos flux ERP industriels sans rupture de chaîne."
         },
         {
-          "category": "SECURITY",
-          "label": "Cybersécurité Industrielle (OT/IT)",
+          "category": "Internet fixe et réseaux",
+          "label": "Continuité d'Exploitation & SLA Industriel 24/7",
           "criticality": "HIGH",
           "penalty": 20,
-          "dimension": "security",
-          "match_keywords": [
-            "firewall",
-            "sécurité",
-            "ot",
-            "fortinet"
-          ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Isolation et protection des automates industriels et des flux SCADA contre les ransomwares."
-        },
-        {
-          "category": "SLA",
-          "label": "Supervision & Garantie de Temps de Rétablissement",
-          "criticality": "HIGH",
-          "penalty": 15,
           "dimension": "sla",
           "match_keywords": [
             "secours",
             "sla",
             "gtr",
-            "supervision"
+            "supervision",
+            "astreinte",
+            "4g"
           ],
-          "recommended_offer": "Liaison Spécialisée Internet",
-          "recommended_offer_id": "liaison_specialisee_internet",
-          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des expéditions 24/7."
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des tonnages et des expéditions 24 heures sur 24."
+        },
+        {
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Opérationnelle (OT/IT & Pare-feu)",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet",
+            "cyber",
+            "scada"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Ségrégation stricte entre réseau bureautique et automates industriels pour immuniser la production contre les ransomwares."
+        },
+        {
+          "category": "IoT et M2M",
+          "label": "Flotte Mobile & IoT / Télémétrie M2M Chantier",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "m2m",
+            "iot",
+            "flotte",
+            "gfu",
+            "télémétrie",
+            "business flex"
+          ],
+          "recommended_offer": "Essentiel M2M",
+          "recommended_offer_id": "essentiel_m2m",
+          "pitch": "Suivi en temps réel de vos engins et consommation de carburant via le réseau M2M d'Orange RDC."
         }
       ]
     },
     "industry": {
       "sector_key": "industry",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Liaison Hybride Résiliente Fibre & VSAT",
+          "weight": 0.25,
+          "description": "Couverture continue des concessions minières et sites industriels isolés combinant fibre optique et satellite VSAT.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            },
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "vsat",
+            "satellite",
+            "procezo",
+            "hybride",
+            "lsi"
+          ],
+          "penalty": 30,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transmission continue et sécurisée pour vos sites miniers et usines de raffinage, même en zone d'extraction reculée."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Sites Distants & SD-WAN Industriel",
+          "weight": 0.25,
+          "description": "Liaison sécurisée unifiée entre la direction générale, les sites miniers et les installations logistiques portuaires.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "mpls",
+            "ot",
+            "sites distants"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Unification de vos liaisons distantes permettant un pilotage centralisé de vos flux ERP industriels sans rupture de chaîne."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité d'Exploitation & SLA Industriel 24/7",
+          "weight": 0.2,
+          "description": "Dispositif de maintien opérationnel 24/7 avec secours automatique 4G/Satellite et astreinte technique dédiée.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "sla",
+            "gtr",
+            "supervision",
+            "astreinte",
+            "4g"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des tonnages et des expéditions 24 heures sur 24."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Opérationnelle (OT/IT & Pare-feu)",
+          "weight": 0.15,
+          "description": "Isolation et protection des automates industriels (SCADA) et des flux de gestion d'extraction contre les attaques ciblées.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet",
+            "cyber",
+            "scada"
+          ],
+          "penalty": 15,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Ségrégation stricte entre réseau bureautique et automates industriels pour immuniser la production contre les ransomwares."
+        },
+        {
+          "id": "cloud",
+          "label": "Flotte Mobile & IoT / Télémétrie M2M Chantier",
+          "weight": 0.15,
+          "description": "Cartes SIM M2M pour la télémétrie d'engins lourds, suivi du carburant et flotte mobile d'astreinte sur site.",
+          "category": "IoT et M2M",
+          "catalog_services": [
+            {
+              "id": "essentiel_m2m",
+              "name": "Essentiel M2M"
+            },
+            {
+              "id": "business_gfu",
+              "name": "Flotte Mobile (Business GFU)"
+            }
+          ],
+          "match_keywords": [
+            "m2m",
+            "iot",
+            "flotte",
+            "gfu",
+            "télémétrie",
+            "business flex"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Essentiel M2M",
+          "recommended_offer_id": "essentiel_m2m",
+          "pitch": "Suivi en temps réel de vos engins et consommation de carburant via le réseau M2M d'Orange RDC."
+        }
+      ],
       "radar_weights": {
+        "connectivity": 0.25,
         "equipment": 0.25,
-        "sla": 0.25,
-        "connectivity": 0.2,
+        "sla": 0.2,
         "security": 0.15,
-        "cloud": 0.1,
-        "budget": 0.05
+        "cloud": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.2,
@@ -360,8 +954,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Liaison Résiliente Hybride (Fibre / VSAT)",
+          "category": "Internet fixe et réseaux",
+          "label": "Liaison Hybride Résiliente Fibre & VSAT",
           "criticality": "CRITICAL",
           "penalty": 30,
           "dimension": "connectivity",
@@ -370,15 +964,16 @@
             "vsat",
             "satellite",
             "procezo",
-            "hybride"
+            "hybride",
+            "lsi"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Continuité de transmission pour les sites miniers et industriels isolés même en zone blanche."
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transmission continue et sécurisée pour vos sites miniers et usines de raffinage, même en zone d'extraction reculée."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "Réseau Industriel & Interconnexion Sites Distants",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Sites Distants & SD-WAN Industriel",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
@@ -386,55 +981,213 @@
             "sd-wan",
             "interconnexion",
             "mpls",
-            "ot"
+            "ot",
+            "sites distants"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Liaison sécurisée entre le siège de direction et les sites d'extraction ou usines de production."
+          "pitch": "Unification de vos liaisons distantes permettant un pilotage centralisé de vos flux ERP industriels sans rupture de chaîne."
         },
         {
-          "category": "SECURITY",
-          "label": "Cybersécurité Industrielle (OT/IT)",
+          "category": "Internet fixe et réseaux",
+          "label": "Continuité d'Exploitation & SLA Industriel 24/7",
           "criticality": "HIGH",
           "penalty": 20,
-          "dimension": "security",
-          "match_keywords": [
-            "firewall",
-            "sécurité",
-            "ot",
-            "fortinet"
-          ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Isolation et protection des automates industriels et des flux SCADA contre les ransomwares."
-        },
-        {
-          "category": "SLA",
-          "label": "Supervision & Garantie de Temps de Rétablissement",
-          "criticality": "HIGH",
-          "penalty": 15,
           "dimension": "sla",
           "match_keywords": [
             "secours",
             "sla",
             "gtr",
-            "supervision"
+            "supervision",
+            "astreinte",
+            "4g"
           ],
-          "recommended_offer": "Liaison Spécialisée Internet",
-          "recommended_offer_id": "liaison_specialisee_internet",
-          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des expéditions 24/7."
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité de service pour maintenir la traçabilité des tonnages et des expéditions 24 heures sur 24."
+        },
+        {
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Opérationnelle (OT/IT & Pare-feu)",
+          "criticality": "HIGH",
+          "penalty": 15,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "ot",
+            "fortinet",
+            "cyber",
+            "scada"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Ségrégation stricte entre réseau bureautique et automates industriels pour immuniser la production contre les ransomwares."
+        },
+        {
+          "category": "IoT et M2M",
+          "label": "Flotte Mobile & IoT / Télémétrie M2M Chantier",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "cloud",
+          "match_keywords": [
+            "m2m",
+            "iot",
+            "flotte",
+            "gfu",
+            "télémétrie",
+            "business flex"
+          ],
+          "recommended_offer": "Essentiel M2M",
+          "recommended_offer_id": "essentiel_m2m",
+          "pitch": "Suivi en temps réel de vos engins et consommation de carburant via le réseau M2M d'Orange RDC."
         }
       ]
     },
     "retail": {
       "sector_key": "retail",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Fibre Pro & Connectivité Points de Vente",
+          "weight": 0.25,
+          "description": "Bande passante stable et continue pour la synchronisation des caisses, des stocks et de la plateforme e-commerce.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
+          "weight": 0.2,
+          "description": "Interconnexion temps réel de l'ensemble des boutiques, supermarchés et entrepôts régionaux vers le siège.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente",
+            "magasins",
+            "vpn"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
+        },
+        {
+          "id": "cloud",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
+          "weight": 0.2,
+          "description": "Sauvegarde externalisée sécurisée des bases de données de vente et suite bureautique pour les équipes administratives.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            },
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams",
+            "datacenter"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
+        },
+        {
+          "id": "security",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
+          "weight": 0.2,
+          "description": "Filtrage web, protection des terminaux de paiement et pare-feu d'agence contre les intrusions.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "id": "sla",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "weight": 0.15,
+          "description": "Intégration d'Orange Money Business aux caisses et ligne de secours 4G pour encaissement permanent.",
+          "category": "Orange Money Business",
+          "catalog_services": [
+            {
+              "id": "api_orange_money",
+              "name": "API Orange Money"
+            },
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
+        }
+      ],
       "radar_weights": {
         "connectivity": 0.25,
         "equipment": 0.2,
         "cloud": 0.2,
-        "security": 0.15,
-        "sla": 0.1,
-        "budget": 0.1
+        "security": 0.2,
+        "sla": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.15,
@@ -444,8 +1197,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Pro Haut Débit",
+          "category": "Internet fixe et réseaux",
+          "label": "Fibre Pro & Connectivité Points de Vente",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
@@ -453,70 +1206,228 @@
             "fibre",
             "procezo",
             "fttb",
-            "haut débit"
+            "haut débit",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "SD-WAN Points de Vente & Entrepôts",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
           "match_keywords": [
             "sd-wan",
             "interconnexion",
-            "points de vente"
+            "points de vente",
+            "magasins",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
         },
         {
-          "category": "CLOUD",
-          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "category": "Cloud et collaboration",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
             "cloud",
             "365",
             "sauvegarde",
-            "teams"
+            "teams",
+            "datacenter"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection des Postes & Filtrage Caisses",
+          "category": "Cybersécurité",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "security",
           "match_keywords": [
             "firewall",
             "antivirus",
             "sécurité",
-            "filtrage"
+            "filtrage",
+            "cyber"
           ],
           "recommended_offer": "Business Box",
           "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "category": "Orange Money Business",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
         }
       ]
     },
     "commerce": {
       "sector_key": "commerce",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Fibre Pro & Connectivité Points de Vente",
+          "weight": 0.25,
+          "description": "Bande passante stable et continue pour la synchronisation des caisses, des stocks et de la plateforme e-commerce.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
+          "weight": 0.2,
+          "description": "Interconnexion temps réel de l'ensemble des boutiques, supermarchés et entrepôts régionaux vers le siège.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente",
+            "magasins",
+            "vpn"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
+        },
+        {
+          "id": "cloud",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
+          "weight": 0.2,
+          "description": "Sauvegarde externalisée sécurisée des bases de données de vente et suite bureautique pour les équipes administratives.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            },
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams",
+            "datacenter"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
+        },
+        {
+          "id": "security",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
+          "weight": 0.2,
+          "description": "Filtrage web, protection des terminaux de paiement et pare-feu d'agence contre les intrusions.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "id": "sla",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "weight": 0.15,
+          "description": "Intégration d'Orange Money Business aux caisses et ligne de secours 4G pour encaissement permanent.",
+          "category": "Orange Money Business",
+          "catalog_services": [
+            {
+              "id": "api_orange_money",
+              "name": "API Orange Money"
+            },
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
+        }
+      ],
       "radar_weights": {
         "connectivity": 0.25,
         "equipment": 0.2,
         "cloud": 0.2,
-        "security": 0.15,
-        "sla": 0.1,
-        "budget": 0.1
+        "security": 0.2,
+        "sla": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.15,
@@ -526,8 +1437,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Pro Haut Débit",
+          "category": "Internet fixe et réseaux",
+          "label": "Fibre Pro & Connectivité Points de Vente",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
@@ -535,198 +1446,598 @@
             "fibre",
             "procezo",
             "fttb",
-            "haut débit"
+            "haut débit",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "SD-WAN Points de Vente & Entrepôts",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
           "match_keywords": [
             "sd-wan",
             "interconnexion",
-            "points de vente"
+            "points de vente",
+            "magasins",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
         },
         {
-          "category": "CLOUD",
-          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "category": "Cloud et collaboration",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
             "cloud",
             "365",
             "sauvegarde",
-            "teams"
+            "teams",
+            "datacenter"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection des Postes & Filtrage Caisses",
+          "category": "Cybersécurité",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "security",
           "match_keywords": [
             "firewall",
             "antivirus",
             "sécurité",
-            "filtrage"
+            "filtrage",
+            "cyber"
           ],
           "recommended_offer": "Business Box",
           "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "category": "Orange Money Business",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
         }
       ]
     },
     "technology": {
       "sector_key": "technology",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Débit Symétrique Garanti & Cloud Peering",
+          "weight": 0.3,
+          "description": "Liaison fibre dédiée avec latence minimale pour les serveurs de production, API et pipelines CI/CD.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "lsi",
+            "symétrique",
+            "dédiée",
+            "peering"
+          ],
+          "penalty": 30,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique ultra-rapide et latence optimisée pour vos serveurs de production et équipes de développement."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Avancée & Surveillance Micro-SOC",
+          "weight": 0.25,
+          "description": "Audit de vulnérabilités PenTest, protection anti-DDoS et surveillance proactive Micro-SOC.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "micro_soc",
+              "name": "Micro-SOC"
+            }
+          ],
+          "match_keywords": [
+            "soc",
+            "pentest",
+            "sécurité",
+            "cyber",
+            "firewall",
+            "ddos"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Détection préventive des failles de sécurité et protection contre les cyberattaques visant vos plateformes."
+        },
+        {
+          "id": "cloud",
+          "label": "Infrastructure Hybride Datacenter & Cloud",
+          "weight": 0.25,
+          "description": "Baies dédiées en Datacenter Tier III à Kinshasa et interconnectivité cloud hybride.",
+          "category": "Datacenter et infrastructure",
+          "catalog_services": [
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "hébergement",
+            "sauvegarde"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement de vos clusters de serveurs en Datacenter certifié avec alimentation et climatisation garanties."
+        },
+        {
+          "id": "equipment",
+          "label": "SD-WAN & Télétravail Sécurisé Développeurs",
+          "weight": 0.2,
+          "description": "Réseau privé étendu chiffré VPN/SD-WAN reliant bureaux, hubs tech et télétravailleurs.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "vpn",
+            "télétravail",
+            "interconnexion"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Accès distant chiffré et priorisation des flux pour vos ingénieurs et développeurs en mobilité."
+        }
+      ],
       "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
-        "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
+        "connectivity": 0.3,
+        "security": 0.25,
+        "cloud": 0.25,
+        "equipment": 0.2
       },
       "sizing_rules": {
-        "min_mbps_per_workstation": 0.2,
-        "min_mbps_penalty_max": 15,
+        "min_mbps_per_workstation": 0.35,
+        "min_mbps_penalty_max": 20,
         "multi_site_sdwan_threshold": 2,
         "multi_site_missing_penalty": 15
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 25,
+          "category": "Internet fixe et réseaux",
+          "label": "Débit Symétrique Garanti & Cloud Peering",
+          "criticality": "CRITICAL",
+          "penalty": 30,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
-            "procezo",
-            "internet pro"
+            "lsi",
+            "symétrique",
+            "dédiée",
+            "peering"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique ultra-rapide et latence optimisée pour vos serveurs de production et équipes de développement."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection Cyber & Antivirus Managé",
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Avancée & Surveillance Micro-SOC",
           "criticality": "HIGH",
-          "penalty": 20,
+          "penalty": 25,
           "dimension": "security",
           "match_keywords": [
-            "firewall",
+            "soc",
+            "pentest",
             "sécurité",
-            "antivirus"
+            "cyber",
+            "firewall",
+            "ddos"
           ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Détection préventive des failles de sécurité et protection contre les cyberattaques visant vos plateformes."
         },
         {
-          "category": "CLOUD",
-          "label": "Suite Bureautique Cloud & Sauvegarde",
-          "criticality": "MEDIUM",
+          "category": "Datacenter et infrastructure",
+          "label": "Infrastructure Hybride Datacenter & Cloud",
+          "criticality": "HIGH",
           "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
+            "datacenter",
             "cloud",
-            "365",
+            "hébergement",
             "sauvegarde"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement de vos clusters de serveurs en Datacenter certifié avec alimentation et climatisation garanties."
+        },
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "SD-WAN & Télétravail Sécurisé Développeurs",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "vpn",
+            "télétravail",
+            "interconnexion"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Accès distant chiffré et priorisation des flux pour vos ingénieurs et développeurs en mobilité."
         }
       ]
     },
     "telecommunications": {
       "sector_key": "telecommunications",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Débit Symétrique Garanti & Cloud Peering",
+          "weight": 0.3,
+          "description": "Liaison fibre dédiée avec latence minimale pour les serveurs de production, API et pipelines CI/CD.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "lsi",
+            "symétrique",
+            "dédiée",
+            "peering"
+          ],
+          "penalty": 30,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique ultra-rapide et latence optimisée pour vos serveurs de production et équipes de développement."
+        },
+        {
+          "id": "security",
+          "label": "Cybersécurité Avancée & Surveillance Micro-SOC",
+          "weight": 0.25,
+          "description": "Audit de vulnérabilités PenTest, protection anti-DDoS et surveillance proactive Micro-SOC.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "micro_soc",
+              "name": "Micro-SOC"
+            }
+          ],
+          "match_keywords": [
+            "soc",
+            "pentest",
+            "sécurité",
+            "cyber",
+            "firewall",
+            "ddos"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Détection préventive des failles de sécurité et protection contre les cyberattaques visant vos plateformes."
+        },
+        {
+          "id": "cloud",
+          "label": "Infrastructure Hybride Datacenter & Cloud",
+          "weight": 0.25,
+          "description": "Baies dédiées en Datacenter Tier III à Kinshasa et interconnectivité cloud hybride.",
+          "category": "Datacenter et infrastructure",
+          "catalog_services": [
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "hébergement",
+            "sauvegarde"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement de vos clusters de serveurs en Datacenter certifié avec alimentation et climatisation garanties."
+        },
+        {
+          "id": "equipment",
+          "label": "SD-WAN & Télétravail Sécurisé Développeurs",
+          "weight": 0.2,
+          "description": "Réseau privé étendu chiffré VPN/SD-WAN reliant bureaux, hubs tech et télétravailleurs.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "vpn",
+            "télétravail",
+            "interconnexion"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Accès distant chiffré et priorisation des flux pour vos ingénieurs et développeurs en mobilité."
+        }
+      ],
       "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
-        "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
+        "connectivity": 0.3,
+        "security": 0.25,
+        "cloud": 0.25,
+        "equipment": 0.2
       },
       "sizing_rules": {
-        "min_mbps_per_workstation": 0.2,
-        "min_mbps_penalty_max": 15,
+        "min_mbps_per_workstation": 0.35,
+        "min_mbps_penalty_max": 20,
         "multi_site_sdwan_threshold": 2,
         "multi_site_missing_penalty": 15
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 25,
+          "category": "Internet fixe et réseaux",
+          "label": "Débit Symétrique Garanti & Cloud Peering",
+          "criticality": "CRITICAL",
+          "penalty": 30,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
-            "procezo",
-            "internet pro"
+            "lsi",
+            "symétrique",
+            "dédiée",
+            "peering"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Débit symétrique ultra-rapide et latence optimisée pour vos serveurs de production et équipes de développement."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection Cyber & Antivirus Managé",
+          "category": "Cybersécurité",
+          "label": "Cybersécurité Avancée & Surveillance Micro-SOC",
           "criticality": "HIGH",
-          "penalty": 20,
+          "penalty": 25,
           "dimension": "security",
           "match_keywords": [
-            "firewall",
+            "soc",
+            "pentest",
             "sécurité",
-            "antivirus"
+            "cyber",
+            "firewall",
+            "ddos"
           ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+          "recommended_offer": "Micro-SOC",
+          "recommended_offer_id": "micro_soc",
+          "pitch": "Détection préventive des failles de sécurité et protection contre les cyberattaques visant vos plateformes."
         },
         {
-          "category": "CLOUD",
-          "label": "Suite Bureautique Cloud & Sauvegarde",
-          "criticality": "MEDIUM",
+          "category": "Datacenter et infrastructure",
+          "label": "Infrastructure Hybride Datacenter & Cloud",
+          "criticality": "HIGH",
           "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
+            "datacenter",
             "cloud",
-            "365",
+            "hébergement",
             "sauvegarde"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Hébergement de vos clusters de serveurs en Datacenter certifié avec alimentation et climatisation garanties."
+        },
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "SD-WAN & Télétravail Sécurisé Développeurs",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "equipment",
+          "match_keywords": [
+            "sd-wan",
+            "vpn",
+            "télétravail",
+            "interconnexion"
+          ],
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Accès distant chiffré et priorisation des flux pour vos ingénieurs et développeurs en mobilité."
         }
       ]
     },
     "logistics": {
       "sector_key": "logistics",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Fibre Pro & Connectivité Points de Vente",
+          "weight": 0.25,
+          "description": "Bande passante stable et continue pour la synchronisation des caisses, des stocks et de la plateforme e-commerce.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
+          "weight": 0.2,
+          "description": "Interconnexion temps réel de l'ensemble des boutiques, supermarchés et entrepôts régionaux vers le siège.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente",
+            "magasins",
+            "vpn"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
+        },
+        {
+          "id": "cloud",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
+          "weight": 0.2,
+          "description": "Sauvegarde externalisée sécurisée des bases de données de vente et suite bureautique pour les équipes administratives.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            },
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams",
+            "datacenter"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
+        },
+        {
+          "id": "security",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
+          "weight": 0.2,
+          "description": "Filtrage web, protection des terminaux de paiement et pare-feu d'agence contre les intrusions.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "id": "sla",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "weight": 0.15,
+          "description": "Intégration d'Orange Money Business aux caisses et ligne de secours 4G pour encaissement permanent.",
+          "category": "Orange Money Business",
+          "catalog_services": [
+            {
+              "id": "api_orange_money",
+              "name": "API Orange Money"
+            },
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
+        }
+      ],
       "radar_weights": {
         "connectivity": 0.25,
         "equipment": 0.2,
         "cloud": 0.2,
-        "security": 0.15,
-        "sla": 0.1,
-        "budget": 0.1
+        "security": 0.2,
+        "sla": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.15,
@@ -736,8 +2047,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Pro Haut Débit",
+          "category": "Internet fixe et réseaux",
+          "label": "Fibre Pro & Connectivité Points de Vente",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
@@ -745,70 +2056,228 @@
             "fibre",
             "procezo",
             "fttb",
-            "haut débit"
+            "haut débit",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "SD-WAN Points de Vente & Entrepôts",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
           "match_keywords": [
             "sd-wan",
             "interconnexion",
-            "points de vente"
+            "points de vente",
+            "magasins",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
         },
         {
-          "category": "CLOUD",
-          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "category": "Cloud et collaboration",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
             "cloud",
             "365",
             "sauvegarde",
-            "teams"
+            "teams",
+            "datacenter"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection des Postes & Filtrage Caisses",
+          "category": "Cybersécurité",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
           "criticality": "MEDIUM",
-          "penalty": 15,
+          "penalty": 20,
           "dimension": "security",
           "match_keywords": [
             "firewall",
             "antivirus",
             "sécurité",
-            "filtrage"
+            "filtrage",
+            "cyber"
           ],
           "recommended_offer": "Business Box",
           "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "category": "Orange Money Business",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
         }
       ]
     },
     "transport": {
       "sector_key": "transport",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Fibre Pro & Connectivité Points de Vente",
+          "weight": 0.25,
+          "description": "Bande passante stable et continue pour la synchronisation des caisses, des stocks et de la plateforme e-commerce.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "fttb",
+            "haut débit",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
+        },
+        {
+          "id": "equipment",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
+          "weight": 0.2,
+          "description": "Interconnexion temps réel de l'ensemble des boutiques, supermarchés et entrepôts régionaux vers le siège.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "business_sd_wan",
+              "name": "Business SD-WAN"
+            }
+          ],
+          "match_keywords": [
+            "sd-wan",
+            "interconnexion",
+            "points de vente",
+            "magasins",
+            "vpn"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business SD-WAN",
+          "recommended_offer_id": "business_sd_wan",
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
+        },
+        {
+          "id": "cloud",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
+          "weight": 0.2,
+          "description": "Sauvegarde externalisée sécurisée des bases de données de vente et suite bureautique pour les équipes administratives.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            },
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams",
+            "datacenter"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
+        },
+        {
+          "id": "security",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
+          "weight": 0.2,
+          "description": "Filtrage web, protection des terminaux de paiement et pare-feu d'agence contre les intrusions.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "id": "sla",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
+          "weight": 0.15,
+          "description": "Intégration d'Orange Money Business aux caisses et ligne de secours 4G pour encaissement permanent.",
+          "category": "Orange Money Business",
+          "catalog_services": [
+            {
+              "id": "api_orange_money",
+              "name": "API Orange Money"
+            },
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
+        }
+      ],
       "radar_weights": {
         "connectivity": 0.25,
         "equipment": 0.2,
         "cloud": 0.2,
-        "security": 0.15,
-        "sla": 0.1,
-        "budget": 0.1
+        "security": 0.2,
+        "sla": 0.15
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.15,
@@ -818,8 +2287,8 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Fibre Pro Haut Débit",
+          "category": "Internet fixe et réseaux",
+          "label": "Fibre Pro & Connectivité Points de Vente",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
@@ -827,32 +2296,442 @@
             "fibre",
             "procezo",
             "fttb",
-            "haut débit"
+            "haut débit",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Bande passante fluide pour les encaissements, la gestion d'entrepôt et l'accès ERP en temps réel."
+          "pitch": "Bande passante fluide pour les encaissements en caisse, la gestion d'entrepôt et l'accès ERP en temps réel."
         },
         {
-          "category": "EQUIPMENT",
-          "label": "SD-WAN Points de Vente & Entrepôts",
+          "category": "Internet fixe et réseaux",
+          "label": "Interconnexion Magasins & SD-WAN Caisses",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "equipment",
           "match_keywords": [
             "sd-wan",
             "interconnexion",
-            "points de vente"
+            "points de vente",
+            "magasins",
+            "vpn"
           ],
           "recommended_offer": "Business SD-WAN",
           "recommended_offer_id": "business_sd_wan",
-          "pitch": "Interconnexion temps réel des caisses et magasins avec le siège sans rupture d'inventaire."
+          "pitch": "Interconnexion temps réel de vos caisses et dépôts avec le siège, sans risque de rupture d'inventaire."
         },
         {
-          "category": "CLOUD",
-          "label": "Outils Collaboratifs & Sauvegarde ERP",
+          "category": "Cloud et collaboration",
+          "label": "Sauvegarde Cloud ERP & Outils Collaboratifs 365",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams",
+            "datacenter"
+          ],
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Sauvegarde automatisée de vos données commerciales en Datacenter sécurisé et collaboration fluide entre agences."
+        },
+        {
+          "category": "Cybersécurité",
+          "label": "Sécurisation Caisses & Filtrage Réseau",
+          "criticality": "MEDIUM",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "antivirus",
+            "sécurité",
+            "filtrage",
+            "cyber"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing visant les transactions commerciales."
+        },
+        {
+          "category": "Orange Money Business",
+          "label": "Solutions de Paiement Mobile & Continuité Encaissement",
           "criticality": "MEDIUM",
           "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "orange money",
+            "paiement",
+            "encaissement",
+            "secours",
+            "4g",
+            "api"
+          ],
+          "recommended_offer": "API Orange Money",
+          "recommended_offer_id": "api_orange_money",
+          "pitch": "Encaissement direct Orange Money à vos caisses et bascule 4G pour ne perdre aucune vente lors d'une coupure."
+        }
+      ]
+    },
+    "healthcare": {
+      "sector_key": "healthcare",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Très Haut Débit Télémédecine & Imagerie Médicale",
+          "weight": 0.3,
+          "description": "Liaison dédiée très haut débit pour le transfert instantané des scans, IRM, dossiers radiologiques et téléconsultations.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "liaison_specialisee_internet",
+              "name": "Liaison Spécialisée Internet"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "lsi",
+            "imagerie",
+            "haut débit"
+          ],
+          "penalty": 30,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transfert instantané des examens d'imagerie lourde et fluidité absolue des consultations de télémédecine."
+        },
+        {
+          "id": "cloud",
+          "label": "Hébergement Datacenter & Données Patients RDC",
+          "weight": 0.25,
+          "description": "Sauvegarde en datacenter souverain certifié garantissant l'intégrité et la haute disponibilité des dossiers patients.",
+          "category": "Datacenter et infrastructure",
+          "catalog_services": [
+            {
+              "id": "hebergement_datacenter",
+              "name": "Hébergement Datacenter"
+            }
+          ],
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "sauvegarde",
+            "dossier patient"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Sauvegarde souveraine des dossiers médicaux en datacenter local, protégés contre toute perte matérielle."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité Critique Télécoms & Secours Urgences (SLA 24/7)",
+          "weight": 0.25,
+          "description": "Lien de secours automatique sans coupure pour les services d'urgence, laboratoires et blocs opératoires.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "sla",
+            "urgences",
+            "dual",
+            "4g"
+          ],
+          "penalty": 25,
+          "criticality": "CRITICAL",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité absolue pour les admissions d'urgence et le monitoring des patients hospitalisés."
+        },
+        {
+          "id": "security",
+          "label": "Confidentialité & Protection Cyber des Données Médicales",
+          "weight": 0.2,
+          "description": "Chiffrement des flux et protection périmétrique contre les attaques rançongicielles ciblant les établissements de santé.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "chiffrement",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Respect du secret médical et rempart contre les rançongiciels qui paralysent les systèmes hospitaliers."
+        }
+      ],
+      "radar_weights": {
+        "connectivity": 0.3,
+        "cloud": 0.25,
+        "sla": 0.25,
+        "security": 0.2
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.25,
+        "min_mbps_penalty_max": 20,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "Très Haut Débit Télémédecine & Imagerie Médicale",
+          "criticality": "CRITICAL",
+          "penalty": 30,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "dédiée",
+            "lsi",
+            "imagerie",
+            "haut débit"
+          ],
+          "recommended_offer": "Liaison Spécialisée Internet",
+          "recommended_offer_id": "liaison_specialisee_internet",
+          "pitch": "Transfert instantané des examens d'imagerie lourde et fluidité absolue des consultations de télémédecine."
+        },
+        {
+          "category": "Datacenter et infrastructure",
+          "label": "Hébergement Datacenter & Données Patients RDC",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "cloud",
+          "match_keywords": [
+            "datacenter",
+            "cloud",
+            "sauvegarde",
+            "dossier patient"
+          ],
+          "recommended_offer": "Hébergement Datacenter",
+          "recommended_offer_id": "hebergement_datacenter",
+          "pitch": "Sauvegarde souveraine des dossiers médicaux en datacenter local, protégés contre toute perte matérielle."
+        },
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "Continuité Critique Télécoms & Secours Urgences (SLA 24/7)",
+          "criticality": "CRITICAL",
+          "penalty": 25,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "sla",
+            "urgences",
+            "dual",
+            "4g"
+          ],
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Garantie de continuité absolue pour les admissions d'urgence et le monitoring des patients hospitalisés."
+        },
+        {
+          "category": "Cybersécurité",
+          "label": "Confidentialité & Protection Cyber des Données Médicales",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "chiffrement",
+            "cyber"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Respect du secret médical et rempart contre les rançongiciels qui paralysent les systèmes hospitaliers."
+        }
+      ]
+    },
+    "education": {
+      "sector_key": "education",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Accès Internet Haut Débit Professionnel",
+          "weight": 0.25,
+          "description": "Connectivité fibre stable pour soutenir la navigation bureautique, visioconférence et outils métier.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
+        },
+        {
+          "id": "security",
+          "label": "Protection Postes & Pare-feu Managé",
+          "weight": 0.25,
+          "description": "Sécurisation périmétrique, filtrage anti-phishing et protection des données confidentielles des clients.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
+        },
+        {
+          "id": "cloud",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
+          "weight": 0.25,
+          "description": "Productivité collaborative Microsoft 365 et sauvegarde cloud automatique des documents clés.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité de Service & Secours 4G",
+          "weight": 0.15,
+          "description": "Garantie de maintien d'activité lors d'incidents locaux grâce à un routeur 4G de secours.",
+          "category": "Internet mobile",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "backup",
+            "4g",
+            "airbox"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
+        },
+        {
+          "id": "equipment",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
+          "weight": 0.1,
+          "description": "Forfaits mobiles entreprise mutualisés pour les appels professionnels et données mobiles.",
+          "category": "Mobile et flotte",
+          "catalog_services": [
+            {
+              "id": "business_gfu",
+              "name": "Flotte Mobile (Business GFU)"
+            }
+          ],
+          "match_keywords": [
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
+          ],
+          "penalty": 10,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
+        }
+      ],
+      "radar_weights": {
+        "connectivity": 0.25,
+        "security": 0.25,
+        "cloud": 0.25,
+        "sla": 0.15,
+        "equipment": 0.1
+      },
+      "sizing_rules": {
+        "min_mbps_per_workstation": 0.2,
+        "min_mbps_penalty_max": 15,
+        "multi_site_sdwan_threshold": 2,
+        "multi_site_missing_penalty": 15
+      },
+      "ideal_basket": [
+        {
+          "category": "Internet fixe et réseaux",
+          "label": "Accès Internet Haut Débit Professionnel",
+          "criticality": "HIGH",
+          "penalty": 25,
+          "dimension": "connectivity",
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet",
+            "box"
+          ],
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
+        },
+        {
+          "category": "Cybersécurité",
+          "label": "Protection Postes & Pare-feu Managé",
+          "criticality": "HIGH",
+          "penalty": 20,
+          "dimension": "security",
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus",
+            "cyber"
+          ],
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
+        },
+        {
+          "category": "Cloud et collaboration",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
+          "criticality": "MEDIUM",
+          "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
             "cloud",
@@ -860,165 +2739,174 @@
             "sauvegarde",
             "teams"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Collaboration fluide inter-équipes et sauvegarde sécurisée des transactions commerciales."
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection des Postes & Filtrage Caisses",
+          "category": "Internet mobile",
+          "label": "Continuité de Service & Secours 4G",
           "criticality": "MEDIUM",
           "penalty": 15,
-          "dimension": "security",
+          "dimension": "sla",
           "match_keywords": [
-            "firewall",
-            "antivirus",
-            "sécurité",
-            "filtrage"
+            "secours",
+            "backup",
+            "4g",
+            "airbox"
           ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de caisse et blocage des tentatives de phishing."
-        }
-      ]
-    },
-    "healthcare": {
-      "sector_key": "healthcare",
-      "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
-        "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
-      },
-      "sizing_rules": {
-        "min_mbps_per_workstation": 0.2,
-        "min_mbps_penalty_max": 15,
-        "multi_site_sdwan_threshold": 2,
-        "multi_site_missing_penalty": 15
-      },
-      "ideal_basket": [
-        {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 25,
-          "dimension": "connectivity",
-          "match_keywords": [
-            "fibre",
-            "procezo",
-            "internet pro"
-          ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection Cyber & Antivirus Managé",
-          "criticality": "HIGH",
-          "penalty": 20,
-          "dimension": "security",
-          "match_keywords": [
-            "firewall",
-            "sécurité",
-            "antivirus"
-          ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
-        },
-        {
-          "category": "CLOUD",
-          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "category": "Mobile et flotte",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
           "criticality": "MEDIUM",
-          "penalty": 20,
-          "dimension": "cloud",
+          "penalty": 10,
+          "dimension": "equipment",
           "match_keywords": [
-            "cloud",
-            "365",
-            "sauvegarde"
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
-        }
-      ]
-    },
-    "education": {
-      "sector_key": "education",
-      "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
-        "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
-      },
-      "sizing_rules": {
-        "min_mbps_per_workstation": 0.2,
-        "min_mbps_penalty_max": 15,
-        "multi_site_sdwan_threshold": 2,
-        "multi_site_missing_penalty": 15
-      },
-      "ideal_basket": [
-        {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Très Haut Débit",
-          "criticality": "HIGH",
-          "penalty": 25,
-          "dimension": "connectivity",
-          "match_keywords": [
-            "fibre",
-            "procezo",
-            "internet pro"
-          ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
-        },
-        {
-          "category": "SECURITY",
-          "label": "Protection Cyber & Antivirus Managé",
-          "criticality": "HIGH",
-          "penalty": 20,
-          "dimension": "security",
-          "match_keywords": [
-            "firewall",
-            "sécurité",
-            "antivirus"
-          ],
-          "recommended_offer": "Business Box",
-          "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
-        },
-        {
-          "category": "CLOUD",
-          "label": "Suite Bureautique Cloud & Sauvegarde",
-          "criticality": "MEDIUM",
-          "penalty": 20,
-          "dimension": "cloud",
-          "match_keywords": [
-            "cloud",
-            "365",
-            "sauvegarde"
-          ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
         }
       ]
     },
     "services": {
       "sector_key": "services",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Accès Internet Haut Débit Professionnel",
+          "weight": 0.25,
+          "description": "Connectivité fibre stable pour soutenir la navigation bureautique, visioconférence et outils métier.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
+        },
+        {
+          "id": "security",
+          "label": "Protection Postes & Pare-feu Managé",
+          "weight": 0.25,
+          "description": "Sécurisation périmétrique, filtrage anti-phishing et protection des données confidentielles des clients.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
+        },
+        {
+          "id": "cloud",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
+          "weight": 0.25,
+          "description": "Productivité collaborative Microsoft 365 et sauvegarde cloud automatique des documents clés.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité de Service & Secours 4G",
+          "weight": 0.15,
+          "description": "Garantie de maintien d'activité lors d'incidents locaux grâce à un routeur 4G de secours.",
+          "category": "Internet mobile",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "backup",
+            "4g",
+            "airbox"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
+        },
+        {
+          "id": "equipment",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
+          "weight": 0.1,
+          "description": "Forfaits mobiles entreprise mutualisés pour les appels professionnels et données mobiles.",
+          "category": "Mobile et flotte",
+          "catalog_services": [
+            {
+              "id": "business_gfu",
+              "name": "Flotte Mobile (Business GFU)"
+            }
+          ],
+          "match_keywords": [
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
+          ],
+          "penalty": 10,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
+        }
+      ],
       "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
+        "connectivity": 0.25,
+        "security": 0.25,
+        "cloud": 0.25,
         "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
+        "equipment": 0.1
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.2,
@@ -1028,61 +2916,217 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Très Haut Débit",
+          "category": "Internet fixe et réseaux",
+          "label": "Accès Internet Haut Débit Professionnel",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
             "procezo",
-            "internet pro"
+            "internet",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Connexion rapide et stable pour les outils métiers et le travail collaboratif."
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
         },
         {
-          "category": "SECURITY",
-          "label": "Protection Cyber & Antivirus Managé",
+          "category": "Cybersécurité",
+          "label": "Protection Postes & Pare-feu Managé",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "security",
           "match_keywords": [
             "firewall",
             "sécurité",
-            "antivirus"
+            "antivirus",
+            "cyber"
           ],
           "recommended_offer": "Business Box",
           "recommended_offer_id": "business_box",
-          "pitch": "Protection des postes de travail et confidentialité des dossiers clients."
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
         },
         {
-          "category": "CLOUD",
-          "label": "Suite Bureautique Cloud & Sauvegarde",
+          "category": "Cloud et collaboration",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
           "criticality": "MEDIUM",
           "penalty": 20,
           "dimension": "cloud",
           "match_keywords": [
             "cloud",
             "365",
-            "sauvegarde"
+            "sauvegarde",
+            "teams"
           ],
-          "recommended_offer": "Internet illimité Fibre",
-          "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Productivité bureautique, messagerie professionnelle et sauvegarde centralisée."
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
+        },
+        {
+          "category": "Internet mobile",
+          "label": "Continuité de Service & Secours 4G",
+          "criticality": "MEDIUM",
+          "penalty": 15,
+          "dimension": "sla",
+          "match_keywords": [
+            "secours",
+            "backup",
+            "4g",
+            "airbox"
+          ],
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
+        },
+        {
+          "category": "Mobile et flotte",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
+          "criticality": "MEDIUM",
+          "penalty": 10,
+          "dimension": "equipment",
+          "match_keywords": [
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
+          ],
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
         }
       ]
     },
     "default": {
-      "sector_key": "default",
+      "sector_key": "services",
+      "pillars": [
+        {
+          "id": "connectivity",
+          "label": "Accès Internet Haut Débit Professionnel",
+          "weight": 0.25,
+          "description": "Connectivité fibre stable pour soutenir la navigation bureautique, visioconférence et outils métier.",
+          "category": "Internet fixe et réseaux",
+          "catalog_services": [
+            {
+              "id": "internet_fibre_illimite",
+              "name": "Internet illimité Fibre"
+            }
+          ],
+          "match_keywords": [
+            "fibre",
+            "procezo",
+            "internet",
+            "box"
+          ],
+          "penalty": 25,
+          "criticality": "HIGH",
+          "recommended_offer": "Internet illimité Fibre",
+          "recommended_offer_id": "internet_fibre_illimite",
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
+        },
+        {
+          "id": "security",
+          "label": "Protection Postes & Pare-feu Managé",
+          "weight": 0.25,
+          "description": "Sécurisation périmétrique, filtrage anti-phishing et protection des données confidentielles des clients.",
+          "category": "Cybersécurité",
+          "catalog_services": [
+            {
+              "id": "business_box",
+              "name": "Business Box"
+            }
+          ],
+          "match_keywords": [
+            "firewall",
+            "sécurité",
+            "antivirus",
+            "cyber"
+          ],
+          "penalty": 20,
+          "criticality": "HIGH",
+          "recommended_offer": "Business Box",
+          "recommended_offer_id": "business_box",
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
+        },
+        {
+          "id": "cloud",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
+          "weight": 0.25,
+          "description": "Productivité collaborative Microsoft 365 et sauvegarde cloud automatique des documents clés.",
+          "category": "Cloud et collaboration",
+          "catalog_services": [
+            {
+              "id": "microsoft_365_entreprise",
+              "name": "Microsoft 365 Entreprise"
+            }
+          ],
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "penalty": 20,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
+        },
+        {
+          "id": "sla",
+          "label": "Continuité de Service & Secours 4G",
+          "weight": 0.15,
+          "description": "Garantie de maintien d'activité lors d'incidents locaux grâce à un routeur 4G de secours.",
+          "category": "Internet mobile",
+          "catalog_services": [
+            {
+              "id": "airbox_4g",
+              "name": "AirBox 4G"
+            }
+          ],
+          "match_keywords": [
+            "secours",
+            "backup",
+            "4g",
+            "airbox"
+          ],
+          "penalty": 15,
+          "criticality": "MEDIUM",
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
+        },
+        {
+          "id": "equipment",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
+          "weight": 0.1,
+          "description": "Forfaits mobiles entreprise mutualisés pour les appels professionnels et données mobiles.",
+          "category": "Mobile et flotte",
+          "catalog_services": [
+            {
+              "id": "business_gfu",
+              "name": "Flotte Mobile (Business GFU)"
+            }
+          ],
+          "match_keywords": [
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
+          ],
+          "penalty": 10,
+          "criticality": "MEDIUM",
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
+        }
+      ],
       "radar_weights": {
-        "connectivity": 0.2,
-        "security": 0.2,
-        "cloud": 0.15,
+        "connectivity": 0.25,
+        "security": 0.25,
+        "cloud": 0.25,
         "sla": 0.15,
-        "equipment": 0.15,
-        "budget": 0.15
+        "equipment": 0.1
       },
       "sizing_rules": {
         "min_mbps_per_workstation": 0.2,
@@ -1092,63 +3136,84 @@
       },
       "ideal_basket": [
         {
-          "category": "CONNECTIVITY",
-          "label": "Accès Internet Professionnel",
+          "category": "Internet fixe et réseaux",
+          "label": "Accès Internet Haut Débit Professionnel",
           "criticality": "HIGH",
           "penalty": 25,
           "dimension": "connectivity",
           "match_keywords": [
             "fibre",
             "procezo",
-            "internet"
+            "internet",
+            "box"
           ],
           "recommended_offer": "Internet illimité Fibre",
           "recommended_offer_id": "internet_fibre_illimite",
-          "pitch": "Bande passante garantie pour soutenir les activités numériques du compte."
+          "pitch": "Connexion rapide et sans coupure pour le travail quotidien de l'ensemble de vos collaborateurs."
         },
         {
-          "category": "SECURITY",
-          "label": "Sécurité Réseau & Pare-feu",
+          "category": "Cybersécurité",
+          "label": "Protection Postes & Pare-feu Managé",
           "criticality": "HIGH",
           "penalty": 20,
           "dimension": "security",
           "match_keywords": [
             "firewall",
-            "sécurité"
+            "sécurité",
+            "antivirus",
+            "cyber"
           ],
           "recommended_offer": "Business Box",
           "recommended_offer_id": "business_box",
-          "pitch": "Protection périmétrique essentielle contre les cybermenaces."
+          "pitch": "Protection efficace de votre réseau d'entreprise contre les logiciels malveillants et fuites de données."
         },
         {
-          "category": "SLA",
-          "label": "Continuité de Service & Secours",
-          "criticality": "HIGH",
+          "category": "Cloud et collaboration",
+          "label": "Suite Bureautique Cloud & Sauvegarde Centralisée",
+          "criticality": "MEDIUM",
           "penalty": 20,
+          "dimension": "cloud",
+          "match_keywords": [
+            "cloud",
+            "365",
+            "sauvegarde",
+            "teams"
+          ],
+          "recommended_offer": "Microsoft 365 Entreprise",
+          "recommended_offer_id": "microsoft_365_entreprise",
+          "pitch": "Outils collaboratifs modernes pour vos équipes et sauvegarde automatisée de vos documents d'entreprise."
+        },
+        {
+          "category": "Internet mobile",
+          "label": "Continuité de Service & Secours 4G",
+          "criticality": "MEDIUM",
+          "penalty": 15,
           "dimension": "sla",
           "match_keywords": [
             "secours",
             "backup",
-            "4g"
+            "4g",
+            "airbox"
           ],
-          "recommended_offer": "Liaison Spécialisée Internet",
-          "recommended_offer_id": "liaison_specialisee_internet",
-          "pitch": "Garantie de maintien d'activité lors d'incidents sur l'accès principal."
+          "recommended_offer": "AirBox 4G",
+          "recommended_offer_id": "airbox_4g",
+          "pitch": "Bascule automatique en 4G pour continuer à travailler même lors d'une rupture sur la ligne principale."
         },
         {
-          "category": "CLOUD",
-          "label": "Sauvegarde & Outils Collaboratifs",
+          "category": "Mobile et flotte",
+          "label": "Flotte Mobile & Mobilité Collaborateurs",
           "criticality": "MEDIUM",
-          "penalty": 15,
-          "dimension": "cloud",
+          "penalty": 10,
+          "dimension": "equipment",
           "match_keywords": [
-            "cloud",
-            "sauvegarde",
-            "365"
+            "flotte",
+            "gfu",
+            "business flex",
+            "mobile"
           ],
-          "recommended_offer": "Microsoft 365",
-          "recommended_offer_id": "microsoft_365",
-          "pitch": "Préservation des données sensibles en datacenter sécurisé."
+          "recommended_offer": "Flotte Mobile (Business GFU)",
+          "recommended_offer_id": "business_gfu",
+          "pitch": "Maîtrise de votre budget télécoms et communications gratuites intra-entreprise pour vos collaborateurs."
         }
       ]
     }

@@ -172,7 +172,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     decoration: BoxDecoration(
                       color: isDark ? AppConstants.cardDark : AppConstants.cardLight,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
@@ -381,7 +381,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
       children: [
         Row(
           children: [
-            const Icon(LucideIcons.sparkles, size: 16, color: Color(0xFF4F6CE8)),
+            const Icon(LucideIcons.fileText, size: 16, color: Color(0xFF4F6CE8)),
             const SizedBox(width: 8),
             Text(
               'Synthèse Exécutive',

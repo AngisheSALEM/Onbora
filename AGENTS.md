@@ -1,14 +1,16 @@
 # Onbora AI Agents Guidelines (`AGENTS.md`)
 
 Ce fichier fait référence au document maître officiel de cadrage des agents Onbora :
-👉 **Consultez [`agent.md`](file:///C:/Users/Salem/Documents/projet/Onbora/agent.md)** pour la spécification complète des 12 règles opérationnelles, des directives d'architecture, de la charte graphique et des deux hooks de contrôle.
+👉 **Consultez [`agent.md`](file:///C:/Users/Salem/Documents/projet/Onbora/agent.md)** pour la spécification complète des 13 règles opérationnelles, des directives d'architecture, de la charte graphique et des deux hooks de contrôle.
 
 ### Synthèse Rapide des Règles Clés :
 1. **Contexte obligatoire** : Consulter [`onbora_context.md`](file:///C:/Users/Salem/Documents/projet/Onbora/onbora_context.md) avant toute action.
 2. **Porte de validation** : Toujours demander « *Acceptez-vous d'admettre ces modifications dans notre historique de contexte ?* » avant d'acter les changements majeurs.
 3. **Zéro Émojis dans l'UI** : Interdiction formelle des émojis Unicode. Utiliser obligatoirement le pack d'icônes vectorielles ([`Icons.tsx`](file:///C:/Users/Salem/Documents/projet/Onbora/frontend/src/components/shared/Icons.tsx) pour le Web, `Icons.*` pour Flutter).
-4. **Charte & DESIGN.md** : Règle 60-30-10, zéro ombres colorées / néon fluo, zéro bordure 1px grise brute sur mobile, **zéro ligne de séparation inutile sur les fonds/en-têtes** (strictement réservées aux tableaux `<thead>`/`<tbody>`), **zéro double bordure sur les inputs** (pilule épurée style Image 2 / Procezo).
+4. **Charte & DESIGN.md** : Règle 60-30-10, **typographie harmonique basée sur le Nombre d'Or (phi ≈ 1.618)** (échelle 8, 10, 11, 13, 14, 16, 21, 26, 34, 55, 89px avec golden leading), zéro ombres colorées / néon fluo, zéro bordure 1px grise brute sur mobile, **zéro ligne de séparation inutile sur les fonds/en-têtes** (strictement réservées aux tableaux <thead>/<tbody>), **zéro double bordure sur les inputs** (pilule épurée style Image 2 / Procezo), **zéro icône Sparkles / étoiles scintillantes dans tout le système** (primauté absolue des Skeleton Loaders pour les chargements et des icônes métier sémantiques).
 5. **Hook 1 (Design & Anti-Émojis)** : Vérification pre-commit automatique via [`scripts/verify_design_compliance.py`](file:///C:/Users/Salem/Documents/projet/Onbora/scripts/verify_design_compliance.py).
 6. **Hook 2 (Dettes Techniques & Architecture)** : Audit continu via [`scripts/verify_technical_debt.py`](file:///C:/Users/Salem/Documents/projet/Onbora/scripts/verify_technical_debt.py) s'appuyant sur les skills Architect (`software-architecture-system-design`) et Django (`django-backend-python` : zéro N+1 queries, Clean SoC, vues minces).
 7. **Architecture Nested Apps & AI Core unifié** : Toutes les applications Django sous `backend/apps/`, ressources sous `backend/resources/`, et AI Core in-process haute performance (`apps.ai_core` avec RAG TF-IDF, mémoire de session Neon et endpoints DRF natifs).
 8. **Git Push** : Pousser systématiquement les modifications validées avec `git push origin dev`.
+9. **Textes métier directs** : Ne plus afficher de mentions de simulation ou de présentation des jeux d'essai dans l'interface ni dans les réponses. Conserver la traçabilité technique en interne. Cette préférence explicite prévaut sur les anciennes formulations du cadrage.
+10. **Rendez-vous en présentiel** : Les nouveaux rendez-vous sont exclusivement physiques. Ne pas proposer de choix de format ni de lien de visioconférence dans les formulaires Web et mobile.

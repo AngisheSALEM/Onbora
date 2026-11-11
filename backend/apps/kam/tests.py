@@ -224,12 +224,12 @@ class KamAppointmentPurposeTests(APITestCase):
         before = timezone.now()
         response = self.client.post(self.appointments_url, {
             'enterprise_id': self.enterprise.id,
-            'meeting_type': 'CALL',
+            'meeting_type': 'PHYSICAL',
             'start_immediately': True,
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], 'IN_PROGRESS')
-        self.assertEqual(response.data['meeting_type'], 'CALL')
+        self.assertEqual(response.data['meeting_type'], 'PHYSICAL')
         self.assertEqual(response.data['visit_purpose'], 'DISCOVERY')
         self.assertEqual(response.data['purpose_source'], 'AUTO')
         self.assertIn('Réunion express', response.data['title'])
@@ -414,7 +414,10 @@ class KamAppointmentPurposeTests(APITestCase):
         comp_data = comp_res.json()
         self.assertIn('headline', comp_data)
         self.assertIn('radar', comp_data)
-        self.assertEqual(len(comp_data['radar']), 6)
+        from kam.services.enterprise_comparison_service import EnterpriseComparisonService
+        policy = EnterpriseComparisonService.get_sector_policy(self.enterprise.sector)
+        self.assertGreater(len(policy['pillars']), 0)
+        self.assertEqual(len(comp_data['radar']), len(policy['pillars']))
         self.assertIn('advantages_a', comp_data)
         self.assertIn('gaps_a', comp_data)
         self.assertIn('criteria_breakdown', comp_data)

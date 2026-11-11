@@ -4,6 +4,8 @@
  * 60% : Canvas & Card Surfaces (#ECEAE5 / #F6F5F2 in Light, #242124 / #2D2A2D in Dark)
  * 30% : Structural Neutral Hierarchy (#191816 / #787570 in Light, #FFFFFF / #A19FA1 in Dark)
  * 10% : Royal Iris Blue #4F6CE8 strictly for CTAs, unread badges, active focus & nav hover
+ * 
+ * Border Radius Standard: Small Border Radius (6px - 8px / Friendly & Professional B2B SaaS)
  */
 
 export const designTokens = {
@@ -32,9 +34,12 @@ export const designTokens = {
     mono: 'font-mono tabular-nums font-semibold',
   },
   radii: {
-    card: 'rounded-[28px]',
-    hero: 'rounded-[32px]',
-    pill: 'rounded-full',
-    subcard: 'rounded-2xl',
+    button: 'rounded-lg', // 8px — Friendly & Professional CTA
+    card: 'rounded-xl', // 14px — Clean B2B Surface
+    hero: 'rounded-2xl', // 16px — Hero / Modal
+    subcard: 'rounded-lg', // 8px — Concentric Sub-containers
+    badge: 'rounded-md', // 6px — Compact Status Tag
+    input: 'rounded-lg', // 8px — Form Fields
+    pill: 'rounded-full', // Strict Search & Circular Dots
   }
 } as const;

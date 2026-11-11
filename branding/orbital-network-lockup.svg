@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 256" width="760" height="256" fill="none">
+  <title>Onbora Lockup — Le Réseau Orbital</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- Global Web Meridian Outer Ring (Internet-wide presence) -->
+  <circle cx="128" cy="128" r="94" stroke="#4F6CE8" stroke-width="22"/>
+  <!-- Intersecting global web longitude elliptical orbit -->
+  <ellipse cx="128" cy="128" rx="44" ry="94" stroke="#7896FF" stroke-width="18"/>
+  <!-- Horizontal web equator band -->
+  <line x1="34" y1="128" x2="222" y2="128" stroke="#4F6CE8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Central analytical intelligence aperture (focusing the crawl into B2B metric) -->
+  <circle cx="128" cy="128" r="18" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="12" fill="#4F6CE8"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg>

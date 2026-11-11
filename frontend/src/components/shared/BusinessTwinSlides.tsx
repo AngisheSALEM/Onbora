@@ -97,7 +97,7 @@ export default function BusinessTwinSlides({
           Diapositive IA
         </div>
         <div className="flex items-center gap-2.5">
-          <Logo size={24} showBg={true} />
+          <Logo size={24}  />
           <div>
             <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Diagnostic d'Architecture Cible</h4>
             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{companyName}</p>
@@ -107,7 +107,7 @@ export default function BusinessTwinSlides({
         {/* Fake Mini Slide View */}
         <div className="h-24 studio-subcard rounded-xl flex items-center justify-center p-3 relative overflow-hidden">
           <div className="text-center">
-            <Icons.Sparkles className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1 animate-pulse" />
+            <Icons.Layers className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1" />
             <span className="text-[10px] font-semibold text-zinc-800 dark:text-zinc-200">Présentation PowerPoint disponible</span>
             <p className="text-[9px] text-zinc-500 mt-0.5">5 diapositives d'impact & roadmap</p>
           </div>
@@ -132,7 +132,7 @@ export default function BusinessTwinSlides({
         case 'welcome':
           return (
             <div className="flex flex-col items-center justify-center text-center h-full gap-4 animate-fade-in p-6">
-              <Logo size={60} showBg={true} className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
+              <Logo size={60}  className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
               <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
                 {slide.title || "Transformation MSP"}
               </h2>
@@ -235,7 +235,7 @@ export default function BusinessTwinSlides({
               <div>
                 <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
-                  <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
+                  <Icons.Layers className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
               </div>
@@ -302,7 +302,7 @@ export default function BusinessTwinSlides({
               <div>
                 <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE {currentSlide + 1}</span>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
-                  <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
+                  <Icons.Layers className="text-blue-600 dark:text-blue-400" size={14} />
                   {slide.title}
                 </h3>
               </div>
@@ -324,7 +324,7 @@ export default function BusinessTwinSlides({
       case 0:
         return (
           <div className="flex flex-col items-center justify-center text-center h-full gap-4 animate-fade-in p-6">
-            <Logo size={60} showBg={true} className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
+            <Logo size={60}  className="mb-2 shadow-[0_0_20px_rgba(37,99,235,0.20)]" />
             <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
               Transformation MSP
             </h2>
@@ -427,7 +427,7 @@ export default function BusinessTwinSlides({
             <div>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">DIAPOSITIVE 4</span>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mt-0.5 flex items-center gap-1.5">
-                <Icons.Sparkles className="text-blue-600 dark:text-blue-400" size={14} />
+                <Icons.Cpu className="text-blue-600 dark:text-blue-400" size={14} />
                 Solutions & Services Recommandés
               </h3>
             </div>

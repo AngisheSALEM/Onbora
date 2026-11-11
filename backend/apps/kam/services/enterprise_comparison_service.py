@@ -22,6 +22,7 @@ from django.conf import settings
 from django.db.models import Prefetch
 
 from sales.models import Enterprise, EnterpriseInstalledOffer
+from .comparison_identity import same_enterprise, distinct_peers
 from apps.ai_core.services.sector_rules_compiler import (
     SectorRulesCompiler,
     RULES_OUTPUT_PATH,
@@ -36,6 +37,67 @@ class EnterpriseComparisonService:
     """
 
     _RULES_CACHE: Optional[Dict[str, Any]] = None
+
+    @staticmethod
+    def _has_known_infrastructure(ent: Enterprise) -> bool:
+        """Ignore les valeurs par défaut et l'ancienne offre de conversion fictive."""
+        offers = [o for o in ent.installed_offers.all() if o.contract_status == "ACTIVE"]
+        connectivity = (ent.current_connectivity or "").strip()
+        legacy_placeholder = (
+            not ent.crm_record_id
+            and connectivity == "4G LTE / Opérateur Tiers"
+            and len(offers) == 1
+            and offers[0].installed_offer_name == "Liaison Internet 4G LTE Opérateur Tiers"
+            and offers[0].provider == "CONCURRENT"
+            and offers[0].bandwidth_mbps == 20
+            and float(offers[0].monthly_cost_mrr or 0) == 150.0
+        )
+        if legacy_placeholder:
+            return False
+        # Une connectivité déclarée sur la fiche ne constitue pas un produit du parc.
+        return bool(offers)
+
+    @classmethod
+    def _apply_unknown_infrastructure(cls, result, ent_a, ent_b):
+        """Restitue une absence de données, jamais un déficit ou un parc supposé."""
+        known = {"a": cls._has_known_infrastructure(ent_a),
+                 "b": ent_b is None or cls._has_known_infrastructure(ent_b)}
+        for side, has_data in known.items():
+            ent = ent_a if side == 'a' else ent_b
+            result[f'meta_{side}']['is_demo'] = bool(ent and any(o.is_demo for o in ent.installed_offers.all()))
+            result[f"meta_{side}"]["has_infrastructure_data"] = has_data
+            if has_data:
+                continue
+            result[f"overall_score_{side}"] = None
+            for field in ("current_connectivity", "bandwidth_total"):
+                result[f"meta_{side}"][field] = None
+            result[f"gaps_{side}"] = []
+            for row in result["radar"]:
+                row[f"score_{side}"] = None
+                row[f"raw_val_{side}"] = None
+                row[f"unit_val_{side}"] = "Non renseigné"
+                row[f"pack_name_{side}"] = ""
+            for row in result["criteria_breakdown"]:
+                row[f"val_{side}"] = "Non renseigné"
+        if all(known.values()):
+            return result
+        result.update(winner="TIE", score_diff=None, advantages_a=[], advantages_b=[],
+                      kam_recommendations=[], sizing_comparison=None)
+        result["headline"] = "Parc à renseigner pour établir la comparaison"
+        for row in result["radar"]:
+            row.update(winner="TIE", delta=None, is_deficit_a=False, is_winner_a=False)
+        for row in result["criteria_breakdown"]:
+            row["winner"] = "EQUAL"
+        # Les écarts entre entreprises ne sont pas interprétables sans données des deux côtés.
+        result["gaps_a"] = []
+        result["gaps_b"] = []
+        result["synthesis"].update(
+            headline=result["headline"], overall_score_a=result["overall_score_a"],
+            overall_score_b=result["overall_score_b"], score_diff=None,
+            positioning_summary="Le parc de l'entreprise doit être renseigné avant toute évaluation.",
+            critical_gaps_count=0, top_solutions=[], recommended_pitch="",
+        )
+        return result
 
     @classmethod
     def _get_compiled_rules(cls) -> Dict[str, Any]:
@@ -62,27 +124,54 @@ class EnterpriseComparisonService:
         return cls._RULES_CACHE
 
     @classmethod
-    def get_sector_policy(cls, sector_name: Optional[str]) -> Dict[str, Any]:
+    def get_canonical_sector_key(cls, sector_name: Optional[str]) -> str:
         """
-        Retourne les poids, seuils et panier idéal compilés par le Core AI pour un secteur.
+        Détermine la clé sectorielle canonique (finance, energy, healthcare, technology, etc.)
+        à partir de la taxonomie du Core AI et de règles sémantiques.
         """
         rules = cls._get_compiled_rules()
         taxonomy = rules.get("taxonomy_mapping", {})
-        sectors = rules.get("sectors", {})
-
         s_clean = (sector_name or "").strip().lower()
-        canonical_key = taxonomy.get(s_clean, "default")
 
-        # Recherche directe ou fallback
-        policy = sectors.get(canonical_key)
-        if not policy:
-            # Recherche partielle dans les taxonomies
+        canonical_key = taxonomy.get(s_clean)
+        if not canonical_key:
             for raw_k, mapped_canon in taxonomy.items():
                 if raw_k in s_clean or s_clean in raw_k:
-                    policy = sectors.get(mapped_canon)
+                    canonical_key = mapped_canon
                     break
 
-        return policy or sectors.get("default", {})
+        if not canonical_key:
+            if any(k in s_clean for k in ["santé", "sante", "médic", "medic", "hôpital", "hopital", "clinique", "pharma"]):
+                canonical_key = "healthcare"
+            elif any(k in s_clean for k in ["mine", "minier", "énergie", "energie", "pétrole", "petrole", "gaz", "carrière"]):
+                canonical_key = "energy"
+            elif any(k in s_clean for k in ["banque", "finance", "fintech", "crédit", "credit", "assurance", "money", "paiement"]):
+                canonical_key = "finance"
+            elif any(k in s_clean for k in ["tech", "télécom", "telecom", "informatique", "logiciel", "digital", "it"]):
+                canonical_key = "technology"
+            elif any(k in s_clean for k in ["distrib", "commerce", "vente", "magasin", "boutique", "retail"]):
+                canonical_key = "retail"
+            elif any(k in s_clean for k in ["transport", "logistique", "fret", "aviation"]):
+                canonical_key = "logistics"
+            elif any(k in s_clean for k in ["industrie", "usine", "manufact"]):
+                canonical_key = "industry"
+            elif any(k in s_clean for k in ["éduc", "educ", "école", "ecole", "enseign", "universit"]):
+                canonical_key = "education"
+            else:
+                canonical_key = "default"
+        return canonical_key
+
+    @classmethod
+    def get_sector_policy(cls, sector_name: Optional[str]) -> Dict[str, Any]:
+        """
+        Retourne les piliers d'infrastructure télécoms, poids et panier idéal
+        compilés par le Core AI à partir du catalogue pour ce secteur.
+        """
+        rules = cls._get_compiled_rules()
+        sectors = rules.get("sectors", {})
+        canonical_key = cls.get_canonical_sector_key(sector_name)
+        policy = sectors.get(canonical_key) or sectors.get("default", {})
+        return policy
 
     @classmethod
     def _extract_bandwidth_mbps(
@@ -255,10 +344,72 @@ class EnterpriseComparisonService:
             )
         )
 
+        candidates = distinct_peers(ent_a, qs)
+        # Compter les entreprises distinctes avant d'élargir le secteur.
+        if len(candidates) < 3:
+            canonical_key = cls.get_canonical_sector_key(sector)
+            all_sectors = Enterprise.objects.exclude(sector="").values_list("sector", flat=True).distinct()
+            matching_sectors = [s for s in all_sectors if cls.get_canonical_sector_key(s) == canonical_key]
+            if matching_sectors:
+                qs = (
+                    Enterprise.objects.filter(sector__in=matching_sectors)
+                    .exclude(id=ent_a.id)
+                    .select_related("crm_record")
+                    .prefetch_related(
+                        Prefetch(
+                            "installed_offers",
+                            queryset=EnterpriseInstalledOffer.objects.filter(contract_status="ACTIVE"),
+                        )
+                    )
+                )
+                candidates = distinct_peers(ent_a, qs)
+
+        # Rapprochement vectoriel sémantique (768D Core AI)
+        vector_scores_by_id: Dict[int, float] = {}
+        try:
+            from apps.ai_core.vector_search.singleton import get_vector_search_service
+            vec_svc = get_vector_search_service()
+            sim_vecs = vec_svc.find_similar_enterprises(ent_a.id, top_k=50)
+            for sv in sim_vecs:
+                meta = sv.metadata or {}
+                eid = meta.get("enterprise_id")
+                if not eid:
+                    try:
+                        eid = int(str(sv.doc_id).replace("enterprise_profile_", "").replace("enterprise_", ""))
+                    except (ValueError, TypeError):
+                        continue
+                if eid:
+                    vector_scores_by_id[int(eid)] = sv.score
+        except Exception as exc:
+            logger.debug("[EnterpriseComparisonService] Vector search fallback: %s", exc)
+
         peers_with_sim = []
-        for ent_b in qs:
+        for ent_b in candidates:
             sim_data = cls._compute_sizing_similarity(ent_a, ent_b)
             score_b = cls._compute_enterprise_scores(ent_b)
+
+            # Pondération hybride sémantique vectorielle (65%) + dimensionnement matériel (35%)
+            vec_sim = vector_scores_by_id.get(ent_b.id)
+            if vec_sim is not None:
+                vec_pct = max(10, min(99, round(vec_sim * 100)))
+                hybrid_pct = max(10, min(99, round(0.65 * vec_pct + 0.35 * sim_data["similarity_percentage"])))
+            else:
+                vec_pct = sim_data["similarity_percentage"]
+                hybrid_pct = sim_data["similarity_percentage"]
+
+            reasons = []
+            if ent_a.sector == ent_b.sector:
+                reasons.append(f"Même secteur ({ent_b.sector})")
+            if ent_a.segment == ent_b.segment:
+                reasons.append(f"Segment {ent_b.segment}")
+            if ent_b.site_count and ent_b.site_count > 1:
+                reasons.append(f"{ent_b.site_count} sites distants")
+            if ent_b.current_connectivity:
+                reasons.append(f"Liaison {ent_b.current_connectivity}")
+            twin_rationale = " • ".join(reasons) if reasons else "Topologie et dimensionnement comparables"
+
+            is_twin = hybrid_pct >= 75
+
             peers_with_sim.append({
                 "id": ent_b.id,
                 "name": ent_b.name,
@@ -269,8 +420,11 @@ class EnterpriseComparisonService:
                 "annual_revenue": float(ent_b.annual_revenue or 0),
                 "current_connectivity": ent_b.current_connectivity or "4G LTE",
                 "overall_score": score_b["overall_score"],
-                "similarity_percentage": sim_data["similarity_percentage"],
-                "is_twin": sim_data["is_twin"],
+                "similarity_percentage": hybrid_pct,
+                "vector_similarity_percentage": vec_pct,
+                "sizing_similarity_percentage": sim_data["similarity_percentage"],
+                "is_twin": is_twin,
+                "twin_rationale": twin_rationale,
                 "sizing_tier": sim_data["tier_b"],
                 "is_closest_twin": False,
             })
@@ -341,6 +495,60 @@ class EnterpriseComparisonService:
         return result
 
     @classmethod
+    def _recorded_pillar_metrics(cls, p_id, label, ent_a, ent_b):
+        """Restitue exclusivement les produits actifs du parc enregistré."""
+        offers_a = [o for o in ent_a.installed_offers.all()
+                    if o.contract_status == 'ACTIVE' and o.sector_pillar_id == p_id]
+        offers_b = [o for o in ent_b.installed_offers.all()
+                    if o.contract_status == 'ACTIVE' and o.sector_pillar_id == p_id] if ent_b else []
+        if not offers_a and not offers_b:
+            return None
+        label_lower = label.lower()
+        is_mobile = any(word in label_lower for word in ('iot', 'm2m', 'flotte', 'mobile'))
+        is_bandwidth = p_id == 'connectivity' or any(word in label_lower for word in ('fibre', 'débit', 'vsat'))
+        unit = 'SIM' if is_mobile else ('Mbps' if is_bandwidth else 'service(s)')
+        result = {'unit': unit}
+        for side, offers in (('a', offers_a), ('b', offers_b)):
+            value = None
+            if offers:
+                if is_mobile:
+                    known = [o.active_licenses_count for o in offers if o.active_licenses_count is not None]
+                    value = sum(known) if len(known) == len(offers) else None
+                elif is_bandwidth:
+                    known = [o.bandwidth_mbps for o in offers if o.bandwidth_mbps is not None]
+                    value = sum(known) if len(known) == len(offers) else None
+                else:
+                    value = len(offers)
+            result[f'raw_val_{side}'] = value
+            result[f'unit_val_{side}'] = f'{value} {unit}' if value is not None else 'Non renseigné'
+            result[f'pack_name_{side}'] = ', '.join(o.installed_offer_name for o in offers)
+        a, b = result['raw_val_a'], result['raw_val_b']
+        result['is_deficit_a'] = a is not None and b is not None and a < b
+        result['is_winner_a'] = a is not None and b is not None and a > b
+        return result
+
+    @classmethod
+    def _compute_pillar_metric_units(
+        cls,
+        p_id: str,
+        label: str,
+        ent_a: Enterprise,
+        scores_a: Dict[str, Any],
+        ent_b: Optional[Enterprise],
+        scores_b: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Aucune estimation d'effectif, de SLA ou de chiffre d'affaires ne crée un produit."""
+        recorded = cls._recorded_pillar_metrics(p_id, label, ent_a, ent_b)
+        if recorded is not None:
+            return recorded
+        return {
+            "unit_val_a": "Non renseigné", "unit_val_b": "Non renseigné", "unit": "",
+            "raw_val_a": None, "raw_val_b": None,
+            "pack_name_a": "", "pack_name_b": "",
+            "is_deficit_a": False, "is_winner_a": False,
+        }
+
+    @classmethod
     def compare(
         cls, enterprise_a_id: int, enterprise_b_id: Optional[Any] = None
     ) -> Dict[str, Any]:
@@ -394,12 +602,24 @@ class EnterpriseComparisonService:
             else:
                 is_benchmark_comparison = True
 
+        # Même une sélection explicite ou ancienne ne doit pas contourner l'identité métier.
+        if ent_b is not None and same_enterprise(ent_a, ent_b):
+            ent_b = None
+            is_benchmark_comparison = True
+
         scores_a = cls._compute_enterprise_scores(ent_a)
 
         if ent_b:
             scores_b = cls._compute_enterprise_scores(ent_b)
             name_b = ent_b.name
             sizing_data = cls._compute_sizing_similarity(ent_a, ent_b)
+
+            matched_peer = next((p for p in sector_peers if p["id"] == ent_b.id), None)
+            vec_pct = matched_peer.get("vector_similarity_percentage", sizing_data["similarity_percentage"]) if matched_peer else sizing_data["similarity_percentage"]
+            twin_rationale = matched_peer.get("twin_rationale", "") if matched_peer else ""
+            hybrid_pct = matched_peer.get("similarity_percentage", sizing_data["similarity_percentage"]) if matched_peer else sizing_data["similarity_percentage"]
+            is_closest = matched_peer.get("is_closest_twin", False) if matched_peer else False
+
             meta_b = {
                 "id": ent_b.id,
                 "name": ent_b.name,
@@ -412,8 +632,17 @@ class EnterpriseComparisonService:
                 "incident_count": ent_b.incident_count,
                 "bandwidth_total": scores_b.get("bandwidth_total", 0),
                 "sizing_tier": sizing_data["tier_b"],
-                "similarity_percentage": sizing_data["similarity_percentage"],
+                "similarity_percentage": hybrid_pct,
+                "vector_similarity_percentage": vec_pct,
+                "is_twin": hybrid_pct >= 75,
+                "is_closest_twin": is_closest,
+                "twin_rationale": twin_rationale,
             }
+            sizing_data["similarity_percentage"] = hybrid_pct
+            sizing_data["vector_similarity_percentage"] = vec_pct
+            sizing_data["twin_rationale"] = twin_rationale
+            sizing_data["is_twin"] = hybrid_pct >= 75
+            sizing_data["is_closest_twin"] = is_closest
         else:
             # Calcul de la moyenne sectorielle réelle
             scores_b = cls._compute_sector_benchmark(ent_a.sector, exclude_id=ent_a.id)
@@ -454,28 +683,78 @@ class EnterpriseComparisonService:
             winner = "TIE"
             headline = f"{ent_a.name} et {name_b} au coude-à-coude sur leur secteur"
 
-        # Comparaison dimension par dimension pour le Radar Chart
-        radar_data = []
-        dimensions_meta = [
-            ("connectivity", "Connectivité & Débit"),
-            ("security", "Cybersécurité"),
-            ("cloud", "Cloud & Données"),
-            ("sla", "SLA & Fiabilité"),
-            ("equipment", "Multi-sites & SD-WAN"),
-            ("budget", "Capacité & Investissement"),
-        ]
+        # Piliers d'Infrastructure Télécoms Dynamiques établis par le Core AI pour ce secteur
+        policy = cls.get_sector_policy(ent_a.sector)
+        pillars = policy.get("pillars", [])
+        if not pillars:
+            pillars = [
+                {"id": "connectivity", "label": "Connectivité & Débit", "weight": 0.25, "description": "Accès principal et bande passante"},
+                {"id": "security", "label": "Cybersécurité Périmétrique", "weight": 0.25, "description": "Protection pare-feu et filtrage"},
+                {"id": "cloud", "label": "Cloud & Sauvegarde Souveraine", "weight": 0.20, "description": "Sauvegarde externalisée datacenter"},
+                {"id": "sla", "label": "SLA & Haute Disponibilité", "weight": 0.15, "description": "Résilience et secours automatique"},
+                {"id": "equipment", "label": "Multi-sites & SD-WAN", "weight": 0.15, "description": "Interconnexion agences"},
+            ]
 
-        for d_id, label in dimensions_meta:
+        radar_data = []
+        for p in pillars:
+            d_id = p["id"]
+            label = p["label"]
+            desc = p.get("description", "")
+            weight = p.get("weight", 0.20)
             val_a = scores_a["dimensions"].get(d_id, 50)
             val_b = scores_b["dimensions"].get(d_id, 50)
+
+            metric_units = cls._compute_pillar_metric_units(
+                p_id=d_id,
+                label=label,
+                ent_a=ent_a,
+                scores_a=scores_a,
+                ent_b=ent_b,
+                scores_b=scores_b,
+            )
+
+            is_deficit = metric_units["is_deficit_a"]
+            is_winner = metric_units["is_winner_a"]
+            if metric_units['raw_val_a'] is None:
+                val_a = None
+            if metric_units['raw_val_b'] is None:
+                val_b = None
+            comparable = val_a is not None and val_b is not None
+            pillar_winner = ('B' if is_deficit else ('A' if is_winner else 'TIE')) if comparable else 'TIE'
+
             radar_data.append({
                 "dimension_id": d_id,
                 "label": label,
+                "description": desc,
+                "weight": weight,
+                "weight_percentage": int(round(weight * 100)),
                 "score_a": val_a,
                 "score_b": val_b,
-                "winner": "A" if val_a > val_b else ("B" if val_b > val_a else "TIE"),
-                "delta": round(val_a - val_b, 1),
+                "winner": pillar_winner,
+                "delta": round(val_a - val_b, 1) if comparable else None,
+                "unit_val_a": metric_units["unit_val_a"],
+                "unit_val_b": metric_units["unit_val_b"],
+                "unit": metric_units["unit"],
+                "raw_val_a": metric_units["raw_val_a"],
+                "raw_val_b": metric_units["raw_val_b"],
+                "pack_name_a": metric_units["pack_name_a"],
+                "pack_name_b": metric_units["pack_name_b"],
+                "is_deficit_a": is_deficit,
+                "is_winner_a": is_winner,
             })
+
+        # Tri stratégique par priorité métier (Déficits en premier, puis Atouts, puis Égalités) :
+        # 1. ROUGE (0) : Là où l'entreprise analysée est en déficit / manque par rapport au pair
+        # 2. BLEU (1)  : Là où l'entreprise analysée excelle et devance le pair
+        # 3. GRIS (2)  : Là où il y a égalité parfaite entre les deux entreprises
+        def _pillar_sort_priority(item: Dict[str, Any]) -> int:
+            if item.get("is_deficit_a") or item.get("winner") == "B":
+                return 0
+            elif item.get("is_winner_a") or item.get("winner") == "A":
+                return 1
+            return 2
+
+        radar_data.sort(key=_pillar_sort_priority)
 
         # Forces comparatives ("Où elle se démarque")
         advantages_a = cls._extract_advantages(ent_a, scores_a, ent_b, scores_b, name_b)
@@ -514,7 +793,21 @@ class EnterpriseComparisonService:
         # Recommandations stratégiques & Pitch KAM
         kam_recommendations = cls._generate_kam_recommendations(ent_a, all_gaps_a, ent_b, all_gaps_b)
 
-        return {
+        # Synthèse Exécutive Core AI
+        synthesis = {
+            "headline": headline,
+            "overall_score_a": overall_a,
+            "overall_score_b": overall_b,
+            "score_diff": round(diff, 1),
+            "positioning_summary": f"{ent_a.name} affiche {overall_a}/100 de maturité face à {name_b} ({overall_b}/100).",
+            "critical_gaps_count": len([g for g in all_gaps_a if g.get("severity") in ("CRITICAL", "HIGH")]),
+            "top_solutions": [g.get("solution_recommended") for g in all_gaps_a[:3] if g.get("solution_recommended")],
+            "recommended_pitch": kam_recommendations[0].get("pitch_argument") if kam_recommendations else "",
+            "is_portfolio_account": ent_a.assigned_kam is not None,
+        }
+
+        result = {
+            "synthesis": synthesis,
             "headline": headline,
             "sector": ent_a.sector or "Non spécifié",
             "is_benchmark_comparison": is_benchmark_comparison,
@@ -537,6 +830,9 @@ class EnterpriseComparisonService:
             },
             "meta_b": meta_b,
             "radar": radar_data,
+            "pillars": radar_data,
+            "sector_pillars_count": len(radar_data),
+            "sector_rules_origin": "core_ai_catalog_compiler",
             "sizing_comparison": sizing_data,
             "sector_peers": sector_peers,
             "advantages_a": advantages_a,
@@ -546,6 +842,7 @@ class EnterpriseComparisonService:
             "criteria_breakdown": criteria_breakdown,
             "kam_recommendations": kam_recommendations,
         }
+        return cls._apply_unknown_infrastructure(result, ent_a, ent_b)
 
     # =========================================================================
     # Moteur de Scoring Python Ultra-Optimisé (< 1ms)
@@ -566,9 +863,10 @@ class EnterpriseComparisonService:
         sizing_rules = policy.get("sizing_rules", {})
         radar_weights = policy.get("radar_weights", {})
 
-        active_offers = list(ent.installed_offers.filter(contract_status="ACTIVE"))
+        active_offers = [offer for offer in ent.installed_offers.all() if offer.contract_status == "ACTIVE"]
+        installed_pillars = {o.sector_pillar_id for o in active_offers if o.sector_pillar_id}
         offers_text = " ".join([
-            o.installed_offer_name.lower() + " " + (o.solution_category or "").lower()
+            o.installed_offer_name.lower() + " " + (getattr(o, "solution_category", None) or getattr(o, "category", "") or "").lower()
             for o in active_offers
         ])
         conn_text = (ent.current_connectivity or "").lower()
@@ -598,14 +896,10 @@ class EnterpriseComparisonService:
         gaps: List[Dict[str, Any]] = []
 
         # 1. ÉVALUATION DU PANIER SECTORIEL IDÉAL (Défini par le Core AI)
-        dim_penalties: Dict[str, float] = {
-            "connectivity": 0.0,
-            "security": 0.0,
-            "cloud": 0.0,
-            "sla": 0.0,
-            "equipment": 0.0,
-            "budget": 0.0,
-        }
+        pillars = policy.get("pillars", [])
+        dim_penalties: Dict[str, float] = {p["id"]: 0.0 for p in pillars}
+        for fallback_k in ["connectivity", "security", "cloud", "sla", "equipment", "budget"]:
+            dim_penalties.setdefault(fallback_k, 0.0)
 
         for item in ideal_basket:
             category = item.get("category", "")
@@ -614,7 +908,7 @@ class EnterpriseComparisonService:
             penalty = float(item.get("penalty", 15))
 
             # Vérifie si au moins un mot-clé correspond dans les offres détenues
-            matched = any(kw.lower() in combined_text for kw in match_kws)
+            matched = dim in installed_pillars or any(kw.lower() in combined_text for kw in match_kws)
             if not matched:
                 current_score -= penalty
                 dim_penalties[dim] += penalty
@@ -714,23 +1008,39 @@ class EnterpriseComparisonService:
         # Borner le score global entre 10 et 100
         overall_score = round(max(10.0, min(100.0, current_score)))
 
-        # 5. SCORES DES 6 DIMENSIONS DU RADAR (Indexés sur les pénalités)
-        dim_scores = {
-            "connectivity": round(max(15, 100 - dim_penalties["connectivity"] * 1.5)),
-            "security": round(max(15, 100 - dim_penalties["security"] * 1.5)),
-            "cloud": round(max(15, 100 - dim_penalties["cloud"] * 1.5)),
-            "sla": round(max(15, 100 - dim_penalties["sla"] * 1.5)),
-            "equipment": round(max(15, 100 - dim_penalties["equipment"] * 1.5)),
-            "budget": round(min(100, max(25, (float(ent.annual_revenue or 0) / 10000) + 40))),
-        }
+        # 5. SCORES DES PILIERS SECTORIELS DU CORE AI (Indexés sur les pénalités)
+        dim_scores = {}
+        for p in pillars:
+            p_id = p["id"]
+            pen = dim_penalties.get(p_id, 0.0)
+            sc = round(max(15, 100 - pen * 1.5))
+            if "connectivity" in p_id and has_dedicated:
+                sc = min(100, sc + 10)
+            if "security" in p_id and (has_firewall or has_vpn):
+                sc = min(100, sc + 10)
+            if "sla" in p_id and has_backup_link:
+                sc = min(100, sc + 10)
+            if "equipment" in p_id and has_sdwan:
+                sc = min(100, sc + 10)
+            if "cloud" in p_id and (has_cloud_backup or has_collab):
+                sc = min(100, sc + 10)
+            dim_scores[p_id] = sc
 
-        # Bonus si fibre dédiée
+        for fallback_k in ["connectivity", "security", "cloud", "sla", "equipment", "budget"]:
+            if fallback_k not in dim_scores:
+                dim_scores[fallback_k] = round(max(15, 100 - dim_penalties.get(fallback_k, 0.0) * 1.5))
+
         if has_dedicated:
             dim_scores["connectivity"] = min(100, dim_scores["connectivity"] + 10)
         if has_firewall and has_vpn:
             dim_scores["security"] = min(100, dim_scores["security"] + 10)
         if has_backup_link:
             dim_scores["sla"] = min(100, dim_scores["sla"] + 10)
+
+        # Calcul du score global pondéré par les poids réels des piliers du secteur
+        if pillars:
+            weighted_sum = sum(dim_scores.get(p["id"], 50) * p.get("weight", 0.20) for p in pillars)
+            overall_score = round(max(10.0, min(100.0, weighted_sum)))
 
         return {
             "overall_score": overall_score,
@@ -786,9 +1096,16 @@ class EnterpriseComparisonService:
 
         all_scores = [cls._compute_enterprise_scores(e) for e in ents]
         avg_overall = sum(s["overall_score"] for s in all_scores) / len(all_scores)
+        policy = cls.get_sector_policy(sector)
+        pillars = policy.get("pillars", [])
+        pillar_ids = [p["id"] for p in pillars] if pillars else ["connectivity", "security", "cloud", "sla", "equipment", "budget"]
+        for fallback_k in ["connectivity", "security", "cloud", "sla", "equipment", "budget"]:
+            if fallback_k not in pillar_ids:
+                pillar_ids.append(fallback_k)
+
         avg_dims = {}
-        for d in ["connectivity", "security", "cloud", "sla", "equipment", "budget"]:
-            avg_dims[d] = round(sum(s["dimensions"][d] for s in all_scores) / len(all_scores))
+        for d in pillar_ids:
+            avg_dims[d] = round(sum(s["dimensions"].get(d, 50) for s in all_scores) / len(all_scores))
 
         avg_emp = sum(e.employee_count for e in ents) / len(ents)
         avg_sites = sum(e.site_count or 1 for e in ents) / len(ents)

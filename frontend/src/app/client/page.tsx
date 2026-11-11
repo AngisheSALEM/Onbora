@@ -1091,7 +1091,7 @@ export default function ClientDiscoveryPage() {
               {/* Logo / Title */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Logo size={28} showBg={true} />
+                  <Logo size={28} />
                   <div>
                     <h2 className="text-xs font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">Onbora</h2>
                     <p className="text-[9px] text-zinc-500 font-medium leading-none">Copilote B2B</p>
@@ -1413,7 +1413,7 @@ export default function ClientDiscoveryPage() {
                 <div className="w-full max-w-2xl relative p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xl flex flex-col gap-4">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-150 dark:border-zinc-850">
                     <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
-                      <Icons.Sparkles size={14} className="text-blue-600 dark:text-blue-400 shrink-0 animate-pulse" /> Présentation du Diagnostic d'Architecture Cible
+                     Présentation du Diagnostic d'Architecture Cible
                     </h3>
                     <button
                       onClick={() => setActiveSlideIndex(null)}
@@ -1600,7 +1600,7 @@ export default function ClientDiscoveryPage() {
           {/* Header */}
           <div className="flex justify-between items-center max-w-4xl w-full mx-auto">
             <div className="flex items-center gap-2">
-              <Logo size={24} showBg={true} />
+              <Logo size={24} />
               <div>
                 <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-400">Onbora Copilot</span>
                 <h3 className="text-xs font-semibold text-white">Appel Vocal Direct</h3>

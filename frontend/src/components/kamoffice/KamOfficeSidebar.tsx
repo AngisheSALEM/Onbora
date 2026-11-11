@@ -88,17 +88,14 @@ export default function KamOfficeSidebar() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-1 py-1">
           {!isSidebarCollapsed && (
-            <div className="flex items-center gap-3">
-              <Logo size={36} />
-              <h1 className="text-base font-semibold text-zinc-900 dark:text-white tracking-tight">
-                ONBORA
-              </h1>
+            <div className="flex items-center py-0.5">
+              <Logo variant="full" size={32} />
             </div>
           )}
 
           {isSidebarCollapsed && (
             <div className="mx-auto">
-              <Logo size={32} />
+              <Logo variant="icon" size={32} />
             </div>
           )}
 

@@ -9,10 +9,11 @@ Rôle : Moteur de scoring déterministe auditable (health_score 0-100) enrichi p
 from __future__ import annotations
 
 import logging
+from types import SimpleNamespace
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Count
 from django.contrib.auth import get_user_model
 
 from sales.models import Enterprise
@@ -104,7 +105,9 @@ class ChurnRadarService:
         has_pain = pain in ['HIGH', 'CRITICAL', 'Critique']
         if not has_pain:
             # Vérification des derniers rapports de visite
-            recent_reports = enterprise.kam_visit_reports.all()[:3]
+            recent_reports = getattr(enterprise, 'radar_recent_reports', None)
+            if recent_reports is None:
+                recent_reports = enterprise.kam_visit_reports.all()[:3]
             for rep in recent_reports:
                 notes = (rep.executive_summary or rep.raw_transcript or '').lower()
                 if any(w in notes for w in ['insatisfaction', 'mécontent', 'panne', 'coupure', 'rupture', 'dégradation', 'litige']):
@@ -117,12 +120,12 @@ class ChurnRadarService:
 
         # 4. RÈGLE : Rupture d'interaction / Inactivité
         last_action_date: Optional[datetime] = None
-        latest_report = enterprise.kam_visit_reports.order_by('-created_at').first()
+        latest_report = (enterprise.radar_recent_reports[0] if enterprise.radar_recent_reports else None) if hasattr(enterprise, 'radar_recent_reports') else enterprise.kam_visit_reports.order_by('-created_at').first()
         if latest_report:
             last_action_date = latest_report.created_at
 
         # Vérification des rendez-vous passés
-        past_appt = enterprise.kam_appointments.filter(scheduled_at__lte=now).order_by('-scheduled_at').first()
+        past_appt = (enterprise.radar_past_appointments[0] if enterprise.radar_past_appointments else None) if hasattr(enterprise, 'radar_past_appointments') else enterprise.kam_appointments.filter(scheduled_at__lte=now).order_by('-scheduled_at').first()
         if past_appt and past_appt.scheduled_at:
             if not last_action_date or past_appt.scheduled_at > last_action_date:
                 last_action_date = past_appt.scheduled_at
@@ -140,7 +143,7 @@ class ChurnRadarService:
             reasons.append(f"Aucune interaction KAM depuis plus de 14 jours ({days_without_action}j)")
 
         # 5. RÈGLE : Prochaine action planifiée
-        next_appt = enterprise.kam_appointments.filter(scheduled_at__gte=now).order_by('scheduled_at').first()
+        next_appt = (enterprise.radar_next_appointments[0] if enterprise.radar_next_appointments else None) if hasattr(enterprise, 'radar_next_appointments') else enterprise.kam_appointments.filter(scheduled_at__gte=now).order_by('scheduled_at').first()
         next_action_at: Optional[datetime] = None
         if next_appt and next_appt.scheduled_at:
             next_action_at = next_appt.scheduled_at
@@ -343,9 +346,18 @@ class ChurnRadarService:
         """
         qs = Enterprise.objects.filter(assigned_kam=user)
 
-        return qs.select_related('churn_assessment').prefetch_related(
-            Prefetch('kam_appointments', queryset=KamAppointment.objects.order_by('scheduled_at')),
-            Prefetch('kam_visit_reports', queryset=KamVisitReport.objects.order_by('-created_at'))
+        now = timezone.now()
+        return qs.select_related('churn_assessment', 'crm_record').prefetch_related(
+            'installed_offers',
+            Prefetch('kam_visit_reports', queryset=KamVisitReport.objects.only(
+                'enterprise_id', 'created_at', 'executive_summary', 'raw_transcript'
+            ).order_by('-created_at')[:3], to_attr='radar_recent_reports'),
+            Prefetch('kam_appointments', queryset=KamAppointment.objects.only(
+                'enterprise_id', 'scheduled_at'
+            ).filter(scheduled_at__lte=now).order_by('-scheduled_at')[:1], to_attr='radar_past_appointments'),
+            Prefetch('kam_appointments', queryset=KamAppointment.objects.only(
+                'enterprise_id', 'scheduled_at'
+            ).filter(scheduled_at__gte=now).order_by('scheduled_at')[:1], to_attr='radar_next_appointments'),
         )
 
     @classmethod
@@ -364,12 +376,12 @@ class ChurnRadarService:
         - Liste des comptes prioritaires
         """
         enterprises = list(cls.get_user_enterprises(user))
-        cls.ensure_assessments(enterprises)
-
-        # Rechargement propre des évaluations
-        assessments = [ent.churn_assessment for ent in enterprises if getattr(ent, 'churn_assessment', None)]
-
-        total_accounts = len(assessments)
+        # Reads never regenerate assessments or write snapshots.
+        assessments = [getattr(ent, 'churn_assessment', None) or SimpleNamespace(
+            enterprise=ent, trend='STABLE', upsell_opportunities=[],
+            **cls.calculate_deterministic_health_score(ent)
+        ) for ent in enterprises]
+        total_accounts = len(enterprises)
         high_risk_list = [a for a in assessments if a.risk_level in ['HIGH', 'CRITICAL'] or a.health_score < 40]
         surveillance_list = [a for a in assessments if a not in high_risk_list and a.health_score < 70]
         healthy_list = [a for a in assessments if a not in high_risk_list and a.health_score >= 70]
@@ -381,9 +393,28 @@ class ChurnRadarService:
         renewals_list = [a for a in assessments if a.is_renewal_imminent or (a.renewal_days is not None and a.renewal_days <= 90)]
         renewals_count = len(renewals_list)
 
-        upsell_count = sum(1 for a in assessments if a.upsell_opportunities and len(a.upsell_opportunities) > 0)
+        from .portfolio_upsell_count import count_portfolio_upsells
+        upsell_count = count_portfolio_upsells(enterprises)
         no_action_list = [a for a in assessments if a.days_without_action >= 14 and a.next_action_at is None]
         no_action_count = len(no_action_list)
+
+        # Calcul des nouveaux comptes potentiels (prospects, récemment ajoutés, opérateurs tiers)
+        new_potentials_count = 0
+        for ent in enterprises:
+            is_recent = bool(ent.assigned_at and (timezone.now() - ent.assigned_at).total_seconds() < 86400 * 3)
+            is_conquest = ent.conversion_status in ['LEAD', 'CONTACTED'] or (
+                ent.current_operator and 'orange' not in ent.current_operator.lower()
+            )
+            if is_recent or is_conquest:
+                new_potentials_count += 1
+
+        from kam.models import B2BNewsFeedItem
+        news_counts = B2BNewsFeedItem.objects.aggregate(
+            discoveries=Count('pk', filter=Q(is_web_discovery=True, is_converted_to_portfolio=False)),
+            signals=Count('pk', filter=Q(enterprise_id__in=[ent.pk for ent in enterprises]) | Q(is_web_discovery=True)),
+        )
+        new_potentials_count += news_counts['discoveries']
+        signals_count = news_counts['signals']
 
         # Calcul des jalons temporels (7j, 30j, 90j)
         milestones = cls._build_chart_milestones(enterprises, healthy_count, surveillance_count, high_risk_count)
@@ -419,12 +450,21 @@ class ChurnRadarService:
 
         return {
             "summary_cards": {
+                "b2b_accounts": {
+                    "count": total_accounts,
+                    "subtitle": "Portefeuille actif sous gestion",
+                    "new_potentials_count": new_potentials_count,
+                    "signals_count": signals_count,
+                },
                 "high_risk": {
                     "count": high_risk_count,
                     "delta_text": delta_text,
                     "healthy_count": healthy_count,
                     "surveillance_count": surveillance_count,
-                    "total_count": total_accounts
+                    "total_count": total_accounts,
+                    "b2b_count": total_accounts,
+                    "new_potentials_count": new_potentials_count,
+                    "signals_count": signals_count,
                 },
                 "renewals": {
                     "count": renewals_count,
@@ -538,36 +578,154 @@ class ChurnRadarService:
     @classmethod
     def get_upsell_accounts(cls, user) -> List[Dict[str, Any]]:
         """
-        Retourne la liste des opportunités d'upsell formatée pour la page /kam/accounts/upsell.
+        Retourne la liste des opportunités d'upsell pour /kam/accounts/upsell.
+        Couvre les 2 sources requises :
+        1. COMPARATEUR : Comptes dont le compte de référence / benchmark sectoriel
+           affiche un score supérieur au leur (score_ref > score_compte).
+           => Redirection vers le Comparateur (/kam/briefing?id=...&tab=compare).
+        2. SIGNAUX : Comptes dont les signaux d'actualité (croissance, tech, incidents)
+           indiquent une opportunité d'upsell active.
+           => Redirection vers les Signaux (/kam/briefing?id=...&tab=news).
         """
         enterprises = list(cls.get_user_enterprises(user))
         cls.ensure_assessments(enterprises)
 
-        results = []
+        results: List[Dict[str, Any]] = []
+
+        from kam.models import B2BNewsFeedItem
+        from .enterprise_comparison_service import EnterpriseComparisonService
+
         for ent in enterprises:
-            a = getattr(ent, 'churn_assessment', None)
-            if not a:
-                continue
+            ent_has_upsell = False
 
-            opportunities = a.upsell_opportunities or []
-            for idx, op in enumerate(opportunities):
-                sol_name = op.get("solution", "Non renseignée")
-                cat: str = "MULTI_SITES"
-                if "fibre" in sol_name.lower() or "1gbps" in sol_name.lower():
+            # --- SOURCE 1 : COMPARATEUR (Score supérieur du pair de référence) ---
+            try:
+                peers = EnterpriseComparisonService.get_sector_peers_by_sizing(ent)
+                my_scores = EnterpriseComparisonService._compute_enterprise_scores(ent)
+                my_overall = my_scores.get('overall_score', 0)
+                higher_peers = [p for p in peers if p.get('overall_score', 0) > my_overall]
+
+                if higher_peers:
+                    ref_peer = higher_peers[0]
+                    comp = EnterpriseComparisonService.compare(ent.id, ref_peer['id'])
+                    ref_score = comp.get('overall_score_b', ref_peer.get('overall_score', 0))
+                    ref_name = comp.get('meta_b', {}).get('name', ref_peer.get('name', 'Pair de référence'))
+
+                    kam_recomms = [
+                        r for r in comp.get('kam_recommendations', [])
+                        if r.get('target_id') == ent.id or r.get('target_enterprise') == ent.name
+                    ]
+                    if not kam_recomms and comp.get('kam_recommendations'):
+                        kam_recomms = comp.get('kam_recommendations')
+
+                    if kam_recomms:
+                        sol_title = kam_recomms[0].get('solution_title', 'Montée en débit Fibre Dédiée 1 Gbps (LSI)')
+                        pitch = kam_recomms[0].get(
+                            'pitch_argument',
+                            f"Le compte de référence {ref_name} affiche un score de {ref_score}/100 contre {my_overall}/100."
+                        )
+                    elif comp.get('gaps_a'):
+                        top_gap = comp.get('gaps_a')[0]
+                        sol_title = top_gap.get('solution_recommended', 'Liaison Sécurisée & Redondance')
+                        pitch = f"Écart de maturité réseau : {top_gap.get('issue')}. Le pair de référence ({ref_name}) affiche {ref_score}/100 vs {my_overall}/100."
+                    else:
+                        sol_title = 'Montée en débit Fibre Dédiée 1 Gbps (LSI)'
+                        pitch = f"Le compte de référence {ref_name} affiche un score de {ref_score}/100 contre {my_overall}/100 pour ce compte."
+
                     cat = "CONNECTIVITE"
-                elif "cloud" in sol_name.lower() or "soc" in sol_name.lower() or "cyber" in sol_name.lower():
-                    cat = "CLOUD_SECURITY"
+                    if "fibre" in sol_title.lower() or "1gbps" in sol_title.lower() or "lsi" in sol_title.lower() or "débit" in sol_title.lower():
+                        cat = "CONNECTIVITE"
+                    elif "cloud" in sol_title.lower() or "soc" in sol_title.lower() or "cyber" in sol_title.lower():
+                        cat = "CLOUD_SECURITY"
+                    else:
+                        cat = "MULTI_SITES"
 
-                results.append({
-                    "id": f"up-{ent.id}-{idx}",
-                    "name": ent.name,
-                    "industry": ent.sector or "Banque & Finance",
-                    "recommendedSolution": sol_name,
-                    "estimatedPotential": op.get("estimated_value") or "Non renseigné",
-                    "strategicAngle": op.get("talking_point") or "Non renseigné",
-                    "category": cat,
-                    "accountId": str(ent.id),
-                })
+                    results.append({
+                        "id": f"up-comp-{ent.id}",
+                        "name": ent.name,
+                        "industry": ent.sector or "Services & Industrie",
+                        "recommendedSolution": sol_title,
+                        "estimatedPotential": "+3 500 $ / mois",
+                        "strategicAngle": pitch,
+                        "category": cat,
+                        "accountId": str(ent.id),
+                        "source": "COMPARATEUR",
+                        "sourceLabel": "Comparateur sectoriel",
+                        "sourceDetail": f"{ref_name} ({ref_score}/100 vs {my_overall}/100)",
+                        "referenceAccountName": ref_name,
+                        "referencePeerId": ref_peer.get('id'),
+                        "scoreAccount": my_overall,
+                        "scoreReference": ref_score,
+                        "actionLabel": "Voir dans le comparateur",
+                        "targetUrl": f"/kam/briefing?id={ent.id}&tab=compare&peer={ref_peer.get('id')}",
+                    })
+                    ent_has_upsell = True
+            except Exception as exc:
+                logger.debug("[ChurnRadarService] Erreur détection upsell comparateur pour %s: %s", ent.name, exc)
+
+            # --- SOURCE 2 : SIGNAUX (Actualités d'expansion, tech, incidents) ---
+            try:
+                news_items = list(B2BNewsFeedItem.objects.filter(
+                    Q(enterprise=ent) | Q(discovered_company_name__iexact=ent.name)
+                ).order_by('-published_at')[:2])
+
+                for n in news_items:
+                    sol_title = n.recommended_offer or "Liaison Sécurisée & Cloud B2B"
+                    pitch = n.commercial_angle or n.summary or "Signal d'expansion stratégique détecté."
+                    cat = "CONNECTIVITE"
+                    if "fibre" in sol_title.lower() or "vsat" in sol_title.lower():
+                        cat = "CONNECTIVITE"
+                    elif "cloud" in sol_title.lower() or "cyber" in sol_title.lower():
+                        cat = "CLOUD_SECURITY"
+                    else:
+                        cat = "MULTI_SITES"
+
+                    results.append({
+                        "id": f"up-sig-{ent.id}-{n.id}",
+                        "name": ent.name,
+                        "industry": ent.sector or "Services & Industrie",
+                        "recommendedSolution": sol_title,
+                        "estimatedPotential": "+2 800 $ / mois",
+                        "strategicAngle": pitch,
+                        "category": cat,
+                        "accountId": str(ent.id),
+                        "source": "SIGNAUX",
+                        "sourceLabel": "Signal d’actualité",
+                        "sourceDetail": n.title,
+                        "signalId": str(n.id),
+                        "actionLabel": "Voir le signal d'actualité",
+                        "targetUrl": f"/kam/briefing?id={ent.id}&tab=news",
+                    })
+                    ent_has_upsell = True
+            except Exception as exc:
+                logger.debug("[ChurnRadarService] Erreur détection upsell signaux pour %s: %s", ent.name, exc)
+
+            # Si aucune opportunité détectée via comparateur ou signaux, repli sur l'évaluation existante
+            if not ent_has_upsell:
+                a = getattr(ent, 'churn_assessment', None)
+                if a and a.upsell_opportunities:
+                    for idx, op in enumerate(a.upsell_opportunities):
+                        sol_name = op.get("solution", "Non renseignée")
+                        cat = "MULTI_SITES"
+                        if "fibre" in sol_name.lower() or "1gbps" in sol_name.lower():
+                            cat = "CONNECTIVITE"
+                        elif "cloud" in sol_name.lower() or "soc" in sol_name.lower() or "cyber" in sol_name.lower():
+                            cat = "CLOUD_SECURITY"
+                        results.append({
+                            "id": f"up-{ent.id}-{idx}",
+                            "name": ent.name,
+                            "industry": ent.sector or "Banque & Finance",
+                            "recommendedSolution": sol_name,
+                            "estimatedPotential": op.get("estimated_value") or "Non renseigné",
+                            "strategicAngle": op.get("talking_point") or "Non renseigné",
+                            "category": cat,
+                            "accountId": str(ent.id),
+                            "source": "COMPARATEUR",
+                            "sourceLabel": "Opportunité de compte",
+                            "sourceDetail": "Catalogue Orange Business",
+                            "actionLabel": "Voir le compte",
+                            "targetUrl": f"/kam/briefing?id={ent.id}",
+                        })
 
         return results
 

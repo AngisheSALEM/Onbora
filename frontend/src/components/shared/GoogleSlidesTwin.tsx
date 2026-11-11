@@ -402,7 +402,7 @@ export default function GoogleSlidesTwin({
           Architecture Cible
         </div>
         <div className="flex items-center gap-2.5">
-          <Logo size={24} showBg={true} />
+          <Logo size={24}  />
           <div>
             <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-150">Présentation Google Slides</h4>
             <p className="text-[10px] text-zinc-500 font-medium">{companyName}</p>
@@ -412,7 +412,7 @@ export default function GoogleSlidesTwin({
         {/* Fake Mini Slide View */}
         <div className="h-24 studio-subcard rounded-xl flex items-center justify-center p-3 relative overflow-hidden">
           <div className="text-center">
-            <Icons.Sparkles className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1 animate-pulse" />
+            <Icons.Layers className="text-blue-600 dark:text-blue-400 w-5 h-5 mx-auto mb-1" />
             <span className="text-[10px] font-extrabold text-zinc-800 dark:text-zinc-300 uppercase tracking-wider">
               Consulter les slides Google Slides
             </span>
@@ -463,8 +463,7 @@ export default function GoogleSlidesTwin({
                 </span>
               )}
               {/* Starred */}
-              <Icons.Sparkles size={12} className="text-blue-600 dark:text-blue-400 cursor-pointer animate-pulse" />
-            </div>
+                   </div>
           </div>
         </div>
 
@@ -719,7 +718,7 @@ export default function GoogleSlidesTwin({
                     {/* TYPE 1: Welcome/Title slide */}
                     {activeSlide.type === 'welcome' && (
                       <div className="flex flex-col items-center justify-center text-center gap-2">
-                        <Logo size={44} showBg={true} className="mb-1" />
+                        <Logo size={44}  className="mb-1" />
                         <EditableText
                           text={activeSlide.content.subtitle || ''}
                           onChange={(val) => {
@@ -982,7 +981,7 @@ export default function GoogleSlidesTwin({
               {/* Welcome layout */}
               {activeSlide.type === 'welcome' && (
                 <div className="flex flex-col items-center justify-center text-center gap-3">
-                  <Logo size={60} showBg={true} className="mb-2" />
+                  <Logo size={60}  className="mb-2" />
                   <p className="text-sm text-zinc-300 font-semibold max-w-lg">{activeSlide.content.subtitle}</p>
                   <p className="text-[11px] text-zinc-500 font-medium">{activeSlide.content.description}</p>
                 </div>

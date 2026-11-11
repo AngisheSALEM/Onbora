@@ -25,6 +25,7 @@ from django.utils import timezone
 from sales.models import Enterprise, Plaque
 from kam.models import B2BNewsFeedItem
 from apps.ai_core.services.commercial_signal_scorer import commercial_signal_scorer
+from apps.ai_core.services.commercial_action import build_commercial_action
 from apps.ai_core.vector_search.singleton import get_vector_search_service
 from apps.kam.services.churn_radar_service import ChurnRadarService
 
@@ -238,9 +239,16 @@ class OnboraAnalysisSyncService:
         signal_strength = scored_signal.get("signal_strength", "STRONG" if is_new_lead else "WEAK")
         signal_score = scored_signal.get("signal_score", 90 if is_new_lead else 75)
         signal_rationale = scored_signal.get("signal_rationale", "Signal d'opportunité commerciale qualifié par Core AI.")
-        commercial_angle = scored_signal.get("commercial_angle", f"Compte {company_name} ({sector}) avec potentiel de connectivité managée.")
-        recommended_action = scored_signal.get("recommended_action", "Engager un contact de découverte et évaluer l'éligibilité réseau.")
-        recommended_offer = scored_signal.get("recommended_offer", "Fibre Sécurisée Dédiée Pro")
+        commercial_action = build_commercial_action(
+            company_name=company_name,
+            commercial_angle=scored_signal.get("commercial_angle"),
+            signal_rationale=signal_rationale,
+            recommended_offer=scored_signal.get("recommended_offer"),
+            recommended_action=scored_signal.get("recommended_action"),
+        )
+        commercial_angle = commercial_action["interest_reason"]
+        recommended_action = commercial_action["next_action"]
+        recommended_offer = commercial_action["recommended_solution"]
         priority = "HIGH" if is_new_lead or signal_strength == "STRONG" else "MEDIUM"
 
         news_item = B2BNewsFeedItem.objects.create(

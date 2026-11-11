@@ -145,6 +145,8 @@ Ces tests sont écrits dans `backend/sales/tests.py`.
 - Les tests automatisés vérifient le transport et la persistance de la transcription. La reconnaissance d'une voix réelle par le microphone Android/iOS reste à valider sur appareil ; aucun enregistrement réel ni envoi CRM externe n'a été effectué pendant la validation.
 # Core AI — corrections du 3 novembre 2026
 
+Comparatif sectoriel — 4 novembre 2026 : `kam.test_comparison_unknown` couvre le parc inconnu des deux côtés, les valeurs par défaut, l’ancienne offre 4G fictive et la reprise du scoring après saisie d’une offre réelle. `kam.test_news_feed` vérifie qu’un ajout au portefeuille ne crée ni connectivité ni offre installée fictives. Exécution avec `--settings=onbora.test_settings --noinput` (SQLite isolé).
+
 | Zone | Vérifications de régression |
 | --- | --- |
 | Accès | Recherche anonyme refusée, isolation des portefeuilles et des sessions, anciennes sessions non revendicables, GET sans création, réindexation administrateur |
@@ -171,7 +173,6 @@ Commande : `venv/Scripts/python.exe manage.py test apps.ai_core kam.tests kam.te
 | Mise en page | 320/768 px, clair/sombre, texte agrandi à 130 % |
 
 Commandes depuis `mobile/` : `flutter test`, `dart analyze`, `flutter build apk --debug`. Le microphone et la feuille de partage PDF restent à vérifier sur un appareil Android/iOS. Matrice fonctionnelle détaillée : `mobile/KAM_PARITY.md`.
-
 # Research API v2 — intégration du 4 novembre 2026
 
 Tests `apps.ai_core.test_company_research` : contrat v2, Bearer et absence de
@@ -182,3 +183,74 @@ manquantes, absence de références fabriquées et conservation des corrections 
 Parcours reproductible : `scripts/smoke_research_integration.py` utilise le corpus
 fictif avec un serveur HTTP et un worker Research séparé, jusqu'au brief Onbora.
 Les bases du test sont isolées ; aucun appel fournisseur payant.
+# Connexion Dynamics administrateur et parc sectoriel — novembre 2026
+
+- `accounts.test_dynamics_connection` : permissions ADMIN, URL Dynamics contrôlée,
+  chiffrement et non-divulgation du secret, conservation du secret à la mise à jour,
+  vérification d'identité réelle simulée par mock, refus des succès hors connexion.
+- `kam.test_installed_sector` : référentiel partagé avec le comparatif, rattachement
+  persistant malgré un nom personnalisé, quantités SIM réelles, exclusion des contrats
+  inactifs, validation des champs et suppression du produit.
+- Régressions : `kam.test_comparison_unknown`, `kam.test_epic4_dynamics_outbox`.
+- Cohérence du parc : une connectivité déclarée et un effectif ne créent aucun produit ;
+  sans contrat actif, les métriques et le score restent non renseignés. Un contrat
+  fibre seul ne génère aucune flotte SIM, capacité cloud ou disponibilité SLA.
+- Base des tests : SQLite isolée via `--settings=onbora.test_settings`.
+- `kam.test_physical_appointments` : création en présentiel, rejet des autres formats,
+  absence de lien distant enregistré et conservation du format des anciens rapports.
+- `kam.test_comparison_identity` : exclusion du compte et de ses fiches dupliquées
+  par identité métier, normalisation des noms, identifiants légaux communs, liste de
+  pairs dédupliquée et repli sur la moyenne du secteur sans auto-comparaison.
+- `sales.test_demo_installed_catalog` : seed catalogue local idempotent, conservation
+  des visites/affectations et des produits manuels/CRM, provenance démonstration et
+  cohérence des quantités entre le parc installé et le comparatif sectoriel.
+- `accounts.test_dynamics_import` : découverte des champs standards/personnalisés,
+  ambiguïtés et distinction catalogue/parc, import idempotent des cinq collections,
+  valeurs inconnues et devises, conservation des notes/produits locaux, propriétaire
+  KAM reconnu par email, permissions et visibilité du portefeuille, checkpoints,
+  baux et reprise, fréquence automatique, protection des jetons lors de la pagination.
+
+
+## Comptes rendus KAM à partir des traces commerciales — novembre 2026
+
+- `kam.test_meeting_reports` : brouillon sans écriture, validation explicite, corrections
+  conservées, idempotence, droits d’accès, signature du brouillon et protection de
+  l’historique ; aucun changement automatique du statut commercial.
+- Sources : notes, messages de suivi, proposition et retour avant-vente. Une proposition
+  ou un périmètre technique ne confirme aucun besoin client automatiquement.
+- Documents : texte UTF-8, PDF contenant du texte et DOCX, taille maximale 5 Mo,
+  extraction sans conservation du fichier, rejet des fichiers illisibles ou non pris en charge.
+- `mobile/test/kam_workspace_test.dart` : saisie vide bloquée, absence de microphone,
+  notes vers brouillon, relecture et correction avant enregistrement, reprise après erreur.
+- Vérifications : SQLite isolée (`onbora.test_settings`), TypeScript, ESLint ciblé,
+  analyse Dart et hooks de conformité design/architecture sur les fichiers concernés.
+
+### Analyse Core AI des traces commerciales et présentation en cartes
+
+- `kam.test_meeting_reports` : connexion à la façade Core AI, traitement des notes
+  courtes et des propositions, sélection d’extraits présents dans la source, rejet
+  des montants/décisions/actions sans preuve et restitution des questions de suivi.
+- Le périmètre proposé et les décisions relevées restent distincts des besoins
+  confirmés ; les résultats sont relus avant validation et conservés avec leur source.
+- Vérification visuelle du formulaire Web dans le navigateur : cartes distinctes,
+  disposition adaptative, absence de cartes imbriquées et maintien d’un seul CTA principal.
+
+
+### Action commerciale des actualités — 10 novembre 2026
+
+- Contrat Core AI : raison de l’intérêt, solution et prochaine action ; conservation des analyses enregistrées et qualification explicite lorsque les informations manquent.
+- API `GET /api/kam/feed/<uuid>/commercial-action/` : authentification, rôles KAM/Admin, isolation des portefeuilles, actualité absente, lecture sans mutation et une seule requête ORM.
+- Validation : `manage.py test kam.test_commercial_action kam.test_news_feed --settings=onbora.test_settings --noinput` : 17 tests réussis.
+- Frontend : contrôle TypeScript, ESLint ciblé et conformité design ; route dédiée en remplacement du lecteur modal.
+
+
+### Performances de lecture KAM — 11 novembre 2026
+
+- Flux : 3 requêtes SQL, compteurs agrégés et sérialisation incluse ; une lecture vide ne crée plus de données.
+- Comptes : 2 requêtes SQL pour 20 comptes, relations préchargées et statut de conversion annoté par EXISTS.
+- Résumé : 10 requêtes, nombre constant entre 1 et 20 comptes ; aucun INSERT/UPDATE/DELETE, aucune comparaison détaillée ni écriture de snapshots à la lecture.
+- Concordance du nombre d’opportunités avec le détail pour les signaux et le comparatif sectoriel.
+- Briefing : lecture du fallback sans persistance ; affichage du dernier état enregistré pendant la recherche asynchrone, sans écraser une édition en cours.
+- Client API : tests Node de regroupement des GET simultanés, isolation des sessions, reprise après erreur, invalidation après mutation et annulation indépendante.
+- Validation : tests Django ciblés et Core AI, tests Node, TypeScript, ESLint ciblé et build de production Next.js ; hooks design et architecture.
+- Mesure serveur sur la base de développement configurée : comptes 14 ms / 2 requêtes, leads 49 ms / 3 requêtes, résumé 137 ms / 10 requêtes. Mesure ponctuelle sans réseau navigateur ni concurrence ; voir `docs/performance_kam.md`.

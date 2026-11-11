@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 from django.utils import timezone
 from django.urls import reverse
 from rest_framework import status
@@ -86,7 +87,9 @@ class Epic4DynamicsOutboxTestCase(APITestCase):
         self.assertEqual(proj.crm_account_id, op.remote_id)
         self.assertEqual(proj.sync_status, 'IN_SYNC')
 
-    def test_post_call_sync_crm_view_enqueues_and_processes(self):
+    @patch('accounts.dynamics_service.DynamicsConnectionService.client')
+    def test_post_call_sync_crm_view_enqueues_and_processes(self, connection_client):
+        connection_client.return_value = DataverseClient(simulation_mode=True)
         url = reverse('kam-visit-sync-crm', kwargs={'report_id': self.report.id})
         response = self.client.post(url)
 

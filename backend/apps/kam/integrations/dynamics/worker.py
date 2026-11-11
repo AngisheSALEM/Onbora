@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class DynamicsOutboxWorker:
     def __init__(self, client: DataverseClient = None):
-        self.client = client or DataverseClient()
+        self.client = client
 
     def process_pending_operations(self, batch_size: int = 10) -> int:
         """
@@ -85,12 +85,17 @@ class DynamicsOutboxWorker:
 
     def _dispatch_operation(self, op: SyncOperation) -> Dict[str, Any]:
         """Aiguille l'opération vers l'appel Dataverse approprié."""
+        if self.client is None:
+            from accounts.dynamics_service import DynamicsConnectionService
+            client = DynamicsConnectionService.client()
+        else:
+            client = self.client
         if op.entity_type == 'ACCOUNT':
-            return self.client.sync_account(int(op.entity_id), op.payload)
+            return client.sync_account(int(op.entity_id), op.payload)
         elif op.entity_type == 'APPOINTMENT':
-            return self.client.sync_visit_appointment(op.payload)
+            return client.sync_visit_appointment(op.payload)
         elif op.entity_type == 'CONTACT':
-            return self.client.sync_contact(op.payload)
+            return client.sync_contact(op.payload)
         else:
             raise DataverseClientException(f"Type d'entité non pris en charge : {op.entity_type}")
 

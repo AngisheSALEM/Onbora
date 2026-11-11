@@ -133,6 +133,9 @@ export interface StrategicVisit {
   converted_amount?: number;
   converted_offer?: string;
   conversion_notes?: string;
+  assigned_at?: string;
+  is_recently_added?: boolean;
+  is_web_converted?: boolean;
 }
 
 export interface MeetingDebrief {
@@ -161,6 +164,7 @@ export interface MeetingDebrief {
 }
 
 export interface B2BNewsItem {
+  company_photo_url?: string;
   id: string;
   enterprise?: number | null;
   enterprise_name?: string;
@@ -182,6 +186,10 @@ export interface B2BNewsItem {
   category_display: string;
   priority: 'HIGH' | 'MEDIUM' | 'NORMAL';
   priority_display: string;
+  signal_strength?: 'STRONG' | 'WEAK';
+  signal_strength_display?: string;
+  signal_score?: number;
+  signal_rationale?: string;
   commercial_angle: string;
   recommended_action: string;
   recommended_offer: string;

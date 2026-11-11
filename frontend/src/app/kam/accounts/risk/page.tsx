@@ -97,7 +97,7 @@ export default function RiskAccountsDetailPage() {
       </div>
 
       {/* Tableau détaillé et compact */}
-      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-6 border border-black/5 dark:border-white/5">
+      <div className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-6 border border-black/5 dark:border-white/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

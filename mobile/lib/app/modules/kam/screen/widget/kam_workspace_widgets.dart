@@ -107,7 +107,7 @@ class KamSurface extends StatelessWidget {
       color: Theme.of(context).brightness == Brightness.dark
           ? AppConstants.cardDark
           : AppConstants.cardLight,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleCard),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: const EdgeInsets.all(16), child: child),
     ),

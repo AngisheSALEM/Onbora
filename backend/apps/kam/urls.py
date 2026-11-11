@@ -1,4 +1,5 @@
 from django.urls import path
+from .meeting_report_views import MeetingReportView, MeetingReportDocumentView
 from .views import (
     DossierListView, DossierDetailView, DossierBusinessTwinView, 
     DossierExportView, DossierProvisionView, DossierHandoverPackView,
@@ -9,8 +10,8 @@ from .views import (
     KamVisitHistoryListView, KamVisitReportDetailView, KamAudioTranscribeView,
     RelationshipCoverageListCreateView, RelationshipCoverageDetailView, RelationshipCoverageDiagnosticView,
     AccountMemoryEventListCreateView, AccountHandoverPackView, AccountRiskSignalsView,
-    KamInstalledOffersView, KamInstalledOfferDetailView
 )
+from .installed_offer_views import KamInstalledOffersView, KamInstalledOfferDetailView
 from .commercial_intelligence_views import (
     PreCallBriefingDetailView, PreCallBriefingListView,
     TechnicalSpecsDetailView, TechnicalSpecsPdfView,
@@ -30,16 +31,25 @@ from .comparison_views import (
     KamSectorOverviewView,
     KamEnterpriseComparisonView,
 )
+from .commercial_action_views import B2BNewsCommercialActionView
 from .services.news_feed_views import (
     B2BNewsFeedListView,
     B2BNewsFeedReadToggleView,
     B2BNewsFeedSaveToggleView,
     B2BNewsFeedConvertView,
     B2BNewsFeedRefreshView,
+    B2BEnterpriseNewsView,
+    B2BNewsFeedMarkAllReadView,
 )
 
 
 urlpatterns = [
+    path('accounts/<int:account_id>/report-draft/', MeetingReportView.as_view(), name='kam-account-report-draft'),
+    path('accounts/<int:account_id>/report-complete/', MeetingReportView.as_view(operation='complete'), name='kam-account-report-complete'),
+    path('accounts/<int:account_id>/report-document/', MeetingReportDocumentView.as_view(), name='kam-account-report-document'),
+    path('appointments/<int:pk>/report-draft/', MeetingReportView.as_view(), name='kam-appointment-report-draft'),
+    path('appointments/<int:pk>/report-complete/', MeetingReportView.as_view(operation='complete'), name='kam-appointment-report-complete'),
+    path('appointments/<int:pk>/report-document/', MeetingReportDocumentView.as_view(), name='kam-appointment-report-document'),
     # Comparateur Sectoriel & Benchmarking B2B ("Versus" style)
     path('comparisons/sectors/', KamSectorOverviewView.as_view(), name='kam-comparisons-sectors'),
     path('comparisons/', KamEnterpriseComparisonView.as_view(), name='kam-comparisons-detail'),
@@ -52,6 +62,7 @@ urlpatterns = [
     path('churn-radar/no-action/', ChurnRadarNoActionAccountsView.as_view(), name='kam-churn-radar-no-action'),
     path('churn-radar/recalculate/', ChurnRadarRecalculateView.as_view(), name='kam-churn-radar-recalculate'),
     path('accounts/<int:enterprise_id>/radar/', AccountRadarDetailView.as_view(), name='kam-account-radar-detail'),
+    path('accounts/<int:enterprise_id>/news/', B2BEnterpriseNewsView.as_view(), name='kam-account-news-list'),
 
     # 1. Pre-Call Intelligence (Briefing pré-RDV en 2 minutes) & Fiche Technique
     path('pre-call/<int:account_id>/', PreCallBriefingDetailView.as_view(), name='kam-pre-call-detail'),
@@ -108,7 +119,9 @@ urlpatterns = [
 
     # 7. Fil d'actualité B2B & Veille Web Sourcing
     path('feed/', B2BNewsFeedListView.as_view(), name='kam-feed-list'),
+    path('feed/<uuid:pk>/commercial-action/', B2BNewsCommercialActionView.as_view(), name='kam-feed-commercial-action'),
     path('feed/refresh/', B2BNewsFeedRefreshView.as_view(), name='kam-feed-refresh'),
+    path('feed/mark-all-read/', B2BNewsFeedMarkAllReadView.as_view(), name='kam-feed-mark-all-read'),
     path('feed/<uuid:pk>/read/', B2BNewsFeedReadToggleView.as_view(), name='kam-feed-read-toggle'),
     path('feed/<uuid:pk>/save/', B2BNewsFeedSaveToggleView.as_view(), name='kam-feed-save-toggle'),
     path('feed/<uuid:pk>/convert/', B2BNewsFeedConvertView.as_view(), name='kam-feed-convert'),

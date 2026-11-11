@@ -61,6 +61,12 @@ FLUTTER_1PX_BORDER_PATTERN = re.compile(
     r'Border\.all\s*\(\s*color:\s*(?:Colors\.grey|borderLight)[^)]*width:\s*1'
 )
 
+# Regex for Forbidden Sparkles Icon (DESIGN.md Rule 10)
+SPARKLES_PATTERN = re.compile(
+    r'\b(?:Icons\.Sparkles|CupertinoIcons\.sparkles|LucideIcons\.sparkles)\b|'
+    r'<Icons\.Sparkles|<Sparkles\b'
+)
+
 # Extensions allowed for inspection
 RELEVANT_EXTENSIONS = ('.tsx', '.jsx', '.ts', '.js', '.dart', '.html', '.css', '.vue', '.svelte')
 
@@ -68,7 +74,7 @@ RELEVANT_EXTENSIONS = ('.tsx', '.jsx', '.ts', '.js', '.dart', '.html', '.css', '
 IGNORED_DIRS = {
     '.git', 'node_modules', '.next', '.dart_tool', 'build', 'dist', 
     'cpio_out', '.stitch-mcp', 'venv', '.venv', '__pycache__',
-    'ios', 'android', 'windows', 'linux', 'macos', 'vendor', 'static'
+    'ios', 'android', 'windows', 'linux', 'macos', 'vendor', 'static', '.agents', 'branding'
 }
 
 # Icon suggestions helper for common emojis
@@ -185,6 +191,19 @@ def check_file(file_path: str) -> list:
                                 "message": "Bordure 1px grise détectée. Privilégiez le contraste de fond et l'espace négatif sans bordure grise 1px.",
                                 "snippet": line.strip()
                             })
+
+                # 4. Verification ICONE SPARKLES (DESIGN.md Rule 10)
+                sparkles_matches = SPARKLES_PATTERN.findall(line)
+                if sparkles_matches:
+                    for s in sparkles_matches:
+                        violations.append({
+                            "type": "ICONE_SPARKLES_INTERDITE",
+                            "line_no": line_no,
+                            "offending": s,
+                            "rule": "DESIGN.md §10 (Zéro icône Sparkles, privilégier Skeleton Loader et icônes métier)",
+                            "message": f"Icône Sparkles bannie détectée '{s}'. Utilisez un Skeleton Loader pour les chargements, ou une icône métier adaptée (<Icons.Zap />, <Icons.Cpu />, etc.).",
+                            "snippet": line.strip()
+                        })
 
     except Exception as e:
         print(f"{YELLOW}[Erreur lecture] {file_path}: {e}{RESET}")

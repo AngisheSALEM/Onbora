@@ -234,7 +234,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -572,7 +572,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                         ),
                                       )
                                     : Icon(
-                                        LucideIcons.sparkles,
+                                        LucideIcons.fileCheck,
                                         size: 16,
                                         color: isDark ? const Color(0xFF121214) : Colors.white,
                                       ),
@@ -900,7 +900,7 @@ class _DictaphoneRecordingScreenState extends State<DictaphoneRecordingScreen> {
                                     ),
                                   )
                                 : Icon(
-                                    LucideIcons.sparkles,
+                                    LucideIcons.fileCheck,
                                     size: 20,
                                     color: isDark ? const Color(0xFF121214) : Colors.white,
                                   ),

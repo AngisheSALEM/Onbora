@@ -241,7 +241,7 @@ def _serialize_kam_office_account(ent: Enterprise) -> dict:
         "city": ent.city,
         "commune": ent.commune,
         "address": ent.address,
-        "annual_revenue": float(ent.annual_revenue),
+        "annual_revenue": float(ent.annual_revenue) if ent.annual_revenue is not None else None,
         "employee_count": ent.employee_count,
         "site_count": ent.site_count,
         "segment": ent.segment,

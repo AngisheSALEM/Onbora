@@ -28,6 +28,8 @@ Avant **chaque action ou modification**, l'assistant et tout sous-agent invoqué
 Aucune fonctionnalité non alignée sur le coeur de métier MSP ne doit être introduite. Les workflows doivent fluidifier la chaîne :
 `Client / Prospecteur` ➔ `Qualification IA` ➔ `Validation KAM` ➔ `Passerelle CRM / Déploiement`.
 
+Les nouveaux rendez-vous sont exclusivement physiques : aucun choix de format ni lien de visioconférence dans les formulaires Web et mobile. Les anciens comptes rendus conservent leur historique.
+
 ---
 
 ### Règle 3 : Porte de Validation de l'Historique par l'Utilisateur
@@ -99,8 +101,15 @@ L'interface d'Onbora se distingue par une rigueur visuelle premium et profession
     *   **Exception unique et absolue :** Les lignes séparatrices sont exclusivement réservées aux lignes des tableaux de données (`<thead>`, `<tbody>`, `<tr>`), où elles garantissent la lisibilité tabulaire.
 *   **Zéro Double Bordure sur les Inputs & Barres de Recherche** :
     *   Interdiction d'encapsuler un `<input>` ayant ses propres bordures ou fonds blancs forcés à l'intérieur d'un conteneur stylisé. Tout champ de recherche ou input imbriqué doit être strictement transparent (`bg-transparent border-none border-0 outline-none ring-0 shadow-none`), dans une pilule fluide (`rounded-full`) sans séparateur vertical intermédiaire (`border-l`).
+*   **Zéro Icône Sparkles & Primauté Absolue du Skeleton Loader** :
+    *   Interdiction totale et définitive de l'icône Sparkles (`Icons.Sparkles`, `CupertinoIcons.sparkles`, `LucideIcons.sparkles`, ou tout dérivé) dans l'intégralité du système.
+    *   Pour tous les états de chargement (scoring, débriefing, analyse IA, flux B2B, documents), obligation absolue d'utiliser des **Skeleton Loaders Shimmer** structurés (`SkeletonLoader.tsx` sur Web, `skeleton_loader.dart` sur Mobile) reflétant le squelette des données attendues.
+    *   Les actions ou déclencheurs IA emploient exclusivement des icônes sémantiques métier précises (`Icons.Zap`, `Icons.Cpu`, `Icons.FileText`, `Icons.Layers`, `Icons.Scale`, `Icons.CheckCircle`).
 *   **Zéro Ombre Colorée / Néon ("AI Slop")** : Interdiction des halos fluo (`shadow-[#4F6CE8]/20`, `shadow-emerald-500/10`). Seules les ombres neutres douces (`shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-none`) sont admises.
 *   **Zéro Cartes Imbriquées** : Éviter les sous-cartes grises dans des cartes déjà grises.
+*   **Typographie Harmonique & Échelle du Nombre d'Or (phi ≈ 1.618)** :
+    *   Toute taille de police doit respecter l'échelle modulaire harmonique régie par le Nombre d'Or (phi ≈ 1.618) et la suite de Fibonacci : 8px (micro), 10px (caption), 11px (eyebrow), 13px (subhead/metadata), 14px (body compact), 16px (body principal), 21px (titre carte/headline), 26px (titre section), 34px (large title), 55px (hero display), 89px (chiffres clés KPI).
+    *   **Golden Leading** : Le corps de texte applique un interlignage exact de 1.618 (ex: 26px pour 16px, 21px pour 13px). Les dimensionnements typographiques arbitraires sont formellement proscrits.
 *   **Hook de Vérification Automatisé** :
     *   Un script de conformité [`scripts/verify_design_compliance.py`](file:///C:/Users/Salem/Documents/projet/Onbora/scripts/verify_design_compliance.py) est installé comme hook Git pre-commit (`.git/hooks/pre-commit`). Tout commit contenant un émoji ou une violation de la charte est rejeté automatiquement.
 
@@ -150,6 +159,14 @@ Afin d'assurer la maintenabilité, la robustesse et la haute vélocité d'Onbora
 
 *   **Hook & Script Automatisé** :
     *   Le script d'audit [`scripts/verify_technical_debt.py`](file:///C:/Users/Salem/Documents/projet/Onbora/scripts/verify_technical_debt.py) scanne le code Django et l'architecture pour faire remonter toute dette technique et anti-pattern avant la validation des tickets.
+
+---
+
+### Règle 13 : Textes Métier Directs
+
+Préférence explicite du 6 novembre 2026 : ne plus ajouter de mentions de simulation ou de présentation des jeux d'essai dans l'interface ni dans les réponses. Employer des libellés métier sobres et directs. Conserver les marqueurs techniques de provenance en interne, sans badges ni commentaires visibles. Ne pas présenter pour autant une donnée générée comme une donnée confirmée par le CRM.
+
+Cette règle prévaut sur les anciennes formulations du cadrage.
 
 ---
 

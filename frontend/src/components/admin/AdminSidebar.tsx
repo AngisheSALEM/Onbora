@@ -103,13 +103,12 @@ export default function AdminSidebar() {
         {/* Brand & Collapse */}
         <div className="flex items-center justify-between px-2 pt-1">
           <div className="flex items-center gap-3">
-            <Logo size={isCollapsed ? 32 : 36} />
-            {!isCollapsed && (
+            {isCollapsed ? (
+              <Logo variant="icon" size={32} />
+            ) : (
               <div className="flex flex-col">
-                <span className="text-sm font-semibold tracking-tight text-[#242124] dark:text-white">
-                  ONBORA
-                </span>
-                <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] font-medium">
+                <Logo variant="full" size={28} />
+                <span className="text-[10px] text-[#6E6C67] dark:text-[#A1A1AA] font-medium mt-0.5">
                   Cockpit Direction B2B
                 </span>
               </div>

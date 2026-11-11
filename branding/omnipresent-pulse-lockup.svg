@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 256" width="760" height="256" fill="none">
+  <title>Onbora Lockup — L'Écoute IA</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- West listening wave (Ingesting global internet signals) -->
+  <path d="M 128 34 A 94 94 0 0 0 128 222" stroke="#4F6CE8" stroke-width="24" stroke-linecap="round"/>
+  <!-- East analytical wave (Structuring into B2B Intelligence) -->
+  <path d="M 128 34 A 94 94 0 0 1 128 222" stroke="#7896FF" stroke-width="24" stroke-linecap="round"/>
+  <!-- Central analytical pulse spectrum: 3 bars indicating active listening -->
+  <line x1="96" y1="128" x2="96" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="128" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="160" y1="128" x2="160" y2="106" stroke="#4F6CE8" stroke-width="12" stroke-linecap="round"/>
+  <!-- Baseline horizon scan axis -->
+  <line x1="84" y1="128" x2="172" y2="128" stroke="#4F6CE8" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">VEILLE WEB GLOBALE &amp; ANALYSE B2B</text>
+</svg>

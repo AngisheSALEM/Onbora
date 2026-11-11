@@ -172,3 +172,26 @@ class ChurnRadarTestCase(APITestCase):
         for url in urls:
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK, f"Échec sur {url}: {response.data}")
+
+    def test_upsell_sources_comparator_and_signals(self):
+        """Vérifie que les opportunités d'upsell proviennent du comparateur et des signaux."""
+        from kam.models import B2BNewsFeedItem
+
+        # 1. Ajout d'un signal d'actualité pour ent_risk
+        B2BNewsFeedItem.objects.create(
+            enterprise=self.ent_risk,
+            title="Expansion régionale et ouverture de 3 nouvelles agences",
+            summary="Croissance des flux télécoms inter-agences.",
+            category="EXPANSION",
+            priority="HIGH",
+            commercial_angle="Besoin d'interconnexion sécurisée SD-WAN",
+            recommended_offer="SD-WAN Managé Hybride",
+        )
+
+        upsells = ChurnRadarService.get_upsell_accounts(self.kam_user)
+        self.assertTrue(len(upsells) >= 1)
+
+        signal_upsells = [u for u in upsells if u["source"] == "SIGNAUX"]
+        self.assertTrue(len(signal_upsells) >= 1)
+        self.assertIn("tab=news", signal_upsells[0]["targetUrl"])
+        self.assertEqual(signal_upsells[0]["recommendedSolution"], "SD-WAN Managé Hybride")

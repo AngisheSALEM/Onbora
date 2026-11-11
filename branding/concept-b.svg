@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <title>Onbora — L'Alliance</title>
+  <!-- Primary Cobalt Arc (MSP & Copilot) -->
+  <path d="M 64 74 A 86 86 0 0 1 198 84" stroke="#4F6CE8" stroke-width="26" stroke-linecap="round"/>
+  <path d="M 64 74 C 34 104 34 152 64 182" stroke="#4F6CE8" stroke-width="26" stroke-linecap="round"/>
+  <!-- Secondary Deep Navy Arc (Client B2B & KAM Convergence) -->
+  <path d="M 192 182 A 86 86 0 0 1 58 172" stroke="#7896FF" stroke-width="26" stroke-linecap="round"/>
+  <path d="M 192 182 C 222 152 222 104 192 74" stroke="#7896FF" stroke-width="26" stroke-linecap="round"/>
+</svg>

@@ -56,6 +56,12 @@ class UnifiedCoreAIEngine:
         """Delegation directe au moteur commun d'inférence."""
         return self.base_engine.call_gemini_json(prompt, system_instruction=system_instruction)
 
+    def generate_meeting_report(self, **source) -> dict:
+        """Analyse notes, emails and documents through the shared inference budget."""
+        from .meeting_report.service import MeetingReportEngine
+        engine = MeetingReportEngine(api_key=self.api_key, model_name=self.model_name)
+        return engine.generate(**source)
+
     # -------------------------------------------------------------------------
     # 1. PRE-CALL BRIEFING (ONBORA ANALYSIS PROVISIONING)
     # -------------------------------------------------------------------------

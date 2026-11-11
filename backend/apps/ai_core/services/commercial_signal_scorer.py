@@ -28,6 +28,12 @@ Définition des signaux :
      * Mise à jour de routine, communication institutionnelle sans impact technique ou budgétaire identifié.
    - Score : entre 15 et 69.
 
+Les trois informations de l'action commerciale sont :
+- commercial_angle : expliquer pourquoi l'entreprise pourrait être intéressée, à partir des faits de l'actualité. Présenter tout besoin déduit comme une hypothèse à qualifier.
+- recommended_offer : solution recommandée et lien avec ce besoin potentiel. Ne pas inventer de référence catalogue, prix, disponibilité ou éligibilité.
+- recommended_action : prochaine démarche commerciale concrète pour vérifier le besoin. Tout rendez-vous proposé est en présentiel, sans visioconférence.
+Si les faits sont insuffisants, indiquer ce qui reste à qualifier au lieu d'affirmer un besoin ou une solution certaine.
+
 Réponds TOUJOURS au format JSON strict avec la structure suivante :
 {
   "signal_strength": "STRONG" | "WEAK",

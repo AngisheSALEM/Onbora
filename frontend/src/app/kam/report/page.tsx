@@ -36,7 +36,7 @@ export default function KamReportPage() {
       fallback={
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="flex flex-col items-center gap-3">
-            <Icons.Sparkles size={28} className="animate-spin text-[#4F6CE8]" />
+          
             <span className="text-xs font-semibold text-zinc-500">Chargement du rapport...</span>
           </div>
         </div>

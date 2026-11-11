@@ -98,10 +98,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md bg-white dark:bg-[#2F2C30] rounded-3xl p-8 sm:p-10 flex flex-col gap-6 shadow-2xl animate-fade-in border-0">
         <div className="text-center">
-          <Logo className="mx-auto mb-3" size={48} />
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Onbora
-          </h1>
+          <Logo variant="full" size={40} className="mx-auto mb-3" />
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Connexion à votre espace professionnel
           </p>

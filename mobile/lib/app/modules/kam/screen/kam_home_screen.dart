@@ -38,7 +38,7 @@ class KamHomeScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    CupertinoIcons.sparkles,
+                    CupertinoIcons.bolt_fill,
                     size: 18,
                     color: isDark ? Colors.white : AppConstants.textDark,
                   ),

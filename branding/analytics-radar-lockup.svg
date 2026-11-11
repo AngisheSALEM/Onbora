@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 256" width="760" height="256" fill="none">
+  <title>Onbora Lockup — Le Radar Décisionnel</title>
+  <g transform="translate(48, 48) scale(0.625)">
+    <!-- Main structural perimeter O ring with 45° analytic breach -->
+  <path d="M 128 32 A 96 96 0 1 0 224 128" stroke="#4F6CE8" stroke-width="26" stroke-linecap="round"/>
+  <!-- 3 ascending metric bars integrated into the active quadrant -->
+  <!-- Bar 1 (Baseline metric) -->
+  <line x1="152" y1="120" x2="152" y2="84" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Bar 2 (Scored insight) -->
+  <line x1="178" y1="120" x2="178" y2="64" stroke="#4F6CE8" stroke-width="14" stroke-linecap="round"/>
+  <!-- Bar 3 (Strategic peak / Alpha opportunity) -->
+  <line x1="204" y1="120" x2="204" y2="44" stroke="#7896FF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Radar sweep focal center -->
+  <circle cx="128" cy="128" r="16" fill="#4F6CE8"/>
+  </g>
+  <text x="248" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5" fill="#242124">On<tspan fill="#4F6CE8">bora</tspan></text>
+  <text x="252" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717A">ANALYSE &amp; COPILOTE COMMERCIAL B2B</text>
+</svg>

@@ -69,7 +69,7 @@ export default function KamIntelligenceStacks({
       {/* Top Header : Title + Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icons.Sparkles size={16} className="text-orange-400" />
+        
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Intelligence IA & Signaux d&apos;Affaires
           </span>

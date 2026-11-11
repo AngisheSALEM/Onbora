@@ -63,7 +63,7 @@ function AccountsDirectory() {
           {accounts.length} compte{accounts.length > 1 ? 's' : ''} {query ? 'correspondant à votre recherche' : 'dans votre portefeuille'}
         </p>
       </div>
-      <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-[24px] p-5 md:p-6">
+      <section className="bg-[#F6F5F2] dark:bg-[#2D2A2D] rounded-xl p-5 md:p-6">
         <KamAccountsTable accounts={accounts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)} loading={loading} error={error} />
         {!loading && !error && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setRequestedPage} totalItems={accounts.length} pageSize={PAGE_SIZE} itemName="comptes B2B" />}
         {error && <button type="button" onClick={() => void loadAssignedAccounts()} className="mt-4 text-sm text-zinc-700 dark:text-zinc-200 hover:underline">Réessayer</button>}

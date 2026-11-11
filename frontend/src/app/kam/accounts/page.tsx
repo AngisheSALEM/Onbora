@@ -3,16 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useKamContext } from '@/components/kam/KamContext';
-import { useAuth } from '@/context/AuthContext';
 import KamAccountsListView from '@/components/kam/KamAccountsListView';
-import KamVoiceDebriefModal from '@/components/kam/KamVoiceDebriefModal';
+import KamMeetingReportModal from '@/components/kam/KamMeetingReportModal';
 import { StrategicVisit } from '@/components/kam/kamTypes';
-import { Icons } from '@/components/shared/Icons';
 
 export default function KamAccountsPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { visits, searchQuery, loadAssignedAccounts, updateVisit } = useKamContext();
+  const { visits, searchQuery, loadAssignedAccounts } = useKamContext();
   const [activeDebriefVisit, setActiveDebriefVisit] = useState<StrategicVisit | null>(null);
 
   const handleOpenBriefing = (visit: StrategicVisit) => {
@@ -23,9 +20,10 @@ export default function KamAccountsPage() {
     setActiveDebriefVisit(visit);
   };
 
-  const handleDebriefSaved = (updatedVisit: StrategicVisit) => {
-    updateVisit(updatedVisit);
+  const handleDebriefSaved = (reportId: number) => {
+    void loadAssignedAccounts();
     setActiveDebriefVisit(null);
+    router.push(`/kam/report?reportId=${reportId}`);
   };
 
 
@@ -39,11 +37,10 @@ export default function KamAccountsPage() {
         onOpenDebrief={handleOpenDebrief}
       />
 
-      <KamVoiceDebriefModal
+      <KamMeetingReportModal
         visit={activeDebriefVisit}
-        isOpen={!!activeDebriefVisit}
         onClose={() => setActiveDebriefVisit(null)}
-        onDebriefSaved={handleDebriefSaved}
+        onSaved={handleDebriefSaved}
       />
     </>
   );

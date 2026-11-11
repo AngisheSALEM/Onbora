@@ -152,6 +152,7 @@ def _build_briefing_payload(ent: Enterprise, rev_str: str, wallet_share: float, 
         "installed_offers": [
             {
                 "id": o.id,
+                "is_demo": o.is_demo,
                 "name": o.installed_offer_name,
                 "category": o.category or "CONNECTIVITY",
                 "provider": o.provider,
@@ -160,7 +161,7 @@ def _build_briefing_payload(ent: Enterprise, rev_str: str, wallet_share: float, 
                 "contract_status_label": o.get_contract_status_display(),
                 "installation_date": o.installation_date.strftime('%d/%m/%Y') if o.installation_date else None,
                 "contract_end_date": o.contract_end_date.strftime('%d/%m/%Y') if o.contract_end_date else None,
-                "monthly_cost_mrr": float(o.monthly_cost_mrr or 0),
+                "monthly_cost_mrr": float(o.monthly_cost_mrr) if o.monthly_cost_mrr is not None else None,
                 "bandwidth_mbps": o.bandwidth_mbps,
                 "active_licenses_count": o.active_licenses_count,
                 "unresolved_tickets_count": o.unresolved_tickets_count,
@@ -227,6 +228,9 @@ def serialize_enterprise_to_kam_visit(ent: Enterprise) -> dict:
         "preparation_time_minutes": 15,
         "golden_rule": f"Ne jamais aborder le prix avant d'avoir validé l'inadéquation du lien {ent.current_operator} actuel.",
         "debrief_completed": ent.conversion_status in ['CONVERTED', 'IN_NEGOTIATION'],
+        "assigned_at": ent.assigned_at.isoformat() if ent.assigned_at else None,
+        "is_recently_added": bool(ent.assigned_at and (timezone.now() - ent.assigned_at).total_seconds() < 86400 * 3),
+        "is_web_converted": ent.has_converted_news if hasattr(ent, 'has_converted_news') else ent.news_feed_items.filter(is_converted_to_portfolio=True).exists(),
         "briefing": _build_briefing_payload(
             ent, rev_str, wallet_share, mrr, revenue_val, primary_contact_name, primary_contact_role, pains, opportunities
         )
@@ -394,7 +398,7 @@ def persist_meeting_report(appointment, user, transcript, audio_file_path, conve
     contact_label = (appointment.contact_name or "").strip()
     recipient = contact_label if contact_label else f"la direction de {appointment.enterprise.name if appointment.enterprise else 'l\'entreprise'}"
 
-    if not actions_todo:
+    if actions_todo is None:
         is_unqualified = (
             bant_scores.get('status') in ['INSUFFICIENT_DATA', 'DISQUALIFIED']
             or bant_scores.get('total', 0) == 0

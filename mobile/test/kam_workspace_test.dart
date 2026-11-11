@@ -117,6 +117,18 @@ class WorkspaceApi extends ApiClient {
   }) async {
     writes.add((path, body));
     if (fail) throw ApiException('Indisponible');
+    if (path.endsWith('/report-draft/')) {
+      return {
+        'draft_token': 'review-token',
+        'draft': {
+          'executive_summary': 'Le client demande une liaison dédiée au siège.',
+          'confirmed_needs': ['Liaison dédiée'],
+          'objections_raised': [],
+          'actions_todo': [],
+          'follow_up_email_draft': '',
+        },
+      };
+    }
     return {
       'report': {'id': 99, 'executive_summary': 'Compte-rendu réel'},
     };
@@ -288,17 +300,23 @@ void main() {
       const MaterialApp(home: KamMeetingScreen(appointment: {'id': 7})),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Générer le compte-rendu'));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -200));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Générer le compte-rendu'));
-    await tester.pumpAndSettle();
-    expect(api.writes, isEmpty);
-    expect(
-      find.textContaining('Enregistrez votre voix ou saisissez vos notes'),
-      findsOneWidget,
+    await tester.scrollUntilVisible(
+      find.text('Préparer le compte rendu'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
+    await tester.pumpAndSettle();
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Préparer le compte rendu'),
+    );
+    expect(button.onPressed, isNull);
+    expect(api.writes, isEmpty);
+    expect(find.byIcon(Icons.mic), findsNothing);
   });
 
   testWidgets('loading uses the report skeleton', (tester) async {
@@ -327,18 +345,51 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byType(TextField).at(1),
+      find.widgetWithText(TextField, 'Notes ou message'),
       'Le client demande une liaison dédiée au siège.',
     );
-    await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Générer le compte-rendu'));
+    await tester.scrollUntilVisible(
+      find.text('Préparer le compte rendu'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
-    expect(api.writes.single.$1, '/api/kam/appointments/7/complete-vocal/');
-    expect(api.writes.single.$2['transcript'], '');
+    await tester.tap(find.text('Préparer le compte rendu'));
+    await tester.pumpAndSettle();
+    expect(api.writes.single.$1, '/api/kam/appointments/7/report-draft/');
     expect(
       api.writes.single.$2['notes'],
       'Le client demande une liaison dédiée au siège.',
+    );
+    expect(find.text('Relire avant d’enregistrer'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Synthèse'),
+      'Synthèse corrigée par le KAM.',
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Valider et enregistrer'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Valider et enregistrer'));
+    await tester.pumpAndSettle();
+    expect(api.writes.last.$1, '/api/kam/appointments/7/report-complete/');
+    expect(
+      api.writes.last.$2['executive_summary'],
+      'Synthèse corrigée par le KAM.',
     );
     expect(find.text('Compte-rendu réel'), findsOneWidget);
   });
@@ -353,17 +404,33 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byType(TextField).at(1),
+      find.widgetWithText(TextField, 'Notes ou message'),
       'Notes terrain à conserver.',
     );
-    await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Générer le compte-rendu'));
+    await tester.scrollUntilVisible(
+      find.text('Préparer le compte rendu'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Préparer le compte rendu'));
     await tester.pumpAndSettle();
     expect(api.writes, hasLength(1));
-    expect(find.textContaining('Vos notes sont conservées'), findsOneWidget);
     expect(
-      tester.widget<TextField>(find.byType(TextField).at(1)).controller!.text,
+      find.textContaining('Vérifiez votre connexion et réessayez'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<TextField>(find.widgetWithText(TextField, 'Notes ou message'))
+          .controller!
+          .text,
       'Notes terrain à conserver.',
     );
   });

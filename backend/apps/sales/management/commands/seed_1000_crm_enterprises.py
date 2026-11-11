@@ -2,6 +2,8 @@ import random
 from datetime import timedelta
 from decimal import Decimal
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
+from django.db import transaction
 from django.utils import timezone
 from accounts.models import User
 from sales.models import Plaque, Enterprise, SegmentationConfig
@@ -9,6 +11,7 @@ from sales.models import Plaque, Enterprise, SegmentationConfig
 class Command(BaseCommand):
     help = "Génère une banque de données réaliste de 1000 entreprises congolaises (RDC) avec segmentation mensuelle : TPE < 200$/m, PME 200-2500$/m, Grands Comptes > 2500$/m."
 
+    @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("=== DÉBUT DU PEUPLEMENT : 1 000 ENTREPRISES CONGOLAISES (RDC) ==="))
 
@@ -25,10 +28,7 @@ class Command(BaseCommand):
                 'kam_entity_label': 'Direction KAM & Grands Comptes'
             }
         )
-        config.tpe_max_revenue = Decimal('2400.00')
-        config.pme_max_revenue = Decimal('30000.00')
-        config.save()
-        self.stdout.write(self.style.SUCCESS("[OK] Seuils de segmentation RDC configures : TPE < 200$/m (2 400$/an) | PME 200-2500$/m | Grands Comptes > 2 500$/m (30 000$/an)"))
+        self.stdout.write(self.style.SUCCESS("[OK] Configuration de segmentation existante conservee."))
 
         # 2. Plaques territoriales réalistes en RDC
         plaques_data = [
@@ -188,9 +188,7 @@ class Command(BaseCommand):
             "Katindo": "GOM-CENTRE",
         }
 
-        # Nettoyage de l'ancienne table Enterprise
-        self.stdout.write("Purge complète de l'ancienne table Enterprise...")
-        Enterprise.objects.all().delete()
+        self.stdout.write("Conservation des comptes existants, de leurs affectations et de leurs visites.")
 
         created_enterprises = []
         rccm_counter = 1000
@@ -547,8 +545,11 @@ class Command(BaseCommand):
             created_enterprises.append(ent)
 
         # Insertion massive par lots pour rapidité optimale
-        self.stdout.write("Insertion des 1 000 comptes en base de données SQLite...")
-        Enterprise.objects.bulk_create(created_enterprises, batch_size=200)
+        existing_ids = set(Enterprise.objects.filter(crm_id__in=[e.crm_id for e in created_enterprises]).values_list('crm_id', flat=True))
+        missing = [e for e in created_enterprises if e.crm_id not in existing_ids]
+        self.stdout.write(f"Création de {len(missing)} comptes absents ; {len(existing_ids)} comptes conservés.")
+        Enterprise.objects.bulk_create(missing, batch_size=200)
+        call_command('seed_installed_catalog', stdout=self.stdout)
 
         # 4. Affectation opérationnelle des plaques territoriales et portefeuilles aux commerciaux terrain
         commercial = User.objects.filter(username='commercial').first()
@@ -560,7 +561,7 @@ class Command(BaseCommand):
             p_comm = Plaque.objects.filter(code__in=['KIN-LIMETE', 'KIN-GOMBE', 'KIN-KASAVUBU'])
             for p in p_comm:
                 p.assigned_salespersons.add(commercial)
-            Enterprise.objects.filter(plaque_rel__in=p_comm, assigned_entity='BACK_OFFICE').update(
+            Enterprise.objects.filter(pk__in=[e.pk for e in missing], plaque_rel__in=p_comm, assigned_entity='BACK_OFFICE').update(
                 assigned_salesperson=commercial,
                 assigned_salesperson_at=now_ts
             )
@@ -568,7 +569,7 @@ class Command(BaseCommand):
             p_s1 = Plaque.objects.filter(code__in=['KIN-NGALIEMA', 'KIN-LINGWALA', 'KIN-MASINA'])
             for p in p_s1:
                 p.assigned_salespersons.add(sales1)
-            Enterprise.objects.filter(plaque_rel__in=p_s1, assigned_entity='BACK_OFFICE').update(
+            Enterprise.objects.filter(pk__in=[e.pk for e in missing], plaque_rel__in=p_s1, assigned_entity='BACK_OFFICE').update(
                 assigned_salesperson=sales1,
                 assigned_salesperson_at=now_ts
             )
@@ -576,7 +577,7 @@ class Command(BaseCommand):
             p_s2 = Plaque.objects.filter(code__in=['LSH-CENTRE', 'LSH-RUASHI', 'KWZ-MINES'])
             for p in p_s2:
                 p.assigned_salespersons.add(sales2)
-            Enterprise.objects.filter(plaque_rel__in=p_s2, assigned_entity='BACK_OFFICE').update(
+            Enterprise.objects.filter(pk__in=[e.pk for e in missing], plaque_rel__in=p_s2, assigned_entity='BACK_OFFICE').update(
                 assigned_salesperson=sales2,
                 assigned_salesperson_at=now_ts
             )
@@ -589,7 +590,7 @@ class Command(BaseCommand):
         kam_in_db = Enterprise.objects.filter(assigned_entity='KAM_OFFICE').count()
 
         self.stdout.write(self.style.SUCCESS(
-            f"\n=== SUCCES : 1 000 COMPTES CREES EN BASE DE DONNEES SQLite ===\n"
+            f"\n=== SUCCES : 1 000 COMPTES DE DEMONSTRATION PREPARES ===\n"
             f"- Total en base : {total_in_db} comptes\n"
             f"- SOHO (< 200 $/m, < 2 400 $/an) : {tpe_in_db} comptes -> Affectes au Back-Office Terrain (Plaques SOHO)\n"
             f"- PME (200 $ a 2 500 $/m, 2 400 $ a 30 000 $/an) : {pme_in_db} comptes -> Affectes au KAM Office\n"

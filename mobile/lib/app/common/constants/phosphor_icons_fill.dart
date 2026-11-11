@@ -1254,7 +1254,6 @@ class PhosphorIconsFill {
   static const IconData sortDescending = IconData(0xe446, fontFamily: _fontFamily);
   static const IconData soundcloudLogo = IconData(0xe8de, fontFamily: _fontFamily);
   static const IconData spade = IconData(0xe448, fontFamily: _fontFamily);
-  static const IconData sparkle = IconData(0xe6a2, fontFamily: _fontFamily);
   static const IconData speakerHifi = IconData(0xea08, fontFamily: _fontFamily);
   static const IconData speakerHigh = IconData(0xe44a, fontFamily: _fontFamily);
   static const IconData speakerLow = IconData(0xe44c, fontFamily: _fontFamily);

@@ -5,6 +5,7 @@ import '../controller/kam_debrief_controller.dart';
 import '../model/kam_debrief_model.dart';
 import '../../../common/constants/app_constants.dart';
 import '../../../common/screen/widget/scale_tap.dart';
+import '../../../common/screen/widget/skeleton_loader.dart';
 
 class KamDebriefScreen extends StatelessWidget {
   const KamDebriefScreen({super.key});
@@ -206,7 +207,7 @@ class KamDebriefScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      CupertinoIcons.sparkles,
+                      CupertinoIcons.doc_text_fill,
                       color: AppConstants.primaryBtnTextColor(isDark),
                       size: 20,
                     ),
@@ -231,45 +232,34 @@ class KamDebriefScreen extends StatelessWidget {
   }
 
   Widget _buildProcessingView(bool isDark) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 100.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: CupertinoActivityIndicator(
-                radius: 18,
-                color: isDark ? Colors.white : AppConstants.primaryBlack,
-              ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 100.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'IA Onbora en action...',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : AppConstants.textDark,
             ),
-            const SizedBox(height: 24),
-            Text(
-              'IA Onbora en action...',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : AppConstants.textDark,
-              ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Extraction des engagements, analyse du climat et rédaction de l\'email.',
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Extraction des engagements, analyse du climat et rédaction de l\'email.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          const SkeletonBox(height: 110, borderRadius: 16),
+          const SizedBox(height: 14),
+          const SkeletonBox(height: 150, borderRadius: 16),
+          const SizedBox(height: 14),
+          const SkeletonBox(height: 90, borderRadius: 16),
+        ],
       ),
     );
   }

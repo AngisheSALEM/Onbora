@@ -13,6 +13,8 @@ function KamBriefingContent() {
 
   const accountIdParam = searchParams.get('id') || searchParams.get('accountId') || selectedVisitId;
   const initialTab = searchParams.get('tab') || undefined;
+  const initialPeerParam = searchParams.get('peer');
+  const initialPeerId = initialPeerParam ? parseInt(initialPeerParam, 10) : undefined;
   const from = searchParams.get('from');
   const appointmentId = searchParams.get('appointmentId');
 
@@ -26,10 +28,11 @@ function KamBriefingContent() {
 
   return (
     <KamPreCallView
-      key={`${accountIdParam}-${initialTab || 'default'}`}
+      key={`${accountIdParam}-${initialTab || 'default'}-${initialPeerId || 'default'}`}
       assignedAccounts={visits}
       initialAccountId={accountIdParam}
       initialTab={initialTab}
+      initialPeerId={initialPeerId}
       onBackToAccounts={handleBack}
       onLaunchMeetingForAccount={(accId) => {
         setSelectedVisitId(String(accId));
@@ -45,7 +48,7 @@ export default function KamBriefingPage() {
       fallback={
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="flex flex-col items-center gap-3">
-            <Icons.Sparkles size={28} className="animate-spin text-zinc-500" />
+            
             <span className="text-xs font-semibold text-zinc-500">Chargement de la fiche Pré-call...</span>
           </div>
         </div>

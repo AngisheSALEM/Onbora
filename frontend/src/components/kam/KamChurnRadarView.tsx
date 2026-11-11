@@ -175,7 +175,7 @@ Argumentaire :
       {/* 2. MAIN CONTENT AREA */}
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
-          <Icons.Sparkles size={36} className="animate-spin text-[#787570] mb-3" />
+         
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
             Analyse des signaux faibles sur le portefeuille...
           </span>

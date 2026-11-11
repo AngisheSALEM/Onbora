@@ -1,8 +1,5 @@
-"use client";
-
-import React from 'react';
-import KamNewsFeedView from '@/components/kam/KamNewsFeedView';
+import { redirect } from 'next/navigation';
 
 export default function KamFeedPage() {
-  return <KamNewsFeedView />;
+  redirect('/kam/feed/portfolio');
 }

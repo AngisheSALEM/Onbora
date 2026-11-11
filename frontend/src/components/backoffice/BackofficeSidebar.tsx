@@ -80,7 +80,7 @@ export default function BackofficeSidebar() {
 
   return (
     <aside
-      className={`m-4 mr-0 rounded-[32px] bg-[#F6F5F2]/90 dark:bg-[#2D2A2D]/90 backdrop-blur-3xl shadow-xl dark:shadow-2xl flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 select-none transition-all duration-300 ${
+      className={`m-4 mr-0 rounded-2xl bg-[#F6F5F2]/90 dark:bg-[#2D2A2D]/90 backdrop-blur-3xl shadow-xl dark:shadow-2xl flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 select-none transition-all duration-300 ${
         isSidebarCollapsed ? 'w-20 p-3' : 'w-72 p-5'
       }`}
     >
@@ -88,17 +88,14 @@ export default function BackofficeSidebar() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-1 py-1">
           {!isSidebarCollapsed && (
-            <div className="flex items-center gap-3">
-              <Logo size={36} />
-              <h1 className="text-base font-semibold text-zinc-900 dark:text-white tracking-tight">
-                ONBORA
-              </h1>
+            <div className="flex items-center py-0.5">
+              <Logo variant="full" size={32} />
             </div>
           )}
 
           {isSidebarCollapsed && (
             <div className="mx-auto">
-              <Logo size={32} />
+              <Logo variant="icon" size={32} />
             </div>
           )}
 

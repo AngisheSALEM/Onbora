@@ -1,6 +1,51 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 
+
+class DynamicsConnection(models.Model):
+    """Connexion de l'instance MSP ; secret chiffré, jamais sérialisé."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    tenant_id = models.UUIDField()
+    client_id = models.UUIDField()
+    resource_url = models.URLField()
+    encrypted_secret = models.TextField()
+    verified_at = models.DateTimeField(null=True, blank=True)
+    auto_import_enabled = models.BooleanField(default=True)
+    import_interval_minutes = models.PositiveIntegerField(default=15)
+    import_mapping = models.JSONField(default=dict, blank=True)
+    next_import_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class DynamicsImportRun(models.Model):
+    status = models.CharField(max_length=20, default='QUEUED', db_index=True)
+    source_revision = models.DateTimeField()
+    mapping = models.JSONField(default=dict)
+    cursor = models.JSONField(default=dict)
+    counts = models.JSONField(default=dict)
+    warnings = models.JSONField(default=list)
+    error = models.CharField(max_length=300, blank=True)
+    lease_token = models.UUIDField(null=True)
+    lease_until = models.DateTimeField(null=True)
+    started_at = models.DateTimeField(null=True)
+    finished_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class DynamicsImportedRecord(models.Model):
+    source_key = models.CharField(max_length=64)
+    entity = models.CharField(max_length=100)
+    remote_id = models.UUIDField()
+    kind = models.CharField(max_length=20)
+    enterprise = models.ForeignKey('sales.Enterprise', on_delete=models.CASCADE, related_name='dynamics_records')
+    installed_offer = models.OneToOneField('sales.EnterpriseInstalledOffer', null=True, on_delete=models.SET_NULL)
+    contact = models.OneToOneField('kam.RelationshipCoverage', null=True, on_delete=models.SET_NULL)
+    data = models.JSONField(default=dict)
+    last_imported_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['source_key', 'entity', 'remote_id'], name='unique_dynamics_import_record')]
+
 class CustomUserManager(UserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault('role', 'ADMIN')

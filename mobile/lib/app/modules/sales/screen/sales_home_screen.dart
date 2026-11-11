@@ -480,7 +480,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7),
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -512,7 +512,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7),
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusAppleButton),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,

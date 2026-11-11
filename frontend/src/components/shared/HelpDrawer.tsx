@@ -25,7 +25,7 @@ export default function HelpDrawer({ isOpen, onClose, role }: HelpDrawerProps) {
             <div className="flex flex-col gap-4">
               <div className="p-3.5 studio-subcard rounded-xl flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Icons.Sparkles className="text-blue-600 dark:text-blue-400 shrink-0" size={14} />
+                
                   Comment fonctionne le copilote Onbora ?
                 </span>
                 <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-normal">

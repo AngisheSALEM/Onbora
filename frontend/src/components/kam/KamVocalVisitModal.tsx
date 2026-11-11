@@ -465,7 +465,7 @@ export default function KamVocalVisitModal({
 
             {isTranscribing && (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#4F6CE8]/10 text-[#4F6CE8] text-xs font-semibold animate-pulse border border-[#4F6CE8]/20">
-                <Icons.Sparkles size={14} className="animate-spin" />
+                <Icons.Activity size={14} className="animate-pulse" />
                 <span>Traitement acoustique OpenAI Whisper...</span>
               </div>
             )}
@@ -613,7 +613,7 @@ export default function KamVocalVisitModal({
           {/* Total Verbatim Notice */}
           <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-500/20 rounded-xl text-xs text-blue-800 dark:text-blue-300 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Icons.Sparkles size={14} className="text-[#4F6CE8] shrink-0" />
+              <Icons.Cpu size={14} className="text-[#4F6CE8] shrink-0" />
               <span>Core AI qualifiera l&apos;ensemble cumulé : <strong>{voiceTranscript ? 'Voix Whisper' : 'Pas de voix'}</strong> + <strong>{writtenNotes ? 'Notes écrites' : 'Pas de notes'}</strong></span>
             </div>
             <span className="font-mono font-bold text-xs">{totalWords} mots au total</span>
@@ -638,7 +638,7 @@ export default function KamVocalVisitModal({
           >
             {isSubmitting ? (
               <>
-                <Icons.Sparkles size={16} className="animate-spin" />
+                <Icons.Loader size={16} className="animate-spin" />
                 <span>Génération Core AI...</span>
               </>
             ) : (

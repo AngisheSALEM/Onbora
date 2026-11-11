@@ -51,7 +51,7 @@ class _LoginViewState extends State<LoginView> {
             ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
       }
@@ -84,7 +84,7 @@ class _LoginViewState extends State<LoginView> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Card(
                   elevation: 8,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   child: Padding(
                     padding: const EdgeInsets.all(28),
                     child: Form(
@@ -134,7 +134,7 @@ class _LoginViewState extends State<LoginView> {
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               children: [
@@ -201,7 +201,7 @@ class _LoginViewState extends State<LoginView> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
                               ),
                               child: Column(
