@@ -25,7 +25,6 @@ export default function KamAccountsListView({
     loading: accountsLoading,
     error: accountsError,
     activeFilter,
-    setActiveFilter,
     setFilterOptions,
     setFilterCategoryLabel,
   } = useKamContext();
@@ -104,7 +103,7 @@ export default function KamAccountsListView({
     return () => {
       isMounted = false;
     };
-  }, [visits.length]);
+  }, [visits]);
 
   const router = useRouter();
 

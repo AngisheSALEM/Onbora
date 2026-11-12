@@ -75,7 +75,7 @@ export default function KamNewLeadCard({ item, publishedLabel, converting, onOpe
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] leading-[21px] text-zinc-500 dark:text-zinc-400">
-          <span>Actualité de l’entreprise</span>
+          <span>{item.is_profile_entry ? 'Fiche entreprise' : 'Actualité de l’entreprise'}</span>
           <time dateTime={item.published_at}>{publishedLabel}</time>
         </div>
         <h2 className="text-[21px] leading-[27px] font-semibold text-zinc-900 dark:text-white break-words">

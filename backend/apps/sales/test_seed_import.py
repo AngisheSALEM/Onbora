@@ -107,6 +107,13 @@ class SeedImportTests(APITestCase):
                         {'contacts': self.company['contacts']}, {'is_fictitious': True}):
             self.assertEqual(self.put({**self.lead, **changes}).status_code, 400)
 
+    def test_manifest_lead_preserves_source_reference_without_inventing_company_uuid(self):
+        del self.lead['onbora']['company_id']
+        self.assertEqual(self.put(self.lead).status_code, 201)
+        origin = SeedImportRecord.objects.get().payload['onbora']
+        self.assertEqual(origin['source_ref'], 'registry:42')
+        self.assertNotIn('company_id', origin)
+
     def test_collision_with_existing_crm_rolls_back_entire_import(self):
         CrmAccountRecord.objects.create(external_crm_id=self.company['external_id'], legal_name='Compte existant')
         self.assertEqual(self.put(self.company).status_code, 409)

@@ -12,7 +12,7 @@ class SeedContactSerializer(serializers.Serializer):
 
 class SeedOriginSerializer(serializers.Serializer):
     instance = serializers.CharField(max_length=256)
-    company_id = serializers.UUIDField()
+    company_id = serializers.UUIDField(required=False)
     source_ref = serializers.CharField(max_length=512)
 
 
@@ -32,6 +32,7 @@ class SeedRecordSerializer(serializers.Serializer):
     contacts = SeedContactSerializer(many=True, required=False)
     onbora = SeedOriginSerializer(required=False)
     status = serializers.ChoiceField(choices=['new', 'prospect', 'qualified', 'customer'], required=False)
+    assigned_kam_username = serializers.CharField(max_length=150, required=False)
 
     def validate(self, attrs):
         if attrs['kind'] == 'lead':

@@ -123,6 +123,18 @@ class AccountMemoryEventSerializer(serializers.ModelSerializer):
 from .models import B2BNewsFeedItem
 
 class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
+    account_origin = serializers.SerializerMethodField()
+    is_profile_entry = serializers.SerializerMethodField()
+
+    def get_account_origin(self, obj):
+        from sales.services.account_origin import account_origin
+        return account_origin(obj.enterprise)
+
+    def get_is_profile_entry(self, obj):
+        from kam.services.imported_accounts import import_entry_id
+        imported = getattr(obj.enterprise, 'seed_import', None) if obj.enterprise else None
+        return bool(imported and obj.pk == import_entry_id(imported.external_id))
+
     enterprise_name = serializers.ReadOnlyField(source='enterprise.name')
     enterprise_sector = serializers.ReadOnlyField(source='enterprise.sector')
     enterprise_location = serializers.ReadOnlyField(source='enterprise.location')
@@ -135,6 +147,7 @@ class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
         model = B2BNewsFeedItem
         fields = [
             'id', 'enterprise', 'enterprise_name', 'enterprise_sector', 'enterprise_location',
+            'account_origin', 'is_profile_entry',
             'enterprise_assigned_kam', 'is_web_discovery',
             'discovered_company_name', 'discovered_website', 'discovered_sector',
             'discovered_location', 'discovered_size', 'discovered_signals',

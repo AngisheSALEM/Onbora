@@ -201,7 +201,7 @@ class B2BNewsFeedServiceTestCase(TestCase):
             res_refresh = self.client.post('/api/kam/feed/refresh/')
         self.assertEqual(res_refresh.status_code, status.HTTP_200_OK)
 
-    def test_enterprise_specific_news(self):
+    def test_enterprise_specific_news_requires_recorded_sources(self):
         ent = Enterprise.objects.create(
             name='Kamoa-Kakula Mining Complex (Ivanhoe)',
             sector='Mines & Énergie',
@@ -210,10 +210,7 @@ class B2BNewsFeedServiceTestCase(TestCase):
         )
         res = self.client.get(f'/api/kam/accounts/{ent.id}/news/')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(res.data['count'], 2)
+        self.assertEqual(res.data['count'], 0)
         self.assertIn('results', res.data)
-        first_news = res.data['results'][0]
-        self.assertEqual(first_news['enterprise'], ent.id)
-        self.assertIn('Kamoa', first_news['title'] + first_news['summary'])
-        self.assertIn('signal_strength', first_news)
-        self.assertIn('signal_score', first_news)
+        self.assertEqual(res.data['results'], [])
+        self.assertFalse(B2BNewsFeedItem.objects.filter(enterprise=ent).exists())

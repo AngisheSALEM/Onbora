@@ -212,6 +212,12 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
   useEffect(() => {
 
     let ignore = false;
+    void Promise.resolve().then(() => {
+      if (!ignore) {
+        setLoading(true);
+        setError(null);
+      }
+    });
     const controller = new AbortController();
 
     fetchFeedData(controller.signal)
@@ -465,6 +471,8 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
         try {
 
           await loadAssignedAccounts();
+          await loadFeed();
+          await loadNewsData();
 
         } catch (loadErr) {
 
@@ -628,6 +636,7 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
             </button>
           ))}
         </div>
+
 
         {/* Action Button: Refresh */}
 
@@ -827,6 +836,7 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
 
                     </span>
 
+
                     {city && (
 
                       <span className="text-zinc-400 font-normal truncate shrink-0">
@@ -889,7 +899,7 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
 
                     {/* Colored Signal Badge: Icon-only for Signal Fort (Biceps) vs Signal Faible (SignalLow) */}
 
-                    {isStrong ? (
+                    {!item.is_profile_entry && (isStrong ? (
 
                       <span
 
@@ -937,9 +947,7 @@ export default function KamNewsFeedView({ scope = 'PORTFOLIO' }: { scope?: FeedS
 
                       </span>
 
-                    )}
-
-
+                    ))}
 
                     {/* Bookmark Toggle Icon */}
 

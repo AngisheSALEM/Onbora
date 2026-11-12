@@ -667,7 +667,7 @@ class ChurnRadarService:
             try:
                 news_items = list(B2BNewsFeedItem.objects.filter(
                     Q(enterprise=ent) | Q(discovered_company_name__iexact=ent.name)
-                ).order_by('-published_at')[:2])
+                ).exclude(category='NEW_ACCOUNT', signal_score=0).order_by('-published_at')[:2])
 
                 for n in news_items:
                     sol_title = n.recommended_offer or "Liaison Sécurisée & Cloud B2B"

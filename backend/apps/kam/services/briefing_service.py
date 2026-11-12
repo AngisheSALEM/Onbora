@@ -7,6 +7,7 @@ briefings for Key Account Managers (KAMs) according to Clean Architecture guidel
 
 from django.utils import timezone
 from sales.models import Enterprise
+from sales.services.account_origin import account_origin
 
 
 def _extract_pains(ent: Enterprise) -> list:
@@ -82,6 +83,7 @@ def _build_briefing_payload(ent: Enterprise, rev_str: str, wallet_share: float, 
     return {
         "account_id": str(ent.id),
         "account_name": ent.name,
+        "account_origin": account_origin(ent),
         "industry": ent.sector or "Services & Entreprise",
         "growth_stage": "CONGLOMERATE" if ent.segment == 'GRAND_COMPTE' else "SCALING",
         "firmographics": {
@@ -204,6 +206,7 @@ def serialize_enterprise_to_kam_visit(ent: Enterprise) -> dict:
         "id": f"account-{ent.id}",
         "account_id": str(ent.id),
         "account_name": ent.name,
+        "account_origin": account_origin(ent),
         "contact_name": ent.contact_name or "",
         "contact_role": ent.contact_role or "",
         "contact_phone": ent.contact_phone or "",

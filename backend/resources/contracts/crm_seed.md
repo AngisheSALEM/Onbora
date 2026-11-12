@@ -6,7 +6,7 @@ Authentification `Authorization: Token <jeton>` d’un compte `ADMIN` ou superut
 
 Appliquer la migration `sales.0026_seedimportrecord` avant le premier import.
 
-Le corps JSON porte `external_id`, `kind` (`company` ou `lead`), `source` (`fictional` ou `onbora`), `is_fictitious`, `name` et les données du profil. Les leads exigent `onbora.instance`, `onbora.source_ref`, `onbora.company_id` et une identité `onbora-` suivie du SHA-256 de `instance + NUL + source_ref`. Leurs contacts restent vides. L’identifiant du corps doit correspondre à l’URL.
+Le corps JSON porte `external_id`, `kind` (`company` ou `lead`), `source` (`fictional` ou `onbora`), `is_fictitious`, `name` et les données du profil. Les leads exigent `onbora.instance`, `onbora.source_ref` et une identité `onbora-` suivie du SHA-256 de `instance + NUL + source_ref`. `onbora.company_id` est facultatif : une lecture de manifeste conserve la référence sans inventer d’UUID du modèle `Company`. Leurs contacts restent vides. L’identifiant du corps doit correspondre à l’URL.
 
 La réponse est `201` à la création, `200` à la mise à jour : `{"external_id":"...","enterprise_id":123,"created":true}`. Les entrées invalides répondent `400`, l’absence de jeton `401`, un rôle insuffisant `403` et une collision de provenance ou de compte CRM `409`.
 

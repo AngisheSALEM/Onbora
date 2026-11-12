@@ -1,6 +1,7 @@
 """Atomic upsert of seed-owned profiles, preserving commercial work on replay."""
 from django.db import transaction
-from rest_framework.exceptions import APIException
+from django.utils import timezone
+from rest_framework.exceptions import APIException, ValidationError
 
 from sales.models import CrmAccountRecord, Enterprise, SeedImportRecord
 
@@ -28,6 +29,14 @@ def initial_enterprise_fields(data):
 
 @transaction.atomic
 def import_seed_record(data, payload):
+    from accounts.models import User
+    from kam.services.imported_accounts import publish_imported_account
+
+    owner = None
+    if data.get('assigned_kam_username'):
+        owner = User.objects.filter(username=data['assigned_kam_username'], role='KAM', is_active=True).first()
+        if owner is None:
+            raise ValidationError({'assigned_kam_username': 'Choisissez un KAM actif.'})
     record, created = SeedImportRecord.objects.get_or_create(external_id=data['external_id'])
     record = SeedImportRecord.objects.select_for_update().get(pk=record.pk)
     if record.payload and any(record.payload.get(key) != payload.get(key)
@@ -55,7 +64,7 @@ def import_seed_record(data, payload):
             enterprise.save(update_fields=['crm_record'])
         record.enterprise = enterprise
     else:
-        enterprise = Enterprise.objects.get(pk=record.enterprise_id)
+        enterprise = Enterprise.objects.select_for_update().get(pk=record.enterprise_id)
         for key, value in fields.items():
             setattr(enterprise, key, value)
         enterprise.save(update_fields=list(fields))
@@ -70,6 +79,12 @@ def import_seed_record(data, payload):
             crm.raw_attributes = attributes
             crm.legal_name = data['name'][:200]
             crm.save(update_fields=['legal_name', 'raw_attributes', 'last_sync_at'])
+    if owner and not enterprise.assigned_kam_id:
+        enterprise.assigned_kam = owner
+        enterprise.assigned_at = timezone.now()
+        enterprise.assigned_entity = 'KAM_OFFICE'
+        enterprise.save(update_fields=['assigned_kam', 'assigned_at', 'assigned_entity'])
     record.payload = payload
     record.save(update_fields=['enterprise', 'payload', 'updated_at'])
+    publish_imported_account(record, enterprise)
     return enterprise, created

@@ -9,6 +9,7 @@ from django.db.models import Q, Count
 from sales.models import Enterprise, Plaque
 from kam.models import B2BNewsFeedItem
 from ai_core.services.commercial_signal_scorer import commercial_signal_scorer
+from rest_framework.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,15 @@ class B2BNewsFeedService:
     Intègre le scoring Core AI pour qualifier chaque actualité en Signal Fort ou Signal Faible.
     """
 
+    @staticmethod
+    def visible_feed(user=None):
+        qs = B2BNewsFeedItem.objects.select_related(
+            'enterprise', 'enterprise__assigned_kam', 'enterprise__seed_import')
+        if user is not None and user.role == 'KAM':
+            qs = qs.filter(Q(enterprise__assigned_kam=user) | Q(
+                is_web_discovery=True, enterprise__assigned_kam__isnull=True))
+        return qs
+
     @classmethod
     def get_feed(
         cls,
@@ -30,28 +40,39 @@ class B2BNewsFeedService:
         enterprise_id: Optional[Any] = None,
         is_saved: Optional[bool] = None,
         signal_strength: Optional[str] = None,
-        limit: int = 50
+        limit: int = 50,
+        origin: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Récupère le fil d'actualité filtré et agrégé pour le KAM connecté.
         Permet de filtrer par type (Tous, Nouveaux leads, Portefeuille) et par intensité de signal (Fort, Faible).
         Utilise select_related pour garantir zéro requête N+1.
         """
-        qs = B2BNewsFeedItem.objects.select_related('enterprise', 'enterprise__assigned_kam').all()
+        qs = cls.visible_feed(user)
+        if origin == 'ANALYSIS':
+            qs = qs.filter(enterprise__seed_import__payload__kind='lead')
+        elif origin == 'CRM':
+            qs = qs.filter(Q(enterprise__crm_record__isnull=False) | (
+                Q(enterprise__crm_id__isnull=False) & ~Q(enterprise__crm_id=''))).exclude(
+                    enterprise__seed_import__payload__kind='lead')
+        elif origin == 'ONBORA':
+            qs = qs.filter(enterprise__isnull=False, enterprise__seed_import__isnull=True,
+                           enterprise__crm_record__isnull=True).filter(
+                               Q(enterprise__crm_id__isnull=True) | Q(enterprise__crm_id=''))
+        elif origin == 'WEB':
+            qs = qs.filter(enterprise__isnull=True)
 
         # Filtrage par entreprise spécifique si demandé
         if enterprise_id:
             clean_eid = str(enterprise_id).replace('account-', '').strip()
             if clean_eid.isdigit():
                 eid_int = int(clean_eid)
-                cls.ensure_enterprise_news(eid_int)
                 qs = qs.filter(enterprise_id=eid_int)
 
+        base_qs = qs
         # Filtrage par type de fil (Nouveaux leads / Portefeuille / Tous)
         if feed_type == 'PORTFOLIO':
             qs = qs.filter(is_web_discovery=False)
-            if hasattr(user, 'role') and user.role == 'KAM' and not user.is_staff and not user.is_superuser:
-                qs = qs.filter(Q(enterprise__assigned_kam=user) | Q(enterprise__assigned_kam__isnull=True))
         elif feed_type == 'WEB_DISCOVERY':
             qs = qs.filter(is_web_discovery=True)
 
@@ -85,11 +106,6 @@ class B2BNewsFeedService:
         items = list(qs[:limit])
 
         # Métriques globales rapides
-        base_qs = B2BNewsFeedItem.objects.all()
-        if enterprise_id:
-            clean_eid = str(enterprise_id).replace('account-', '').strip()
-            if clean_eid.isdigit():
-                base_qs = base_qs.filter(enterprise_id=int(clean_eid))
 
         counters = base_qs.aggregate(
             all=Count('pk'),
@@ -125,9 +141,8 @@ class B2BNewsFeedService:
             }
 
         eid_int = int(clean_eid)
-        cls.ensure_enterprise_news(eid_int)
 
-        qs = B2BNewsFeedItem.objects.select_related('enterprise', 'enterprise__assigned_kam').filter(enterprise_id=eid_int)
+        qs = cls.visible_feed(user).filter(enterprise_id=eid_int)
 
         if category and category != 'ALL':
             qs = qs.filter(category=category)
@@ -145,7 +160,7 @@ class B2BNewsFeedService:
             )
 
         total_count = qs.count()
-        base_enterprise_qs = B2BNewsFeedItem.objects.filter(enterprise_id=eid_int)
+        base_enterprise_qs = cls.visible_feed(user).filter(enterprise_id=eid_int)
         unread_count = base_enterprise_qs.filter(is_read=False).count()
         saved_count = base_enterprise_qs.filter(is_saved=True).count()
         strong_count = base_enterprise_qs.filter(signal_strength='STRONG').count()
@@ -391,9 +406,9 @@ class B2BNewsFeedService:
         return created
 
     @classmethod
-    def mark_as_read(cls, item_id: str, is_read: bool = True) -> B2BNewsFeedItem:
+    def mark_as_read(cls, item_id: str, is_read: bool = True, user=None) -> B2BNewsFeedItem:
         """Marque une actualité comme lue ou non-lue."""
-        item = B2BNewsFeedItem.objects.select_related('enterprise').get(id=item_id)
+        item = cls.visible_feed(user).get(id=item_id)
         item.is_read = is_read
         item.save(update_fields=['is_read', 'updated_at'])
         return item
@@ -401,15 +416,15 @@ class B2BNewsFeedService:
     @classmethod
     def mark_all_as_read(cls, user=None) -> int:
         """Marque toutes les actualités non lues comme lues."""
-        qs = B2BNewsFeedItem.objects.filter(is_read=False)
+        qs = cls.visible_feed(user).filter(is_read=False)
         count = qs.count()
         qs.update(is_read=True, updated_at=timezone.now())
         return count
 
     @classmethod
-    def toggle_saved(cls, item_id: str) -> B2BNewsFeedItem:
+    def toggle_saved(cls, item_id: str, user=None) -> B2BNewsFeedItem:
         """Bascule l'état favori d'une actualité."""
-        item = B2BNewsFeedItem.objects.select_related('enterprise').get(id=item_id)
+        item = cls.visible_feed(user).get(id=item_id)
         item.is_saved = not item.is_saved
         item.save(update_fields=['is_saved', 'updated_at'])
         return item
@@ -427,15 +442,29 @@ class B2BNewsFeedService:
         from kam.services.churn_radar_service import ChurnRadarService
         from kam.services.enterprise_comparison_service import EnterpriseComparisonService
 
-        item = B2BNewsFeedItem.objects.select_related('enterprise').select_for_update().get(id=item_id)
+        if user.role != 'KAM':
+            raise PermissionDenied('Seul un KAM peut ajouter un lead à son portefeuille.')
+        item = cls.visible_feed(user).get(id=item_id)
         
         if item.enterprise:
             # Si l'entreprise est déjà liée, on l'assigne au KAM s'il n'est pas déjà assigné
-            enterprise = item.enterprise
+            enterprise = Enterprise.objects.select_for_update().get(pk=item.enterprise_id)
+            if enterprise.assigned_kam_id and enterprise.assigned_kam_id != user.pk:
+                raise PermissionDenied('Ce compte est déjà affecté à un autre KAM.')
             if not enterprise.assigned_kam:
                 enterprise.assigned_kam = user
                 enterprise.assigned_at = timezone.now()
-                enterprise.save(update_fields=['assigned_kam', 'assigned_at'])
+                enterprise.assigned_entity = 'KAM_OFFICE'
+                enterprise.save(update_fields=['assigned_kam', 'assigned_at', 'assigned_entity'])
+            imported = getattr(enterprise, 'seed_import', None)
+            if imported:
+                from kam.services.imported_accounts import publish_imported_account
+                publish_imported_account(imported, enterprise)
+                return {
+                    'enterprise_id': enterprise.pk, 'enterprise_name': enterprise.name,
+                    'account_id': f'account-{enterprise.pk}',
+                    'message': f'{enterprise.name} a été ajouté à votre portefeuille.',
+                }
             item.is_converted_to_portfolio = True
             item.save(update_fields=['is_converted_to_portfolio', 'updated_at'])
 

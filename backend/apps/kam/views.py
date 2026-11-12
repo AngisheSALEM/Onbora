@@ -224,7 +224,7 @@ class KamStrategicAccountListView(APIView):
             enterprises = Enterprise.objects.none()
 
         from kam.models import B2BNewsFeedItem
-        enterprises = enterprises.select_related('assigned_kam').prefetch_related('installed_offers').annotate(
+        enterprises = enterprises.select_related('assigned_kam', 'seed_import').prefetch_related('installed_offers').annotate(
             has_converted_news=Exists(B2BNewsFeedItem.objects.filter(
                 enterprise_id=OuterRef('pk'), is_converted_to_portfolio=True))
         )

@@ -104,7 +104,13 @@ export interface KamVisitBriefingData {
   visit_strategy: VisitStrategy;
 }
 
+export interface AccountOrigin {
+  code: 'CRM' | 'ANALYSIS' | 'ONBORA' | 'WEB';
+  label: string;
+}
+
 export interface StrategicVisit {
+  account_origin?: AccountOrigin;
   id: string;
   account_id: string;
   account_name: string;
@@ -164,6 +170,8 @@ export interface MeetingDebrief {
 }
 
 export interface B2BNewsItem {
+  account_origin?: AccountOrigin;
+  is_profile_entry?: boolean;
   company_photo_url?: string;
   id: string;
   enterprise?: number | null;

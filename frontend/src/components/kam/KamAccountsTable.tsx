@@ -105,7 +105,7 @@ export default function KamAccountsTable({ accounts, loading, error, onSelectAcc
                 <td className="py-4 pr-4 text-xs text-zinc-700 dark:text-zinc-300">{account.briefing?.industry || 'Non renseigné'}</td>
                 <td className="py-4 pr-4 text-xs text-zinc-700 dark:text-zinc-300">{account.contact_name || 'Non renseigné'}</td>
                 <td className="py-4 pr-4 text-xs text-zinc-500 dark:text-zinc-400">
-                  {account.orange_contract_end_date || (account.is_recently_added ? 'À conquérir (Opérateur Tiers)' : 'Non renseignée')}
+                  {account.orange_contract_end_date || 'Non renseignée'}
                 </td>
                 <td className="py-4 text-xs text-right whitespace-nowrap">
                   <div className="inline-flex items-center justify-end gap-1.5">

@@ -30,7 +30,7 @@ def count_portfolio_upsells(enterprises):
     news = list(B2BNewsFeedItem.objects.annotate(company_key=Lower('discovered_company_name')).filter(
         Q(enterprise_id__in=[ent.pk for ent in enterprises])
         | Q(company_key__in=[ent.name.lower() for ent in enterprises])
-    ).order_by().values(
+    ).exclude(category='NEW_ACCOUNT', signal_score=0).order_by().values(
         'enterprise_id', 'company_key').annotate(total=Count('pk')))
     scores = {}
 

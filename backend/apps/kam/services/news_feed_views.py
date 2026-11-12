@@ -2,7 +2,8 @@ import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import IsKAMOrAdmin
+from rest_framework.exceptions import ValidationError
 from kam.services.news_feed_service import B2BNewsFeedService
 from kam.serializers import B2BNewsFeedItemSerializer
 
@@ -20,10 +21,13 @@ class B2BNewsFeedListView(APIView):
       - search: terme de recherche
       - saved: true | false
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def get(self, request):
         feed_type = request.query_params.get('type', 'ALL').upper()
+        origin = request.query_params.get('origin', 'ALL').upper()
+        if origin not in ('ALL', 'CRM', 'ANALYSIS', 'ONBORA', 'WEB'):
+            raise ValidationError({'origin': 'Origine inconnue.'})
         signal_param = request.query_params.get('signal') or request.query_params.get('signal_strength')
         category = request.query_params.get('category')
         search = request.query_params.get('search')
@@ -47,7 +51,8 @@ class B2BNewsFeedListView(APIView):
             enterprise_id=enterprise_id,
             is_saved=is_saved,
             signal_strength=signal_param,
-            limit=limit
+            limit=limit,
+            origin=origin,
         )
 
         serializer = B2BNewsFeedItemSerializer(data["items"], many=True)
@@ -63,12 +68,12 @@ class B2BNewsFeedReadToggleView(APIView):
     POST /api/kam/feed/<uuid:pk>/read/
     Marque une actualité comme lue ou non-lue.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def post(self, request, pk):
         is_read = request.data.get('is_read', True)
         try:
-            item = B2BNewsFeedService.mark_as_read(pk, is_read=bool(is_read))
+            item = B2BNewsFeedService.mark_as_read(pk, is_read=bool(is_read), user=request.user)
             serializer = B2BNewsFeedItemSerializer(item)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -81,11 +86,11 @@ class B2BNewsFeedSaveToggleView(APIView):
     POST /api/kam/feed/<uuid:pk>/save/
     Bascule l'état sauvegardé / favori d'une actualité.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def post(self, request, pk):
         try:
-            item = B2BNewsFeedService.toggle_saved(pk)
+            item = B2BNewsFeedService.toggle_saved(pk, user=request.user)
             serializer = B2BNewsFeedItemSerializer(item)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -98,7 +103,7 @@ class B2BNewsFeedConvertView(APIView):
     POST /api/kam/feed/<uuid:pk>/convert/
     Convertit un nouveau compte découvert sur le net en compte entreprise B2B assigné au KAM.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def post(self, request, pk):
         try:
@@ -120,7 +125,7 @@ class B2BNewsFeedRefreshView(APIView):
     - Vectorisation 768D immédiate
     - Provisioning direct du fil d'actualité pour le front
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def post(self, request):
         try:
@@ -159,7 +164,7 @@ class B2BEnterpriseNewsView(APIView):
     GET /api/kam/accounts/<int:enterprise_id>/news/
     Retourne les cartes et signaux d'actualité spécifiques à une entreprise B2B.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def get(self, request, enterprise_id):
         category = request.query_params.get('category')
@@ -193,7 +198,7 @@ class B2BNewsFeedMarkAllReadView(APIView):
     POST /api/kam/feed/mark-all-read/
     Marque toutes les actualités comme lues pour le KAM.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsKAMOrAdmin]
 
     def post(self, request):
         try:

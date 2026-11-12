@@ -1,5 +1,14 @@
 # Plan de Tests Unitaires — Onbora
 
+### Comptes nommés du registre et intégration KAM — 11 novembre 2026
+
+- Émetteur : dix tests sur les noms du manifeste, absence de contacts ou montants
+  inventés, identité stable et exclusion des références CRM des leads du même lot.
+- Récepteur : prise en charge des références de manifeste sans UUID Company inventé.
+- Parcours KAM : affectation des comptes CRM, découverte des leads, ajout au portefeuille,
+  isolation entre KAM, favoris et dates conservés au rejeu, rattachement des anciens imports.
+- Les marqueurs et filtres d’origine sont absents des interfaces ; la traçabilité reste interne.
+
 ### Import CRM et leads Onbora Analysis — 11 novembre 2026
 
 - `sales.test_seed_import` : 12 tests sur l’authentification administrateur, le mapping,
