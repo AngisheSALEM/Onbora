@@ -87,4 +87,6 @@ def import_seed_record(data, payload):
     record.payload = payload
     record.save(update_fields=['enterprise', 'payload', 'updated_at'])
     publish_imported_account(record, enterprise)
+    from apps.ai_core.vector_search.documents import persist_enterprise_document
+    persist_enterprise_document(enterprise)
     return enterprise, created

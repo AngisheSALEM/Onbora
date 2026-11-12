@@ -206,6 +206,17 @@ class APIHardeningTests(VectorFixtureMixin, TestCase):
 
 
 class InferenceBudgetTests(SimpleTestCase):
+    def test_overloaded_model_uses_one_alternative(self):
+        from google.genai import types
+        from .common.inference import generate_with_budget
+        client = MagicMock()
+        error = RuntimeError('overloaded')
+        error.code = 503
+        client.models.generate_content.side_effect = [error, SimpleNamespace(text='{}')]
+        generate_with_budget(client, model='first', contents='test', config=types.GenerateContentConfig(),
+                             fallback_models=['second', 'third'])
+        self.assertEqual(client.models.generate_content.call_count, 2)
+
     def test_rate_limit_is_not_multiplied_across_models(self):
         from google.genai import types
         from .common.inference import generate_with_budget

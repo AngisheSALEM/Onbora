@@ -255,6 +255,8 @@ ONBORA_CATALOG_PATH = os.getenv(
 )
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash')
+AI_FALLBACK_MODELS = tuple(value.strip() for value in os.getenv(
+    'AI_FALLBACK_MODELS', 'gemini-3.5-flash-lite').split(',') if value.strip())
 ONBORA_AI_PROVIDER = os.getenv('ONBORA_AI_PROVIDER', 'gemini')
 ONBORA_ANALYSIS_URL = os.getenv('ONBORA_ANALYSIS_URL', 'http://127.0.0.1:8001')
 ONBORA_RESEARCH_API_TOKEN = os.getenv('ONBORA_RESEARCH_API_TOKEN', '')

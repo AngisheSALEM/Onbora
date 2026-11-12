@@ -25,7 +25,7 @@ def visible_enterprises(user):
 
 def enterprise_identifier(value):
     text = str(value)
-    for prefix in ("enterprise_profile_", "enterprise_"):
+    for prefix in ("enterprise_profile_", "enterprise_", "account-"):
         if text.startswith(prefix):
             text = text[len(prefix):]
             break

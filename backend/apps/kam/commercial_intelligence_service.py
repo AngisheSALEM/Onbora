@@ -58,13 +58,13 @@ class CommercialIntelligenceService:
     """
 
     @staticmethod
-    def generate_pre_call_briefing(enterprise: Enterprise, kam_user, *, persist=True) -> dict:
+    def generate_pre_call_briefing(enterprise: Enterprise, kam_user, *, persist=True, use_ai=None) -> dict:
         """
         Génère un dossier d'attaque complet pre-call pour un rendez-vous complexe.
         Appelle le microservice Core AI (Brain) sur /api/core-ai/pre-call avec repli sur le fallback local.
         """
         engine = get_unified_core_ai()
-        ai_data = engine.generate_pre_call_briefing(enterprise, kam_user)
+        ai_data = engine.generate_pre_call_briefing(enterprise, kam_user, use_ai=persist if use_ai is None else use_ai)
 
         golden_rules = ai_data.get("golden_rules") or [
             f"Ne jamais dénigrer directement {enterprise.current_operator or 'le concurrent'} : valoriser nos engagements SLA 99.99% et notre GTR 4h signée.",

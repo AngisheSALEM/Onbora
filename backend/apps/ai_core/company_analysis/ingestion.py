@@ -58,6 +58,8 @@ def apply_completed_research(claimed, data):
                 enterprise.scraped_data = result
                 enterprise.last_sync_date = timezone.now()
                 enterprise.save(update_fields=["scraped_data", "last_sync_date"])
+                from ..vector_search.documents import persist_enterprise_document
+                persist_enterprise_document(enterprise)
                 brief = PreCallBriefing.objects.select_for_update().filter(
                     enterprise=enterprise, kam=job.owner).first()
                 if brief and brief.updated_at > job.created_at:

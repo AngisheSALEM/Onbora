@@ -8,6 +8,7 @@ import os
 import re
 import threading
 import tempfile
+import unicodedata
 from functools import wraps
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -77,7 +78,7 @@ class VectorSearchService:
     """
 
     DIM = 768
-    EMBEDDING_VERSION = "token-hash-md5-l2-768-v1"
+    EMBEDDING_VERSION = "token-hash-nfkd-l2-768-v2"
 
     def __init__(self) -> None:
         self._documents: List[dict] = []
@@ -93,7 +94,9 @@ class VectorSearchService:
         Genere un vecteur d'embedding 768D deterministe et normalise L2.
         Fournit une similarité lexicale déterministe, sans prétendre à une proximité sémantique.
         """
-        tokens = re.findall(r"[\w]+", text.lower())
+        normalized = ''.join(char for char in unicodedata.normalize('NFKD', text.casefold())
+                             if not unicodedata.combining(char))
+        tokens = re.findall(r"[\w]+", normalized)
         vec = [0.0] * self.DIM
         for tok in tokens:
             if len(tok) < 2:
@@ -190,7 +193,7 @@ class VectorSearchService:
         Retrouve l'identifiant document et son vecteur correspondant a partir
         d'un entier, d'une string ou d'un doc_id exact, avec fallback ORM Django.
         """
-        str_id = str(identifier).strip()
+        str_id = str(identifier).strip().removeprefix('account-')
 
         # 1. Verification directe
         if str_id in self._vectors:
@@ -227,30 +230,10 @@ class VectorSearchService:
                 from sales.models import Enterprise
                 ent = Enterprise.objects.filter(id=int_id).first()
                 if ent:
-                    text = (
-                        f"Entreprise B2B : {ent.name} | Secteur : {ent.sector or 'Non renseigne'} | Segment : {ent.segment or 'PME'}\n"
-                        f"Localisation : {ent.city or 'Kinshasa'} | Taille : {ent.employee_count or 1} collaborateurs ({ent.site_count or 1} sites)\n"
-                        f"Connectivite actuelle : {ent.current_connectivity or '4G LTE'}\n"
-                        f"Chiffre d'affaires : {ent.annual_revenue or 0} USD\n"
-                    )
-                    vec = self._embed_text(text)
-                    doc_id = f"enterprise_profile_{ent.id}"
-                    doc = {
-                        "id": doc_id,
-                        "doc_type": "enterprise_profile",
-                        "title": f"Fiche profil - {ent.name}",
-                        "content_to_vectorize": text,
-                        "metadata": {
-                            "enterprise_id": ent.id,
-                            "name": ent.name,
-                            "sector": ent.sector,
-                            "segment": ent.segment,
-                            "city": ent.city,
-                            "employee_count": ent.employee_count,
-                            "site_count": ent.site_count,
-                            "current_connectivity": ent.current_connectivity,
-                        },
-                    }
+                    from .documents import enterprise_document
+                    doc = enterprise_document(ent)
+                    doc_id = doc['id']
+                    vec = self._embed_text(self._document_text(doc))
                     self._documents.append(doc)
                     self._vectors[doc_id] = vec
                     return doc_id, vec, doc
@@ -440,7 +423,7 @@ class VectorSearchService:
             rec_sol = str(doc.get("metadata", {}).get("recommended_solution", "")).lower()
 
             # Verifie si le pair a adopte ou utilise ce service
-            has_service = (service_lower in content) or (service_lower in rec_sol)
+            has_service = any(service_lower in name.lower() for name in doc.get('metadata', {}).get('installed_services', []))
             if not has_service:
                 continue
 
@@ -485,61 +468,14 @@ class VectorSearchService:
         Génère le texte d'embedding enrichi, calcule le vecteur 768D (Gemini ou fallback déterministe),
         met à jour la table des vecteurs en mémoire et sauvegarde le cache sur disque.
         """
+        from .documents import persist_enterprise_document
         self._ensure_indexed()
-        doc_id = f"enterprise_profile_{enterprise.id}"
-
-        # Construction du texte d'embedding enrichi
-        text = (
-            f"Entreprise B2B : {enterprise.name} | Secteur : {enterprise.sector or 'Non renseigné'} | Segment : {enterprise.segment or 'PME'}\n"
-            f"Localisation : {enterprise.city or 'Kinshasa'} | Commune : {getattr(enterprise, 'commune', '') or ''} | Adresse : {getattr(enterprise, 'address', '') or ''}\n"
-            f"Effectif : {getattr(enterprise, 'employee_count', 1) or 1} collaborateurs | Nombre de sites : {getattr(enterprise, 'site_count', 1) or 1}\n"
-            f"Chiffre d'affaires : {getattr(enterprise, 'annual_revenue', 0) or 0} USD | RCCM : {getattr(enterprise, 'rccm', '') or 'N/A'}\n"
-            f"Connectivité : {getattr(enterprise, 'current_connectivity', '') or '4G LTE'}\n"
-        )
-        if getattr(enterprise, 'recommended_solution', None):
-            text += f"Solution recommandée : {enterprise.recommended_solution}\n"
-        if getattr(enterprise, 'scraped_data', None) and isinstance(enterprise.scraped_data, dict):
-            summary = enterprise.scraped_data.get("summary", {})
-            if isinstance(summary, dict) and summary.get("sentences"):
-                sents = " ".join([s.get("text", "") for s in summary.get("sentences", []) if isinstance(s, dict)])
-                text += f"Synthèse probante : {sents[:300]}\n"
-
-        vec = self._embed_text(text)
+        doc = persist_enterprise_document(enterprise)
+        doc_id = doc['id']
+        vec = self._embed_text(self._document_text(doc))
         self._vectors[doc_id] = vec
-
-        # Mettre à jour ou ajouter dans self._documents
-        doc = {
-            "id": doc_id,
-            "doc_type": "enterprise_profile",
-            "title": f"Fiche profil - {enterprise.name}",
-            "content_to_vectorize": text,
-            "metadata": {
-                "enterprise_id": enterprise.id,
-                "name": enterprise.name,
-                "sector": enterprise.sector,
-                "segment": enterprise.segment,
-                "city": enterprise.city,
-                "employee_count": getattr(enterprise, 'employee_count', 1),
-                "site_count": getattr(enterprise, 'site_count', 1),
-                "current_connectivity": getattr(enterprise, 'current_connectivity', '4G LTE'),
-            },
-        }
-
-        # Remplacement si existant, sinon ajout
-        replaced = False
-        for i, existing in enumerate(self._documents):
-            if existing.get("id") == doc_id:
-                self._documents[i] = doc
-                replaced = True
-                break
-        if not replaced:
-            self._documents.append(doc)
-
-        from ..models import AIVectorDocument
-        AIVectorDocument.objects.update_or_create(doc_id=doc_id, defaults={"document": doc})
+        self._documents = [d for d in self._documents if d.get('id') != doc_id] + [doc]
         self._overlay_signature = None
-
-        logger.info("[VectorSearchService] Entreprise '%s' (ID %s) vectorisée avec succès (768D).", enterprise.name, enterprise.id)
         return vec
 
     @_synchronized

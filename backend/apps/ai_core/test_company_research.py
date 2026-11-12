@@ -106,7 +106,8 @@ class ResearchIntegrationTests(TestCase):
         self.assertFalse(self.enterprise.contact_phone)
         brief = self.api.get(url)
         self.assertEqual(brief.status_code, 200, brief.data)
-        self.assertEqual(len(brief.data["ai_summary"]["key_facts"]), 2)
+        texts = {item['text'] for item in brief.data['ai_summary']['key_facts']}
+        self.assertTrue({fact['statement'] for fact in completed['result']['facts']}.issubset(texts))
         self.assertTrue(brief.data["evidence"][0]["relevant_excerpt"])
         self.assertEqual(brief.data["research_job"]["state"], "completed")
         self.assertFalse(process_next_research(self.fake))

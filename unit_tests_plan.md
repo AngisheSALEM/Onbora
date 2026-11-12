@@ -1,5 +1,22 @@
 # Plan de Tests Unitaires — Onbora
 
+### Core AI, contexte de compte et hypothèses étayées — 12 novembre 2026
+
+- `apps.ai_core.test_account_context` : import du registre, CRM, parc et historique lus par
+  le briefing ; invalidation du cache au changement des données et préservation des corrections humaines.
+- Aucune anticipation sur le seul secteur, l’effectif, le nombre de sites ou un parc non renseigné ;
+  une hypothèse doit être enregistrée et reliée à des faits attribuables par identifiants de preuve.
+- Index dynamique partagé alimenté par les imports CRM, les seeds et les recherches terminées ;
+  texte du vecteur issu du même contexte que le Core AI, sans connectivité ou effectif inventés.
+- Rafraîchissement entre processus, normalisation des accents, reconnaissance des identifiants `account-` ;
+  les recommandations ne prouvent pas qu’un service est installé.
+- Gemini : modèle configuré respecté, statut d’inférence explicite, un seul modèle de repli sur 404/503
+  dans le budget global ; aucun cumul d’appels sur 429, erreur d’authentification ou timeout.
+- Comparatif avec effectifs absents sans exception ; suppression des recommandations Web ajoutées
+  automatiquement lorsque la réponse du moteur est vide et des anciens badges de score sur les fiches importées.
+- Suites ciblées : 110 tests backend. API Analysis : 48 tests de collecte/recherche incluant un vrai
+  serveur HTTP local avec `Connection: close`, maintien du socket pendant la lecture du corps et du délai global.
+
 ### Comptes nommés du registre et intégration KAM — 11 novembre 2026
 
 - Émetteur : dix tests sur les noms du manifeste, absence de contacts ou montants

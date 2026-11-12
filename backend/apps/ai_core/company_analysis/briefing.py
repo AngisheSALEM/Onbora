@@ -16,10 +16,11 @@ def briefing_account(user, account_id):
 def read_briefing(enterprise, user):
     from kam.models import PreCallBriefing
     from kam.commercial_intelligence_service import CommercialIntelligenceService
+    from .account_context import build_account_context
     briefing = PreCallBriefing.objects.filter(enterprise=enterprise, kam=user).first()
     # Discard legacy generated briefs with no traceable research or explicit human edits.
     if (briefing and briefing.analysis_data and (
-            briefing.analysis_data.get("ai_summary", {}).get("model") == "research-rules-v2"
+            briefing.analysis_data.get('context_fingerprint') == build_account_context(enterprise)['fingerprint']
             or briefing.analysis_data.get("ai_summary", {}).get("status") == "kam_edited")):
         data = {**briefing.analysis_data, "id": briefing.pk, "enterprise_id": enterprise.pk,
             "enterprise_name": enterprise.name, "company_overview": briefing.company_overview,
@@ -44,11 +45,20 @@ def read_briefing(enterprise, user):
          "technical_equipment": offer.technical_equipment, "created_at": offer.created_at.isoformat()}
         for offer in enterprise.installed_offers.all().order_by("-created_at")]
     data["research_job"] = latest_research(user, enterprise)
+    # Re-evaluate old cached predictions under the current evidence rules.
+    from ..unified_engine import get_unified_core_ai
+    data['real_needs'], data['predicted_needs'] = get_unified_core_ai()._extract_real_and_predicted_needs(enterprise)
     data["ai_engine"] = "Onbora Core AI"
     return data
 
 
 def refresh_briefing(enterprise, user, key=None):
+    from kam.commercial_intelligence_service import CommercialIntelligenceService
+    from kam.models import PreCallBriefing
+    edited = PreCallBriefing.objects.filter(enterprise=enterprise, kam=user,
+        analysis_data__ai_summary__status='kam_edited').exists()
+    if not edited:
+        CommercialIntelligenceService.generate_pre_call_briefing(enterprise, user, use_ai=True)
     data = read_briefing(enterprise, user)
     job = enqueue_research(user, enterprise, key=key, operation="refresh")
     data["research_job"] = serialize_research(job)

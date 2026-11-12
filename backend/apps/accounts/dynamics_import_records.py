@@ -189,4 +189,6 @@ def upsert_record(source_key, kind, scope, values, currencies):
             import_contact(record, values)
     record.data = values
     record.save()
+    from apps.ai_core.vector_search.documents import persist_enterprise_document
+    persist_enterprise_document(record.enterprise)
     return record

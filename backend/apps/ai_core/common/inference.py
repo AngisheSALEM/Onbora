@@ -15,8 +15,8 @@ def generate_with_budget(client, *, model, contents, config, budget_ms=20000, fa
         try:
             return client.models.generate_content(model=current, contents=contents, config=attempt_config)
         except Exception as exc:
-            # Only an unavailable model identifier justifies trying another model.
-            # Rate limits, timeouts, credentials and service errors terminate this request.
-            if getattr(exc, "code", None) != 404 or index == len(models) - 1:
+            # One alternate model may handle a missing or temporarily overloaded model.
+            # Rate limits, timeouts and credentials never multiply requests.
+            if getattr(exc, "code", None) not in (404, 503) or index == len(models) - 1:
                 raise
     raise TimeoutError("inference_deadline_exceeded")

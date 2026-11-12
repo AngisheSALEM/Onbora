@@ -310,7 +310,7 @@ export default function KamAccountNewsTab({
                         title="Signal fort"
                       >
                         <Icons.BicepsFlexed size={12} className="text-amber-600 dark:text-amber-400" />
-                        {typeof item.signal_score === 'number' && (
+                        {!item.is_profile_entry && typeof item.signal_score === 'number' && (
                           <span className="opacity-80 font-mono text-[10px]">
                             {item.signal_score}%
                           </span>
@@ -322,7 +322,7 @@ export default function KamAccountNewsTab({
                         title="Signal faible"
                       >
                         <Icons.SignalLow size={12} className="text-slate-500 dark:text-slate-400" />
-                        {typeof item.signal_score === 'number' && (
+                        {!item.is_profile_entry && typeof item.signal_score === 'number' && (
                           <span className="opacity-80 font-mono text-[10px]">
                             {item.signal_score}%
                           </span>
@@ -404,7 +404,7 @@ export default function KamAccountNewsTab({
                       <span>Source</span>
                       <Icons.ExternalLink size={12} />
                     </a>
-                  ) : item.source_name ? (
+                  ) : item.source_name && !item.is_profile_entry ? (
                     <span className="text-xs text-zinc-400 font-normal">
                       {item.source_name}
                     </span>
@@ -446,7 +446,7 @@ export default function KamAccountNewsTab({
                     title="Signal fort"
                   >
                     <Icons.BicepsFlexed size={13} className="text-amber-600 dark:text-amber-400" />
-                    {typeof selectedNews.signal_score === 'number' && (
+                    {!selectedNews.is_profile_entry && typeof selectedNews.signal_score === 'number' && (
                       <span className="font-mono text-[10px]">
                         {selectedNews.signal_score}%
                       </span>
@@ -458,7 +458,7 @@ export default function KamAccountNewsTab({
                     title="Signal faible"
                   >
                     <Icons.SignalLow size={13} className="text-slate-500 dark:text-slate-400" />
-                    {typeof selectedNews.signal_score === 'number' && (
+                    {!selectedNews.is_profile_entry && typeof selectedNews.signal_score === 'number' && (
                       <span className="font-mono text-[10px]">
                         {selectedNews.signal_score}%
                       </span>
@@ -503,7 +503,7 @@ export default function KamAccountNewsTab({
                   <Icons.Cpu size={14} className="text-[#4F6CE8]" />
                   <span>Qualification Core AI</span>
                 </div>
-                {typeof selectedNews.signal_score === 'number' && (
+                {!selectedNews.is_profile_entry && typeof selectedNews.signal_score === 'number' && (
                   <span className="font-mono text-[11px] font-bold text-zinc-600 dark:text-zinc-300">
                     Score opportunité : {selectedNews.signal_score}/100
                   </span>

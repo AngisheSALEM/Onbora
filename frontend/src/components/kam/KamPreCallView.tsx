@@ -289,7 +289,6 @@ export default function KamPreCallView({
 
   // Temp inline add inputs
   const [newFactText, setNewFactText] = useState('');
-  const [newContraText, setNewContraText] = useState('');
   const [newGapText, setNewGapText] = useState('');
   const [newSolName, setNewSolName] = useState('');
   const [newSolCategory, setNewSolCategory] = useState('');
@@ -359,7 +358,7 @@ export default function KamPreCallView({
 
   // Extraire les solutions recommandées
   const extractRecommendedSolutions = (data: OnboraAnalysisBrief): RecommendedSolutionItem[] => {
-    if (data.recommended_solutions && data.recommended_solutions.length > 0) {
+    if (Array.isArray(data.recommended_solutions)) {
       return data.recommended_solutions;
     }
     const extracted: RecommendedSolutionItem[] = [];
@@ -396,27 +395,6 @@ export default function KamPreCallView({
           rdc_availability: 'Validée RDC',
         });
       });
-    }
-
-    if (extracted.length === 0) {
-      extracted.push(
-        {
-          id: '1',
-          name: 'Fibre Dédiée Pro 100 Mbps',
-          category: 'Connectivité',
-          description: 'Liaison symétrique sécurisée avec débit garanti et supervision 24/7.',
-          sla: 'SLA 99.9% · GTR 4h',
-          rdc_availability: 'Validée RDC',
-        },
-        {
-          id: '2',
-          name: 'SD-WAN Managé Multi-Sites',
-          category: 'Réseaux',
-          description: 'Interconnexion résiliente avec routage applicatif intelligent et chiffrement IPsec.',
-          sla: 'Supervision 24/7',
-          rdc_availability: 'Validée RDC',
-        }
-      );
     }
 
     return extracted;
@@ -696,13 +674,13 @@ Solutions recommandées :
 ${solutions.map((s, i) => `${i + 1}. [${s.category}] ${s.name} : ${s.description} (${s.sla || 'GTR 4h'})`).join('\n')}
 
 Faits clés :
-${(ai?.key_facts || []).map((f, i) => `- ${f.text}`).join('\n')}
+${(ai?.key_facts || []).map((f) => `- ${f.text}`).join('\n')}
 
 Contradictions & Vigilance :
-${(ai?.contradictions || []).map((c, i) => `- ${c.text}`).join('\n')}
+${(ai?.contradictions || []).map((c) => `- ${c.text}`).join('\n')}
 
 Informations manquantes :
-${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
+${(ai?.gaps || []).map((g) => `- ${g}`).join('\n')}
 `;
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -1483,11 +1461,11 @@ ${(ai?.gaps || []).map((g, i) => `- ${g}`).join('\n')}
                 )}
               </div>
 
-              <div className="border-t border-black/5 dark:border-white/5" />
+
 
               {/* Contradictions & Points de vigilance */}
              
-              <div className="border-t border-black/5 dark:border-white/5" />
+
 
               {/* Informations manquantes */}
               <div className="space-y-3">

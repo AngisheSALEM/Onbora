@@ -14,6 +14,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from sales.models import Enterprise
+        from apps.ai_core.vector_search.documents import persist_enterprise_document
+        for enterprise in Enterprise.objects.select_related('seed_import', 'crm_record').prefetch_related('installed_offers').iterator(chunk_size=100):
+            persist_enterprise_document(enterprise)
         service = get_vector_search_service()
         rebuild = options["rebuild"]
 

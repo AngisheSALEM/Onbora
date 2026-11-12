@@ -35,8 +35,6 @@ class UnifiedCoreAIEngine:
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
         self.api_key = api_key or getattr(settings, 'GEMINI_API_KEY', '')
         self.model_name = model_name or getattr(settings, 'GEMINI_MODEL', 'gemini-3.5-flash')
-        if 'gemini-2.5' in self.model_name:
-            self.model_name = 'gemini-3.5-flash'
 
         # Instanciation modulaire propre
         self.base_engine = BaseAIEngine(api_key=self.api_key, model_name=self.model_name)
@@ -92,64 +90,28 @@ class UnifiedCoreAIEngine:
             except Exception:
                 pass
 
+        # A sector, headcount or missing installed inventory does not establish an unmet need.
+        # Only an explicitly recorded hypothesis anchored to attributable facts may be shown.
+        from .company_analysis.adapter import supported_facts
+        facts = {fact['id']: fact for fact in supported_facts(getattr(enterprise, 'scraped_data', {}) or {})}
         predicted_needs = []
-        existing_real_lower = {n["need"].lower() for n in real_needs}
-
-        try:
-            site_cnt = int(getattr(enterprise, 'site_count', 1) or 1)
-        except (ValueError, TypeError):
-            site_cnt = 1
-
-        try:
-            emp_cnt = int(getattr(enterprise, 'employee_count', 10) or 10)
-        except (ValueError, TypeError):
-            emp_cnt = 10
-        curr_op = getattr(enterprise, 'current_operator', '') or ''
-        sector = (getattr(enterprise, 'sector', '') or '').lower()
-
-        if site_cnt > 1 and not any("sd-wan" in n or "interconnexion" in n for n in existing_real_lower):
-            predicted_needs.append({
-                "need": "Interconnexion multi-sites sécurisée (SD-WAN / MPLS)",
-                "reason": f"Périmètre de {site_cnt} implantations à unifier avec routage applicatif chiffré.",
-                "category": "Réseaux & Multi-sites",
-                "priority": "HIGH"
-            })
-
-        if emp_cnt >= 20 and not any("cyber" in n or "sécurité" in n for n in existing_real_lower):
-            predicted_needs.append({
-                "need": "Protection périmétrique et surveillance CyberSOC 24/7",
-                "reason": f"Effectif de {emp_cnt} collaborateurs nécessitant filtrage DNS et pare-feu managé.",
-                "category": "Cybersécurité",
-                "priority": "HIGH"
-            })
-
-        if any(w in sector for w in ["banque", "finance", "commerce", "distribution", "santé", "mine"]):
-            predicted_needs.append({
-                "need": "Garantie de Temps de Rétablissement (GTR 4h contractuelle)",
-                "reason": f"Activité {enterprise.sector or 'critique'} à haute exigence de disponibilité.",
-                "category": "Continuité de Service",
-                "priority": "HIGH"
-            })
-
-        if not any("sauvegarde" in n or "cloud" in n for n in existing_real_lower):
-            predicted_needs.append({
-                "need": "Sauvegarde Cloud souveraine en Datacenter Tier III",
-                "reason": "Résilience des données critiques sans investissement serveur sur site.",
-                "category": "Cloud & Données",
-                "priority": "MEDIUM"
-            })
-
-        if not any("fibre" in n or "haut débit" in n for n in existing_real_lower):
-            predicted_needs.append({
-                "need": "Liaison Fibre Dédiée Pro 100 Mbps symétrique",
-                "reason": f"Débit garanti et SLA 99.9% en remplacement de l'infrastructure {curr_op or 'actuelle'}.",
-                "category": "Connectivité",
-                "priority": "HIGH"
-            })
+        for hypothesis in (getattr(enterprise, 'ai_hypotheses', None) or []):
+            if not isinstance(hypothesis, dict) or hypothesis.get('status') not in ('HYPOTHESIS', 'TO_VALIDATE'):
+                continue
+            anchors = hypothesis.get('fact_ids')
+            title = hypothesis.get('hypothesis')
+            if (not isinstance(anchors, list) or not anchors or not isinstance(title, str) or not title.strip()
+                    or not all(isinstance(key, str) and key in facts for key in anchors)):
+                continue
+            predicted_needs.append({'need': title.strip(), 'status': 'TO_VALIDATE',
+                'reason': ' '.join(facts[key]['statement'] for key in anchors),
+                'fact_ids': anchors, 'evidence_ids': list(dict.fromkeys(
+                    evidence for key in anchors for evidence in facts[key]['evidence_ids'])),
+                'category': hypothesis.get('category', 'À qualifier'), 'priority': 'NORMAL'})
 
         return real_needs, predicted_needs
 
-    def generate_pre_call_briefing(self, enterprise: Any, kam_user: Any) -> dict:
+    def generate_pre_call_briefing(self, enterprise: Any, kam_user: Any, *, use_ai=False) -> dict:
         """
         Génère le brief de pré-visite selon le nouveau paradigme Onbora Analysis,
         en interrogeant le service externe sur le port 8001 avec fallback résilient,
@@ -161,7 +123,9 @@ class UnifiedCoreAIEngine:
             rccm=getattr(enterprise, "rccm", None), province=getattr(enterprise, "city", None),
             dossier_number=getattr(enterprise, "crm_id", None),
             research_result=recorded if isinstance(recorded, dict) else None)
-        res = analysis_brief.model_dump()
+        from .company_analysis.account_context import build_account_context, enrich_brief
+        context = build_account_context(enterprise)
+        res = enrich_brief(analysis_brief, context, self.base_engine if use_ai else None)
         real_needs, predicted_needs = self._extract_real_and_predicted_needs(enterprise)
         res.update(real_needs=real_needs, predicted_needs=predicted_needs)
         overview = res["ai_summary"]["overview"]["text"]

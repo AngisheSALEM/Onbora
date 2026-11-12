@@ -1321,6 +1321,8 @@ class EnterpriseComparisonService:
         """
         Construit le tableau exhaustif des critères comparatifs (Versus style).
         """
+        employees_b = ent_b.employee_count if ent_b else scores_b.get('avg_employees')
+        employees_known = ent_a.employee_count is not None and employees_b is not None
         rows = [
             {
                 "criterion": "Technologie d'accès principale",
@@ -1381,9 +1383,9 @@ class EnterpriseComparisonService:
             {
                 "criterion": "Effectif salarial",
                 "dimension": "Envergure",
-                "val_a": f"{ent_a.employee_count} employés",
-                "val_b": f"{ent_b.employee_count if ent_b else scores_b.get('avg_employees', 50)} employés",
-                "winner": "A" if ent_a.employee_count > (ent_b.employee_count if ent_b else scores_b.get('avg_employees', 50)) else ("B" if (ent_b.employee_count if ent_b else scores_b.get('avg_employees', 50)) > ent_a.employee_count else "EQUAL"),
+                "val_a": f"{ent_a.employee_count} employés" if ent_a.employee_count is not None else 'Non renseigné',
+                "val_b": f"{employees_b} employés" if employees_b is not None else 'Non renseigné',
+                "winner": ('A' if ent_a.employee_count > employees_b else 'B' if employees_b > ent_a.employee_count else 'EQUAL') if employees_known else None,
                 "is_critical": False,
             },
         ]

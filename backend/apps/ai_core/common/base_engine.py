@@ -52,8 +52,7 @@ class BaseAIEngine:
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None) -> None:
         self.api_key = api_key or getattr(settings, "GEMINI_API_KEY", "")
         self.model_name = model_name or getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash")
-        if "gemini-2.5" in self.model_name:
-            self.model_name = "gemini-3.5-flash"
+        self.last_inference_status = {'status': 'not_requested', 'model': self.model_name}
         self._client = None
         self._init_client()
 
@@ -76,6 +75,7 @@ class BaseAIEngine:
 
     def call_gemini_json(self, prompt: str, system_instruction: str = "") -> Optional[Dict[str, Any]]:
         if not self._client:
+            self.last_inference_status = {'status': 'unavailable', 'model': self.model_name}
             return None
         try:
             from google.genai import types
@@ -94,8 +94,13 @@ class BaseAIEngine:
                 fallback_models=getattr(settings, "AI_FALLBACK_MODELS", ()))
             if response and response.text:
                 payload = extract_json_payload(response.text)
+                actual_model = getattr(response, 'model_version', None) or self.model_name
+                self.last_inference_status = {'status': 'generated', 'model': actual_model}
                 return payload if isinstance(payload, dict) else None
+            self.last_inference_status = {'status': 'empty_response', 'model': self.model_name}
         except Exception as exc:
+            self.last_inference_status = {'status': 'failed', 'model': self.model_name,
+                                          'code': getattr(exc, 'code', None)}
             logger.warning("[BaseAIEngine] Erreur globale Gemini (%s), bascule sur le fallback local.", exc)
             return None
         return None
