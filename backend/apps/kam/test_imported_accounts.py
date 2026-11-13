@@ -40,17 +40,24 @@ class ImportedAccountScreensTests(APITestCase):
         self.assertEqual(response.status_code, 200, response.data)
         return response.data
 
-    def test_assigned_crm_profile_appears_in_accounts_and_portfolio(self):
+    def test_assigned_crm_profile_appears_in_accounts_but_not_portfolio_news(self):
         enterprise = self.import_record(self.company)
         response = self.client.get('/api/kam/accounts/')
         self.assertEqual(response.status_code, 200, response.data)
         account = next(row for row in response.data['accounts'] if row['account_id'] == str(enterprise.pk))
         self.assertEqual(account['account_origin'], {'code': 'CRM', 'label': 'CRM'})
-        item = self.feed('PORTFOLIO')['results'][0]
-        self.assertTrue(item['is_profile_entry'])
-        self.assertEqual(item['account_origin']['code'], 'CRM')
-        self.assertEqual(item['title'], 'Services')
-        self.assertEqual(item['recommended_offer'], '')
+        data = self.feed('PORTFOLIO')
+        self.assertEqual(data['count'], 0)
+        self.assertEqual(data['counters']['portfolio'], 0)
+        self.assertEqual(data['counters']['unread'], 0)
+        self.assertEqual(B2BNewsFeedService.get_enterprise_feed(enterprise.pk, self.kam)['total_count'], 0)
+        article = B2BNewsFeedItem.objects.create(enterprise=enterprise,
+            title='Financement de nouvelles agences', summary='Annonce publique',
+            category='FINANCE', signal_score=0, is_saved=True)
+        data = self.feed('PORTFOLIO', saved='true')
+        self.assertEqual([row['id'] for row in data['results']], [str(article.pk)])
+        self.assertEqual(data['counters']['portfolio'], 1)
+        self.assertEqual(B2BNewsFeedService.get_enterprise_feed(enterprise.pk, self.kam)['total_count'], 1)
 
     def test_registry_lead_is_visible_then_moves_to_portfolio(self):
         enterprise = self.import_record(self.lead)
@@ -68,12 +75,12 @@ class ImportedAccountScreensTests(APITestCase):
         self.assertEqual(enterprise.assigned_entity, 'KAM_OFFICE')
         self.assertIsNone(enterprise.employee_count)
         self.assertEqual(self.feed('WEB_DISCOVERY')['count'], 0)
-        self.assertEqual(self.feed('PORTFOLIO')['count'], 1)
+        self.assertEqual(self.feed('PORTFOLIO')['count'], 0)
         self.assertEqual(Enterprise.objects.count(), 1)
         # Replay must not turn the account into a discovery again.
         self.import_record(self.lead)
         self.assertEqual(self.feed('WEB_DISCOVERY')['count'], 0)
-        self.assertEqual(self.feed('PORTFOLIO')['count'], 1)
+        self.assertEqual(self.feed('PORTFOLIO')['count'], 0)
 
     def test_public_project_is_shown_with_its_evidence_instead_of_import_title(self):
         from apps.ai_core.test_company_research import observation
@@ -106,7 +113,9 @@ class ImportedAccountScreensTests(APITestCase):
         self.assertFalse(item.is_saved)
 
     def test_origin_filter_and_serialization_use_constant_queries(self):
-        self.import_record(self.company)
+        enterprise = self.import_record(self.company)
+        B2BNewsFeedItem.objects.create(enterprise=enterprise,
+            title='Article financier', category='FINANCE')
         self.import_record(self.lead)
         self.assertEqual(self.feed(origin='CRM')['count'], 1)
         self.assertEqual(self.feed(origin='ANALYSIS')['count'], 1)

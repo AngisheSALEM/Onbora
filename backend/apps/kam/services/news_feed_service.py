@@ -24,7 +24,10 @@ class B2BNewsFeedService:
     @staticmethod
     def visible_feed(user=None):
         qs = B2BNewsFeedItem.objects.select_related(
-            'enterprise', 'enterprise__assigned_kam', 'enterprise__seed_import')
+            'enterprise', 'enterprise__assigned_kam', 'enterprise__seed_import').exclude(
+                # Imported identities are discovery leads, not portfolio news.
+                is_web_discovery=False, category='NEW_ACCOUNT', signal_score=0,
+                enterprise__seed_import__isnull=False)
         if user is not None and user.role == 'KAM':
             qs = qs.filter(Q(enterprise__assigned_kam=user) | Q(
                 is_web_discovery=True, enterprise__assigned_kam__isnull=True))
