@@ -125,6 +125,13 @@ from .models import B2BNewsFeedItem
 class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
     account_origin = serializers.SerializerMethodField()
     is_profile_entry = serializers.SerializerMethodField()
+    lead_basis = serializers.SerializerMethodField()
+
+    def get_lead_basis(self, obj):
+        if not self.get_is_profile_entry(obj):
+            return 'Signal repéré'
+        from kam.services.imported_accounts import lead_information
+        return lead_information(obj.enterprise, obj.enterprise.seed_import.payload)['basis']
 
     def get_account_origin(self, obj):
         from sales.services.account_origin import account_origin
@@ -147,7 +154,7 @@ class B2BNewsFeedItemSerializer(serializers.ModelSerializer):
         model = B2BNewsFeedItem
         fields = [
             'id', 'enterprise', 'enterprise_name', 'enterprise_sector', 'enterprise_location',
-            'account_origin', 'is_profile_entry',
+            'account_origin', 'is_profile_entry', 'lead_basis',
             'enterprise_assigned_kam', 'is_web_discovery',
             'discovered_company_name', 'discovered_website', 'discovered_sector',
             'discovered_location', 'discovered_size', 'discovered_signals',

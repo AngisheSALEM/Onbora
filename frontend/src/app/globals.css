@@ -639,4 +639,18 @@ body,
   will-change: transform;
 }
 
+/* Flat surfaces throughout the application, including overlays and hover states. */
+*,
+*::before,
+*::after,
+::backdrop {
+  box-shadow: none !important;
+}
+
+/* Keyboard focus remains visible when Tailwind rings lose their shadow rendering. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #4F6CE8 !important;
+  outline-offset: 3px !important;
+}
+
 

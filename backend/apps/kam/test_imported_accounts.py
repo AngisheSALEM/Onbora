@@ -49,7 +49,7 @@ class ImportedAccountScreensTests(APITestCase):
         item = self.feed('PORTFOLIO')['results'][0]
         self.assertTrue(item['is_profile_entry'])
         self.assertEqual(item['account_origin']['code'], 'CRM')
-        self.assertEqual(item['title'], 'Fiche compte intégrée')
+        self.assertEqual(item['title'], 'Services')
         self.assertEqual(item['recommended_offer'], '')
 
     def test_registry_lead_is_visible_then_moves_to_portfolio(self):
@@ -57,6 +57,9 @@ class ImportedAccountScreensTests(APITestCase):
         lead = self.feed('WEB_DISCOVERY')['results'][0]
         self.assertEqual(lead['account_origin']['label'], 'Onbora Analysis')
         self.assertEqual(lead['summary'], self.lead['activity'])
+        self.assertEqual(lead['title'], self.lead['activity'])
+        self.assertEqual(lead['lead_basis'], 'Activité à qualifier')
+        self.assertIn('Aucun événement commercial précis', lead['commercial_angle'])
         self.assertEqual(self.feed('PORTFOLIO')['count'], 0)
         response = self.client.post(f"/api/kam/feed/{lead['id']}/convert/")
         self.assertEqual(response.status_code, 200, response.data)
@@ -71,6 +74,21 @@ class ImportedAccountScreensTests(APITestCase):
         self.import_record(self.lead)
         self.assertEqual(self.feed('WEB_DISCOVERY')['count'], 0)
         self.assertEqual(self.feed('PORTFOLIO')['count'], 1)
+
+    def test_public_project_is_shown_with_its_evidence_instead_of_import_title(self):
+        from apps.ai_core.test_company_research import observation
+        from kam.services.imported_accounts import publish_imported_account
+        enterprise = self.import_record(self.lead)
+        result = observation()['result']
+        result['facts'][0].update(field='projects_partnerships', statement='Projet : Éducation pour tous')
+        enterprise.scraped_data = result
+        enterprise.save(update_fields=['scraped_data'])
+        publish_imported_account(enterprise.seed_import, enterprise)
+        lead = self.feed('WEB_DISCOVERY')['results'][0]
+        self.assertEqual(lead['title'], 'Projet : Éducation pour tous')
+        self.assertEqual(lead['lead_basis'], 'Projet identifié')
+        self.assertTrue(lead['source_url'].startswith('https://'))
+        self.assertEqual(lead['signal_score'], 0)
 
     def test_other_kam_cannot_see_counts_or_modify_imported_portfolio(self):
         self.import_record(self.company)

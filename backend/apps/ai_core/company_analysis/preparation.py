@@ -12,6 +12,10 @@ def commercial_preparation(context, public_facts):
     normalized = ''.join(c for c in unicodedata.normalize('NFKD', activity.casefold())
                          if not unicodedata.combining(c))
     topics = []
+    if any(word in normalized for word in ('hotel', 'restaurant', 'cafe', 'hebergement touristique')):
+        topics.append(('internet connexion réseau', 'Internet fixe et réseaux',
+            'Quels usages d’Internet concernent les clients, les équipes et les réservations ?',
+            'Si ces usages nécessitent une connexion partagée, qualifier la couverture et la continuité avant de choisir une offre.'))
     if any(word in normalized for word in ('export', 'transport', 'logistique', 'agricol')):
         topics.append(('internet connexion réseau', 'Internet fixe et réseaux',
             'Comment échangez-vous les commandes et les documents avec vos sites et partenaires ?',

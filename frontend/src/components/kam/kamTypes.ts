@@ -172,6 +172,7 @@ export interface MeetingDebrief {
 export interface B2BNewsItem {
   account_origin?: AccountOrigin;
   is_profile_entry?: boolean;
+  lead_basis?: string;
   company_photo_url?: string;
   id: string;
   enterprise?: number | null;

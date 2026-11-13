@@ -75,13 +75,19 @@ export default function KamNewLeadCard({ item, publishedLabel, converting, onOpe
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] leading-[21px] text-zinc-500 dark:text-zinc-400">
-          <span>{item.is_profile_entry ? 'Fiche entreprise' : 'Actualité de l’entreprise'}</span>
-          <time dateTime={item.published_at}>{publishedLabel}</time>
+          <span>{item.lead_basis || (item.is_profile_entry ? 'Activité à qualifier' : 'Signal repéré')}</span>
+          {!item.is_profile_entry && <time dateTime={item.published_at}>{publishedLabel}</time>}
         </div>
         <h2 className="text-[21px] leading-[27px] font-semibold text-zinc-900 dark:text-white break-words">
           <button type="button" onClick={onOpen} className="text-left cursor-pointer hover:text-[#4F6CE8] focus-visible:outline-2 focus-visible:outline-[#4F6CE8]">{headline}</button>
         </h2>
-        <p className="text-[16px] leading-[26px] text-zinc-600 dark:text-zinc-300 break-words">{item.summary}</p>
+        {item.summary !== headline && <p className="text-[16px] leading-[26px] text-zinc-600 dark:text-zinc-300 break-words">{item.summary}</p>}
+        {item.is_profile_entry && item.commercial_angle && (
+          <div className="space-y-1 text-[14px] leading-[22px] text-zinc-600 dark:text-zinc-300">
+            <h3 className="font-semibold text-zinc-900 dark:text-white">Pourquoi la contacter ?</h3>
+            <p>{item.commercial_angle}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">

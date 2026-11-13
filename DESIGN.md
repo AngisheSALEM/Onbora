@@ -99,7 +99,7 @@ Plus le texte grandit sur l'échelle d'or, plus son crénage (*letterSpacing*) s
 ## 6. Règle Zéro Ombres Portées Colorées / Fluorescentes (*No Glowing Colored Shadows*)
 
 * **INTERDICTION FORMELLE :** Les ombres colorées artificielles (ex: `shadow-[#4F6CE8]/20`, `shadow-md shadow-[#4F6CE8]/25`, `shadow-emerald-500/10`).
-* **DIRECTIVE :** Les boutons et cartes doivent adopter un style moderne, mat ou plat avec ombres neutres ultra-douces (`shadow-xs`, `shadow-sm`, `shadow-none`). Aucun effet néon ou halo lumineux fluo de type "AI slop".
+* **DIRECTIVE :** Toutes les interfaces Web utilisent des surfaces plates, sans `box-shadow`, y compris les boutons, menus, modales et états de survol. Le focus clavier reste visible avec un contour. Cette préférence remplace les anciennes autorisations d’ombres neutres.
 
 ---
 
