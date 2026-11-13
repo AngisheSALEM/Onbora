@@ -25,7 +25,7 @@ Le reste du registre demeure consultable dans le service Analysis.
   conservation des observations existantes. Une empreinte rend la relance sans
   changement idempotente. Aucune création de parc installé ni d'historique CRM.
 - Les faits et l'activité alimentent la synthèse et les documents de recherche
-  vectorielle. Les questions et pistes conditionnelles sont distinctes des besoins
+  vectorielle, ainsi que les résumés du fil de profils. Les questions et pistes conditionnelles sont distinctes des besoins
   confirmés. Les pistes proviennent du catalogue local, dans une catégorie adaptée
   à l'activité ; elles ne précisent aucun dimensionnement client supposé.
 - La comparaison ne désigne pas de jumeau lorsque effectifs, sites et chiffre
@@ -35,6 +35,11 @@ La base complète Analysis peut être restaurée dans un nouveau fichier privé,
 migrée avec son propre service et sélectionnée via `ONBORA_DB_PATH`. Conserver
 l'original et l'ancienne base ; renouveler les identifiants d'intégration côté
 serveur sans les inclure dans les exports ou les commits.
+
+Le profil SQLite local réserve les écritures au début des transactions atomiques
+(`IMMEDIATE`, attente maximale de 20 secondes), pour éviter les conflits de passage
+de lecture à écriture avec les workers. Les commandes parcourent des lots matérialisés
+plutôt que de conserver un curseur de lecture sur toute la synchronisation.
 
 Validation locale du 13 novembre 2026 : registre de 16 938 entreprises, 168 profils
 sélectionnés (159 enrichis, 9 ajoutés), dont 11 avec des faits publics exploitables.

@@ -162,6 +162,9 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            # Acquire the write reservation before reading in atomic imports. This
+            # avoids deferred read-to-write upgrades racing the local workers.
+            'OPTIONS': {'timeout': 20, 'transaction_mode': 'IMMEDIATE'},
         }
     }
 

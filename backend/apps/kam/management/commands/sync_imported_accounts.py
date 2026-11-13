@@ -16,7 +16,7 @@ class Command(BaseCommand):
         records = SeedImportRecord.objects.filter(enterprise__isnull=False)
         count = records.count()
         if options['apply']:
-            for pk in records.values_list('pk', flat=True).iterator():
+            for pk in list(records.values_list('pk', flat=True)):
                 with transaction.atomic():
                     record = SeedImportRecord.objects.select_for_update(of=('self',)).select_related('enterprise').get(pk=pk)
                     publish_imported_account(record, record.enterprise)

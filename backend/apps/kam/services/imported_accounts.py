@@ -9,16 +9,22 @@ def import_entry_id(external_id):
 
 
 def publish_imported_account(record, enterprise):
+    from apps.ai_core.company_analysis.adapter import supported_facts
+
     payload = record.payload
     is_lead = payload['kind'] == 'lead'
     discovery = is_lead and not enterprise.assigned_kam_id
+    activity = payload.get('activity') or ' · '.join(filter(None, [
+        payload['name'], payload.get('sector'), enterprise.location]))
+    public = [fact['statement'] for fact in supported_facts(enterprise.scraped_data or {})
+              if fact['field'] in ('activities', 'description', 'projects_partnerships', 'news')]
+    summary = ' '.join(dict.fromkeys([activity, *public[:3]]))
     fields = {
         'enterprise': enterprise,
         'is_web_discovery': discovery,
         'is_converted_to_portfolio': bool(enterprise.assigned_kam_id),
         'title': 'Fiche entreprise disponible' if discovery else 'Fiche compte intégrée',
-        'summary': payload.get('activity') or ' · '.join(filter(None, [
-            payload['name'], payload.get('sector'), enterprise.location])),
+        'summary': summary[:1000],
         'source_name': 'Onbora Analysis' if is_lead else 'CRM',
         # A registry profile is not an economic event or a commercial signal.
         'source_url': '', 'category': 'NEW_ACCOUNT', 'priority': 'NORMAL',

@@ -81,3 +81,13 @@ class SnapshotTests(VectorFixtureMixin, TestCase):
         result = observation()['result']
         result['identity']['status'] = 'not_found'
         self.assertIsNone(combine_research([{'id': 'bad', 'result': json.dumps(result)}]))
+
+    def test_public_activity_enriches_profile_feed_without_inventing_news(self):
+        from kam.services.imported_accounts import publish_imported_account
+        result = observation()['result']
+        result['facts'][0].update(field='activities', statement='Intervient dans 26 provinces.')
+        self.enterprise.scraped_data = result
+        item = publish_imported_account(self.enterprise.seed_import, self.enterprise)
+        self.assertIn('Intervient dans 26 provinces.', item.summary)
+        self.assertEqual(item.signal_score, 0)
+        self.assertEqual(item.category, 'NEW_ACCOUNT')

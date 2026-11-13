@@ -153,6 +153,8 @@ def import_snapshot(path, *, apply=False):
                     {'id': 'current', 'result': json.dumps(old)}])
                 enterprise.scraped_data = research
             enterprise.save()
+            from kam.services.imported_accounts import publish_imported_account
+            publish_imported_account(enterprise.seed_import, enterprise)
             persist_enterprise_document(enterprise)
             if research:
                 from .ingestion import _publish_news
