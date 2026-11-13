@@ -1,4 +1,5 @@
 """Project supported facts through their evidence IDs; provider prose is never evidence."""
+import re
 from .models import (AISummary, CompanyBriefOutput, CompanyInfo, DiscoverySummary,
                      EvidenceItem, LeadQualification, SectorPrimary, SectorSegmentation,
                      SourceReference, SourcedStatement)
@@ -15,13 +16,19 @@ def supported_facts(result):
     disputed = {field["field"] for field in result.get("contradictions", [])}
     return [fact for fact in result.get("facts", [])
             if fact.get("support_status") in ("supported", "corroborated")
+            and not re.fullmatch(r"(?:nos services|nos produits en un coup d['’]oeil|découvrez nos services|"
+                                 r"siège principal|siège social|adresse siège\s*:|son adresse officielle\s*\.{0,3})[.!\s]*",
+                                 fact.get('statement', '').strip(), re.I)
             and fact.get("field") not in disputed and fact.get("evidence_ids")
             and set(fact["evidence_ids"]).issubset(valid)]
 
 
 def build_company_brief(name, sector=None, rccm=None, city=None, dossier=None, result=None):
     result = result if isinstance(result, dict) and "identity" in result else {}
-    facts = supported_facts(result)
+    field_order = ['description', 'activities', 'projects_partnerships', 'products_services',
+                   'locations', 'business_contacts', 'news', 'identifiers']
+    facts = sorted(supported_facts(result), key=lambda fact: field_order.index(fact['field'])
+                   if fact['field'] in field_order else len(field_order))
     sources = {s["id"]: s for s in result.get("sources", [])}
     used = {eid for fact in facts for eid in fact["evidence_ids"]}
     captures = [e for e in result.get("evidence", []) if e["id"] in used]

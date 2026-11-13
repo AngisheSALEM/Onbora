@@ -50,6 +50,11 @@ class EnterpriseComparisonSizingTestCase(TestCase):
             current_connectivity="Fibre Dédiée Entreprise 1 Gbps (LSI)",
             annual_revenue=15000000.0
         )
+        # A technical comparison requires recorded infrastructure, not only profile text.
+        for enterprise, bandwidth in ((self.ent_a, 100), (self.ent_pme_peer, 100), (self.ent_gc_peer, 1000)):
+            EnterpriseInstalledOffer.objects.create(enterprise=enterprise,
+                installed_offer_name=enterprise.current_connectivity, category='CONNECTIVITY',
+                contract_status='ACTIVE', bandwidth_mbps=bandwidth)
 
     def test_bandwidth_extraction(self):
         """Vérifie l'extraction déterministe de la bande passante."""
@@ -82,6 +87,7 @@ class EnterpriseComparisonSizingTestCase(TestCase):
         self.ent_a.current_connectivity = "Moyen débit (30 Mbps)"
         self.ent_a.site_count = 6
         self.ent_a.save()
+        self.ent_a.installed_offers.update(bandwidth_mbps=30, installed_offer_name='Moyen débit 30 Mbps')
 
         score_2 = EnterpriseComparisonService._compute_enterprise_scores(self.ent_a)
 

@@ -30,6 +30,9 @@ def build_account_context(enterprise):
     for key, label in fields:
         add('account:' + key, label, getattr(enterprise, key, None))
     add('registry:activity', 'Activité du registre', payload.get('activity'))
+    add('registry:province', 'Province', payload.get('province'))
+    add('registry:subsector', 'Spécialité', payload.get('subsector'))
+    add('registry:alias', 'Sigle', payload.get('alias'))
     crm = getattr(enterprise, 'crm_record', None)
     projection = AccountProjection.objects.filter(enterprise=enterprise).first()
     for origin, data in [('crm', crm.raw_attributes if crm else {}),
@@ -47,27 +50,33 @@ def build_account_context(enterprise):
             parts.append(f'échéance {offer.contract_end_date.isoformat()}')
         add(f'offer:{offer.pk}', 'Service enregistré', ', '.join(parts))
     for record in DynamicsImportedRecord.objects.filter(enterprise=enterprise).order_by('kind', 'remote_id')[:100]:
-        for key in ('name', 'description', 'status_label', 'scheduled_start', 'estimated_value', 'currency_code'):
+        for key in ('name', 'description', 'status_label', 'start_date', 'amount', 'currency_code'):
             add(f'dynamics:{record.pk}:{key}', f'CRM {record.kind} — {key}', record.data.get(key))
     gaps = [label for key, label in [('employee_count', 'Effectif à renseigner'),
         ('site_count', 'Nombre de sites à renseigner'), ('current_connectivity', 'Accès réseau à préciser'),
         ('contact_name', 'Interlocuteur à identifier')] if not getattr(enterprise, key, None)]
     if not offers:
         gaps.append('Parc installé à renseigner ; aucune conclusion sur son absence physique.')
-    raw = {'facts': facts, 'gaps': gaps, 'research': enterprise.scraped_data}
+    raw = {'facts': facts, 'gaps': gaps, 'research': enterprise.scraped_data, 'version': 2}
     signature = hashlib.sha256(json.dumps(raw, sort_keys=True, default=str).encode()).hexdigest()
     return {'facts': facts, 'gaps': gaps, 'fingerprint': signature,
+            'research': enterprise.scraped_data,
             'text': '\n'.join(f['text'] for f in facts)}
 
 
 def enrich_brief(brief, context, engine=None):
     """Gemini selects recorded statements by ID; it cannot manufacture company facts."""
     result = brief.model_dump()
+    from .adapter import supported_facts
+    from .preparation import commercial_preparation
     summary = result['ai_summary']
     facts = {f['id']: f for f in context['facts']}
     for index, statement in enumerate(summary['key_facts']):
         facts[f'public:{index}'] = {'id': f'public:{index}', **statement}
-    ordered = list(facts)
+    priority = ['account:name', 'registry:activity', 'account:city', 'registry:province']
+    ordered = [key for key in priority if key in facts]
+    ordered += [key for key in facts if key.startswith('public:')]
+    ordered += [key for key in facts if key not in ordered]
     inference = {'status': 'not_requested'}
     recommendations = []
     if engine is not None and facts:
@@ -112,4 +121,7 @@ def enrich_brief(brief, context, engine=None):
     summary['model'] = 'account-context-v1'
     result.update(context_fingerprint=context['fingerprint'], ai_inference=inference,
                   recommended_solutions=recommendations)
+    # Both deterministic reads and optional Gemini use this same recorded context.
+    result['commercial_preparation'] = commercial_preparation(context, supported_facts(
+        context.get('research') or {}))
     return result

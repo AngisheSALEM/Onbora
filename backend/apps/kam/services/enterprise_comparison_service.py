@@ -253,6 +253,14 @@ class EnterpriseComparisonService:
         """
         import math
 
+        if not all(value is not None and value > 0 for value in (
+                ent_a.employee_count, ent_b.employee_count, ent_a.site_count, ent_b.site_count,
+                ent_a.annual_revenue, ent_b.annual_revenue)):
+            return {'similarity_percentage': 0, 'is_twin': False, 'data_sufficient': False,
+                    'tier_a': 'Non renseigné', 'tier_b': 'Non renseigné',
+                    'topology_a': 'Non renseignée', 'topology_b': 'Non renseignée',
+                    'employee_diff': None, 'site_diff': None}
+
         e_a = max(ent_a.employee_count or 1, 1)
         e_b = max(ent_b.employee_count or 1, 1)
         s_a = max(ent_a.site_count or 1, 1)
@@ -311,6 +319,7 @@ class EnterpriseComparisonService:
 
         return {
             "similarity_percentage": similarity,
+            "data_sufficient": True,
             "is_twin": similarity >= 80,
             "tier_a": cls._get_sizing_tier_label(e_a, s_a),
             "tier_b": cls._get_sizing_tier_label(e_b, s_b),
@@ -400,7 +409,7 @@ class EnterpriseComparisonService:
             reasons = []
             if ent_a.sector == ent_b.sector:
                 reasons.append(f"Même secteur ({ent_b.sector})")
-            if ent_a.segment == ent_b.segment:
+            if ent_a.segment == ent_b.segment and ent_b.segment != 'UNKNOWN':
                 reasons.append(f"Segment {ent_b.segment}")
             if ent_b.site_count and ent_b.site_count > 1:
                 reasons.append(f"{ent_b.site_count} sites distants")
@@ -408,17 +417,17 @@ class EnterpriseComparisonService:
                 reasons.append(f"Liaison {ent_b.current_connectivity}")
             twin_rationale = " • ".join(reasons) if reasons else "Topologie et dimensionnement comparables"
 
-            is_twin = hybrid_pct >= 75
+            is_twin = hybrid_pct >= 75 and sim_data.get('data_sufficient', False)
 
             peers_with_sim.append({
                 "id": ent_b.id,
                 "name": ent_b.name,
-                "city": ent_b.city or "Kinshasa",
+                "city": ent_b.city or "",
                 "segment": ent_b.segment,
                 "employee_count": ent_b.employee_count,
-                "site_count": ent_b.site_count or 1,
-                "annual_revenue": float(ent_b.annual_revenue or 0),
-                "current_connectivity": ent_b.current_connectivity or "4G LTE",
+                "site_count": ent_b.site_count,
+                "annual_revenue": float(ent_b.annual_revenue) if ent_b.annual_revenue is not None else None,
+                "current_connectivity": ent_b.current_connectivity or "",
                 "overall_score": score_b["overall_score"],
                 "similarity_percentage": hybrid_pct,
                 "vector_similarity_percentage": vec_pct,
@@ -431,7 +440,7 @@ class EnterpriseComparisonService:
 
         # Trier par pourcentage de similarité décroissant
         peers_with_sim.sort(key=lambda x: x["similarity_percentage"], reverse=True)
-        if peers_with_sim:
+        if peers_with_sim and peers_with_sim[0]['is_twin']:
             peers_with_sim[0]["is_closest_twin"] = True
 
         return peers_with_sim
@@ -634,14 +643,14 @@ class EnterpriseComparisonService:
                 "sizing_tier": sizing_data["tier_b"],
                 "similarity_percentage": hybrid_pct,
                 "vector_similarity_percentage": vec_pct,
-                "is_twin": hybrid_pct >= 75,
+                "is_twin": hybrid_pct >= 75 and sizing_data.get('data_sufficient', False),
                 "is_closest_twin": is_closest,
                 "twin_rationale": twin_rationale,
             }
             sizing_data["similarity_percentage"] = hybrid_pct
             sizing_data["vector_similarity_percentage"] = vec_pct
             sizing_data["twin_rationale"] = twin_rationale
-            sizing_data["is_twin"] = hybrid_pct >= 75
+            sizing_data["is_twin"] = meta_b['is_twin']
             sizing_data["is_closest_twin"] = is_closest
         else:
             # Calcul de la moyenne sectorielle réelle

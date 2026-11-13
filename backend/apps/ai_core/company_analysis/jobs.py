@@ -24,11 +24,14 @@ def request_payload(enterprise, operation="research", baseline=None, fields=None
         subject["city"] = enterprise.city
     if enterprise.website:
         subject["website"] = enterprise.website
-    if enterprise.rccm:
-        subject["identifiers"] = {"rccm": enterprise.rccm}
+    identifiers = {key: value for key, value in (
+        ('rccm', enterprise.rccm), ('tax_number', enterprise.nif)) if value}
+    if identifiers:
+        subject['identifiers'] = identifiers
     payload = {"subject": subject, "language": "fr", "operation": operation,
         "question": "Quelles sont les activités, implantations, coordonnées et actualités publiques de cette entreprise ?",
-        "requested_fields": ["description", "activities", "locations", "business_contacts", "identifiers", "news"]}
+        "requested_fields": ["description", "activities", "locations", "business_contacts", "identifiers",
+                             "news", "products_services", "projects_partnerships"]}
     if fields is not None:
         payload["requested_fields"] = fields
     if baseline:

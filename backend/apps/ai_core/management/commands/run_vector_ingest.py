@@ -16,8 +16,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from sales.models import Enterprise
         from apps.ai_core.vector_search.documents import persist_enterprise_document
-        for enterprise in Enterprise.objects.select_related('seed_import', 'crm_record').prefetch_related('installed_offers').iterator(chunk_size=100):
-            persist_enterprise_document(enterprise)
+        last_id = 0
+        while True:
+            # Close each read cursor before writes; SQLite workers must not retain a
+            # streaming read lock over the complete reindex operation.
+            batch = list(Enterprise.objects.filter(pk__gt=last_id).order_by('pk')
+                .select_related('seed_import', 'crm_record').prefetch_related('installed_offers')[:100])
+            if not batch:
+                break
+            for enterprise in batch:
+                persist_enterprise_document(enterprise)
+            last_id = batch[-1].pk
         service = get_vector_search_service()
         rebuild = options["rebuild"]
 

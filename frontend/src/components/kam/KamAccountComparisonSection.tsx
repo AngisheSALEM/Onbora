@@ -348,7 +348,7 @@ function AccountComparisonContent({
               </p>
             )}
 
-            {comparison.meta_b?.twin_rationale && (
+            {comparison.meta_b?.is_twin && comparison.meta_b?.twin_rationale && (
               <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 text-xs text-zinc-600 dark:text-zinc-400">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold text-zinc-900 dark:text-white shrink-0">

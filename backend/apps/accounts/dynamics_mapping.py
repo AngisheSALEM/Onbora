@@ -12,6 +12,7 @@ ALIASES = {
         'revenue': ('revenue', 'annualrevenue'), 'currency': ('transactioncurrencyid',),
         'city': ('address1_city',), 'address': ('address1_line1',),
         'website': ('websiteurl',), 'owner': ('ownerid',),
+        'description': ('description',),
         'tax_number': ('taxnumber', 'nif'), 'rccm': ('rccm',),
     },
     'contacts': {

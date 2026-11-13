@@ -44,10 +44,25 @@ class AccountContextTests(VectorFixtureMixin, TestCase):
             installed_offer_name='Fibre 100 Mbps', bandwidth_mbps=100, contract_status='ACTIVE')
         DynamicsImportedRecord.objects.create(enterprise=self.enterprise, source_key='source',
             entity='opportunities', remote_id=uuid.uuid4(), kind='opportunities',
-            data={'name': 'Extension du réseau', 'description': 'Raccorder trois agences'})
+            data={'name': 'Extension du réseau', 'description': 'Raccorder trois agences',
+                  'start_date': '2026-12-01', 'amount': 1200, 'currency_code': 'USD'})
         context = build_account_context(self.enterprise)
         self.assertIn('Fibre 100 Mbps', context['text'])
         self.assertIn('Raccorder trois agences', context['text'])
+        self.assertIn('2026-12-01', context['text'])
+        self.assertIn('1200', context['text'])
+
+    def test_activity_produces_conditional_options_without_claiming_a_need(self):
+        data = read_briefing(self.enterprise, self.owner)
+        preparation = data['commercial_preparation']
+        self.assertEqual(len(preparation['questions']), 3)
+        self.assertTrue(preparation['solution_options'])
+        self.assertTrue(preparation['solution_options'][0]['requires_confirmation'])
+        self.assertEqual(data['recommended_solutions'], [])
+        self.assertEqual(data['predicted_needs'], [])
+        self.record.payload['activity'] = ''
+        self.record.save()
+        self.assertEqual(read_briefing(self.enterprise, self.owner)['commercial_preparation']['solution_options'], [])
 
     def test_context_change_invalidates_cached_brief_but_preserves_human_edits(self):
         engine = UnifiedCoreAIEngine()
@@ -101,6 +116,8 @@ class AccountContextTests(VectorFixtureMixin, TestCase):
         result = EnterpriseComparisonService.compare(self.enterprise.pk)
         self.assertIsNone(result['overall_score_a'])
         self.assertEqual(result['criteria_breakdown'][-1]['val_a'], 'Non renseigné')
+        self.assertFalse(result['meta_b']['is_twin'])
+        self.assertFalse(result['meta_b']['is_closest_twin'])
 
     def test_sector_size_and_old_cached_predictions_do_not_establish_needs(self):
         self.enterprise.sector = 'Commerce et services'

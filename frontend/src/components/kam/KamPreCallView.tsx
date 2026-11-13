@@ -87,6 +87,10 @@ export interface OnboraAnalysisBrief {
     gaps?: string[];
   };
   recommended_solutions?: RecommendedSolutionItem[];
+  commercial_preparation?: {
+    questions: string[];
+    solution_options: RecommendedSolutionItem[];
+  };
   lead_qualification?: {
     status?: string;
     catalog_version?: string;
@@ -359,7 +363,9 @@ export default function KamPreCallView({
   // Extraire les solutions recommandées
   const extractRecommendedSolutions = (data: OnboraAnalysisBrief): RecommendedSolutionItem[] => {
     if (Array.isArray(data.recommended_solutions)) {
-      return data.recommended_solutions;
+      return data.recommended_solutions.length > 0
+        ? data.recommended_solutions
+        : data.commercial_preparation?.solution_options || [];
     }
     const extracted: RecommendedSolutionItem[] = [];
     const seenNames = new Set<string>();
@@ -405,7 +411,7 @@ export default function KamPreCallView({
     setEditKeyFacts((data.ai_summary?.key_facts || []).map((f) => f.text));
     setEditContradictions((data.ai_summary?.contradictions || []).map((c) => c.text));
     setEditGaps(data.ai_summary?.gaps || []);
-    setEditSolutions(extractRecommendedSolutions(data));
+    setEditSolutions(data.recommended_solutions || []);
   };
 
   const fetchInstalledOffers = async (accountId: string) => {
@@ -928,6 +934,17 @@ ${(ai?.gaps || []).map((g) => `- ${g}`).join('\n')}
                   </p>
                 )}
 
+                {!isEditing && (briefingData.commercial_preparation?.questions.length || 0) > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <h3 className="text-[16px] font-semibold">À préparer pour le rendez-vous</h3>
+                    <ul className="list-disc pl-5 space-y-2 text-[14px] leading-[1.618] text-zinc-700 dark:text-zinc-300">
+                      {briefingData.commercial_preparation?.questions.map((question) => (
+                        <li key={question}>{question}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Points du rapport : Besoins & Besoins anticipés (présentation sobre) */}
                 {!isEditing && ((briefingData.real_needs && briefingData.real_needs.length > 0) || (briefingData.predicted_needs && briefingData.predicted_needs.length > 0)) && (
                   <div className="pt-2 pb-1 space-y-3.5 text-sm">
@@ -993,7 +1010,7 @@ ${(ai?.gaps || []).map((g) => `- ${g}`).join('\n')}
                       }`}
                     >
                       
-                      <span>Solutions recommandées</span>
+                      <span>{briefingData.recommended_solutions?.length ? 'Solutions recommandées' : 'Pistes à qualifier'}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono font-medium">
                         {displayedSolutions.length}
                       </span>
@@ -1233,10 +1250,17 @@ ${(ai?.gaps || []).map((g) => `- ${g}`).join('\n')}
                       </div>
                     ) : (
                       <div className="space-y-4">
+                        {!briefingData.recommended_solutions?.length && (
+                          <p className="text-[14px] leading-[1.618] text-zinc-600 dark:text-zinc-400">
+                            {displayedSolutions.length
+                              ? 'Ces pistes partent de l’activité renseignée. Confirmez les usages et les services existants avant de retenir une offre.'
+                              : 'Précisez les usages et les difficultés rencontrées pendant le rendez-vous pour identifier les offres pertinentes.'}
+                          </p>
+                        )}
                         {displayedSolutions.map((sol, idx) => (
                           <div
                             key={idx}
-                            className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3.5 border-b border-black/5 dark:border-white/5 last:border-b-0"
+                            className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3.5"
                           >
                             <div className="space-y-1 flex-1">
                               <div className="flex items-center gap-2">

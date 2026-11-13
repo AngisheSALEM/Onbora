@@ -138,9 +138,7 @@ class UnifiedCoreAIEngine:
         res["key_decision_makers"] = [{"name": contact, "role": "Contact enregistré"}] if contact else []
         res["detected_business_challenges"] = [item["need"] for item in real_needs]
         res["custom_pitch_angles"] = []
-        res["critical_discovery_questions"] = [
-            "Quels usages et contraintes souhaitez-vous améliorer ?",
-            "Quels services sont déjà installés et avec quels engagements ?"]
+        res["critical_discovery_questions"] = res['commercial_preparation']['questions']
         res["golden_rules"] = [
             "Distinguer les faits sourcés, les données déclarées et les hypothèses à confirmer.",
             "Valider les besoins avec le client avant de proposer une solution."]

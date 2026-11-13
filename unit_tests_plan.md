@@ -318,3 +318,13 @@ Les bases du test sont isolées ; aucun appel fournisseur payant.
 - Le formulaire enregistre uniquement des actions réalisées, avec date passée et résultat obligatoire ;
   les informations saisies sont conservées lors d’une erreur et la fermeture est bloquée pendant l’envoi.
 - Vérifications : TypeScript, ESLint ciblé et hook design sur les deux composants modifiés.
+# Import du registre Analysis et préparation commerciale — novembre 2026
+
+- `apps.ai_core.test_analysis_snapshot` : lecture seule, audit sans écriture,
+  identité stable, relance idempotente, maintien des affectations et éditions,
+  références de preuves résolues après fusion et exclusion des identités ambiguës.
+- `apps.ai_core.test_account_context` : activité et faits publics dans les briefs,
+  dates/montants CRM, questions et offres conditionnelles du catalogue, aucun besoin
+  affirmé à partir du seul secteur, aucun jumeau pour un dossier incomplet.
+- Non-régression : import Dynamics, seed et visibilité KAM, comparaison avec parc
+  connu ou inconnu ; build Next.js, ESLint et contrôles design/architecture.
